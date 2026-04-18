@@ -3,9 +3,8 @@ package com.ksptool.bio.biz.qf.controller;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.assembly.entity.web.Result;
-import com.ksptool.bio.biz.qf.model.qfmodeldeployrcd.dto.AddQfModelDeployRcdDto;
-import com.ksptool.bio.biz.qf.model.qfmodeldeployrcd.dto.EditQfModelDeployRcdDto;
 import com.ksptool.bio.biz.qf.model.qfmodeldeployrcd.dto.GetQfModelDeployRcdListDto;
+import com.ksptool.bio.biz.qf.model.qfmodeldeployrcd.dto.LaunchQfProcessDto;
 import com.ksptool.bio.biz.qf.model.qfmodeldeployrcd.vo.GetQfModelDeployRcdDetailsVo;
 import com.ksptool.bio.biz.qf.model.qfmodeldeployrcd.vo.GetQfModelDeployRcdListVo;
 import com.ksptool.bio.biz.qf.service.QfModelDeployRcdService;
@@ -71,6 +70,14 @@ public class QfModelDeployRcdController {
     public Result<String> activateQfModelDeployRcd(@RequestBody @Valid CommonIdDto dto) throws Exception {
         qfModelDeployRcdService.activateQfModelDeployRcd(dto);
         return Result.success("操作成功");
+    }
+
+    @PreAuthorize("@auth.hasCode('qf:model:deploy:edit')")
+    @Operation(summary = "发起审批流程(测试)")
+    @PostMapping("/launchQfProcess")
+    public Result<String> launchQfProcess(@RequestBody @Valid LaunchQfProcessDto dto) throws Exception {
+        String processInstanceId = qfModelDeployRcdService.launchQfProcess(dto);
+        return Result.success(processInstanceId);
     }
 
 }

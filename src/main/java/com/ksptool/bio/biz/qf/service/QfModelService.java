@@ -3,7 +3,7 @@ package com.ksptool.bio.biz.qf.service;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
-import com.ksptool.bio.biz.qf.commons.QfModelUtils;
+import com.ksptool.bio.biz.qf.commons.QfModelTools;
 import com.ksptool.bio.biz.qf.model.qfmodel.QfModelPo;
 import com.ksptool.bio.biz.qf.model.qfmodel.dto.AddQfModelDto;
 import com.ksptool.bio.biz.qf.model.qfmodel.dto.DesignQfModelDto;
@@ -169,8 +169,8 @@ public class QfModelService {
         updatePo.setBpmnXml(dto.getBpmnXml());
 
         //如果BPMN XML有效，则格式化
-        if (QfModelUtils.isBpmnXmlValid(dto.getBpmnXml())) {
-            updatePo.setBpmnXml(QfModelUtils.formatBpmnXml(dto.getBpmnXml(), "qf_model_" + updatePo.getId(), updatePo.getName()));
+        if (QfModelTools.isBpmnXmlValid(dto.getBpmnXml())) {
+            updatePo.setBpmnXml(QfModelTools.formatBpmnXml(dto.getBpmnXml(), "qf_model_" + updatePo.getId(), updatePo.getName()));
         }
 
         repository.save(updatePo);
@@ -236,7 +236,7 @@ public class QfModelService {
         }
 
         //校验BPMN XML是否有效
-        if (!QfModelUtils.isBpmnXmlValid(po.getBpmnXml())) {
+        if (!QfModelTools.isBpmnXmlValid(po.getBpmnXml())) {
             throw new BizException("部署失败,BPMN模型无效或设计错误。");
         }
 

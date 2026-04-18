@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface QfModelDeployRcdRepository extends JpaRepository<QfModelDeployRcdPo, Long> {
 
@@ -20,4 +22,13 @@ public interface QfModelDeployRcdRepository extends JpaRepository<QfModelDeployR
             ORDER BY u.createTime DESC
             """ )
     Page<QfModelDeployRcdPo> getQfModelDeployRcdList(@Param("po") QfModelDeployRcdPo po, Pageable pageable);
+
+    @Query("""
+            SELECT u FROM QfModelDeployRcdPo u
+            WHERE u.code = :code
+            AND u.status = 0
+            AND u.engProcessDefId IS NOT NULL
+            ORDER BY u.version DESC
+            """)
+    List<QfModelDeployRcdPo> findLatestActiveByCode(@Param("code") String code, Pageable pageable);
 }

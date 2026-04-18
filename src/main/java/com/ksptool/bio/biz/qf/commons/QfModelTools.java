@@ -26,7 +26,7 @@ import java.util.List;
  * @author KspTool
  * @createTime 2026/4/16 10:00
  */
-public class QfModelUtils {
+public class QfModelTools {
 
     private static final BpmnXMLConverter BPMN_XML_CONVERTER = new BpmnXMLConverter();
     private static final ProcessValidator PROCESS_VALIDATOR = new ProcessValidatorFactory().createDefaultProcessValidator();
@@ -66,6 +66,7 @@ public class QfModelUtils {
 
     /**
      * 校验BPMN XML是否有效，严格校验，这同时也会校验模型有效性和连线是否正确
+     *
      * @param bpmnXml BPMN XML
      * @return 是否有效
      */
