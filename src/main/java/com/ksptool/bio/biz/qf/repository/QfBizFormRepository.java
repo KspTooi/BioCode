@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface BizFormRepository extends JpaRepository<QfBizFormPo, Long> {
+public interface QfBizFormRepository extends JpaRepository<QfBizFormPo, Long> {
 
     @Query("""
             SELECT u FROM QfBizFormPo u

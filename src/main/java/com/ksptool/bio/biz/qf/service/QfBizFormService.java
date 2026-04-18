@@ -9,7 +9,7 @@ import com.ksptool.bio.biz.qf.model.qfbizform.dto.EditQfBizFormDto;
 import com.ksptool.bio.biz.qf.model.qfbizform.dto.GetQfBizFormListDto;
 import com.ksptool.bio.biz.qf.model.qfbizform.vo.GetQfBizFormDetailsVo;
 import com.ksptool.bio.biz.qf.model.qfbizform.vo.GetQfBizFormListVo;
-import com.ksptool.bio.biz.qf.repository.BizFormRepository;
+import com.ksptool.bio.biz.qf.repository.QfBizFormRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -22,10 +22,10 @@ import static com.ksptool.entities.Entities.assign;
 
 
 @Service
-public class BizFormService {
+public class QfBizFormService {
 
     @Autowired
-    private BizFormRepository repository;
+    private QfBizFormRepository repository;
 
     /**
      * 查询业务表单列表
