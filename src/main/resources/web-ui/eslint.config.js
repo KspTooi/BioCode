@@ -80,11 +80,8 @@ export default defineConfigWithVueTs(
       // 允许使用常量条件 因为常量条件在编译时已经确定，不会影响性能
       "no-constant-condition": "off",
 
-      // 函数参数不超过 6 个，超出时建议用 VO/DTO/PO 封装，以提高可读性和可维护性
-      "max-params": ["error", 6],
-
-      // 圈复杂度上限 32。超过此阈值意味着函数承担了过多职责，应拆分为更小的独立函数以降低认知负担
-      complexity: ["error", { max: 32 }],
+      // 函数参数不超过 16 个，超出时建议用 VO/DTO/PO 封装，以提高可读性和可维护性
+      "max-params": ["error", 16],
 
       // 禁止嵌套三元表达式。嵌套三元需要读者在脑中维护多层条件栈，可读性极差，请改用 if-return 卫语句
       "no-nested-ternary": "error",

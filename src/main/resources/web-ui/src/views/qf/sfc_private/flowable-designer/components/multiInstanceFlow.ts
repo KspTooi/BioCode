@@ -5,16 +5,31 @@ import GroupApi, { type GetGroupListVo } from "@/views/auth/api/GroupApi";
 
 export type BpmnEl = { businessObject?: Record<string, unknown> };
 
-/** 与开始事件「发起人变量」一致，默认 initiator */
+//与开始事件「发起人变量」一致，默认 initiator
 export const INITIATOR_EXPR = "${initiator}";
+
+//用户集合变量
 export const MI_USER_COLLECTION = "${assigneeList}";
+
+//用户组集合变量
 export const MI_GROUP_COLLECTION = "${groupList}";
+
+//用户元素
 export const MI_USER_ELEM = "assignee";
+
+//用户组元素
 export const MI_GROUP_ELEM = "group";
+
+//任务办理人表达式
 export const TASK_ASSIGNEE_EXPR = "${assignee}";
 
+//办理人类型
 export type AssigneeKind = "user" | "dept" | "group" | "initiator";
+
+//审批方式
 export type ApprovalMultiMode = "none" | "countersign" | "orSign" | "custom";
+
+//循环类型
 export type CustomLoopMode = "none" | "parallel" | "sequential";
 
 export type PickUser = { id: string; nickname?: string; username?: string };
