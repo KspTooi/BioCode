@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
 @EntityListeners(AuditingEntityListener.class)
 @SQLDelete(sql = "UPDATE qf_biz_form SET delete_time = NOW() WHERE id = ?")
 @SQLRestriction("delete_time IS NULL")
-public class BizFormPo {
+public class QfBizFormPo {
 
     @Id
     @SnowflakeIdGenerated

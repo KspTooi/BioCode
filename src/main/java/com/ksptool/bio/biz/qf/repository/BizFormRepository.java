@@ -1,6 +1,6 @@
 package com.ksptool.bio.biz.qf.repository;
 
-import com.ksptool.bio.biz.qf.model.qfbizform.BizFormPo;
+import com.ksptool.bio.biz.qf.model.qfbizform.QfBizFormPo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,10 +9,10 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface BizFormRepository extends JpaRepository<BizFormPo, Long> {
+public interface BizFormRepository extends JpaRepository<QfBizFormPo, Long> {
 
     @Query("""
-            SELECT u FROM BizFormPo u
+            SELECT u FROM QfBizFormPo u
             WHERE
             (:#{#po.name} IS NULL OR u.name LIKE CONCAT('%', :#{#po.name}, '%'))
             AND (:#{#po.code} IS NULL OR u.code LIKE CONCAT('%', :#{#po.code}, '%'))
@@ -21,5 +21,5 @@ public interface BizFormRepository extends JpaRepository<BizFormPo, Long> {
             AND (:#{#po.seq} IS NULL OR u.seq = :#{#po.seq} )
             ORDER BY u.createTime DESC
             """)
-    Page<BizFormPo> getBizFormList(@Param("po") BizFormPo po, Pageable pageable);
+    Page<QfBizFormPo> getBizFormList(@Param("po") QfBizFormPo po, Pageable pageable);
 }

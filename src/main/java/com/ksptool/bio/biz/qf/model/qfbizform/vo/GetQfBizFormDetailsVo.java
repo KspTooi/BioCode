@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class GetBizFormListVo {
+public class GetQfBizFormDetailsVo {
 
     @Schema(description = "主键ID")
     private Long id;
@@ -20,8 +20,17 @@ public class GetBizFormListVo {
     @Schema(description = "表单类型 0:手搓表单 1:动态表单")
     private Integer formType;
 
+    @Schema(description = "表单图标")
+    private String icon;
+
     @Schema(description = "物理表名")
     private String tableName;
+
+    @Schema(description = "PC端路由名")
+    private String routePc;
+
+    @Schema(description = "移动端路由名")
+    private String routeMobile;
 
     @Schema(description = "状态 0:正常 1:停用")
     private Integer status;

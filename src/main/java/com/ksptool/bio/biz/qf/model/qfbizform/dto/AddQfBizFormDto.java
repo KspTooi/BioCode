@@ -5,13 +5,12 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.validator.constraints.Range;
-
 import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.Range;
 
 @Getter
 @Setter
-public class AddBizFormDto {
+public class AddQfBizFormDto {
 
     @NotBlank(message = "业务名称不能为空")
     @Length(max = 40, message = "业务名称最多40个字符")

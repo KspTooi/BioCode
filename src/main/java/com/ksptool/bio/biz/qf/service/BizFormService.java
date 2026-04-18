@@ -3,12 +3,12 @@ package com.ksptool.bio.biz.qf.service;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
-import com.ksptool.bio.biz.qf.model.qfbizform.BizFormPo;
-import com.ksptool.bio.biz.qf.model.qfbizform.dto.AddBizFormDto;
-import com.ksptool.bio.biz.qf.model.qfbizform.dto.EditBizFormDto;
-import com.ksptool.bio.biz.qf.model.qfbizform.dto.GetBizFormListDto;
-import com.ksptool.bio.biz.qf.model.qfbizform.vo.GetBizFormDetailsVo;
-import com.ksptool.bio.biz.qf.model.qfbizform.vo.GetBizFormListVo;
+import com.ksptool.bio.biz.qf.model.qfbizform.QfBizFormPo;
+import com.ksptool.bio.biz.qf.model.qfbizform.dto.AddQfBizFormDto;
+import com.ksptool.bio.biz.qf.model.qfbizform.dto.EditQfBizFormDto;
+import com.ksptool.bio.biz.qf.model.qfbizform.dto.GetQfBizFormListDto;
+import com.ksptool.bio.biz.qf.model.qfbizform.vo.GetQfBizFormDetailsVo;
+import com.ksptool.bio.biz.qf.model.qfbizform.vo.GetQfBizFormListVo;
 import com.ksptool.bio.biz.qf.repository.BizFormRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -33,16 +33,16 @@ public class BizFormService {
      * @param dto 查询条件
      * @return 查询结果
      */
-    public PageResult<GetBizFormListVo> getBizFormList(GetBizFormListDto dto) {
-        BizFormPo query = new BizFormPo();
+    public PageResult<GetQfBizFormListVo> getBizFormList(GetQfBizFormListDto dto) {
+        QfBizFormPo query = new QfBizFormPo();
         assign(dto, query);
 
-        Page<BizFormPo> page = repository.getBizFormList(query, dto.pageRequest());
+        Page<QfBizFormPo> page = repository.getBizFormList(query, dto.pageRequest());
         if (page.isEmpty()) {
             return PageResult.successWithEmpty();
         }
 
-        List<GetBizFormListVo> vos = as(page.getContent(), GetBizFormListVo.class);
+        List<GetQfBizFormListVo> vos = as(page.getContent(), GetQfBizFormListVo.class);
         return PageResult.success(vos, (int) page.getTotalElements());
     }
 
@@ -52,8 +52,8 @@ public class BizFormService {
      * @param dto 新增条件
      */
     @Transactional(rollbackFor = Exception.class)
-    public void addBizForm(AddBizFormDto dto) {
-        BizFormPo insertPo = as(dto, BizFormPo.class);
+    public void addBizForm(AddQfBizFormDto dto) {
+        QfBizFormPo insertPo = as(dto, QfBizFormPo.class);
         repository.save(insertPo);
     }
 
@@ -64,8 +64,8 @@ public class BizFormService {
      * @throws BizException 业务异常
      */
     @Transactional(rollbackFor = Exception.class)
-    public void editBizForm(EditBizFormDto dto) throws BizException {
-        BizFormPo updatePo = repository.findById(dto.getId())
+    public void editBizForm(EditQfBizFormDto dto) throws BizException {
+        QfBizFormPo updatePo = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("更新失败,数据不存在或无权限访问."));
 
         assign(dto, updatePo);
@@ -79,10 +79,10 @@ public class BizFormService {
      * @return 查询结果
      * @throws BizException 业务异常
      */
-    public GetBizFormDetailsVo getBizFormDetails(CommonIdDto dto) throws BizException {
-        BizFormPo po = repository.findById(dto.getId())
+    public GetQfBizFormDetailsVo getBizFormDetails(CommonIdDto dto) throws BizException {
+        QfBizFormPo po = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("查询详情失败,数据不存在或无权限访问."));
-        return as(po, GetBizFormDetailsVo.class);
+        return as(po, GetQfBizFormDetailsVo.class);
     }
 
     /**
