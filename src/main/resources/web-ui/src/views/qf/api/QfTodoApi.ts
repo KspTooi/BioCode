@@ -46,6 +46,15 @@ export interface EditQfTodoDto {
   id: string; // 主键ID
 }
 
+/**
+ * 审批待办事项Dto
+ */
+export interface ApproveQfTodoDto {
+  id: string; // 主键ID
+  action: number; // 操作 0:同意 1:驳回
+  comment: string; // 审批意见
+}
+
 export default {
   /**
    * 获取待办事项列表
@@ -81,6 +90,17 @@ export default {
    */
   removeQfTodo: async (dto: CommonIdDto): Promise<string> => {
     const result = await Http.postEntity<Result<string>>("/qfTodo/removeQfTodo", dto);
+    if (result.code === 0) {
+      return result.message;
+    }
+    throw new Error(result.message);
+  },
+
+  /**
+   * 审批待办事项
+   */
+  approveQfTodo: async (dto: ApproveQfTodoDto): Promise<string> => {
+    const result = await Http.postEntity<Result<string>>("/qfTodo/approveQfTodo", dto);
     if (result.code === 0) {
       return result.message;
     }
