@@ -2,7 +2,10 @@ package com.ksptool.bio.biz.qf.commons.config;
 
 import com.ksptool.bio.biz.qf.commons.QfSnowflakeIdGenerator;
 import com.ksptool.bio.biz.qf.commons.listener.QfMiRenameParseHandler;
+import com.ksptool.bio.biz.qf.commons.listener.QfProcFinishedListener;
+import com.ksptool.bio.biz.qf.commons.listener.QfTaskCancelledListener;
 import com.ksptool.bio.biz.qf.commons.listener.QfTaskCreatedListener;
+import com.ksptool.bio.biz.qf.commons.listener.QfTaskFinishedListener;
 import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
 import org.flowable.common.engine.api.delegate.event.FlowableEventListener;
 import org.flowable.spring.SpringProcessEngineConfiguration;
@@ -39,34 +42,45 @@ public class QfFlowableConfig implements EngineConfigurationConfigurer<SpringPro
     @Autowired
     private QfTaskCreatedListener qfTaskCreatedListener;
 
+    @Autowired
+    private QfTaskFinishedListener qfTaskFinishedListener;
+
+    @Autowired
+    private QfTaskCancelledListener qfTaskCancelledListener;
+
+    @Autowired
+    private QfProcFinishedListener qfProcFinishedListener;
+
     @Override
     public void configure(SpringProcessEngineConfiguration cfg) {
 
-        //先创建一个空的Map，用来存放事件类型和监听器列表
         var typedListeners = new HashMap<String, List<FlowableEventListener>>();
-
-        //再创建一个空的List，用来存放监听器
-        var listeners = new ArrayList<FlowableEventListener>();
-
-        //获取引擎里面现有的TASK_CREATED监听器
         var existTypes = cfg.getTypedEventListeners();
 
-        if (existTypes != null) {
+        //任务创建监听器
+        typedListeners.put(
+                FlowableEngineEventType.TASK_CREATED.name(),
+                mergeListeners(existTypes, FlowableEngineEventType.TASK_CREATED, qfTaskCreatedListener)
+        );
 
-            var existCreatedListeners = existTypes.get(FlowableEngineEventType.TASK_CREATED.name());
+        //任务完成监听器
+        typedListeners.put(
+                FlowableEngineEventType.TASK_COMPLETED.name(),
+                mergeListeners(existTypes, FlowableEngineEventType.TASK_COMPLETED, qfTaskFinishedListener)
+        );
 
-            //如果引擎里面已有TASK_CREATED监听器，则添加到列表中
-            if (existCreatedListeners != null) {
-                listeners.addAll(existCreatedListeners);
-            }
+        //任务取消监听器
+        typedListeners.put(
+                FlowableEngineEventType.ACTIVITY_CANCELLED.name(),
+                mergeListeners(existTypes, FlowableEngineEventType.ACTIVITY_CANCELLED, qfTaskCancelledListener)
+        );
 
-        }
+        //流程结束监听器
+        typedListeners.put(
+                FlowableEngineEventType.PROCESS_COMPLETED.name(),
+                mergeListeners(existTypes, FlowableEngineEventType.PROCESS_COMPLETED, qfProcFinishedListener)
+        );
 
-        //将注入的监听器添加到列表中
-        listeners.add(qfTaskCreatedListener);
-
-        //将新的列表放回 Map，并更新引擎配置
-        typedListeners.put(FlowableEngineEventType.TASK_CREATED.name(), listeners);
         cfg.setTypedEventListeners(typedListeners);
 
         //注册多实例变量重命名处理器，在部署期将 ${assigneeList}/${groupList} 改写为 ${qfMi_<taskId>}
@@ -79,5 +93,26 @@ public class QfFlowableConfig implements EngineConfigurationConfigurer<SpringPro
 
         //注册雪花算法ID生成器
         cfg.setIdGenerator(new QfSnowflakeIdGenerator());
+    }
+
+    /**
+     * 合并引擎已有监听器与新监听器，避免覆盖引擎内置监听
+     */
+    private List<FlowableEventListener> mergeListeners(
+            java.util.Map<String, List<FlowableEventListener>> existTypes,
+            FlowableEngineEventType type,
+            FlowableEventListener newListener) {
+
+        var list = new ArrayList<FlowableEventListener>();
+
+        if (existTypes != null) {
+            var existing = existTypes.get(type.name());
+            if (existing != null) {
+                list.addAll(existing);
+            }
+        }
+
+        list.add(newListener);
+        return list;
     }
 }

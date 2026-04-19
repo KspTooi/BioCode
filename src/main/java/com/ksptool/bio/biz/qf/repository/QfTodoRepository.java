@@ -63,6 +63,16 @@ public interface QfTodoRepository extends JpaRepository<QfTodoPo, Long> {
                               Pageable pageable);
 
     /**
+     * 按引擎任务ID查询待办（通常只有一条）
+     */
+    QfTodoPo findByEngTaskId(String engTaskId);
+
+    /**
+     * 按引擎流程实例ID + 状态查询待办列表（用于流程结束时批量作废剩余待办）
+     */
+    List<QfTodoPo> findAllByEngProcIdAndStatus(String engProcId, Integer status);
+
+    /**
      * 检查还有多少未完成的待办在用这个表单
      *
      * @param bizFormId 业务表单ID
