@@ -168,6 +168,37 @@ function clearLoop(diagramEl: BpmnEl, bo: Record<string, unknown>, modeling: Mod
   modeling.updateModdleProperties(diagramEl, bo, { loopCharacteristics: undefined });
 }
 
+/**
+ * 确保顶层 Process 下所有 StartEvent 都具有 flowable:initiator="initiator"。
+ * 当审批人类型选为"发起人"时调用，避免 UserTask 使用 ${initiator} 但 StartEvent 未声明导致运行时报错。
+ */
+function ensureStartEventInitiator(modeler: { get: (n: string) => unknown }, modeling: ModelingLike): void {
+  const registry = modeler.get("elementRegistry") as {
+    getAll: () => Array<{ type: string; businessObject: Record<string, unknown> }>;
+  } | null;
+  if (!registry?.getAll) {
+    return;
+  }
+  const list = registry.getAll();
+  for (const el of list) {
+    if (el.type !== "bpmn:StartEvent") {
+      continue;
+    }
+    const bo = el.businessObject;
+    if (!bo) {
+      continue;
+    }
+    const parent = bo.$parent as Record<string, unknown> | undefined;
+    if (parent?.$type !== "bpmn:Process") {
+      continue;
+    }
+    if (bo.initiator === "initiator") {
+      continue;
+    }
+    modeling.updateProperties(el, { initiator: "initiator" });
+  }
+}
+
 const CLEAR_ASSIGNEE_META = {
   assigneeKind: undefined,
   candidateUserNames: undefined,
@@ -603,6 +634,7 @@ export default {
       const moddle = m.get("moddle") as ModdleLike;
 
       if (assigneeKind.value === "initiator") {
+        ensureStartEventInitiator(m, modeling);
         modeling.updateProperties(diagramEl, {
           assignee: INITIATOR_EXPR,
           candidateUsers: undefined,

@@ -118,6 +118,7 @@ public class QfProcService {
         var p = new HashMap<String, Object>();
 
         //准备发起方数据
+        p.put("initiator", userId.toString());
         p.put(QfVarsProc.ROOT_ID + "", rootId);
         p.put(QfVarsProc.DEPT_ID + "", deptId);
         p.put(QfVarsProc.INITIATOR_ID + "", userId);
