@@ -51,10 +51,10 @@ public class QfModelDeployRcdPo {
     @Column(name = "version", nullable = false, comment = "模型版本号")
     private Integer version;
 
-    @Column(name = "eng_deployment_id", length = 50, comment = "引擎部署ID(部署失败为NULL)")
+    @Column(name = "eng_deployment_id", length = 200, comment = "引擎部署ID(部署失败为NULL)")
     private String engDeploymentId;
 
-    @Column(name = "eng_process_def_id", length = 50, comment = "引擎流程ID(部署失败为NULL)")
+    @Column(name = "eng_process_def_id", length = 200, comment = "引擎流程ID(部署失败为NULL)")
     private String engProcessDefId;
 
     @Column(name = "eng_deploy_result", nullable = false, length = 2000, comment = "引擎返回的部署结果")

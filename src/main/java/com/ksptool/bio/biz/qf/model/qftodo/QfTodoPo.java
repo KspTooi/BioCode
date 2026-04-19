@@ -32,10 +32,10 @@ public class QfTodoPo {
     @Column(name = "dept_id", nullable = false, comment = "部门ID")
     private Long deptId;
 
-    @Column(name = "eng_task_id", nullable = false, length = 50, comment = "引擎任务ID")
+    @Column(name = "eng_task_id", nullable = false, length = 200, comment = "引擎任务ID")
     private String engTaskId;
 
-    @Column(name = "eng_proc_id", nullable = false, length = 50, comment = "引擎流程ID")
+    @Column(name = "eng_proc_id", nullable = false, length = 200, comment = "引擎流程ID")
     private String engProcId;
 
     @Column(name = "biz_form_id", nullable = false, comment = "业务表单ID")
