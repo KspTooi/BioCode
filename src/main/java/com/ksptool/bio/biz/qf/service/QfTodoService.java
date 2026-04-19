@@ -12,6 +12,7 @@ import com.ksptool.bio.biz.qf.model.qftodo.dto.GetQfTodoListDto;
 import com.ksptool.bio.biz.qf.model.qftodo.vo.GetQfTodoDetailsVo;
 import com.ksptool.bio.biz.qf.model.qftodo.vo.GetQfTodoListVo;
 import com.ksptool.bio.biz.qf.repository.QfTodoRepository;
+import jakarta.persistence.Tuple;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.engine.IdentityService;
 import org.flowable.engine.TaskService;
@@ -66,7 +67,7 @@ public class QfTodoService {
         QfTodoPo query = new QfTodoPo();
         assign(dto, query);
 
-        Page<QfTodoPo> page = repository.getQfTodoList(query, dto.pageRequest());
+        Page<Tuple> page = repository.getQfTodoList(dto, dto.pageRequest());
         if (page.isEmpty()) {
             return PageResult.successWithEmpty();
         }
