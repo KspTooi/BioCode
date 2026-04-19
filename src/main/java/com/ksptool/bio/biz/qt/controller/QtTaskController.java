@@ -25,7 +25,13 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.List;
 
-
+/**
+ * 任务调度
+ * 
+ * @author KspTool(ksptool@outlook.com)
+ * @since 2026-02-10
+ * @license Apache License 2.0
+ */
 @PrintLog
 @RestController
 @RequestMapping("/qtTask")

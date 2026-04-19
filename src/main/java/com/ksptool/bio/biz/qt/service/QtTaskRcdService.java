@@ -21,7 +21,13 @@ import java.util.List;
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
 
-
+/**
+ * QF任务调度日志服务
+ * 
+ * @author KspTool(ksptool@outlook.com)
+ * @since 2026-02-10
+ * @license Apache License 2.0
+ */
 @Service
 public class QtTaskRcdService {
 

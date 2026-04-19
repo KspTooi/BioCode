@@ -13,6 +13,13 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * QF任务注册表
+ * 
+ * @author KspTool(ksptool@outlook.com)
+ * @since 2026-02-10
+ * @license Apache License 2.0
+ */
 @Slf4j
 @Component
 public class QuickTaskRegistry implements ApplicationListener<ApplicationReadyEvent> {

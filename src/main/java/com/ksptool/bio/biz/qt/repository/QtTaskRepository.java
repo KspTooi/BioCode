@@ -11,6 +11,13 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * QF任务Repository
+ * 
+ * @author KspTool(ksptool@outlook.com)
+ * @since 2026-02-10
+ * @license Apache License 2.0
+ */
 @Repository
 public interface QtTaskRepository extends JpaRepository<QtTaskPo, Long> {
 

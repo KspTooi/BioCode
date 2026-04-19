@@ -25,6 +25,13 @@ import org.springframework.stereotype.Component;
 import tools.jackson.databind.JavaType;
 import tools.jackson.databind.ObjectMapper;
 
+/**
+ * QF本地任务Bean执行器
+ * 
+ * @author KspTool(ksptool@outlook.com)
+ * @since 2026-02-10
+ * @license Apache License 2.0
+ */
 @Slf4j
 @Component
 public class LocalBeanExecutionJob extends QuartzJobBean {
