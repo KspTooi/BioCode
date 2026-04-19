@@ -25,6 +25,7 @@ public interface QfBizFormRepository extends JpaRepository<QfBizFormPo, Long> {
 
     /**
      * 查询最新可用的业务表单
+     *
      * @param code 业务表单编码
      * @return 业务表单
      */
@@ -36,5 +37,5 @@ public interface QfBizFormRepository extends JpaRepository<QfBizFormPo, Long> {
             LIMIT 1
             """)
     QfBizFormPo getActiveByCode(@Param("code") String code);
-    
+
 }
