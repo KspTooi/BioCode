@@ -7,7 +7,7 @@ import com.ksptool.bio.biz.qf.model.qfmodeldeployrcd.dto.GetQfModelDeployRcdList
 import com.ksptool.bio.biz.qf.model.qfmodeldeployrcd.vo.GetQfModelDeployRcdDetailsVo;
 import com.ksptool.bio.biz.qf.model.qfmodeldeployrcd.vo.GetQfModelDeployRcdListVo;
 import com.ksptool.bio.biz.qf.service.QfModelDeployRcdService;
-import com.ksptool.bio.biz.qf.service.QfProcManager;
+import com.ksptool.bio.biz.qf.service.QfProcService;
 import com.ksptool.bio.commons.annotation.PrintLog;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,7 +31,7 @@ public class QfModelDeployRcdController {
     private QfModelDeployRcdService qfModelDeployRcdService;
 
     @Autowired
-    private QfProcManager qfProcManager;
+    private QfProcService qfProcService;
 
     @PreAuthorize("@auth.hasCode('qf:model:deploy:view')")
     @PostMapping("/getQfModelDeployRcdList")

@@ -18,5 +18,4 @@ public class LaunchQfProcessDto {
     @NotNull(message = "业务数据ID不能为空")
     private Long dataId;
 
-
 }
