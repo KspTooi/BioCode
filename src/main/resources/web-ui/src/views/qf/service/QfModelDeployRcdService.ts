@@ -4,10 +4,13 @@ import type {
   GetQfModelDeployRcdListDto,
   GetQfModelDeployRcdListVo,
   GetQfModelDeployRcdDetailsVo,
+  LaunchQfProcessDto,
 } from "@/views/qf/api/QfModelDeployRcdApi.ts";
 import QfModelDeployRcdApi from "@/views/qf/api/QfModelDeployRcdApi.ts";
 import { Result } from "@/commons/model/Result";
 import { ElMessage, ElMessageBox } from "element-plus";
+import type { GetQfBizFormListVo } from "@/views/qf/api/QfBizFormApi";
+import QfBizFormApi from "@/views/qf/api/QfBizFormApi";
 
 /**
  * 模态框模式类型
@@ -230,6 +233,109 @@ export default {
       openModal,
       resetModal,
       submitModal,
+    };
+  },
+
+  /**
+   * 发起流程模态框管理
+   */
+  useLaunchModal(modalFormRef: Ref<FormInstance | undefined>, reloadCallback: () => void) {
+    const launchVisible = ref(false);
+    const launchLoading = ref(false);
+
+    // 当前要发起流程的行数据（用于回显模型编码）
+    const launchRow = ref<GetQfModelDeployRcdListVo | null>(null);
+
+    //流程业务表单选择数据
+    const launchBizFormList = ref<GetQfBizFormListVo[]>([]);
+
+    const launchForm = reactive<LaunchQfProcessDto>({
+      code: "",
+      bizFormCode: "",
+      dataId: null,
+    });
+
+    const launchRules: FormRules = {
+      code: [{ required: true, message: "模型编码不能为空", trigger: "blur" }],
+      bizFormCode: [{ required: true, message: "业务表单不能为空", trigger: "blur" }],
+      dataId: [{ required: true, message: "业务数据ID不能为空", trigger: "blur" }],
+    };
+
+    /**
+     * 打开发起流程模态框
+     */
+    const openLaunchModal = async (row: GetQfModelDeployRcdListVo): Promise<void> => {
+      launchRow.value = row;
+      launchForm.code = row.code;
+      launchForm.bizFormCode = "";
+      launchForm.dataId = null;
+      launchVisible.value = true;
+
+      //获取流程业务表单选择数据
+      const result = await QfBizFormApi.getQfBizFormList({
+        pageNum: 1,
+        pageSize: 50000,
+        name: null,
+        code: null,
+        status: 0,
+      });
+
+      if (Result.isSuccess(result)) {
+        launchBizFormList.value = result.data;
+      }
+    };
+
+    /**
+     * 关闭并重置模态框
+     */
+    const resetLaunchModal = (): void => {
+      if (modalFormRef.value) {
+        modalFormRef.value.resetFields();
+      }
+      launchForm.code = "";
+      launchForm.bizFormCode = "";
+      launchForm.dataId = null;
+      launchRow.value = null;
+    };
+
+    /**
+     * 提交发起流程
+     */
+    const submitLaunchModal = async (): Promise<void> => {
+      if (!modalFormRef.value) {
+        return;
+      }
+
+      try {
+        await modalFormRef.value.validate();
+      } catch {
+        return;
+      }
+
+      launchLoading.value = true;
+
+      try {
+        const msg = await QfModelDeployRcdApi.launchQfProcess(launchForm);
+        ElMessage.success(msg || "流程已发起");
+        launchVisible.value = false;
+        reloadCallback();
+      } catch (error: any) {
+        ElMessage.error(error.message);
+      }
+
+      launchLoading.value = false;
+    };
+
+    return {
+      launchVisible,
+      launchLoading,
+      launchRow,
+      launchForm,
+      launchRules,
+      launchBizFormList,
+      openLaunchModal,
+      resetLaunchModal,
+      submitLaunchModal,
     };
   },
 };

@@ -9,10 +9,11 @@ import com.ksptool.bio.biz.qf.service.QfMemberService;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.common.engine.api.delegate.event.FlowableEngineEntityEvent;
 import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
+import org.flowable.engine.TaskService;
 import org.flowable.engine.delegate.event.AbstractFlowableEngineEventListener;
 import org.flowable.task.api.Task;
-import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -31,11 +32,17 @@ import static com.ksptool.bio.biz.qf.commons.QfProcTools.trunc;
 @Component
 public class QfTaskCreatedListener extends AbstractFlowableEngineEventListener {
 
+    @Lazy
     @Autowired
     private QfTodoRepository qfTodoRepository;
 
+    @Lazy
     @Autowired
     private QfMemberService qms;
+
+    @Lazy
+    @Autowired
+    private TaskService taskService;
 
     public QfTaskCreatedListener() {
         // 仅订阅 TASK_CREATED, 其他事件无需回调
@@ -54,11 +61,10 @@ public class QfTaskCreatedListener extends AbstractFlowableEngineEventListener {
     protected void taskCreated(FlowableEngineEntityEvent event) {
 
         //获取任务
-        TaskEntity taskEntity = (TaskEntity) event.getEntity();
-        Task task = taskEntity;
+        Task task = (Task) event.getEntity();
 
         //获取任务变量Map
-        Map<String, Object> vars = taskEntity.getVariables();
+        Map<String, Object> vars = taskService.getVariables(task.getId());
 
         //获取办理人类型
         var memberKind = qms.getMemberKind(task);

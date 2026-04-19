@@ -72,6 +72,15 @@
               :disabled="scope.row.status !== 2"
               >激活</el-button
             >
+            <el-button
+              link
+              type="success"
+              size="small"
+              :icon="VideoPlayIcon"
+              @click="openLaunchModal(scope.row)"
+              :disabled="scope.row.status !== 0"
+              >发起</el-button
+            >
             <el-button link type="danger" size="small" @click="removeList(scope.row)" :icon="DeleteIcon"> 删除 </el-button>
           </template>
         </el-table-column>
@@ -130,12 +139,54 @@
         </div>
       </template>
     </el-dialog>
+
+    <!-- 发起流程模态框 -->
+    <el-dialog
+      v-model="launchVisible"
+      title="发起审批流程"
+      width="500px"
+      :close-on-click-modal="false"
+      @close="resetLaunchModal"
+    >
+      <el-form
+        v-if="launchVisible"
+        ref="launchFormRef"
+        :model="launchForm"
+        :rules="launchRules"
+        label-width="110px"
+        :validate-on-rule-change="false"
+      >
+        <el-form-item label="模型编码" prop="code">
+          <el-input v-model="launchForm.code" disabled />
+        </el-form-item>
+        <el-form-item label="业务表单编码" prop="bizFormCode">
+          <el-select v-model="launchForm.bizFormCode" placeholder="选择业务表单" clearable>
+            <el-option v-for="item in launchBizFormList" :key="item.id" :label="item.name" :value="item.code" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="业务数据ID" prop="dataId">
+          <el-input-number
+            v-model="launchForm.dataId"
+            :min="1"
+            :controls="false"
+            style="width: 100%"
+            placeholder="输入业务数据ID"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="launchVisible = false">取消</el-button>
+          <el-button type="primary" @click="submitLaunchModal" :loading="launchLoading">发起</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </StdListContainer>
 </template>
 
 <script setup lang="ts">
 import { ref, markRaw } from "vue";
-import { Edit, Delete } from "@element-plus/icons-vue";
+import { Edit, Delete, VideoPlay } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
 import QfModelDeployRcdService from "@/views/qf/service/QfModelDeployRcdService.ts";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
@@ -143,9 +194,9 @@ import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
 import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";
 import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
 
-// 使用markRaw包装图标组件，防止被Vue响应式系统处理
 const EditIcon = markRaw(Edit);
 const DeleteIcon = markRaw(Delete);
+const VideoPlayIcon = markRaw(VideoPlay);
 
 // 列表管理打包
 const {
@@ -160,12 +211,23 @@ const {
   activateQfModelDeployRcd,
 } = QfModelDeployRcdService.useQfModelDeployRcdList();
 
-// 模态框表单引用
+// 新增/编辑模态框打包
 const modalFormRef = ref<FormInstance>();
-
-// 模态框打包
 const { modalVisible, modalLoading, modalMode, modalForm, modalRules, openModal, resetModal, submitModal } =
   QfModelDeployRcdService.useQfModelDeployRcdModal(modalFormRef, loadList);
+
+// 发起流程模态框打包
+const launchFormRef = ref<FormInstance>();
+const {
+  launchVisible,
+  launchLoading,
+  launchForm,
+  launchRules,
+  launchBizFormList,
+  openLaunchModal,
+  resetLaunchModal,
+  submitLaunchModal,
+} = QfModelDeployRcdService.useLaunchModal(launchFormRef, loadList);
 </script>
 
 <style scoped></style>
