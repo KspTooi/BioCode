@@ -12,6 +12,7 @@ import java.util.Map;
  *
  * @author KspTool(ksptool@outlook.com)
  * @since 2026-04-16
+ * @license Apache License 2.0
  */
 public class QfProcTools {
 

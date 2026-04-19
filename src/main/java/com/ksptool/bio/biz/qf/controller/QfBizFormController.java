@@ -21,6 +21,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * QF-业务表单
+ * 
+ * @author WangQingHua(603484930@qq.com)
+ * @author KspTool(ksptool@outlook.com)
+ * @since 2026-04-16
+ * @license Apache License 2.0
+ */
 @PrintLog
 @RestController
 @RequestMapping("/bizForm")

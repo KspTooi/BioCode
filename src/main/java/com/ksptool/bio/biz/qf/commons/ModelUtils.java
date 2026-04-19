@@ -4,6 +4,7 @@ import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.bpmn.model.*;
 import org.flowable.bpmn.model.Process;
 import org.flowable.common.engine.impl.util.io.StringStreamSource;
+
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -11,10 +12,12 @@ import java.util.*;
  * 流程模型工具类
  * 这是一个旧版的工具类，现在大部分功能已经被QfModelTools取代了，请使用更安全的QfModelTools代替。
  * <p>
+ *
  * @author KspTool(ksptool@outlook.com) 2026-04-16
  * @author KonBAI
- * @createTime 2022/3/26 19:04
+ * @since 2022/3/26 19:04
  */
+@Deprecated(since = "2022-03-26 19:04", forRemoval = true)
 public class ModelUtils {
 
     private static final BpmnXMLConverter bpmnXMLConverter = new BpmnXMLConverter();

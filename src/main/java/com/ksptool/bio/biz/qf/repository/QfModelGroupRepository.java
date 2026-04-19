@@ -8,6 +8,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+/**
+ * 流程模型分组Repository
+ * 
+ * @author KspTool(ksptool@outlook.com)
+ * @since 2026-04-16
+ * @license Apache License 2.0
+ */
 @Repository
 public interface QfModelGroupRepository extends JpaRepository<QfModelGroupPo, Long> {
 

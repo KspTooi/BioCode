@@ -5,6 +5,7 @@ import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.bio.biz.qf.model.qftodo.QfTodoPo;
 import com.ksptool.bio.biz.qf.model.qftodo.dto.AddQfTodoDto;
+import com.ksptool.bio.biz.qf.model.qftodo.dto.ApproveQfTodoDto;
 import com.ksptool.bio.biz.qf.model.qftodo.dto.EditQfTodoDto;
 import com.ksptool.bio.biz.qf.model.qftodo.dto.GetQfTodoListDto;
 import com.ksptool.bio.biz.qf.model.qftodo.vo.GetQfTodoDetailsVo;
@@ -24,8 +25,13 @@ import static com.ksptool.entities.Entities.assign;
 /**
  * 待办事项服务
  * 
- * @author KspTool
+ * @author WangQingHua(603484930@qq.com)
+ * @author Akkarin(1075613357@qq.com)
+ * @author (Ish)Yuumi(1144150092@qq.com)
+ * @author KspTool(ksptool@outlook.com)
+ * 
  * @since 2026-04-17
+ * @license Apache License 2.0
  */
 @Service
 public class QfTodoService {
@@ -106,4 +112,18 @@ public class QfTodoService {
         repository.deleteById(dto.getId());
     }
 
+    /**
+     * 审批待办事项
+     *
+     * @param dto 审批条件
+     * @throws BizException 业务异常
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void approveQfTodo(ApproveQfTodoDto dto) throws BizException {
+        QfTodoPo updatePo = repository.findById(dto.getId())
+                .orElseThrow(() -> new BizException("审批失败,数据不存在或无权限访问."));
+
+        assign(dto, updatePo);
+        repository.save(updatePo);
+    }
 }

@@ -7,9 +7,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
 import java.util.List;
 
+/**
+ * 流程模型部署记录Repository
+ * 
+ * @author KspTool(ksptool@outlook.com)
+ * @since 2026-04-16
+ * @license Apache License 2.0
+ */
 @Repository
 public interface QfModelDeployRcdRepository extends JpaRepository<QfModelDeployRcdPo, Long> {
 

@@ -21,6 +21,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * QF-流程模型分组
+ * 
+ * @author KspTool(ksptool@outlook.com)
+ * @since 2026-04-16
+ * @license Apache License 2.0
+ */
 @PrintLog
 @RestController
 @RequestMapping("/qfModelGroup")

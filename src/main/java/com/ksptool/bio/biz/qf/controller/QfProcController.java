@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author (Ish)Yuumi(1144150092@qq.com)
  * @author KspTool(ksptool@outlook.com)
  * @since 2026-04-17
+ * @license Apache License 2.0
  */
 @PrintLog
 @RestController

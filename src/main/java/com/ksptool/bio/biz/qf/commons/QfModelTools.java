@@ -32,6 +32,7 @@ import java.util.List;
  * @author Akkarin(1075613357@qq.com)
  * @author KspTool(ksptool@outlook.com)
  * @since 2026/4/16 05:12
+ * @license Apache License 2.0
  */
 public class QfModelTools {
 

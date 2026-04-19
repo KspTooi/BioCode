@@ -34,7 +34,8 @@ import static com.ksptool.entities.Entities.assign;
  * 流程模型服务
  * 
  * @author KspTool(ksptool@outlook.com)
- * @since 2026-04-17
+ * @since 2026-04-16
+ * @license Apache License 2.0
  */
 @Service
 public class QfModelService {

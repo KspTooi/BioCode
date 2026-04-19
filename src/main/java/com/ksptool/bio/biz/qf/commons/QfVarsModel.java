@@ -9,6 +9,7 @@ import lombok.Getter;
  *
  * @author KspTool(ksptool@outlook.com)
  * @since 2026-04-17
+ * @license Apache License 2.0
  */
 @Getter
 public enum QfVarsModel {

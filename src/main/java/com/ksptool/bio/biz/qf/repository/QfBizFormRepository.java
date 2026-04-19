@@ -8,6 +8,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+/**
+ * 业务表单Repository
+ * 
+ * @author WangQingHua(603484930@qq.com)
+ * @author KspTool(ksptool@outlook.com)
+ * @since 2026-04-16
+ * @license Apache License 2.0
+ */
 @Repository
 public interface QfBizFormRepository extends JpaRepository<QfBizFormPo, Long> {
 

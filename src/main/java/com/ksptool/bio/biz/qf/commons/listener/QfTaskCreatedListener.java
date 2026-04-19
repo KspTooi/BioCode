@@ -30,6 +30,7 @@ import static com.ksptool.bio.biz.qf.commons.QfProcTools.trunc;
  * 
  * @author Akkarin(1075613357@qq.com)
  * @since 2026-04-16
+ * @license Apache License 2.0
  */
 @Slf4j
 @Component

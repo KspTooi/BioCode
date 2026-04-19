@@ -3,6 +3,7 @@ package com.ksptool.bio.biz.qf.controller;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.assembly.entity.web.Result;
+import com.ksptool.bio.biz.qf.model.qftodo.dto.ApproveQfTodoDto;
 import com.ksptool.bio.biz.qf.model.qftodo.dto.GetQfTodoListDto;
 import com.ksptool.bio.biz.qf.model.qftodo.vo.GetQfTodoDetailsVo;
 import com.ksptool.bio.biz.qf.model.qftodo.vo.GetQfTodoListVo;
@@ -19,6 +20,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * QF-待办事项
+ * 
+ * @author WangQingHua(603484930@qq.com)
+ * @author (Ish)Yuumi(1144150092@qq.com)
+ * @author Akkarin(1075613357@qq.com)
+ * @author KspTool(ksptool@outlook.com)
+ * @since 2026-04-16
+ * @license Apache License 2.0
+ */
 @PrintLog
 @RestController
 @RequestMapping("/qfTodo")
@@ -52,6 +63,14 @@ public class QfTodoController {
     @PostMapping("/removeQfTodo")
     public Result<String> removeQfTodo(@RequestBody @Valid CommonIdDto dto) throws Exception {
         qfTodoService.removeQfTodo(dto);
+        return Result.success("操作成功");
+    }
+
+    @PreAuthorize("@auth.hasCode('qf:todo:approve')")
+    @Operation(summary = "审批待办事项")
+    @PostMapping("/approveQfTodo")
+    public Result<String> approveQfTodo(@RequestBody @Valid ApproveQfTodoDto dto) throws Exception {
+        qfTodoService.approveQfTodo(dto);
         return Result.success("操作成功");
     }
 
