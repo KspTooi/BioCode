@@ -38,22 +38,6 @@ public class QfTodoController {
         return qfTodoService.getQfTodoList(dto);
     }
 
-    @PreAuthorize("@auth.hasCode('qf:todo:add')")
-    @Operation(summary = "新增待办事项")
-    @PostMapping("/addQfTodo")
-    public Result<String> addQfTodo(@RequestBody @Valid AddQfTodoDto dto) throws Exception {
-        qfTodoService.addQfTodo(dto);
-        return Result.success("新增成功");
-    }
-
-    @PreAuthorize("@auth.hasCode('qf:todo:edit')")
-    @Operation(summary = "编辑待办事项")
-    @PostMapping("/editQfTodo")
-    public Result<String> editQfTodo(@RequestBody @Valid EditQfTodoDto dto) throws Exception {
-        qfTodoService.editQfTodo(dto);
-        return Result.success("修改成功");
-    }
-
     @PreAuthorize("@auth.hasCode('qf:todo:view')")
     @Operation(summary = "查询待办事项详情")
     @PostMapping("/getQfTodoDetails")
