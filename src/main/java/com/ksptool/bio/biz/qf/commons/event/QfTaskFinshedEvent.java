@@ -22,4 +22,10 @@ public class QfTaskFinshedEvent {
     //业务数据主键ID
     private Long dataId;
 
+    //当前节点名
+    private String currentNodeName;
+
+    //下一任务节点名
+    private String nextNodeName;
+
 }
