@@ -1,21 +1,24 @@
-package com.ksptool.bio.biz.qfcc.model;
+package com.ksptool.bio.biz.qf.model.qfcc;
 
 import com.ksptool.assembly.entity.exception.AuthException;
+import com.ksptool.bio.biz.auth.service.SessionService;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import java.time.LocalDateTime;
-import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedBy;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import com.ksptool.assembly.entity.exception.AuthException;
-import com.ksptool.bio.biz.auth.service.SessionService;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.LocalDateTime;
+
+/**
+ * 抄送表
+ * 用于记录抄送信息
+ * 
+ * 
+ */
 @Getter
 @Setter
 @Entity
@@ -63,7 +66,7 @@ public class QfCcPo {
     @Column(name = "target_id", nullable = false, comment = "被抄送人ID")
     private Long targetId;
 
-    @Column(name = "is_read", nullable = false, comment = "是否读 0:未读 1:已读")
+    @Column(name = "is_read", nullable = false,columnDefinition = "TINYINT",  comment = "是否读 0:未读 1:已读")
     private Integer isRead;
 
     @Column(name = "read_time", comment = "读取时间")
