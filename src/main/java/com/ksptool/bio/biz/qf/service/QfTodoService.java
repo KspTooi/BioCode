@@ -1,5 +1,6 @@
 package com.ksptool.bio.biz.qf.service;
 
+import com.ksptool.assembly.entity.exception.AuthException;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
@@ -12,6 +13,7 @@ import com.ksptool.bio.biz.qf.model.qftodo.dto.GetQfTodoListDto;
 import com.ksptool.bio.biz.qf.model.qftodo.vo.GetQfTodoDetailsVo;
 import com.ksptool.bio.biz.qf.model.qftodo.vo.GetQfTodoListVo;
 import com.ksptool.bio.biz.qf.repository.QfTodoRepository;
+import com.ksptool.bio.biz.core.common.TupleMapper;
 import jakarta.persistence.Tuple;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.engine.IdentityService;
@@ -63,16 +65,24 @@ public class QfTodoService {
      * @param dto 查询条件
      * @return 查询结果
      */
-    public PageResult<GetQfTodoListVo> getQfTodoList(GetQfTodoListDto dto) {
+    public PageResult<GetQfTodoListVo> getQfTodoList(GetQfTodoListDto dto) throws AuthException {
         QfTodoPo query = new QfTodoPo();
         assign(dto, query);
 
-        Page<Tuple> page = repository.getQfTodoList(dto, dto.pageRequest());
+        var uid = session().getUserId();
+        var gIds = qfMemberService.getMemberGroupIds(uid);
+
+        //如果用户组ID列表为空，则设置为-1 防止Hibernate查询报错
+        if (gIds == null || gIds.isEmpty()) {
+            gIds = List.of(-1L);
+        }
+
+        Page<Tuple> page = repository.getQfTodoList(dto, uid, gIds, dto.pageRequest());
         if (page.isEmpty()) {
             return PageResult.successWithEmpty();
         }
 
-        List<GetQfTodoListVo> vos = as(page.getContent(), GetQfTodoListVo.class);
+        List<GetQfTodoListVo> vos = TupleMapper.tupleAs(page.getContent(), GetQfTodoListVo.class);
         return PageResult.success(vos, (int) page.getTotalElements());
     }
 

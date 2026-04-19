@@ -3,6 +3,9 @@ package com.ksptool.bio.biz.qf.repository;
 import com.ksptool.bio.biz.qf.model.qftodo.QfTodoPo;
 import com.ksptool.bio.biz.qf.model.qftodo.dto.GetQfTodoListDto;
 import jakarta.persistence.Tuple;
+
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,6 +28,15 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface QfTodoRepository extends JpaRepository<QfTodoPo, Long> {
 
+    /**
+     * 查询待办事项列表
+     *
+     * @param dto 查询条件
+     * @param uid 用户ID
+     * @param gIds 用户组ID列表
+     * @param pageable 分页条件
+     * @return 待办事项列表
+     */
     @Query("""
             SELECT
             u.id AS id,
@@ -37,12 +49,19 @@ public interface QfTodoRepository extends JpaRepository<QfTodoPo, Long> {
             FROM QfTodoPo u
             LEFT JOIN QfBizFormPo f ON u.bizFormId = f.id
             WHERE
-            (:#{#dto.nodeName} IS NULL OR u.summary LIKE CONCAT('%', :#{#dto.nodeName}, '%'))
+            (
+                (u.memberType = 0 AND u.memberId = :uid)
+                OR (u.memberType = 1 AND u.memberId IN :gIds)
+            )
+            AND (:#{#dto.nodeName} IS NULL OR u.summary LIKE CONCAT('%', :#{#dto.nodeName}, '%'))
             AND (:#{#dto.bizFormId} IS NULL OR u.bizFormId = :#{#dto.bizFormId})
             AND (:#{#dto.status} IS NULL OR u.status = :#{#dto.status})
             ORDER BY u.createTime DESC
             """)
-    Page<Tuple> getQfTodoList(@Param("dto") GetQfTodoListDto dto, Pageable pageable);
+    Page<Tuple> getQfTodoList(@Param("dto") GetQfTodoListDto dto,
+                              @Param("uid") Long uid,
+                              @Param("gIds") List<Long> gIds,
+                              Pageable pageable);
 
     /**
      * 检查还有多少未完成的待办在用这个表单

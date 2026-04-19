@@ -8,10 +8,9 @@ import type Result from "@/commons/model/Result.ts";
  * 查询待办事项列表Dto
  */
 export interface GetQfTodoListDto extends PageQuery {
-  summary?: string; // 摘要(如：张三提交的 5000 元报销)
-  memberId?: string; // 办理成员ID (用户ID或用户组标识)
-  initiatorId?: string; // 发起人ID
-  createTime?: string; // 任务到达时间
+  nodeName?: string; // 待办名称
+  bizFormId?: string; // 业务表单ID
+  status?: number; // 待办状态 0:待办 1:已办
 }
 
 /**
@@ -20,11 +19,10 @@ export interface GetQfTodoListDto extends PageQuery {
 export interface GetQfTodoListVo {
   id: string; // 主键ID
   nodeName: string; // 当前节点名称 (如: 财务总监审批)
-  summary: string; // 摘要(如：张三提交的 5000 元报销)
-  memberId: string; // 办理成员ID (用户ID或用户组标识)
-  initiatorId: string; // 发起人ID
+  bizFormName: string; // 业务表单名
   initiatorName: string; // 发起人名
-  initiatorTime: string; // 发起时间
+  summary: string; // 摘要(如：张三提交的 5000 元报销)
+  status: number; // 待办状态 0:待办 1:已办
   createTime: string; // 任务到达时间
 }
 
