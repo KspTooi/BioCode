@@ -40,6 +40,28 @@
             <QfdPanelExtensionProperties :modeler="modeler" :element="targetElement" />
           </el-collapse-item>
 
+          <!-- 用户任务：任务配置 -->
+          <el-collapse-item v-if="elementType === 'bpmn:UserTask'" name="task">
+            <template #title>
+              <div class="collapse-title">
+                <el-icon><Select /></el-icon>
+                <span>任务配置</span>
+              </div>
+            </template>
+            <QfdPanelUserTask :modeler="modeler" :element="targetElement" />
+          </el-collapse-item>
+
+          <!-- 用户任务：任务监听器 -->
+          <el-collapse-item v-if="elementType === 'bpmn:UserTask'" name="taskListeners">
+            <template #title>
+              <div class="collapse-title">
+                <el-icon><Flag /></el-icon>
+                <span>任务监听器</span>
+              </div>
+            </template>
+            <QfdPanelTaskListeners :modeler="modeler" :element="targetElement" />
+          </el-collapse-item>
+
           <!-- 用户任务：执行监听器 -->
           <el-collapse-item v-if="elementType === 'bpmn:UserTask'" name="userTaskExecutionListeners">
             <template #title>
@@ -62,6 +84,17 @@
             <QfdPanelExtensionProperties :modeler="modeler" :element="targetElement" />
           </el-collapse-item>
 
+          <!-- 开始事件 -->
+          <el-collapse-item v-if="elementType === 'bpmn:StartEvent'" name="startEvent">
+            <template #title>
+              <div class="collapse-title">
+                <el-icon><VideoPlay /></el-icon>
+                <span>开始事件</span>
+              </div>
+            </template>
+            <QfdPanelStartEvent :modeler="modeler" :element="targetElement" />
+          </el-collapse-item>
+
           <!-- 异步与独占：用户任务 + 其他支持异步的节点 -->
           <el-collapse-item v-if="showAsync" name="async">
             <template #title>
@@ -81,12 +114,15 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, toRef } from "vue";
-import { Bell, CirclePlus, InfoFilled, Timer } from "@element-plus/icons-vue";
+import { Bell, CirclePlus, Flag, InfoFilled, Select, Timer, VideoPlay } from "@element-plus/icons-vue";
 import QfdPanelService from "@/views/qf/sfc_private/flowable-designer/service/QfdPanelService";
 import QfdPanelGeneral from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelGeneral.vue";
 import QfdPanelExecutionListeners from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelExecutionListeners.vue";
 import QfdPanelExtensionProperties from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelExtensionProperties.vue";
 import QfdPanelAsync from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelAsync.vue";
+import QfdPanelUserTask from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelUserTask.vue";
+import QfdPanelTaskListeners from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelTaskListeners.vue";
+import QfdPanelStartEvent from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelStartEvent.vue";
 
 const props = defineProps<{
   modeler: unknown;
