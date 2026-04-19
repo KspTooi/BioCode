@@ -1,5 +1,7 @@
 package com.ksptool.bio.biz.qf.commons.event;
 
+import org.springframework.context.ApplicationEvent;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,7 +13,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class QfProcFinishedEvent {
+public class QfProcFinishedEvent extends ApplicationEvent{
 
     //业务表单ID
     private Long bizFormId;
@@ -21,5 +23,9 @@ public class QfProcFinishedEvent {
     
     //业务数据主键ID
     private Long dataId;
+    
+    public QfProcFinishedEvent(Object source) {
+        super(source);
+    }
 
 }
