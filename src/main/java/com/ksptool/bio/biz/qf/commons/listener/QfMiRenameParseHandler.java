@@ -20,7 +20,9 @@ import org.flowable.engine.impl.bpmn.parser.handler.AbstractBpmnParseHandler;
  * @author WangQingHua(603484930@qq.com)
  * @author (Ish)Yuumi(1144150092@qq.com)
  * @since 2026-04-15
- * @license Apache License 2.0
+ * @license Proprietary
+ * 版权所有 (c) 2026 KspTool及其贡献者保留所有权利。
+ * 未经事先书面许可，严禁任何形式的复制或分发。
  */
 public class QfMiRenameParseHandler extends AbstractBpmnParseHandler<UserTask> {
 
