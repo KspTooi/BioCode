@@ -9,6 +9,7 @@ import java.util.Map;
 
 public class QfProcTools {
 
+
     /**
      * 节点名优先取BPMN里的 name, 无名称时回落到 taskDefinitionKey, 再兜底 "审批"
      */
@@ -25,8 +26,8 @@ public class QfProcTools {
     /**
      * 从流程变量读Long, 兼容 Number/字符串数字, 解析失败返回默认值
      */
-    public static long varLong(Map<String, Object> vars, String key, long defaultVal) {
-        Object v = vars.get(key);
+    public static long varLong(Map<String, Object> vars, QfVarsProc key, long defaultVal) {
+        Object v = vars.get(key.toString());
         if (v == null) {
             return defaultVal;
         }
@@ -36,16 +37,16 @@ public class QfProcTools {
         return NumberUtils.toLong(String.valueOf(v), defaultVal);
     }
 
-    public static String varString(Map<String, Object> vars, String key, String defaultVal) {
-        Object v = vars.get(key);
+    public static String varString(Map<String, Object> vars, QfVarsProc key, String defaultVal) {
+        Object v = vars.get(key.toString());
         if (v == null) {
             return defaultVal;
         }
         return String.valueOf(v);
     }
 
-    public static LocalDateTime varDateTime(Map<String, Object> vars, String key, LocalDateTime defaultVal) {
-        Object v = vars.get(key);
+    public static LocalDateTime varDateTime(Map<String, Object> vars, QfVarsProc key, LocalDateTime defaultVal) {
+        Object v = vars.get(key.toString());
         if (v == null) {
             return defaultVal;
         }

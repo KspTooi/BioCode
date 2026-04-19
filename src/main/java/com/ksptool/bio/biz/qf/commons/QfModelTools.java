@@ -1,8 +1,10 @@
 package com.ksptool.bio.biz.qf.commons;
 
 import com.ksptool.assembly.entity.exception.BizException;
+import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.bpmn.model.BpmnModel;
+import org.flowable.bpmn.model.UserTask;
 import org.flowable.common.engine.impl.util.io.StringStreamSource;
 import org.flowable.validation.ProcessValidator;
 import org.flowable.validation.ProcessValidatorFactory;
@@ -20,6 +22,8 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.ByteArrayInputStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -88,5 +92,113 @@ public class QfModelTools {
 
         List<ValidationError> errors = PROCESS_VALIDATOR.validate(model);
         return errors.isEmpty();
+    }
+
+    /**
+     * 提取变量名
+     * 把 "${foo}" / "#{foo}" 剥成 "foo"
+     *
+     * @param el 变量表达式
+     * @return 变量名
+     */
+    public static String extractElVarName(String el) {
+        if (StringUtils.isBlank(el)) {
+            return null;
+        }
+        String s = el.trim();
+        if (!s.startsWith("${") && !s.startsWith("#{")) {
+            return s;
+        }
+        if (!s.endsWith("}")) {
+            return null;
+        }
+        return s.substring(2, s.length() - 1).trim();
+    }
+
+    /**
+     * 解析用户任务的候选人
+     *
+     * @param ut 用户任务
+     * @return 候选人ID列表
+     * 如果是用户 则返回用户ID列表
+     * 如果是用户组 则返回用户组编码列表
+     * 如果是组织机构 则返回组织机构ID列表
+     */
+    public static List<String> resolveCandidates(UserTask ut) {
+
+        if (ut == null) {
+            return Collections.emptyList();
+        }
+
+        List<String> src = new ArrayList<>();
+        if (ut.getCandidateUsers() != null) {
+            src.addAll(ut.getCandidateUsers());
+        }
+        if (ut.getCandidateGroups() != null) {
+            src.addAll(ut.getCandidateGroups());
+        }
+        List<String> out = new ArrayList<>();
+        for (String s : src) {
+            if (StringUtils.isBlank(s)) {
+                continue;
+            }
+            for (String x : s.split(",")) {
+                String t = x.trim();
+                if (StringUtils.isBlank(t)) {
+                    continue;
+                }
+                out.add(t);
+            }
+        }
+        return out;
+    }
+
+    /**
+     * 解析办理人类型
+     * 根据任务定义键获取办理人类型
+     * 这里获取的是前端设计器 (flowable-designer) 扩展的 BPMN 自定义属性 assigneeKind
+     *
+     * @param model      流程模型
+     * @param taskDefKey 任务定义键
+     * @return 办理人类型 获取失败返回null
+     */
+    public static QfMemberKinds resolveMemberKind(BpmnModel model, String taskDefKey) {
+
+        if (model == null || StringUtils.isBlank(taskDefKey)) {
+            return null;
+        }
+
+        var flowElement = model.getFlowElement(taskDefKey);
+
+        if (!(flowElement instanceof UserTask)) {
+            return null;
+        }
+
+        var userTask = (UserTask) flowElement;
+        String kindStr = userTask.getAttributeValue("http://flowable.org/bpmn", QfVarsModel.ASSIGNEE_KIND.getValue());
+
+        if (kindStr == null || kindStr.isBlank()) {
+            return null;
+        }
+
+        //用户和发起人都是用户类型
+        if(kindStr.equals("user") || kindStr.equals("initiator")){
+            return QfMemberKinds.USER;
+        }
+
+        //用户组是用户组类型
+        if(kindStr.equals("group")){
+            return QfMemberKinds.GROUP;
+        }
+
+        //组织机构是组织机构类型 但一期我不打算支持这个功能 如果前端设计器非要传这个值，就报错吧
+        if(kindStr.equals("dept")){
+
+            //如果能走到这里来 说明前端设计的模型有问题
+            throw new RuntimeException("无法解析办理人类型: 组织机构类型不支持, 任务定义键: " + taskDefKey);
+        }
+
+        //什么模型会既不是用户类型又不是用户组类型呢？ 这说明前端设计的模型有问题
+        return null;
     }
 }

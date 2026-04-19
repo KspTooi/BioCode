@@ -11,7 +11,10 @@
         <div class="tip-content">
           <div class="tip-section">
             <div class="tip-section-title">1. 会签 / 或签（多实例）数据准备</div>
-            <p>引擎执行多实例需依赖真实的 List 集合。请在节点到达前（如执行监听器），将前端保存的逗号分隔字符串转换为 List，并注入流程变量：</p>
+            <p>
+              引擎执行多实例需依赖真实的 List 集合。请在节点到达前（如执行监听器），将前端保存的逗号分隔字符串转换为
+              List，并注入流程变量：
+            </p>
             <ul>
               <li><b>指定用户</b>：读取 <code>candidateUsers</code>，转为 List 存入 <code>assigneeList</code> 变量。</li>
               <li><b>组织机构 / 用户组</b>：读取 <code>candidateGroups</code>，转为 List 存入 <code>groupList</code> 变量。</li>
@@ -21,8 +24,14 @@
             <div class="tip-section-title">2. 审批人类型底层映射</div>
             <ul>
               <li><b>指定用户</b>：单人存为 <code>assignee="ID"</code>；多人存为 <code>candidateUsers="ID1,ID2"</code>。</li>
-              <li><b>组织机构 / 用户组</b>：均存为 <code>candidateGroups="ID1,ID2"</code>。可通过解析扩展属性 <code>flowable:assigneeKind</code>（值为 <code>dept</code> 或 <code>group</code>）来区分。</li>
-              <li><b>发起人</b>：存为 <code>assignee="${initiator}"</code>。后端需在启动流程前调用 <code>IdentityService.setAuthenticatedUserId(userId)</code>。</li>
+              <li>
+                <b>组织机构 / 用户组</b>：均存为 <code>candidateGroups="ID1,ID2"</code>。可通过解析扩展属性
+                <code>flowable:assigneeKind</code>（值为 <code>dept</code> 或 <code>group</code>）来区分。
+              </li>
+              <li>
+                <b>发起人</b>：存为 <code>assignee="${initiator}"</code>。后端需在启动流程前调用
+                <code>IdentityService.setAuthenticatedUserId(userId)</code>。
+              </li>
             </ul>
           </div>
           <div class="tip-section">
@@ -46,7 +55,7 @@
       <el-form-item label="审批人设置">
         <el-radio-group v-model="assigneeKind" class="full-width-radio" @change="onAssigneeKindChange">
           <el-radio-button value="user">指定用户</el-radio-button>
-          <el-radio-button value="dept">组织机构</el-radio-button>
+          <el-radio-button value="dept" disabled>组织机构</el-radio-button>
           <el-radio-button value="group">用户组</el-radio-button>
           <el-radio-button value="initiator">发起人</el-radio-button>
         </el-radio-group>
@@ -61,7 +70,7 @@
               </el-tag>
             </div>
             <el-button type="primary" plain class="add-btn" @click="openUserModal">
-              + 添加用户
+              {{ approvalMultiMode === "none" ? "+ 选择用户（仅限1人）" : "+ 添加用户" }}
             </el-button>
           </div>
         </el-form-item>
@@ -87,12 +96,12 @@
         <el-form-item>
           <el-select
             v-model="selectedGroupIds"
-            multiple
+            :multiple="approvalMultiMode !== 'none'"
             filterable
             collapse-tags
             collapse-tags-tooltip
             style="width: 100%"
-            placeholder="请选择用户组"
+            :placeholder="approvalMultiMode === 'none' ? '请选择用户组（仅限1个）' : '请选择用户组'"
             @change="onSelectedGroupIdsChange"
           >
             <el-option v-for="g in groupOptions" :key="g.id" :label="g.name" :value="g.id" />
@@ -101,7 +110,7 @@
       </template>
 
       <el-form-item label="多实例审批方式" class="mt-4">
-        <el-radio-group v-model="approvalMultiMode" class="full-width-radio" @change="commit">
+        <el-radio-group v-model="approvalMultiMode" class="full-width-radio" @change="onApprovalMultiModeChange">
           <el-radio-button value="none">无</el-radio-button>
           <el-radio-button value="countersign">会签</el-radio-button>
           <el-radio-button value="orSign">或签</el-radio-button>
@@ -145,7 +154,7 @@
     <CoreUserSelectModal
       v-model="userModalVisible"
       title="选择用户"
-      :multiple="true"
+      :multiple="approvalMultiMode !== 'none'"
       :default-selected="defaultUserIds"
       @confirm="onUsersConfirmed"
     />
@@ -174,6 +183,7 @@ const {
   userModalVisible,
   defaultUserIds,
   onAssigneeKindChange,
+  onApprovalMultiModeChange,
   openUserModal,
   onUsersConfirmed,
   onSelectedGroupIdsChange,

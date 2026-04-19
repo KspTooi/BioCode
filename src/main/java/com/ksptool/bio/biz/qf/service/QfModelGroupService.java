@@ -22,6 +22,12 @@ import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
 
 
+/**
+ * 流程模型分组服务
+ * 
+ * @author KspTool
+ * @since 2026-04-17
+ */
 @Service
 public class QfModelGroupService {
 

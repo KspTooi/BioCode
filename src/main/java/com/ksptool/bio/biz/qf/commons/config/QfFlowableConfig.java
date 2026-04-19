@@ -1,5 +1,6 @@
 package com.ksptool.bio.biz.qf.commons.config;
 
+import com.ksptool.bio.biz.qf.commons.listener.QfMiRenameParseHandler;
 import com.ksptool.bio.biz.qf.commons.listener.QfTaskCreatedListener;
 import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
 import org.flowable.common.engine.api.delegate.event.FlowableEventListener;
@@ -59,5 +60,13 @@ public class QfFlowableConfig implements EngineConfigurationConfigurer<SpringPro
         //将新的列表放回 Map，并更新引擎配置
         typedListeners.put(FlowableEngineEventType.TASK_CREATED.name(), listeners);
         cfg.setTypedEventListeners(typedListeners);
+
+        //注册多实例变量重命名处理器，在部署期将 ${assigneeList}/${groupList} 改写为 ${qfMi_<taskId>}
+        var preHandlers = cfg.getPreBpmnParseHandlers();
+        if (preHandlers == null) {
+            preHandlers = new ArrayList<>();
+            cfg.setPreBpmnParseHandlers(preHandlers);
+        }
+        preHandlers.add(new QfMiRenameParseHandler());
     }
 }

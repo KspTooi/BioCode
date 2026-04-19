@@ -22,4 +22,19 @@ public interface QfBizFormRepository extends JpaRepository<QfBizFormPo, Long> {
             ORDER BY u.createTime DESC
             """)
     Page<QfBizFormPo> getBizFormList(@Param("po") QfBizFormPo po, Pageable pageable);
+
+    /**
+     * 查询最新可用的业务表单
+     * @param code 业务表单编码
+     * @return 业务表单
+     */
+    @Query("""
+            SELECT u FROM QfBizFormPo u
+            WHERE u.code = :code
+            AND u.status = 0
+            ORDER BY u.createTime DESC
+            LIMIT 1
+            """)
+    QfBizFormPo getActiveByCode(@Param("code") String code);
+    
 }

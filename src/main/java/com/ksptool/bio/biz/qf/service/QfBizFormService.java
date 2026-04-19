@@ -20,7 +20,12 @@ import java.util.List;
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
 
-
+/**
+ * 业务表单服务
+ * 
+ * @author KspTool
+ * @since 2026-04-17
+ */
 @Service
 public class QfBizFormService {
 

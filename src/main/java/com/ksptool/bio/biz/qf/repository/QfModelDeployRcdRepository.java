@@ -23,12 +23,19 @@ public interface QfModelDeployRcdRepository extends JpaRepository<QfModelDeployR
             """ )
     Page<QfModelDeployRcdPo> getQfModelDeployRcdList(@Param("po") QfModelDeployRcdPo po, Pageable pageable);
 
+    /**
+     * 查询最新可用的部署记录
+     * @param code 模型编码
+     * @param pageable 分页参数
+     * @return 部署记录列表
+     */
     @Query("""
             SELECT u FROM QfModelDeployRcdPo u
             WHERE u.code = :code
             AND u.status = 0
             AND u.engProcessDefId IS NOT NULL
             ORDER BY u.version DESC
+            LIMIT 1
             """)
-    List<QfModelDeployRcdPo> findLatestActiveByCode(@Param("code") String code, Pageable pageable);
+    QfModelDeployRcdPo getLatestActiveByCode(@Param("code") String code);
 }

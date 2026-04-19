@@ -48,7 +48,7 @@ export type MultiInstancePanelApi = {
   selectedDepts: Ref<PickDept[]>;
   /** 内部状态；界面绑定请用 selectedGroupIds */
   selectedGroups: Ref<PickGroup[]>;
-  selectedGroupIds: WritableComputedRef<string[]>;
+  selectedGroupIds: WritableComputedRef<string[] | string>;
   groupOptions: Ref<GetGroupListVo[]>;
   orgTreeOptions: Ref<GetOrgTreeVo[]>;
   selectedDeptId: WritableComputedRef<string | undefined>;
@@ -62,6 +62,7 @@ export type MultiInstancePanelApi = {
   userModalVisible: Ref<boolean>;
   defaultUserIds: Ref<string[]>;
   onAssigneeKindChange: () => void;
+  onApprovalMultiModeChange: () => void;
   openUserModal: () => void;
   onUsersConfirmed: (data: GetUserListVo | GetUserListVo[]) => void;
   onSelectedGroupIdsChange: () => void;
@@ -194,9 +195,23 @@ export function useMultiInstancePanel(props: MultiInstancePanelProps): MultiInst
   const groupOptions = ref<GetGroupListVo[]>([]);
   const orgTreeOptions = ref<GetOrgTreeVo[]>([]);
 
-  const selectedGroupIds = computed<string[]>({
-    get: () => selectedGroups.value.map((g) => g.id),
-    set: (ids: string[]) => {
+  const selectedGroupIds = computed<string[] | string>({
+    get: () => {
+      const ids = selectedGroups.value.map((g) => g.id);
+      //单选模式(审批方式为"无")返回字符串，否则返回数组
+      if (approvalMultiMode.value === "none") {
+        return ids[0] ?? "";
+      }
+      return ids;
+    },
+    set: (val: string[] | string) => {
+      let ids: string[] = [];
+      if (Array.isArray(val)) {
+        ids = val;
+      }
+      if (!Array.isArray(val) && val) {
+        ids = [val];
+      }
       const optMap = new Map(groupOptions.value.map((g) => [g.id, g] as const));
       selectedGroups.value = ids.map((id) => {
         const opt = optMap.get(id);
@@ -475,12 +490,34 @@ export function useMultiInstancePanel(props: MultiInstancePanelProps): MultiInst
     commit();
   }
 
+  function onApprovalMultiModeChange(): void {
+    //切换回"无"时，截断多选的数据，只保留第一个
+    if (approvalMultiMode.value === "none") {
+      if (selectedUsers.value.length > 1) {
+        selectedUsers.value = [selectedUsers.value[0]];
+      }
+      if (selectedGroups.value.length > 1) {
+        selectedGroups.value = [selectedGroups.value[0]];
+      }
+    }
+    commit();
+  }
+
   function openUserModal(): void {
     userModalVisible.value = true;
   }
 
   function onUsersConfirmed(data: GetUserListVo | GetUserListVo[]): void {
     const list = Array.isArray(data) ? data : [data];
+    //审批方式为"无"时只保留1个用户
+    if (approvalMultiMode.value === "none") {
+      const row = list[0];
+      if (row) {
+        selectedUsers.value = [{ id: row.id, nickname: row.nickname, username: row.username }];
+      }
+      commit();
+      return;
+    }
     const map = new Map(selectedUsers.value.map((u) => [u.id, u] as const));
     list.forEach((row) => {
       map.set(row.id, { id: row.id, nickname: row.nickname, username: row.username });
@@ -841,6 +878,7 @@ export function useMultiInstancePanel(props: MultiInstancePanelProps): MultiInst
     userModalVisible,
     defaultUserIds,
     onAssigneeKindChange,
+    onApprovalMultiModeChange,
     openUserModal,
     onUsersConfirmed,
     onSelectedGroupIdsChange,

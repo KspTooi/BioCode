@@ -1,27 +1,24 @@
 package com.ksptool.bio.biz.qf.commons.listener;
 
+import com.ksptool.bio.biz.qf.commons.QfMemberKinds;
 import com.ksptool.bio.biz.qf.commons.QfProcTools;
-import com.ksptool.bio.biz.qf.commons.QfProcVars;
+import com.ksptool.bio.biz.qf.commons.QfVarsProc;
 import com.ksptool.bio.biz.qf.model.qftodo.QfTodoPo;
 import com.ksptool.bio.biz.qf.repository.QfTodoRepository;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
+import com.ksptool.bio.biz.qf.service.QfMemberService;
+import lombok.extern.slf4j.Slf4j;
 import org.flowable.common.engine.api.delegate.event.FlowableEngineEntityEvent;
 import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.delegate.event.AbstractFlowableEngineEventListener;
-import org.flowable.identitylink.api.IdentityLink;
-import org.flowable.identitylink.api.IdentityLinkType;
 import org.flowable.task.api.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
-
+import static com.ksptool.bio.biz.qf.commons.QfProcTools.trunc;
 /**
  * Flowable 任务创建监听器
  * 监听引擎 TASK_CREATED 事件，将每个新生成的UserTask映射为一条 QfTodoPo (待办)。
@@ -30,6 +27,7 @@ import java.util.Set;
  * 注意：监听器运行在引擎回调线程，没有Web会话上下文，所以 rootId/deptId 必须由变量提供，
  * 避免触发 QfTodoPo.onCreate 里的 SessionService.session() 抛 AuthException。
  */
+@Slf4j
 @Component
 public class QfTaskCreatedListener extends AbstractFlowableEngineEventListener {
 
@@ -39,6 +37,8 @@ public class QfTaskCreatedListener extends AbstractFlowableEngineEventListener {
     @Autowired
     private TaskService taskService;
 
+    @Autowired
+    private QfMemberService qms;
 
     public QfTaskCreatedListener() {
         // 仅订阅 TASK_CREATED, 其他事件无需回调
@@ -62,50 +62,65 @@ public class QfTaskCreatedListener extends AbstractFlowableEngineEventListener {
         //获取任务变量Map
         Map<String, Object> vars = taskService.getVariables(task.getId());
 
-        // 解析办理成员: 优先 assignee(具体办理人), 否则取首个 CANDIDATE 组
-        int memberType = 0;
-        long memberId = 0L;
-        if (StringUtils.isNotBlank(task.getAssignee())) {
-            memberType = 0;
-            memberId = NumberUtils.toLong(task.getAssignee(), 0L);
+        //获取办理人类型
+        var memberKind = qms.getMemberKind(task);
+
+        if (memberKind == null) {
+            log.warn("待办任务创建失败: 无法解析办理人类型, 任务ID: {}", task.getId());
+            return;
         }
-        if (StringUtils.isBlank(task.getAssignee())) {
-            List<IdentityLink> links = taskService.getIdentityLinksForTask(task.getId());
-            if (links != null) {
-                for (IdentityLink link : links) {
-                    if (!Objects.equals(IdentityLinkType.CANDIDATE, link.getType())) {
-                        continue;
-                    }
-                    if (StringUtils.isBlank(link.getGroupId())) {
-                        continue;
-                    }
-                    memberType = 1;
-                    memberId = NumberUtils.toLong(link.getGroupId(), 0L);
-                    break;
-                }
-            }
+
+        //获取办理成员ID
+        var _memberId = qms.getMemberId(task);
+
+        if (_memberId == null) {
+            log.warn("待办任务创建失败: 无法解析办理成员ID, 任务ID: {}", task.getId());
+            return;
         }
 
         //准备待办数据
+        var rid = QfProcTools.varLong(vars, QfVarsProc.ROOT_ID, 0L);
+        var did = QfProcTools.varLong(vars, QfVarsProc.DEPT_ID, 0L);
+        var etId = task.getId();
+        var epId = task.getProcessInstanceId();
+
+        //获取具体的业务表单
+        var bizFormId = QfProcTools.varLong(vars, QfVarsProc.BIZ_FORM_ID, 0L);
+        var tableName = QfProcTools.varString(vars, QfVarsProc.TABLE_NAME, "unknow");
+        var dataId = QfProcTools.varLong(vars, QfVarsProc.DATA_ID, 0L);
+        var nodeName = QfProcTools.nodeName(task);
+        var summary = QfProcTools.varString(vars, QfVarsProc.SUMMARY, "");
+        var memberType = 0;
+
+        if(memberKind == QfMemberKinds.USER){
+            memberType = 0;
+        }
+        if(memberKind == QfMemberKinds.GROUP){
+            memberType = 1;
+        }
+
+        var memberId = _memberId;
+        var initiatorId = QfProcTools.varLong(vars, QfVarsProc.INITIATOR_ID, 0L);
+        var initiatorName = QfProcTools.varString(vars, QfVarsProc.INITIATOR_NAME, "");
+        var initiatorTime = QfProcTools.varDateTime(vars, QfVarsProc.INITIATOR_TIME, LocalDateTime.now());
 
 
+        //创建待办数据
         QfTodoPo po = new QfTodoPo();
-        po.setEngTaskId(task.getId());
-        po.setEngProcId(task.getProcessInstanceId());
-        po.setBizFormId(QfProcTools.varLong(vars, QfProcVars.BIZ_FORM_ID, 0L));
-        po.setTableName(trunc(varString(vars, QfProcVars.TABLE_NAME, "test_table"), 200));
-        po.setDataId(varLong(vars, QfProcVars.DATA_ID, 0L));
-        po.setNodeName(trunc(nodeName(task), 80));
-        po.setSummary(trunc(varString(vars, QfProcVars.SUMMARY, ""), 500));
+        po.setRootId(rid);
+        po.setDeptId(did);
+        po.setEngTaskId(etId);
+        po.setEngProcId(epId);
+        po.setBizFormId(bizFormId);
+        po.setTableName(trunc(tableName, 200));
+        po.setDataId(dataId);
+        po.setNodeName(trunc(nodeName, 80));
+        po.setSummary(trunc(summary, 500));
         po.setMemberType(memberType);
         po.setMemberId(memberId);
-        po.setInitiatorId(varLong(vars, QfProcVars.INITIATOR_ID, 0L));
-        po.setInitiatorName(trunc(varString(vars, QfProcVars.INITIATOR_NAME, ""), 20));
-        po.setInitiatorTime(varDateTime(vars, QfProcVars.INITIATOR_TIME, LocalDateTime.now()));
-        // 提前 setRootId/setDeptId, 以短路 QfTodoPo.onCreate 对 SessionService 的强依赖
-        po.setRootId(varLong(vars, QfProcVars.ROOT_ID, 0L));
-        po.setDeptId(varLong(vars, QfProcVars.DEPT_ID, 0L));
-
+        po.setInitiatorId(initiatorId);
+        po.setInitiatorName(trunc(initiatorName, 20));
+        po.setInitiatorTime(initiatorTime);
         qfTodoRepository.save(po);
     }
 

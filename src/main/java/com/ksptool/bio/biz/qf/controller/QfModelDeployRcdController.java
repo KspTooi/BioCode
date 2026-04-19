@@ -8,6 +8,7 @@ import com.ksptool.bio.biz.qf.model.qfmodeldeployrcd.dto.LaunchQfProcessDto;
 import com.ksptool.bio.biz.qf.model.qfmodeldeployrcd.vo.GetQfModelDeployRcdDetailsVo;
 import com.ksptool.bio.biz.qf.model.qfmodeldeployrcd.vo.GetQfModelDeployRcdListVo;
 import com.ksptool.bio.biz.qf.service.QfModelDeployRcdService;
+import com.ksptool.bio.biz.qf.service.QfProcManager;
 import com.ksptool.bio.commons.annotation.PrintLog;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,6 +30,9 @@ public class QfModelDeployRcdController {
 
     @Autowired
     private QfModelDeployRcdService qfModelDeployRcdService;
+
+    @Autowired
+    private QfProcManager qfProcManager;
 
     @PreAuthorize("@auth.hasCode('qf:model:deploy:view')")
     @PostMapping("/getQfModelDeployRcdList")
@@ -76,7 +80,7 @@ public class QfModelDeployRcdController {
     @Operation(summary = "发起审批流程(测试)")
     @PostMapping("/launchQfProcess")
     public Result<String> launchQfProcess(@RequestBody @Valid LaunchQfProcessDto dto) throws Exception {
-        String processInstanceId = qfModelDeployRcdService.launchQfProcess(dto);
+        String processInstanceId = qfProcManager.launchProc(dto.getCode(), dto.getBizFormCode(), dto.getDataId());
         return Result.success(processInstanceId);
     }
 

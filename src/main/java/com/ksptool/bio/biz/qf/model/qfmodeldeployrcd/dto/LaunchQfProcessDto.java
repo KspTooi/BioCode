@@ -13,8 +13,11 @@ public class LaunchQfProcessDto {
     @NotBlank(message = "模型编码不能为空")
     private String code;
 
-    private String businessKey;
+    @NotBlank(message = "业务表单编码不能为空")
+    private String bizFormCode;
 
-    private Map<String, Object> variables;
+    @NotBlank(message = "业务数据ID不能为空")
+    private Long dataId;
+
 
 }

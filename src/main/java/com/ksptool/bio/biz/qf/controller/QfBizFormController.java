@@ -8,7 +8,7 @@ import com.ksptool.bio.biz.qf.model.qfbizform.dto.EditQfBizFormDto;
 import com.ksptool.bio.biz.qf.model.qfbizform.dto.GetQfBizFormListDto;
 import com.ksptool.bio.biz.qf.model.qfbizform.vo.GetQfBizFormDetailsVo;
 import com.ksptool.bio.biz.qf.model.qfbizform.vo.GetQfBizFormListVo;
-import com.ksptool.bio.biz.qf.service.BizFormService;
+import com.ksptool.bio.biz.qf.service.QfBizFormService;
 import com.ksptool.bio.commons.annotation.PrintLog;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,20 +29,20 @@ import org.springframework.web.bind.annotation.RestController;
 public class QfBizFormController {
 
     @Autowired
-    private BizFormService bizFormService;
+    private QfBizFormService qfBizFormService;
 
     @PreAuthorize("@auth.hasCode('qf:biz:form:view')")
     @PostMapping("/getBizFormList")
     @Operation(summary = "查询业务表单列表")
     public PageResult<GetQfBizFormListVo> getBizFormList(@RequestBody @Valid GetQfBizFormListDto dto) throws Exception {
-        return bizFormService.getBizFormList(dto);
+        return qfBizFormService.getBizFormList(dto);
     }
 
     @PreAuthorize("@auth.hasCode('qf:biz:form:add')")
     @Operation(summary = "新增业务表单")
     @PostMapping("/addBizForm")
     public Result<String> addBizForm(@RequestBody @Valid AddQfBizFormDto dto) throws Exception {
-        bizFormService.addBizForm(dto);
+        qfBizFormService.addBizForm(dto);
         return Result.success("新增成功");
     }
 
@@ -50,7 +50,7 @@ public class QfBizFormController {
     @Operation(summary = "编辑业务表单")
     @PostMapping("/editBizForm")
     public Result<String> editBizForm(@RequestBody @Valid EditQfBizFormDto dto) throws Exception {
-        bizFormService.editBizForm(dto);
+        qfBizFormService.editBizForm(dto);
         return Result.success("修改成功");
     }
 
@@ -58,7 +58,7 @@ public class QfBizFormController {
     @Operation(summary = "查询业务表单详情")
     @PostMapping("/getBizFormDetails")
     public Result<GetQfBizFormDetailsVo> getBizFormDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {
-        GetQfBizFormDetailsVo details = bizFormService.getBizFormDetails(dto);
+        GetQfBizFormDetailsVo details = qfBizFormService.getBizFormDetails(dto);
         if (details == null) {
             return Result.error("无数据");
         }
@@ -69,7 +69,7 @@ public class QfBizFormController {
     @Operation(summary = "删除业务表单")
     @PostMapping("/removeBizForm")
     public Result<String> removeBizForm(@RequestBody @Valid CommonIdDto dto) throws Exception {
-        bizFormService.removeBizForm(dto);
+        qfBizFormService.removeBizForm(dto);
         return Result.success("操作成功");
     }
 
