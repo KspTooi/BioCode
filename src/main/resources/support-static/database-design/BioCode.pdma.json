@@ -4,7 +4,7 @@
   "avatar": "",
   "version": "4.9.4",
   "createdTime": "2025-5-31 18:54:43",
-  "updatedTime": "2026-4-20 05:49:38",
+  "updatedTime": "2026-4-20 06:49:08",
   "dbConns": [],
   "profile": {
     "default": {
@@ -33248,6 +33248,42 @@
           "domain": "056FE01A-CABB-4A1F-88DA-324DA5891426",
           "id": "6D35CB18-C5D5-49AF-9C63-6F7BB42BC788",
           "uiHint": null
+        },
+        {
+          "defKey": "eng_activity_id",
+          "defName": "引擎节点定义ID",
+          "comment": "",
+          "type": "",
+          "len": "",
+          "scale": "",
+          "primaryKey": false,
+          "notNull": true,
+          "autoIncrement": false,
+          "defaultValue": "",
+          "hideInGraph": false,
+          "refDict": "",
+          "baseType": "566FB128-DBDE-4D78-9260-24C96D09CFE0",
+          "extProps": {},
+          "domain": "056FE01A-CABB-4A1F-88DA-324DA5891426",
+          "id": "EE5C1ACC-9F61-4840-AE7A-459465366796"
+        },
+        {
+          "defKey": "eng_exec_id",
+          "defName": "引擎执行ID",
+          "comment": "",
+          "type": "",
+          "len": "",
+          "scale": "",
+          "primaryKey": false,
+          "notNull": true,
+          "autoIncrement": false,
+          "defaultValue": "",
+          "hideInGraph": false,
+          "refDict": "",
+          "baseType": "566FB128-DBDE-4D78-9260-24C96D09CFE0",
+          "extProps": {},
+          "domain": "056FE01A-CABB-4A1F-88DA-324DA5891426",
+          "id": "3BE7F152-7F4E-46C4-8229-492A9F8A4037"
         },
         {
           "defKey": "biz_form_id",
