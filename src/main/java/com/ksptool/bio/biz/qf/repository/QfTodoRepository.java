@@ -34,4 +34,17 @@ public interface QfTodoRepository extends JpaRepository<QfTodoPo, Long> {
             ORDER BY u.createTime DESC
             """)
     Page<QfTodoPo> getQfTodoList(@Param("po") QfTodoPo po, Pageable pageable);
+
+    /**
+     * 检查还有多少未完成的待办在用这个表单
+     *
+     * @param bizFormId 业务表单ID
+     * @return 还有多少未完成的待办
+     */
+    @Query("""
+            SELECT COUNT(1) FROM QfTodoPo u
+            WHERE u.bizFormId = :bizFormId
+            AND u.status = 0
+            """)
+    long countActiveTodyByBizFormId(@Param("bizFormId") Long bizFormId);
 }

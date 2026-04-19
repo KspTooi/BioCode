@@ -79,6 +79,12 @@ public class QfBizFormController {
     @Operation(summary = "删除业务表单")
     @PostMapping("/removeBizForm")
     public Result<String> removeBizForm(@RequestBody @Valid CommonIdDto dto) throws Exception {
+
+        //不支持批量删除
+        if (dto.isBatch()) {
+            return Result.error("不支持批量删除");
+        }
+
         qfBizFormService.removeBizForm(dto);
         return Result.success("操作成功");
     }

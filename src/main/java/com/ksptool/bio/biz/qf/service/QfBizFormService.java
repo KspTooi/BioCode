@@ -10,6 +10,8 @@ import com.ksptool.bio.biz.qf.model.qfbizform.dto.GetQfBizFormListDto;
 import com.ksptool.bio.biz.qf.model.qfbizform.vo.GetQfBizFormDetailsVo;
 import com.ksptool.bio.biz.qf.model.qfbizform.vo.GetQfBizFormListVo;
 import com.ksptool.bio.biz.qf.repository.QfBizFormRepository;
+import com.ksptool.bio.biz.qf.repository.QfTodoRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -35,6 +37,9 @@ public class QfBizFormService {
 
     @Autowired
     private QfBizFormRepository repository;
+
+    @Autowired
+    private QfTodoRepository qfTodoRepository;
 
     /**
      * 查询业务表单列表
@@ -106,6 +111,14 @@ public class QfBizFormService {
             repository.deleteAllById(dto.getIds());
             return;
         }
+
+        //检查还有没有待办在用这个表单(只要有一个待办还没有完成就不能删除)
+        var count = qfTodoRepository.countActiveTodyByBizFormId(dto.getId());
+        
+        if (count > 0) {
+            throw new BizException("删除失败,该业务表单还有" + count + "个未完成的待办事项在使用.");
+        }
+
         repository.deleteById(dto.getId());
     }
 
