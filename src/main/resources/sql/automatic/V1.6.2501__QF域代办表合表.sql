@@ -27,7 +27,7 @@ CREATE TABLE `qf_todo` (
                            `initiator_id` BIGINT NOT NULL COMMENT '发起人ID',
                            `initiator_name` VARCHAR(20) NOT NULL COMMENT '发起人名',
                            `initiator_time` DATETIME NOT NULL COMMENT '发起时间',
-                           `status` TINYINT NOT NULL COMMENT '待办状态 0:待办 1:已办',
+                           `status` TINYINT NOT NULL COMMENT '待办状态 0:待办 1:已办 10:已作废',
                            `fin_member_id` BIGINT COMMENT '实际办理人ID',
                            `fin_member_name` VARCHAR(20) COMMENT '实际办理人姓名',
                            `fin_time` DATETIME COMMENT '实际办理时间',

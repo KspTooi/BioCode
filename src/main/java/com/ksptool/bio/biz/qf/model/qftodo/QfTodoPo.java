@@ -68,7 +68,7 @@ public class QfTodoPo {
     @Column(name = "initiator_time", nullable = false, comment = "发起时间")
     private LocalDateTime initiatorTime;
 
-    @Column(name = "status", nullable = false, columnDefinition = "TINYINT", comment = "待办状态 0:待办 1:已办")
+    @Column(name = "status", nullable = false, columnDefinition = "TINYINT", comment = "待办状态 0:待办 1:已办 10:已作废")
     private Integer status;
 
     @Column(name = "fin_member_id", comment = "实际办理人ID")
