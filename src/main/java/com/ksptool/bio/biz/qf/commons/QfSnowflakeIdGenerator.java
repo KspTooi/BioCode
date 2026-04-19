@@ -23,7 +23,7 @@ public class QfSnowflakeIdGenerator implements IdGenerator {
 
     @Override
     public String getNextId() {
-        return String.valueOf(generator.nextId());
+        return "QF_ENG_" + String.valueOf(generator.nextId());
     }
 
 }
