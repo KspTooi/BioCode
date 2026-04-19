@@ -1,5 +1,6 @@
 package com.ksptool.bio.biz.qf.commons.config;
 
+import com.ksptool.bio.biz.qf.commons.QfSnowflakeIdGenerator;
 import com.ksptool.bio.biz.qf.commons.listener.QfMiRenameParseHandler;
 import com.ksptool.bio.biz.qf.commons.listener.QfTaskCreatedListener;
 import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
@@ -23,13 +24,14 @@ import java.util.List;
  * Flowable引擎有许多事件，每个事件可以有多个监听器。
  * 比如TASK_CREATED事件，可以有多个监听器。
  * 可以通过FlowableEngineEventType枚举类来获取事件类型。
- * 
+ *
+ * @author WangQingHua(603484930@qq.com)
  * @author Akkarin(1075613357@qq.com)
  * @author (Ish)Yuumi(1144150092@qq.com)
- * @since 2026-04-15
  * @license Proprietary
  * 版权所有 (c) 2026 KspTool及其贡献者保留所有权利。
  * 未经事先书面许可，严禁任何形式的复制或分发。
+ * @since 2026-04-15
  */
 @Configuration
 public class QfFlowableConfig implements EngineConfigurationConfigurer<SpringProcessEngineConfiguration> {
@@ -74,5 +76,8 @@ public class QfFlowableConfig implements EngineConfigurationConfigurer<SpringPro
             cfg.setPreBpmnParseHandlers(preHandlers);
         }
         preHandlers.add(new QfMiRenameParseHandler());
+
+        //注册雪花算法ID生成器
+        cfg.setIdGenerator(new QfSnowflakeIdGenerator());
     }
 }

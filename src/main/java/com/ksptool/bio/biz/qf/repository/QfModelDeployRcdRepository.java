@@ -7,16 +7,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import java.util.List;
 
 /**
  * 流程模型部署记录Repository
- * 
+ *
  * @author KspTool(ksptool@outlook.com)
- * @since 2026-04-16
  * @license Proprietary
  * 版权所有 (c) 2026 KspTool及其贡献者保留所有权利。
  * 未经事先书面许可，严禁任何形式的复制或分发。
+ * @since 2026-04-16
  */
 @Repository
 public interface QfModelDeployRcdRepository extends JpaRepository<QfModelDeployRcdPo, Long> {
@@ -28,12 +27,13 @@ public interface QfModelDeployRcdRepository extends JpaRepository<QfModelDeployR
             AND (:#{#po.code} IS NULL OR u.code LIKE CONCAT('%', :#{#po.code}, '%'))
             AND (:#{#po.status} IS NULL OR u.status = :#{#po.status} )
             ORDER BY u.createTime DESC
-            """ )
+            """)
     Page<QfModelDeployRcdPo> getQfModelDeployRcdList(@Param("po") QfModelDeployRcdPo po, Pageable pageable);
 
     /**
      * 查询最新可用的部署记录
-     * @param code 模型编码
+     *
+     * @param code     模型编码
      * @param pageable 分页参数
      * @return 部署记录列表
      */

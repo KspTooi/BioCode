@@ -12,7 +12,6 @@ import com.ksptool.bio.biz.qf.model.qftodo.dto.GetQfTodoListDto;
 import com.ksptool.bio.biz.qf.model.qftodo.vo.GetQfTodoDetailsVo;
 import com.ksptool.bio.biz.qf.model.qftodo.vo.GetQfTodoListVo;
 import com.ksptool.bio.biz.qf.repository.QfTodoRepository;
-
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.engine.IdentityService;
 import org.flowable.engine.TaskService;
@@ -25,23 +24,22 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 
+import static com.ksptool.bio.biz.auth.service.SessionService.session;
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
-import static com.ksptool.bio.biz.auth.service.SessionService.session;
 
 
 /**
  * 待办事项服务
- * 
+ *
  * @author WangQingHua(603484930@qq.com)
  * @author Akkarin(1075613357@qq.com)
  * @author (Ish)Yuumi(1144150092@qq.com)
  * @author KspTool(ksptool@outlook.com)
- * 
- * @since 2026-04-17
  * @license Proprietary
  * 版权所有 (c) 2026 KspTool及其贡献者保留所有权利。
  * 未经事先书面许可，严禁任何形式的复制或分发。
+ * @since 2026-04-17
  */
 @Service
 public class QfTodoService {
@@ -143,28 +141,28 @@ public class QfTodoService {
         QfTodoPo updatePo = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("审批失败,数据不存在或无权限访问."));
 
-        if(updatePo.getStatus() != 0){
+        if (updatePo.getStatus() != 0) {
             throw new BizException("待办状态异常，无法审批.");
         }
 
         var aud = session();
         var uid = aud.getUserId();
-        
+
 
         //判断是不是我的待办
-        if(updatePo.getMemberType() == QfMemberKinds.USER.getValue()){
+        if (updatePo.getMemberType() == QfMemberKinds.USER.getValue()) {
 
             //如果待办是给用户的，判断我是不是这个用户
-            if(updatePo.getMemberId() != uid){
+            if (updatePo.getMemberId() != uid) {
                 throw new BizException("该待办属于用户:" + updatePo.getMemberId() + "，审批人不是本人，无法审批.");
             }
 
         }
 
         //如果待办是给用户组的，判断我是不是这个用户组的一员
-        if(updatePo.getMemberType() == QfMemberKinds.GROUP.getValue()){
+        if (updatePo.getMemberType() == QfMemberKinds.GROUP.getValue()) {
             var groupIds = qfMemberService.getMemberGroupIds(updatePo.getMemberId());
-            if(!groupIds.contains(uid)){
+            if (!groupIds.contains(uid)) {
                 throw new BizException("该待办属于用户组:" + updatePo.getMemberId() + "，审批人不是该用户组的一员，无法审批.");
             }
 
@@ -181,7 +179,7 @@ public class QfTodoService {
 
         var comment = "";
 
-        if(StringUtils.isNotBlank(dto.getComment())){
+        if (StringUtils.isNotBlank(dto.getComment())) {
             comment = dto.getComment();
         }
 
@@ -195,7 +193,7 @@ public class QfTodoService {
         try {
 
             //这为了走 Flowable 自己的评论体系（历史记录会看到），在 complete 之前加：
-            ftService.addComment(task.getId(),  task.getProcessInstanceId(), comment);
+            ftService.addComment(task.getId(), task.getProcessInstanceId(), comment);
 
             //审批任务
             ftService.complete(task.getId(), vars);
@@ -207,7 +205,7 @@ public class QfTodoService {
             updatePo.setFinMemberId(uid);
             updatePo.setFinMemberName(aud.getNickname());
             updatePo.setFinTime(LocalDateTime.now());
-            
+
 
             repository.save(updatePo);
 
