@@ -4,14 +4,17 @@
     <StdListAreaQuery>
       <el-form :model="listForm" inline class="flex justify-between">
         <div>
-          <el-form-item label="摘要(如：张三提交的 5000 元报销)">
-            <el-input v-model="listForm.summary" placeholder="输入摘要(如：张三提交的 5000 元报销)" clearable />
+          <el-form-item label="摘要">
+            <el-input v-model="listForm.summary" placeholder="输入摘要" clearable />
           </el-form-item>
           <el-form-item label="抄送发起人姓名">
             <el-input v-model="listForm.fromName" placeholder="输入抄送发起人姓名" clearable />
           </el-form-item>
-          <el-form-item label="是否读 0:未读 1:已读">
-            <el-input v-model.number="listForm.isRead" placeholder="输入是否读 0:未读 1:已读" clearable />
+          <el-form-item label="读取状态">
+            <el-select v-model="listForm.isRead" placeholder="选择读取状态">
+              <el-option label="未读" value="0" />
+              <el-option label="已读" value="1" />
+            </el-select>
           </el-form-item>
         </div>
         <el-form-item>
@@ -30,11 +33,10 @@
     <StdListAreaTable>
       <el-table :data="listData" stripe v-loading="listLoading" border height="100%">
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
-        <el-table-column prop="id" label="主键ID" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="nodeName" label="当前节点名称 (如: 财务总监审批)" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="summary" label="摘要(如：张三提交的 5000 元报销)" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="nodeName" label="当前节点名称" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="summary" label="摘要" min-width="120" show-overflow-tooltip />
         <el-table-column prop="fromName" label="抄送发起人姓名" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="isRead" label="是否读 0:未读 1:已读" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="isRead" label="读取状态" min-width="120" show-overflow-tooltip />
         <el-table-column prop="readTime" label="读取时间" min-width="120" show-overflow-tooltip />
         <el-table-column prop="createTime" label="抄送时间" min-width="120" show-overflow-tooltip />
         <el-table-column label="操作" fixed="right" min-width="180">
