@@ -164,7 +164,7 @@
 <script setup lang="ts">
 import { InfoFilled } from "@element-plus/icons-vue";
 import CoreUserSelectModal from "@/views/core/components/public/CoreUserSelectModal.vue";
-import { useMultiInstancePanel } from "@/views/qf/sfc_private/flowable-designer/components/multiInstanceFlow";
+import { useMultiInstancePanel } from "@/views/qf/sfc_private/flowable-designer/deprecated/multiInstanceFlow.ts";
 
 const props = defineProps<{
   modeler: unknown;

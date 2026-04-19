@@ -243,20 +243,20 @@ import {
   Notebook,
   Connection,
 } from "@element-plus/icons-vue";
-import { findProcessElement } from "@/views/qf/sfc_private/flowable-designer/flowableModelUtils";
-import type { ConditionPreset } from "@/views/qf/sfc_private/flowable-designer/flowableSequenceFlowPanel";
+import { findProcessElement } from "@/views/qf/sfc_private/flowable-designer/flowableModelUtils.ts";
+import type { ConditionPreset } from "@/views/qf/sfc_private/flowable-designer/deprecated/flowableSequenceFlowPanel.ts";
 import {
   resetSequenceFlowFormFields,
   loadSequenceFlowFromBo,
   onConditionPresetChange as applySequenceFlowPresetChange,
   commitSequenceFlowCondition,
   commitDefaultFlow as applySequenceFlowDefaultCommit,
-} from "@/views/qf/sfc_private/flowable-designer/flowableSequenceFlowPanel";
-import ProcessMessagesAndSignals from "@/views/qf/sfc_private/flowable-designer/components/ProcessMessagesAndSignals.vue";
-import ExecutionListeners from "@/views/qf/sfc_private/flowable-designer/components/ExecutionListeners.vue";
-import ExtensionProperties from "@/views/qf/sfc_private/flowable-designer/components/ExtensionProperties.vue";
-import MultiInstance from "@/views/qf/sfc_private/flowable-designer/components/MultiInstance.vue";
-import TaskListeners from "@/views/qf/sfc_private/flowable-designer/components/TaskListeners.vue";
+} from "@/views/qf/sfc_private/flowable-designer/deprecated/flowableSequenceFlowPanel.ts";
+import ProcessMessagesAndSignals from "@/views/qf/sfc_private/flowable-designer/deprecated/ProcessMessagesAndSignals.vue";
+import ExecutionListeners from "@/views/qf/sfc_private/flowable-designer/deprecated/ExecutionListeners.vue";
+import ExtensionProperties from "@/views/qf/sfc_private/flowable-designer/deprecated/ExtensionProperties.vue";
+import MultiInstance from "@/views/qf/sfc_private/flowable-designer/deprecated/MultiInstance.vue";
+import TaskListeners from "@/views/qf/sfc_private/flowable-designer/deprecated/TaskListeners.vue";
 
 //默认不展开任何项!
 const activeNames = ref([

@@ -1,7 +1,7 @@
 import { computed, onBeforeUnmount, reactive, ref, watch, type Ref, type WritableComputedRef } from "vue";
-import type { GetUserListVo } from "@/views/core/api/UserApi";
-import OrgApi, { type GetOrgTreeVo } from "@/views/core/api/OrgApi";
-import GroupApi, { type GetGroupListVo } from "@/views/auth/api/GroupApi";
+import type { GetUserListVo } from "@/views/core/api/UserApi.ts";
+import OrgApi, { type GetOrgTreeVo } from "@/views/core/api/OrgApi.ts";
+import GroupApi, { type GetGroupListVo } from "@/views/auth/api/GroupApi.ts";
 
 export type BpmnEl = { businessObject?: Record<string, unknown> };
 

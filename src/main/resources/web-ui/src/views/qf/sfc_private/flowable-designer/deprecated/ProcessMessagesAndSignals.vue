@@ -75,7 +75,7 @@ import {
   findProcessElement,
   generateBpmnLocalPart,
   getDefinitions,
-} from "@/views/qf/sfc_private/flowable-designer/flowableModelUtils";
+} from "@/views/qf/sfc_private/flowable-designer/flowableModelUtils.ts";
 
 type Row = { id: string; name: string; raw: Record<string, unknown> };
 
