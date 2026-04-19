@@ -31,9 +31,7 @@
         <el-table-column prop="createTime" label="任务到达时间" min-width="120" show-overflow-tooltip />
         <el-table-column label="操作" fixed="right" min-width="180">
           <template #default="scope">
-            <el-button link type="primary" size="small" @click="openModal('edit', scope.row)" :icon="EditIcon">
-              编辑
-            </el-button>
+            <el-button link type="primary" size="small" @click="onApprove(scope.row)" :icon="EditIcon"> 审批 </el-button>
             <el-button link type="danger" size="small" @click="removeList(scope.row)" :icon="DeleteIcon"> 删除 </el-button>
           </template>
         </el-table-column>
@@ -92,6 +90,9 @@
         </div>
       </template>
     </el-dialog>
+
+    <!-- 审批模态框 -->
+    <QfApproveModal v-model:visible="approveModalVisible" :todo-id="approveTodoId" />
   </StdListContainer>
 </template>
 
@@ -104,10 +105,21 @@ import StdListContainer from "@/soa/std-series/StdListContainer.vue";
 import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
 import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";
 import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
+import type { GetQfTodoListVo } from "@/views/qf/api/QfTodoApi.ts";
+import QfApproveModal from "@/views/qf/public/QfApproveModal.vue";
 
 // 使用markRaw包装图标组件，防止被Vue响应式系统处理
 const EditIcon = markRaw(Edit);
 const DeleteIcon = markRaw(Delete);
+
+//审批模态框
+const approveModalVisible = ref(false); // 审批模态框是否显示
+const approveTodoId = ref<string | null>(null); // 审批待办事项ID
+
+const onApprove = (row: GetQfTodoListVo): void => {
+  approveTodoId.value = row.id;
+  approveModalVisible.value = true;
+};
 
 // 列表管理打包
 const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } = QfTodoService.useQfTodoList();

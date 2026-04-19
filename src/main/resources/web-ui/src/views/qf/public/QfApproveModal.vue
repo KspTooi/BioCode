@@ -72,7 +72,7 @@ import { CircleCheck, CircleClose } from "@element-plus/icons-vue";
 import QfApproveModalService from "@/views/qf/public/QfApproveModalService.ts";
 
 const props = defineProps<{
-  todoId: string;
+  todoId: string | null;
   visible: boolean;
 }>();
 
