@@ -27,14 +27,14 @@ import java.util.Map;
 /**
  * 流程管理器
  * 这个服务用于管理流程的启动，暂停，恢复，终止等操作
- * 
+ *
  * @author Akkarin(1075613357@qq.com)
  * @author (Ish)Yuumi(1144150092@qq.com)
  * @author KspTool(ksptool@outlook.com)
  * @since 2026-04-17
  */
 @Service
-public class QfProcManager {
+public class QfProcService {
 
     //时间格式化器(yyyy-MM-dd HH:mm:ss)
     private static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -115,17 +115,17 @@ public class QfProcManager {
         var p = new HashMap<String, Object>();
 
         //准备发起方数据
-        p.put(QfVarsProc.ROOT_ID+"", rootId);
-        p.put(QfVarsProc.DEPT_ID+"", deptId);
-        p.put(QfVarsProc.INITIATOR_ID+"", userId);
-        p.put(QfVarsProc.INITIATOR_NAME+"", nickname);
-        p.put(QfVarsProc.INITIATOR_TIME+"", LocalDateTime.now().format(dtf));
+        p.put(QfVarsProc.ROOT_ID + "", rootId);
+        p.put(QfVarsProc.DEPT_ID + "", deptId);
+        p.put(QfVarsProc.INITIATOR_ID + "", userId);
+        p.put(QfVarsProc.INITIATOR_NAME + "", nickname);
+        p.put(QfVarsProc.INITIATOR_TIME + "", LocalDateTime.now().format(dtf));
 
         //准备业务数据
-        p.put(QfVarsProc.BIZ_FORM_ID+"", form.getId());
-        p.put(QfVarsProc.TABLE_NAME+"", form.getTableName());
-        p.put(QfVarsProc.DATA_ID+"", dataId);
-        p.put(QfVarsProc.SUMMARY+"", nickname + "提交的" + form.getName() + "审批");
+        p.put(QfVarsProc.BIZ_FORM_ID + "", form.getId());
+        p.put(QfVarsProc.TABLE_NAME + "", form.getTableName());
+        p.put(QfVarsProc.DATA_ID + "", dataId);
+        p.put(QfVarsProc.SUMMARY + "", nickname + "提交的" + form.getName() + "审批");
 
         //设置流程发起人
         fiService.setAuthenticatedUserId(userId.toString());

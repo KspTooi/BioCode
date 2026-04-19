@@ -2,7 +2,7 @@ package com.ksptool.bio.biz.qf.controller;
 
 import com.ksptool.assembly.entity.web.Result;
 import com.ksptool.bio.biz.qf.model.qfmodeldeployrcd.dto.LaunchQfProcessDto;
-import com.ksptool.bio.biz.qf.service.QfProcManager;
+import com.ksptool.bio.biz.qf.service.QfProcService;
 import com.ksptool.bio.commons.annotation.PrintLog;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,14 +35,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class QfProcController {
 
     @Autowired
-    private QfProcManager qfProcManager;
+    private QfProcService qfProcService;
 
 
     @PreAuthorize("@auth.hasCode('qf:model:deploy:edit')")
     @Operation(summary = "发起审批流程")
     @PostMapping("/launchQfProcess")
     public Result<String> launchQfProcess(@RequestBody @Valid LaunchQfProcessDto dto) throws Exception {
-        String processInstanceId = qfProcManager.launchProc(dto.getCode(), dto.getBizFormCode(), dto.getDataId());
+        String processInstanceId = qfProcService.launchProc(dto.getCode(), dto.getBizFormCode(), dto.getDataId());
         return Result.success(processInstanceId);
     }
 
