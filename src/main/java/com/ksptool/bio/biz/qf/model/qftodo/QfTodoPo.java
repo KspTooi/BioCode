@@ -10,7 +10,6 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
 import java.time.LocalDateTime;
 
 @Getter
@@ -68,6 +67,27 @@ public class QfTodoPo {
 
     @Column(name = "initiator_time", nullable = false, comment = "发起时间")
     private LocalDateTime initiatorTime;
+
+    @Column(name = "status", nullable = false, columnDefinition = "TINYINT", comment = "待办状态 0:待办 1:已办")
+    private Integer status;
+
+    @Column(name = "fin_member_id", comment = "实际办理人ID")
+    private Long finMemberId;
+
+    @Column(name = "fin_member_name", length = 20, comment = "实际办理人姓名")
+    private String finMemberName;
+
+    @Column(name = "fin_time", comment = "实际办理时间")
+    private LocalDateTime finTime;
+
+    @Column(name = "action", length = 80, comment = "操作")
+    private String action;
+
+    @Column(name = "comment", length = 500, comment = "办理人意见")
+    private String comment;
+
+    @Column(name = "duration", comment = "耗时(毫秒)")
+    private Long duration;
 
     @CreatedDate
     @Column(name = "create_time", nullable = false, comment = "任务到达时间")

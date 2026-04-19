@@ -4,15 +4,6 @@
     <StdListAreaQuery>
       <el-form :model="listForm" inline class="flex justify-between">
         <div>
-          <el-form-item label="摘要(如：张三提交的 5000 元报销)">
-            <el-input v-model="listForm.summary" placeholder="输入摘要(如：张三提交的 5000 元报销)" clearable />
-          </el-form-item>
-          <el-form-item label="办理成员ID (用户ID或用户组标识)">
-            <el-input v-model="listForm.memberId" placeholder="输入办理成员ID (用户ID或用户组标识)" clearable />
-          </el-form-item>
-          <el-form-item label="发起人ID">
-            <el-input v-model="listForm.initiatorId" placeholder="输入发起人ID" clearable />
-          </el-form-item>
           <el-form-item label="任务到达时间">
             <el-input v-model="listForm.createTime" placeholder="输入任务到达时间" clearable />
           </el-form-item>
@@ -25,18 +16,15 @@
     </StdListAreaQuery>
 
     <!-- 操作按钮区域 -->
-    <StdListAreaAction class="flex gap-2">
-      <el-button type="success" @click="openModal('add', null)">新增待办事项</el-button>
-    </StdListAreaAction>
+    <StdListAreaAction class="flex gap-2"> </StdListAreaAction>
 
     <!-- 列表表格区域 -->
     <StdListAreaTable>
       <el-table :data="listData" stripe v-loading="listLoading" border height="100%">
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
-        <el-table-column prop="id" label="主键ID" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="nodeName" label="当前节点名称 (如: 财务总监审批)" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="summary" label="摘要(如：张三提交的 5000 元报销)" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="memberId" label="办理成员ID (用户ID或用户组标识)" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="nodeName" label="当前节点名称" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="summary" label="摘要" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="memberId" label="办理成员ID" min-width="120" show-overflow-tooltip />
         <el-table-column prop="initiatorId" label="发起人ID" min-width="120" show-overflow-tooltip />
         <el-table-column prop="initiatorName" label="发起人名" min-width="120" show-overflow-tooltip />
         <el-table-column prop="initiatorTime" label="发起时间" min-width="120" show-overflow-tooltip />
