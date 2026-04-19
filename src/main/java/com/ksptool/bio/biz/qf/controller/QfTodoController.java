@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @PrintLog
 @RestController
 @RequestMapping("/qfTodo")
-@Tag(name = "待办事项", description = "待办事项")
+@Tag(name = "QF-待办事项", description = "QF-待办事项")
 @Slf4j
 public class QfTodoController {
 

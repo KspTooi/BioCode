@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @PrintLog
 @RestController
 @RequestMapping("/qfModel")
-@Tag(name = "流程模型", description = "流程模型")
+@Tag(name = "QF-流程模型", description = "QF-流程模型")
 @Slf4j
 public class QfModelController {
 

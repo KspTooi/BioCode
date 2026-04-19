@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @PrintLog
 @RestController
 @RequestMapping("/qfModelGroup")
-@Tag(name = "流程模型分组", description = "流程模型分组")
+@Tag(name = "QF-流程模型分组", description = "QF-流程模型分组")
 @Slf4j
 public class QfModelGroupController {
 

@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @PrintLog
 @RestController
 @RequestMapping("/bizForm")
-@Tag(name = "业务表单", description = "业务表单")
+@Tag(name = "QF-业务表单", description = "QF-业务表单")
 @Slf4j
 public class QfBizFormController {
 
