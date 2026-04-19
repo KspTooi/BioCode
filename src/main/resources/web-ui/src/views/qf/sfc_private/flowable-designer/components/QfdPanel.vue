@@ -18,6 +18,17 @@
             <QfdPanelGeneral :modeler="modeler" :element="targetElement" />
           </el-collapse-item>
 
+          <!-- 流程：消息与信号 -->
+          <el-collapse-item v-if="elementType === 'bpmn:Process'" name="messagesSignals">
+            <template #title>
+              <div class="collapse-title">
+                <el-icon><ChatDotRound /></el-icon>
+                <span>消息与信号</span>
+              </div>
+            </template>
+            <QfdPanelMsgAndSignals :modeler="modeler" />
+          </el-collapse-item>
+
           <!-- 流程：执行监听器 -->
           <el-collapse-item v-if="elementType === 'bpmn:Process'" name="executionListeners">
             <template #title>
@@ -38,6 +49,17 @@
               </div>
             </template>
             <QfdPanelExtensionProperties :modeler="modeler" :element="targetElement" />
+          </el-collapse-item>
+
+          <!-- 流程：其他配置 -->
+          <el-collapse-item v-if="elementType === 'bpmn:Process'" name="processOther">
+            <template #title>
+              <div class="collapse-title">
+                <el-icon><Setting /></el-icon>
+                <span>其他</span>
+              </div>
+            </template>
+            <QfdPanelProcess :modeler="modeler" :element="targetElement" />
           </el-collapse-item>
 
           <!-- 用户任务：任务配置 -->
@@ -84,6 +106,17 @@
             <QfdPanelExtensionProperties :modeler="modeler" :element="targetElement" />
           </el-collapse-item>
 
+          <!-- 顺序流：流转条件 -->
+          <el-collapse-item v-if="elementType === 'bpmn:SequenceFlow'" name="sequenceFlow">
+            <template #title>
+              <div class="collapse-title">
+                <el-icon><Connection /></el-icon>
+                <span>流转条件</span>
+              </div>
+            </template>
+            <QfdPanelSequenceFlow :modeler="modeler" :element="targetElement" />
+          </el-collapse-item>
+
           <!-- 开始事件 -->
           <el-collapse-item v-if="elementType === 'bpmn:StartEvent'" name="startEvent">
             <template #title>
@@ -114,7 +147,7 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, toRef } from "vue";
-import { Bell, CirclePlus, Flag, InfoFilled, Select, Timer, VideoPlay } from "@element-plus/icons-vue";
+import { Bell, ChatDotRound, CirclePlus, Connection, Flag, InfoFilled, Select, Setting, Timer, VideoPlay } from "@element-plus/icons-vue";
 import QfdPanelService from "@/views/qf/sfc_private/flowable-designer/service/QfdPanelService";
 import QfdPanelGeneral from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelGeneral.vue";
 import QfdPanelExecutionListeners from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelExecutionListeners.vue";
@@ -123,6 +156,9 @@ import QfdPanelAsync from "@/views/qf/sfc_private/flowable-designer/components/Q
 import QfdPanelUserTask from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelUserTask.vue";
 import QfdPanelTaskListeners from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelTaskListeners.vue";
 import QfdPanelStartEvent from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelStartEvent.vue";
+import QfdPanelSequenceFlow from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelSequenceFlow.vue";
+import QfdPanelProcess from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelProcess.vue";
+import QfdPanelMsgAndSignals from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelMsgAndSignals.vue";
 
 const props = defineProps<{
   modeler: unknown;
