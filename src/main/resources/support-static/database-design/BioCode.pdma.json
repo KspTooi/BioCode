@@ -4,7 +4,7 @@
   "avatar": "",
   "version": "4.9.4",
   "createdTime": "2025-5-31 18:54:43",
-  "updatedTime": "2026-4-19 20:59:18",
+  "updatedTime": "2026-4-20 03:39:42",
   "dbConns": [],
   "profile": {
     "default": {
@@ -33441,7 +33441,7 @@
         },
         {
           "defKey": "status",
-          "defName": "待办状态 0:待办 1:已办",
+          "defName": "待办状态 0:待办 1:已办 10:已作废",
           "comment": "",
           "type": "",
           "len": "",
@@ -33513,7 +33513,7 @@
         },
         {
           "defKey": "action",
-          "defName": "操作",
+          "defName": "操作 0:同意 1:驳回",
           "comment": "",
           "type": "",
           "len": "",
@@ -33524,9 +33524,9 @@
           "defaultValue": "",
           "hideInGraph": false,
           "refDict": "",
-          "baseType": "566FB128-DBDE-4D78-9260-24C96D09CFE0",
+          "baseType": "03F05E70-3F80-47EE-AA1A-9348591BD47D",
           "extProps": {},
-          "domain": "28D593C9-ECBB-4C43-829D-3FBB68A7B55E",
+          "domain": "1B3F3434-1CE8-4D13-A4C3-CDAE3CDF0498",
           "id": "2FCF8651-40FE-4A45-BF60-429E7F319FA8"
         },
         {

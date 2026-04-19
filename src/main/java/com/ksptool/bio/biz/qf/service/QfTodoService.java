@@ -3,6 +3,7 @@ package com.ksptool.bio.biz.qf.service;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
+import com.ksptool.bio.biz.qf.commons.QfMemberKinds;
 import com.ksptool.bio.biz.qf.model.qftodo.QfTodoPo;
 import com.ksptool.bio.biz.qf.model.qftodo.dto.AddQfTodoDto;
 import com.ksptool.bio.biz.qf.model.qftodo.dto.ApproveQfTodoDto;
@@ -11,15 +12,22 @@ import com.ksptool.bio.biz.qf.model.qftodo.dto.GetQfTodoListDto;
 import com.ksptool.bio.biz.qf.model.qftodo.vo.GetQfTodoDetailsVo;
 import com.ksptool.bio.biz.qf.model.qftodo.vo.GetQfTodoListVo;
 import com.ksptool.bio.biz.qf.repository.QfTodoRepository;
+
+import org.apache.commons.lang3.StringUtils;
+import org.flowable.engine.IdentityService;
+import org.flowable.engine.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
+import static com.ksptool.bio.biz.auth.service.SessionService.session;
 
 
 /**
@@ -40,6 +48,15 @@ public class QfTodoService {
 
     @Autowired
     private QfTodoRepository repository;
+
+    @Autowired
+    private TaskService ftService;
+
+    @Autowired
+    private QfMemberService qfMemberService;
+
+    @Autowired
+    private IdentityService fiService;
 
     /**
      * 查询待办事项列表
@@ -121,11 +138,82 @@ public class QfTodoService {
      * @throws BizException 业务异常
      */
     @Transactional(rollbackFor = Exception.class)
-    public void approveQfTodo(ApproveQfTodoDto dto) throws BizException {
+    public void approveQfTodo(ApproveQfTodoDto dto) throws Exception {
+
         QfTodoPo updatePo = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("审批失败,数据不存在或无权限访问."));
 
-        assign(dto, updatePo);
-        repository.save(updatePo);
+        if(updatePo.getStatus() != 0){
+            throw new BizException("待办状态异常，无法审批.");
+        }
+
+        var aud = session();
+        var uid = aud.getUserId();
+        
+
+        //判断是不是我的待办
+        if(updatePo.getMemberType() == QfMemberKinds.USER.getValue()){
+
+            //如果待办是给用户的，判断我是不是这个用户
+            if(updatePo.getMemberId() != uid){
+                throw new BizException("该待办属于用户:" + updatePo.getMemberId() + "，审批人不是本人，无法审批.");
+            }
+
+        }
+
+        //如果待办是给用户组的，判断我是不是这个用户组的一员
+        if(updatePo.getMemberType() == QfMemberKinds.GROUP.getValue()){
+            var groupIds = qfMemberService.getMemberGroupIds(updatePo.getMemberId());
+            if(!groupIds.contains(uid)){
+                throw new BizException("该待办属于用户组:" + updatePo.getMemberId() + "，审批人不是该用户组的一员，无法审批.");
+            }
+
+        }
+
+        //先获取任务
+        var task = ftService.createTaskQuery()
+                .taskId(updatePo.getEngTaskId())
+                .singleResult();
+
+        if (task == null) {
+            throw new BizException("引擎故障，无法获取任务信息.");
+        }
+
+        var comment = "";
+
+        if(StringUtils.isNotBlank(dto.getComment())){
+            comment = dto.getComment();
+        }
+
+        var vars = new HashMap<String, Object>();
+        vars.put("approved", dto.getAction() == 0 ? true : false);   // 用于排他网关走向 true/false 分支
+        vars.put("comment", comment);     // 审批意见
+
+        //设置审批人(为了让 Flowable 在历史表 ACT_HI_TASKINST 记录"谁办的)
+        fiService.setAuthenticatedUserId(String.valueOf(uid));
+
+        try {
+
+            //这为了走 Flowable 自己的评论体系（历史记录会看到），在 complete 之前加：
+            ftService.addComment(task.getId(),  task.getProcessInstanceId(), comment);
+
+            //审批任务
+            ftService.complete(task.getId(), vars);
+
+            //更新待办状态为已办
+            updatePo.setStatus(1);
+
+            //更新实际办理人
+            updatePo.setFinMemberId(uid);
+            updatePo.setFinMemberName(aud.getNickname());
+            updatePo.setFinTime(LocalDateTime.now());
+            
+
+            repository.save(updatePo);
+
+        } finally {
+            fiService.setAuthenticatedUserId(null);
+        }
+
     }
 }

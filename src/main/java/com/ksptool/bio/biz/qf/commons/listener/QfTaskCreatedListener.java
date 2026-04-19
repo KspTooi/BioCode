@@ -131,6 +131,7 @@ public class QfTaskCreatedListener extends AbstractFlowableEngineEventListener {
         po.setInitiatorId(initiatorId);
         po.setInitiatorName(trunc(initiatorName, 20));
         po.setInitiatorTime(initiatorTime);
+        po.setStatus(0); //0:待办 1:已办 10:已作废
         qfTodoRepository.save(po);
     }
 

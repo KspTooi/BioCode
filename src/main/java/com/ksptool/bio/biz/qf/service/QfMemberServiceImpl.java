@@ -2,11 +2,11 @@ package com.ksptool.bio.biz.qf.service;
 
 import com.ksptool.bio.biz.qf.commons.QfMemberKinds;
 import com.ksptool.bio.biz.qf.commons.QfModelTools;
-
+import com.ksptool.bio.biz.auth.repository.UserGroupRepository;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Collections;
 import java.util.List;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.flowable.engine.RepositoryService;
@@ -37,6 +37,9 @@ public class QfMemberServiceImpl implements QfMemberService {
 
     @Autowired
     private TaskService ftService;
+
+    @Autowired
+    private UserGroupRepository augRepository;
 
     /**
      * 根据任务ID获取办理成员ID
@@ -146,6 +149,20 @@ public class QfMemberServiceImpl implements QfMemberService {
         }
 
         return QfModelTools.resolveMemberKind(model, task.getTaskDefinitionKey());
+    }
+
+    /**
+     * 根据人员ID获取人员所属组(角色)ID列表
+     *
+     * @param memberId 办理成员ID
+     * @return 人员所属组(角色)ID列表
+     */
+    @Override
+    public List<Long> getMemberGroupIds(Long memberId) {
+        if(memberId == null){
+            return Collections.emptyList();
+        }
+        return augRepository.getGroupIdsByGrantedUserId(memberId);
     }
 
 }

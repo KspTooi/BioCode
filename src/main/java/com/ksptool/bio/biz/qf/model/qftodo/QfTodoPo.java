@@ -80,8 +80,8 @@ public class QfTodoPo {
     @Column(name = "fin_time", comment = "实际办理时间")
     private LocalDateTime finTime;
 
-    @Column(name = "action", length = 80, comment = "操作")
-    private String action;
+    @Column(name = "action", columnDefinition = "TINYINT", comment = "操作 0:同意 1:驳回")
+    private Integer action;
 
     @Column(name = "comment", length = 500, comment = "办理人意见")
     private String comment;
