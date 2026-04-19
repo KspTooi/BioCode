@@ -4,7 +4,6 @@ import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.assembly.entity.web.Result;
 import com.ksptool.bio.biz.qf.model.qfmodeldeployrcd.dto.GetQfModelDeployRcdListDto;
-import com.ksptool.bio.biz.qf.model.qfmodeldeployrcd.dto.LaunchQfProcessDto;
 import com.ksptool.bio.biz.qf.model.qfmodeldeployrcd.vo.GetQfModelDeployRcdDetailsVo;
 import com.ksptool.bio.biz.qf.model.qfmodeldeployrcd.vo.GetQfModelDeployRcdListVo;
 import com.ksptool.bio.biz.qf.service.QfModelDeployRcdService;
@@ -76,12 +75,5 @@ public class QfModelDeployRcdController {
         return Result.success("操作成功");
     }
 
-    @PreAuthorize("@auth.hasCode('qf:model:deploy:edit')")
-    @Operation(summary = "发起审批流程(测试)")
-    @PostMapping("/launchQfProcess")
-    public Result<String> launchQfProcess(@RequestBody @Valid LaunchQfProcessDto dto) throws Exception {
-        String processInstanceId = qfProcManager.launchProc(dto.getCode(), dto.getBizFormCode(), dto.getDataId());
-        return Result.success(processInstanceId);
-    }
 
 }

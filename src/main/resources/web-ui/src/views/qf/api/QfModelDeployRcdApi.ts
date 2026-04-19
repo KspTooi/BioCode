@@ -27,15 +27,6 @@ export interface GetQfModelDeployRcdListVo {
 }
 
 /**
- * 发起审批流程Dto
- */
-export interface LaunchQfProcessDto {
-  code: string; // 模型编码
-  bizFormCode: string; // 业务表单编码
-  dataId: string; // 业务数据ID
-}
-
-/**
  * 查询流程模型部署历史详情Vo
  */
 export interface GetQfModelDeployRcdDetailsVo {
@@ -92,17 +83,6 @@ export default {
    */
   activateQfModelDeployRcd: async (dto: CommonIdDto): Promise<string> => {
     const result = await Http.postEntity<Result<string>>("/qfModelDeployRcd/activateQfModelDeployRcd", dto);
-    if (result.code === 0) {
-      return result.message;
-    }
-    throw new Error(result.message);
-  },
-
-  /**
-   * 发起审批流程
-   */
-  launchQfProcess: async (dto: LaunchQfProcessDto): Promise<string> => {
-    const result = await Http.postEntity<Result<string>>("/qfModelDeployRcd/launchQfProcess", dto);
     if (result.code === 0) {
       return result.message;
     }

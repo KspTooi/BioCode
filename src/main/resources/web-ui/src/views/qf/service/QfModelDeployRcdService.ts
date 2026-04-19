@@ -4,13 +4,14 @@ import type {
   GetQfModelDeployRcdListDto,
   GetQfModelDeployRcdListVo,
   GetQfModelDeployRcdDetailsVo,
-  LaunchQfProcessDto,
 } from "@/views/qf/api/QfModelDeployRcdApi.ts";
 import QfModelDeployRcdApi from "@/views/qf/api/QfModelDeployRcdApi.ts";
 import { Result } from "@/commons/model/Result";
 import { ElMessage, ElMessageBox } from "element-plus";
 import type { GetQfBizFormListVo } from "@/views/qf/api/QfBizFormApi";
 import QfBizFormApi from "@/views/qf/api/QfBizFormApi";
+import QfProcApi from "@/views/qf/api/QfProcApi.ts";
+import type { LaunchQfProcessDto } from "@/views/qf/api/QfProcApi.ts";
 
 /**
  * 模态框模式类型
@@ -315,7 +316,7 @@ export default {
       launchLoading.value = true;
 
       try {
-        const msg = await QfModelDeployRcdApi.launchQfProcess(launchForm);
+        const msg = await QfProcApi.launchQfProcess(launchForm);
         ElMessage.success(msg || "流程已发起");
         launchVisible.value = false;
         reloadCallback();
