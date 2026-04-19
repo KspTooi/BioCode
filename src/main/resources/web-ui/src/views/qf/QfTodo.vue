@@ -40,7 +40,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="任务到达时间" min-width="160" show-overflow-tooltip />
-        <el-table-column label="操作" fixed="right" width="120">
+        <el-table-column label="操作" fixed="right" width="180">
           <template #default="scope">
             <el-button
               v-if="scope.row.status === 0"
@@ -52,9 +52,7 @@
             >
               审批
             </el-button>
-            <el-button :icon="DeleteIcon" link type="danger" size="small" @click="removeList(scope.row)">
-              删除
-            </el-button>
+            <el-button :icon="DeleteIcon" link type="danger" size="small" @click="removeList(scope.row)"> 删除 </el-button>
           </template>
         </el-table-column>
       </el-table>

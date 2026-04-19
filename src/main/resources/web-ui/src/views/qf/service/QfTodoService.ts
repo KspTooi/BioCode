@@ -17,7 +17,7 @@ export default {
       pageSize: 20,
       nodeName: "",
       bizFormId: "",
-      status: undefined,
+      status: 0, // 待办状态 0:待办 1:已办
     });
 
     const listData = ref<GetQfTodoListVo[]>([]);
@@ -45,7 +45,7 @@ export default {
       listForm.value.pageSize = 20;
       listForm.value.nodeName = "";
       listForm.value.bizFormId = "";
-      listForm.value.status = undefined;
+      listForm.value.status = 0;
       loadList();
     };
 
