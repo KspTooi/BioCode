@@ -133,6 +133,39 @@
             </el-form-item>
           </el-collapse-item>
 
+          <el-collapse-item v-if="elementType === 'bpmn:SequenceFlow'" name="sequenceFlow">
+            <template #title>
+              <div class="collapse-title">
+                <el-icon><Connection /></el-icon>
+                <span>流转条件</span>
+              </div>
+            </template>
+            <el-form-item label="条件模板">
+              <el-select v-model="form.conditionPreset" style="width: 100%" @change="onConditionPresetChange">
+                <el-option label="无(无条件直达)" value="none" />
+                <el-option label="同意 (approved == true)" value="approve" />
+                <el-option label="驳回 (approved == false)" value="reject" />
+                <el-option label="自定义" value="custom" />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="条件表达式">
+              <el-input
+                v-model="form.conditionExpression"
+                type="textarea"
+                :rows="2"
+                :disabled="form.conditionPreset !== 'custom'"
+                placeholder="${approved == true}"
+                @change="onSequenceFlowCommit"
+              />
+            </el-form-item>
+            <el-form-item label="默认流">
+              <div class="flow-default-row">
+                <el-switch v-model="form.isDefault" @change="onDefaultFlowCommit" />
+                <span class="flow-hint">上游网关找不到匹配条件时走此分支</span>
+              </div>
+            </el-form-item>
+          </el-collapse-item>
+
           <el-collapse-item v-if="elementType === 'bpmn:StartEvent'" name="startEvent">
             <template #title>
               <div class="collapse-title">
@@ -208,8 +241,17 @@ import {
   Grid,
   Flag,
   Notebook,
+  Connection,
 } from "@element-plus/icons-vue";
 import { findProcessElement } from "@/views/qf/sfc_private/flowable-designer/flowableModelUtils";
+import type { ConditionPreset } from "@/views/qf/sfc_private/flowable-designer/flowableSequenceFlowPanel";
+import {
+  resetSequenceFlowFormFields,
+  loadSequenceFlowFromBo,
+  onConditionPresetChange as applySequenceFlowPresetChange,
+  commitSequenceFlowCondition,
+  commitDefaultFlow as applySequenceFlowDefaultCommit,
+} from "@/views/qf/sfc_private/flowable-designer/flowableSequenceFlowPanel";
 import ProcessMessagesAndSignals from "@/views/qf/sfc_private/flowable-designer/components/ProcessMessagesAndSignals.vue";
 import ExecutionListeners from "@/views/qf/sfc_private/flowable-designer/components/ExecutionListeners.vue";
 import ExtensionProperties from "@/views/qf/sfc_private/flowable-designer/components/ExtensionProperties.vue";
@@ -326,6 +368,9 @@ const form = ref({
   exclusive: true,
   isExecutable: true,
   skipExpression: "",
+  conditionPreset: "none" as ConditionPreset,
+  conditionExpression: "",
+  isDefault: false,
 });
 
 function loadFormFromBo(): void {
@@ -333,6 +378,7 @@ function loadFormFromBo(): void {
   if (!b) {
     return;
   }
+  resetSequenceFlowFormFields(form);
   form.value.id = (b.id as string) || "";
   form.value.name = (b.name as string) || "";
   form.value.candidateStarterUsers = (b.candidateStarterUsers as string) || "";
@@ -358,10 +404,15 @@ function loadFormFromBo(): void {
     form.value.skipExpression = (b.skipExpression as string) || "";
     return;
   }
+  if (b.$type === "bpmn:SequenceFlow") {
+    form.value.skipExpression = "";
+    loadSequenceFlowFromBo(b, targetElement.value, form);
+    return;
+  }
   form.value.skipExpression = "";
 }
 
-watch([bo, elementType], () => {
+watch([bo, elementType, targetElement], () => {
   loadFormFromBo();
 });
 
@@ -485,6 +536,18 @@ function onStartEventCommit(): void {
     initiator: form.value.initiator || undefined,
   });
 }
+
+function onConditionPresetChange(preset: ConditionPreset): void {
+  applySequenceFlowPresetChange(elementType.value, preset, form, onSequenceFlowCommit);
+}
+
+function onSequenceFlowCommit(): void {
+  commitSequenceFlowCondition(elementType.value, getModeler, applyProps, form);
+}
+
+function onDefaultFlowCommit(): void {
+  applySequenceFlowDefaultCommit(elementType.value, targetElement.value, form.value.isDefault, getModeler);
+}
 </script>
 
 <style scoped>
@@ -560,5 +623,16 @@ function onStartEventCommit(): void {
 .collapse-title .el-icon {
   font-size: 16px;
   color: var(--el-color-primary);
+}
+.flow-default-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.flow-hint {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  line-height: 1.4;
 }
 </style>

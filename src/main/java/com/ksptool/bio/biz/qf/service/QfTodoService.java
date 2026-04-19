@@ -205,8 +205,7 @@ public class QfTodoService {
             updatePo.setFinMemberId(uid);
             updatePo.setFinMemberName(aud.getNickname());
             updatePo.setFinTime(LocalDateTime.now());
-
-
+            updatePo.setAction(dto.getAction());
             repository.save(updatePo);
 
         } finally {
