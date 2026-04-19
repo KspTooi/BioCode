@@ -73,6 +73,17 @@
             <QfdPanelUserTask :modeler="modeler" :element="targetElement" />
           </el-collapse-item>
 
+          <!-- 用户任务：审批与多实例 -->
+          <el-collapse-item v-if="elementType === 'bpmn:UserTask'" name="multiInstance">
+            <template #title>
+              <div class="collapse-title">
+                <el-icon><Grid /></el-icon>
+                <span>审批与多实例</span>
+              </div>
+            </template>
+            <QfdPanelMultiInstance :modeler="modeler" :element="targetElement" />
+          </el-collapse-item>
+
           <!-- 用户任务：任务监听器 -->
           <el-collapse-item v-if="elementType === 'bpmn:UserTask'" name="taskListeners">
             <template #title>
@@ -147,7 +158,7 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, toRef } from "vue";
-import { Bell, ChatDotRound, CirclePlus, Connection, Flag, InfoFilled, Select, Setting, Timer, VideoPlay } from "@element-plus/icons-vue";
+import { Bell, ChatDotRound, CirclePlus, Connection, Flag, Grid, InfoFilled, Select, Setting, Timer, VideoPlay } from "@element-plus/icons-vue";
 import QfdPanelService from "@/views/qf/sfc_private/flowable-designer/service/QfdPanelService";
 import QfdPanelGeneral from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelGeneral.vue";
 import QfdPanelExecutionListeners from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelExecutionListeners.vue";
@@ -156,6 +167,7 @@ import QfdPanelAsync from "@/views/qf/sfc_private/flowable-designer/components/Q
 import QfdPanelUserTask from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelUserTask.vue";
 import QfdPanelTaskListeners from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelTaskListeners.vue";
 import QfdPanelStartEvent from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelStartEvent.vue";
+import QfdPanelMultiInstance from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelMultiInstance.vue";
 import QfdPanelSequenceFlow from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelSequenceFlow.vue";
 import QfdPanelProcess from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelProcess.vue";
 import QfdPanelMsgAndSignals from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelMsgAndSignals.vue";
