@@ -7,6 +7,12 @@ import org.flowable.task.api.Task;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+/**
+ * 流程变量工具类
+ *
+ * @author KspTool(ksptool@outlook.com)
+ * @since 2026-04-16
+ */
 public class QfProcTools {
 
 

@@ -27,6 +27,9 @@ import static com.ksptool.bio.biz.qf.commons.QfProcTools.trunc;
  * 由流程发起方 (launchQfProcess) 通过流程变量带入，监听器从变量中读取并兜底默认值。
  * 注意：监听器运行在引擎回调线程，没有Web会话上下文，所以 rootId/deptId 必须由变量提供，
  * 避免触发 QfTodoPo.onCreate 里的 SessionService.session() 抛 AuthException。
+ * 
+ * @author Akkarin(1075613357@qq.com)
+ * @since 2026-04-16
  */
 @Slf4j
 @Component

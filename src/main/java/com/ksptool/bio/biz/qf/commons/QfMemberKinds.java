@@ -4,6 +4,9 @@ import lombok.Getter;
 
 /**
  * 办理成员类型
+ * 
+ * @author (Ish)Yuumi(1144150092@qq.com)
+ * @since 2026-04-15
  */
 @Getter
 public enum QfMemberKinds {

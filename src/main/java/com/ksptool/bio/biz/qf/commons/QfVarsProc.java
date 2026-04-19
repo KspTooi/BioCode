@@ -10,6 +10,9 @@ import lombok.Getter;
  * 用于脱离Web会话上下文的情况下还原 rootId/deptId/initiator 等字段。
  * <p>
  * 统一以 "QF_" 前缀避免与业务自定义流程变量冲突。
+ *
+ * @author KspTool(ksptool@outlook.com)
+ * @since 2026-04-16
  */
 @Getter
 public enum QfVarsProc {

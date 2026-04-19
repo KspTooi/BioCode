@@ -7,7 +7,7 @@ import org.flowable.task.api.Task;
  * 办理成员服务接口
  * 这个服务主要用于获取办理成员ID和办理成员类型
  * 
- * @author Yuumi(1144150092@qq.com)
+ * @author (Ish)Yuumi(1144150092@qq.com)
  * @since 2026-04-15
  */
 public interface QfMemberService {

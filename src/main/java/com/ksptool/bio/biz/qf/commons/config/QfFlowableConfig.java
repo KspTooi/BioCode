@@ -23,7 +23,10 @@ import java.util.List;
  * Flowable引擎有许多事件，每个事件可以有多个监听器。
  * 比如TASK_CREATED事件，可以有多个监听器。
  * 可以通过FlowableEngineEventType枚举类来获取事件类型。
- *
+ * 
+ * @author Akkarin(1075613357@qq.com)
+ * @author (Ish)Yuumi(1144150092@qq.com)
+ * @since 2026-04-15
  */
 @Configuration
 public class QfFlowableConfig implements EngineConfigurationConfigurer<SpringProcessEngineConfiguration> {

@@ -7,7 +7,7 @@ import lombok.Getter;
  * <p>
  * 请注意: 这些自定义属性不会被注入到Proc变量中，如果需要获取这些值，应该通过静态的Bpmn模型来获取
  *
- * @author KspTool
+ * @author KspTool(ksptool@outlook.com)
  * @since 2026-04-17
  */
 @Getter

@@ -26,7 +26,7 @@ import static com.ksptool.entities.Entities.assign;
 /**
  * 流程模型部署历史服务
  * 
- * @author KspTool
+ * @author KspTool(ksptool@outlook.com)
  * @since 2026-04-17
  */
 @Service

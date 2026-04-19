@@ -16,6 +16,9 @@ import org.flowable.engine.impl.bpmn.parser.handler.AbstractBpmnParseHandler;
  * 本处理器在 <b>部署期</b>（BPMN 解析阶段）被调用，自动将每个多实例 UserTask 的
  * collection 表达式改写为 {@code ${qfMi_<taskId>}}，利用节点 ID 的唯一性区分变量名，
  * 彻底避免同名冲突，且无需修改前端代码。
+ * 
+ * @author (Ish)Yuumi(1144150092@qq.com)
+ * @since 2026-04-15
  */
 public class QfMiRenameParseHandler extends AbstractBpmnParseHandler<UserTask> {
 

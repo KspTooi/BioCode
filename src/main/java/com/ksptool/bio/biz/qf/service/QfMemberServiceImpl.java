@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
  * 办理成员服务实现类
  * 这个服务主要用于获取办理成员ID和办理成员类型
  * 
+ * @author Akkarin(1075613357@qq.com)
  * @author (Ish)Yuumi(1144150092@qq.com)
  * @since 2026-04-15
  */
@@ -61,7 +62,7 @@ public class QfMemberServiceImpl implements QfMemberService {
          * #2026-04-15 @KspTool
          * 这里注意 QF是不支持单实例任务+多个办理人情况，如果有会签/或签，则该任务一定是多实例任务。
          * <p>
-         * 我已经让前端把单实例能选多个人的框干掉了。后端应该也会在模型部署时不让这种模型上线(!现在还没有做)
+         * 我已经让前端把单实例能选多个人的框干掉了。后端应该也会在模型部署时不让这种模型上线(!现在还没有做@KspTool)
          * 如果前端正确配出了多实例，这里会是多个任务，每个任务就一个人。
          * 所以这里我就不管这种情况，永远只拿第一个人。
          * <p>
