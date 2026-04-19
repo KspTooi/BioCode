@@ -50,7 +50,7 @@ export default class QfRouteRegister extends GenricRouteRegister {
         biz: "qf",
         path: "qfCc",
         name: "qfCc",
-        component: () => import("@/views/qf/qfCc/QfCc.vue"),
+        component: () => import("@/views/qf/QfCc.vue"),
         meta: { breadcrumb: "抄送" },
       }),
     ];
