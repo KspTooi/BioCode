@@ -45,15 +45,11 @@ export default {
       const body = (ce?.body as string | undefined)?.trim() ?? "";
       form.value.conditionExpression = body;
 
-      if (!body) {
-        form.value.conditionPreset = "none";
-      } else if (body === "${approved == true}") {
-        form.value.conditionPreset = "approve";
-      } else if (body === "${approved == false}") {
-        form.value.conditionPreset = "reject";
-      } else {
-        form.value.conditionPreset = "custom";
-      }
+      const CONDITION_PRESET_MAP: Record<string, ConditionPreset> = {
+        "${approved == true}": "approve",
+        "${approved == false}": "reject",
+      };
+      form.value.conditionPreset = !body ? "none" : (CONDITION_PRESET_MAP[body] ?? "custom");
 
       // 从上游网关的 default 推断当前连线是否为默认流
       const flowId = (b.id as string) || "";

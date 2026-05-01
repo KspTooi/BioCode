@@ -164,7 +164,7 @@
 <script setup lang="ts">
 import { InfoFilled } from "@element-plus/icons-vue";
 import CoreUserSelectModal from "@/views/core/components/public/CoreUserSelectModal.vue";
-import { useMultiInstancePanel } from "@/views/qf/sfc_private/flowable-designer/deprecated/multiInstanceFlow.ts";
+import { useMultiInstancePanel } from "@/views/qf/sfc_private/flowable-designer/deprecated/MultiInstanceFlow.js";
 
 const props = defineProps<{
   modeler: unknown;
@@ -192,6 +192,9 @@ const {
   commit,
   displayUser,
 } = useMultiInstancePanel(props);
+
+
+
 </script>
 
 <style scoped>

@@ -1,0 +1,17 @@
+{
+  "name": "bpmn.io Color Extension",
+  "uri": "http://bpmn.io/schema/bpmn/bioc",
+  "prefix": "bioc",
+  "xml": { "tagAlias": "lowerCase" },
+  "types": [
+    {
+      "name": "Colored",
+      "isAbstract": true,
+      "extends": ["bpmndi:BPMNShape", "bpmndi:BPMNEdge"],
+      "properties": [
+        { "name": "stroke", "isAttr": true, "type": "String" },
+        { "name": "fill", "isAttr": true, "type": "String" }
+      ]
+    }
+  ]
+}

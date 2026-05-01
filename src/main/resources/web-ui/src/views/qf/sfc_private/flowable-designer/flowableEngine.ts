@@ -1,7 +1,12 @@
 import flowableDescriptor from "@/views/qf/sfc_private/flowable-designer/flowableDescriptor.json";
+import biocDescriptor from "@/views/qf/sfc_private/flowable-designer/biocDescriptor.json";
 
 export function getFlowableModdleExtensions(): Record<string, Record<string, unknown>> {
-  return { flowable: flowableDescriptor as unknown as Record<string, unknown> };
+  return {
+    flowable: flowableDescriptor as unknown as Record<string, unknown>,
+    // 注册 bioc 命名空间描述符，使 moddle 能正确解析 bioc:fill / bioc:stroke 属性
+    bioc: biocDescriptor as unknown as Record<string, unknown>,
+  };
 }
 
 const FLOWABLE_NS = "http://flowable.org/bpmn";

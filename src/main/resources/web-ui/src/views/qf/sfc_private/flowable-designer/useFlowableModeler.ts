@@ -4,8 +4,8 @@ import NavigatedViewer from "bpmn-js/lib/NavigatedViewer";
 import {
   getFlowableModdleExtensions,
   buildEmptyFlowableDiagram,
-} from "@/views/qf/sfc_private/flowable-designer/flowableEngine";
-import translateModule from "@/views/qf/sfc_private/flowable-designer/translateModule";
+} from "@/views/qf/sfc_private/flowable-designer/FlowableEngine.ts";
+import translateModule from "@/views/qf/sfc_private/flowable-designer/TranslateModule.ts";
 
 export type BpmnElement = {
   id: string;
@@ -47,11 +47,7 @@ const TASK_TYPES = new Set([
   "bpmn:CallActivity",
 ]);
 
-function checkEventCount(
-  issues: string[],
-  startEvents: any[],
-  endEvents: any[]
-): void {
+function checkEventCount(issues: string[], startEvents: any[], endEvents: any[]): void {
   if (startEvents.length === 0) {
     issues.push("缺少开始事件");
   }
@@ -157,9 +153,7 @@ export function useFlowableModeler(containerRef: Ref<HTMLElement | null>, readon
         defaultLabelColor: "#222222",
       },
     };
-    const m: any = readonly
-      ? new NavigatedViewer(commonOptions)
-      : new BpmnModeler({ ...commonOptions, keyboard: {} });
+    const m: any = readonly ? new NavigatedViewer(commonOptions) : new BpmnModeler({ ...commonOptions, keyboard: {} });
     modeler.value = m;
     const eventBus = m.get("eventBus");
     if (!readonly) {

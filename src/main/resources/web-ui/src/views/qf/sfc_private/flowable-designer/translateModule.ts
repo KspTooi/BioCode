@@ -1,4 +1,4 @@
-import translations from "@/views/qf/sfc_private/flowable-designer/zh-CN";
+import translations from "@/views/qf/sfc_private/flowable-designer/ZhCn";
 
 function customTranslate(template: string, replacements?: Record<string, string>): string {
   const translated = translations[template] || template;

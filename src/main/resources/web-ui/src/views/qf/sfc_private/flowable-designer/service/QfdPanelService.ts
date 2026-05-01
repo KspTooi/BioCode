@@ -8,7 +8,7 @@
  * 未经事先书面许可，严禁任何形式的复制或分发。
  */
 import { computed, ref, shallowRef, watch, type Ref } from "vue";
-import { findProcessElement } from "@/views/qf/sfc_private/flowable-designer/flowableModelUtils";
+import { findProcessElement } from "@/views/qf/sfc_private/flowable-designer/FlowableModelUtils";
 
 type BpmnModelerLike = { get: (name: string) => unknown };
 

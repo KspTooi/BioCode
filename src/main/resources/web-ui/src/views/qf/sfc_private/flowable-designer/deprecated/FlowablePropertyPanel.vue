@@ -243,15 +243,15 @@ import {
   Notebook,
   Connection,
 } from "@element-plus/icons-vue";
-import { findProcessElement } from "@/views/qf/sfc_private/flowable-designer/flowableModelUtils.ts";
-import type { ConditionPreset } from "@/views/qf/sfc_private/flowable-designer/deprecated/flowableSequenceFlowPanel.ts";
+import { findProcessElement } from "@/views/qf/sfc_private/flowable-designer/FlowableModelUtils";
+import type { ConditionPreset } from "@/views/qf/sfc_private/flowable-designer/deprecated/FlowableSequenceFlowPanel.js";
 import {
   resetSequenceFlowFormFields,
   loadSequenceFlowFromBo,
   onConditionPresetChange as applySequenceFlowPresetChange,
   commitSequenceFlowCondition,
   commitDefaultFlow as applySequenceFlowDefaultCommit,
-} from "@/views/qf/sfc_private/flowable-designer/deprecated/flowableSequenceFlowPanel.ts";
+} from "@/views/qf/sfc_private/flowable-designer/deprecated/FlowableSequenceFlowPanel.js";
 import ProcessMessagesAndSignals from "@/views/qf/sfc_private/flowable-designer/deprecated/ProcessMessagesAndSignals.vue";
 import ExecutionListeners from "@/views/qf/sfc_private/flowable-designer/deprecated/ExecutionListeners.vue";
 import ExtensionProperties from "@/views/qf/sfc_private/flowable-designer/deprecated/ExtensionProperties.vue";

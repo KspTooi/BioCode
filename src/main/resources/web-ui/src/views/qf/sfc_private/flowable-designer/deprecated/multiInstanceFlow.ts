@@ -299,14 +299,75 @@ export function useMultiInstancePanel(props: MultiInstancePanelProps): MultiInst
     }
   }
 
+  function clearAllPicks(): void {
+    selectedUsers.value = [];
+    selectedDepts.value = [];
+    selectedGroups.value = [];
+  }
+
+  function applyUserPicks(candU: string, userNamesCsv: string): void {
+    assigneeKind.value = "user";
+    selectedUsers.value = mergeUserRows(splitCsv(candU), userNamesCsv);
+    selectedDepts.value = [];
+    selectedGroups.value = [];
+  }
+
+  function applyAssigneePick(assignee: string, userNamesCsv: string): void {
+    assigneeKind.value = "user";
+    const label = splitCsv(userNamesCsv)[0] || "";
+    selectedUsers.value = label
+      ? [{ id: assignee, nickname: label, username: label }]
+      : [{ id: assignee, username: assignee }];
+    selectedDepts.value = [];
+    selectedGroups.value = [];
+  }
+
+  function applyDeptPicks(candG: string, deptNamesCsv: string): void {
+    assigneeKind.value = "dept";
+    selectedDepts.value = singleDeptRow(mergeDeptRows(splitCsv(candG), deptNamesCsv));
+    selectedUsers.value = [];
+    selectedGroups.value = [];
+  }
+
+  interface ResolveCtx {
+    assignee: string;
+    candU: string;
+    candG: string;
+    userNamesCsv: string;
+    deptNamesCsv: string;
+    groupNamesCsv: string;
+    loop: Record<string, unknown> | undefined;
+  }
+
+  function resolveUserOrDeptKind(ctx: ResolveCtx): void {
+    const { assignee, candU, candG, userNamesCsv, deptNamesCsv, groupNamesCsv, loop } = ctx;
+    if (candU) {
+      applyUserPicks(candU, userNamesCsv);
+      finishLoadFromLoop(loop);
+      return;
+    }
+    if (candG && !candG.includes("${")) {
+      applyDeptPicks(candG, deptNamesCsv || groupNamesCsv);
+      finishLoadFromLoop(loop);
+      void fetchOrgTree();
+      return;
+    }
+    if (assignee && !assignee.includes("${")) {
+      applyAssigneePick(assignee, userNamesCsv);
+      finishLoadFromLoop(loop);
+      return;
+    }
+    assigneeKind.value = "user";
+    clearAllPicks();
+    finishLoadFromLoop(loop);
+  }
+
   function loadFromBo(): void {
     const el = props.element as BpmnEl | null;
     if (!el?.businessObject) {
       assigneeKind.value = "user";
       approvalMultiMode.value = "none";
-      selectedUsers.value = [];
-      selectedDepts.value = [];
-      selectedGroups.value = [];
+      clearAllPicks();
       resetCustomLoopEmpty();
       return;
     }
@@ -319,12 +380,6 @@ export function useMultiInstancePanel(props: MultiInstancePanelProps): MultiInst
     const deptNamesCsv = ((b.candidateDeptNames as string) || "").trim();
     const groupNamesCsv = ((b.candidateGroupNames as string) || "").trim();
     const loop = b.loopCharacteristics as Record<string, unknown> | undefined;
-
-    const clearAllPicks = (): void => {
-      selectedUsers.value = [];
-      selectedDepts.value = [];
-      selectedGroups.value = [];
-    };
 
     if (assignee === INITIATOR_EXPR) {
       assigneeKind.value = "initiator";
@@ -344,86 +399,13 @@ export function useMultiInstancePanel(props: MultiInstancePanelProps): MultiInst
     }
 
     if (storedKind === "dept" && candG && !candG.includes("${")) {
-      assigneeKind.value = "dept";
-      selectedDepts.value = singleDeptRow(mergeDeptRows(splitCsv(candG), deptNamesCsv));
-      selectedUsers.value = [];
-      selectedGroups.value = [];
+      applyDeptPicks(candG, deptNamesCsv);
       finishLoadFromLoop(loop);
       void fetchOrgTree();
       return;
     }
 
-    if (storedKind === "user") {
-      if (assignee === TASK_ASSIGNEE_EXPR && candU) {
-        assigneeKind.value = "user";
-        selectedUsers.value = mergeUserRows(splitCsv(candU), userNamesCsv);
-        selectedDepts.value = [];
-        selectedGroups.value = [];
-        finishLoadFromLoop(loop);
-        return;
-      }
-      if (candU) {
-        assigneeKind.value = "user";
-        selectedUsers.value = mergeUserRows(splitCsv(candU), userNamesCsv);
-        selectedDepts.value = [];
-        selectedGroups.value = [];
-        finishLoadFromLoop(loop);
-        return;
-      }
-      if (assignee && !assignee.includes("${")) {
-        assigneeKind.value = "user";
-        const names = splitCsv(userNamesCsv);
-        const label = names[0] || "";
-        selectedUsers.value = label
-          ? [{ id: assignee, nickname: label, username: label }]
-          : [{ id: assignee, username: assignee }];
-        selectedDepts.value = [];
-        selectedGroups.value = [];
-        finishLoadFromLoop(loop);
-        return;
-      }
-    }
-
-    if (assignee === TASK_ASSIGNEE_EXPR && candU) {
-      assigneeKind.value = "user";
-      selectedUsers.value = mergeUserRows(splitCsv(candU), userNamesCsv);
-      selectedDepts.value = [];
-      selectedGroups.value = [];
-      finishLoadFromLoop(loop);
-      return;
-    }
-    if (candU) {
-      assigneeKind.value = "user";
-      selectedUsers.value = mergeUserRows(splitCsv(candU), userNamesCsv);
-      selectedDepts.value = [];
-      selectedGroups.value = [];
-      finishLoadFromLoop(loop);
-      return;
-    }
-    if (candG && !candG.includes("${")) {
-      assigneeKind.value = "dept";
-      selectedDepts.value = singleDeptRow(mergeDeptRows(splitCsv(candG), deptNamesCsv || groupNamesCsv));
-      selectedUsers.value = [];
-      selectedGroups.value = [];
-      finishLoadFromLoop(loop);
-      void fetchOrgTree();
-      return;
-    }
-    if (assignee && !assignee.includes("${")) {
-      assigneeKind.value = "user";
-      const names = splitCsv(userNamesCsv);
-      const label = names[0] || "";
-      selectedUsers.value = label
-        ? [{ id: assignee, nickname: label, username: label }]
-        : [{ id: assignee, username: assignee }];
-      selectedDepts.value = [];
-      selectedGroups.value = [];
-      finishLoadFromLoop(loop);
-      return;
-    }
-    assigneeKind.value = "user";
-    clearAllPicks();
-    finishLoadFromLoop(loop);
+    resolveUserOrDeptKind({ assignee, candU, candG, userNamesCsv, deptNamesCsv, groupNamesCsv, loop });
   }
 
   function bindStack(): void {
@@ -599,6 +581,108 @@ export function useMultiInstancePanel(props: MultiInstancePanelProps): MultiInst
     modeling.updateModdleProperties(diagramEl, loop, { completionCondition: compExpr });
   }
 
+  type CommitCtx = {
+    diagramEl: BpmnEl;
+    bo: Record<string, unknown>;
+    modeling: any;
+    moddle: any;
+  };
+
+  function applyLoop(ctx: CommitCtx, mode: ApprovalMultiMode, kind: "user" | "dept" | "group"): void {
+    if (mode === "custom") {
+      writeCustomLoop(ctx.diagramEl, ctx.bo, ctx.modeling, ctx.moddle);
+      return;
+    }
+    if (mode === "countersign" || mode === "orSign") {
+      writeSignLoop(ctx.diagramEl, ctx.bo, ctx.modeling, ctx.moddle, kind, mode);
+      return;
+    }
+    clearLoop(ctx.diagramEl, ctx.bo, ctx.modeling);
+  }
+
+  function commitUser(ctx: CommitCtx): void {
+    const ids = selectedUsers.value.map((u) => u.id).filter(Boolean);
+    const nameCsv = selectedUsers.value.map((u) => displayUser(u)).join(",");
+    if (ids.length === 0) {
+      ctx.modeling.updateProperties(ctx.diagramEl, {
+        assignee: undefined,
+        candidateUsers: undefined,
+        candidateGroups: undefined,
+        ...CLEAR_ASSIGNEE_META,
+      });
+      applyLoop(ctx, approvalMultiMode.value, "user");
+      return;
+    }
+    if (ids.length === 1) {
+      ctx.modeling.updateProperties(ctx.diagramEl, {
+        assignee: ids[0],
+        candidateUsers: undefined,
+        candidateGroups: undefined,
+        assigneeKind: "user",
+        candidateUserNames: nameCsv,
+        candidateDeptNames: undefined,
+        candidateGroupNames: undefined,
+      });
+      if (approvalMultiMode.value === "custom") {
+        writeCustomLoop(ctx.diagramEl, ctx.bo, ctx.modeling, ctx.moddle);
+        return;
+      }
+      clearLoop(ctx.diagramEl, ctx.bo, ctx.modeling);
+      return;
+    }
+    const csv = ids.join(",");
+    const isSignMode = approvalMultiMode.value === "countersign" || approvalMultiMode.value === "orSign";
+    ctx.modeling.updateProperties(ctx.diagramEl, {
+      assignee: isSignMode ? TASK_ASSIGNEE_EXPR : undefined,
+      candidateUsers: csv,
+      candidateGroups: undefined,
+      assigneeKind: "user",
+      candidateUserNames: nameCsv,
+      candidateDeptNames: undefined,
+      candidateGroupNames: undefined,
+    });
+    applyLoop(ctx, approvalMultiMode.value, "user");
+  }
+
+  function commitGroupKind(
+    ctx: CommitCtx,
+    kind: "dept" | "group",
+    ids: string[],
+    nameCsv: string
+  ): void {
+    if (ids.length === 0) {
+      ctx.modeling.updateProperties(ctx.diagramEl, {
+        assignee: undefined,
+        candidateUsers: undefined,
+        candidateGroups: undefined,
+        ...CLEAR_ASSIGNEE_META,
+      });
+      applyLoop(ctx, approvalMultiMode.value, kind);
+      return;
+    }
+    const csv = ids.join(",");
+    const nameKey = kind === "dept" ? "candidateDeptNames" : "candidateGroupNames";
+    const otherKey = kind === "dept" ? "candidateGroupNames" : "candidateDeptNames";
+    ctx.modeling.updateProperties(ctx.diagramEl, {
+      assignee: undefined,
+      candidateUsers: undefined,
+      candidateGroups: ids.length === 1 ? ids[0] : csv,
+      assigneeKind: kind,
+      candidateUserNames: undefined,
+      [nameKey]: nameCsv,
+      [otherKey]: undefined,
+    });
+    if (ids.length === 1) {
+      if (approvalMultiMode.value === "custom") {
+        writeCustomLoop(ctx.diagramEl, ctx.bo, ctx.modeling, ctx.moddle);
+        return;
+      }
+      clearLoop(ctx.diagramEl, ctx.bo, ctx.modeling);
+      return;
+    }
+    applyLoop(ctx, approvalMultiMode.value, kind);
+  }
+
   function commit(): void {
     const m = getM(props);
     const diagramEl = props.element as BpmnEl | null;
@@ -608,6 +692,7 @@ export function useMultiInstancePanel(props: MultiInstancePanelProps): MultiInst
     const bo = diagramEl.businessObject;
     const modeling = m.get("modeling");
     const moddle = m.get("moddle");
+    const ctx: CommitCtx = { diagramEl, bo, modeling, moddle };
 
     if (assigneeKind.value === "initiator") {
       modeling.updateProperties(diagramEl, {
@@ -622,245 +707,20 @@ export function useMultiInstancePanel(props: MultiInstancePanelProps): MultiInst
       clearLoop(diagramEl, bo, modeling);
       return;
     }
-
     if (assigneeKind.value === "user") {
-      const ids = selectedUsers.value.map((u) => u.id).filter(Boolean);
-      const nameCsv = selectedUsers.value.map((u) => displayUser(u)).join(",");
-      if (ids.length === 0) {
-        modeling.updateProperties(diagramEl, {
-          assignee: undefined,
-          candidateUsers: undefined,
-          candidateGroups: undefined,
-          ...CLEAR_ASSIGNEE_META,
-        });
-        if (approvalMultiMode.value === "custom") {
-          writeCustomLoop(diagramEl, bo, modeling, moddle);
-          return;
-        }
-        clearLoop(diagramEl, bo, modeling);
-        return;
-      }
-      if (ids.length === 1) {
-        modeling.updateProperties(diagramEl, {
-          assignee: ids[0],
-          candidateUsers: undefined,
-          candidateGroups: undefined,
-          assigneeKind: "user",
-          candidateUserNames: nameCsv,
-          candidateDeptNames: undefined,
-          candidateGroupNames: undefined,
-        });
-        if (approvalMultiMode.value === "countersign" || approvalMultiMode.value === "orSign") {
-          clearLoop(diagramEl, bo, modeling);
-          return;
-        }
-        if (approvalMultiMode.value === "custom") {
-          writeCustomLoop(diagramEl, bo, modeling, moddle);
-          return;
-        }
-        clearLoop(diagramEl, bo, modeling);
-        return;
-      }
-      const csv = ids.join(",");
-      if (approvalMultiMode.value === "none") {
-        modeling.updateProperties(diagramEl, {
-          assignee: undefined,
-          candidateUsers: csv,
-          candidateGroups: undefined,
-          assigneeKind: "user",
-          candidateUserNames: nameCsv,
-          candidateDeptNames: undefined,
-          candidateGroupNames: undefined,
-        });
-        clearLoop(diagramEl, bo, modeling);
-        return;
-      }
-      if (approvalMultiMode.value === "countersign" || approvalMultiMode.value === "orSign") {
-        modeling.updateProperties(diagramEl, {
-          assignee: TASK_ASSIGNEE_EXPR,
-          candidateUsers: csv,
-          candidateGroups: undefined,
-          assigneeKind: "user",
-          candidateUserNames: nameCsv,
-          candidateDeptNames: undefined,
-          candidateGroupNames: undefined,
-        });
-        writeSignLoop(diagramEl, bo, modeling, moddle, "user", approvalMultiMode.value);
-        return;
-      }
-      if (approvalMultiMode.value === "custom") {
-        modeling.updateProperties(diagramEl, {
-          assignee: undefined,
-          candidateUsers: csv,
-          candidateGroups: undefined,
-          assigneeKind: "user",
-          candidateUserNames: nameCsv,
-          candidateDeptNames: undefined,
-          candidateGroupNames: undefined,
-        });
-        writeCustomLoop(diagramEl, bo, modeling, moddle);
-        return;
-      }
+      commitUser(ctx);
+      return;
     }
-
     if (assigneeKind.value === "dept") {
       const ids = selectedDepts.value.map((d) => d.id).filter(Boolean);
       const nameCsv = selectedDepts.value.map((d) => d.name).join(",");
-      if (ids.length === 0) {
-        modeling.updateProperties(diagramEl, {
-          assignee: undefined,
-          candidateUsers: undefined,
-          candidateGroups: undefined,
-          ...CLEAR_ASSIGNEE_META,
-        });
-        if (approvalMultiMode.value === "custom") {
-          writeCustomLoop(diagramEl, bo, modeling, moddle);
-          return;
-        }
-        clearLoop(diagramEl, bo, modeling);
-        return;
-      }
-      if (ids.length === 1) {
-        modeling.updateProperties(diagramEl, {
-          assignee: undefined,
-          candidateUsers: undefined,
-          candidateGroups: ids[0],
-          assigneeKind: "dept",
-          candidateUserNames: undefined,
-          candidateDeptNames: nameCsv,
-          candidateGroupNames: undefined,
-        });
-        if (approvalMultiMode.value === "countersign" || approvalMultiMode.value === "orSign") {
-          clearLoop(diagramEl, bo, modeling);
-          return;
-        }
-        if (approvalMultiMode.value === "custom") {
-          writeCustomLoop(diagramEl, bo, modeling, moddle);
-          return;
-        }
-        clearLoop(diagramEl, bo, modeling);
-        return;
-      }
-      const csv = ids.join(",");
-      if (approvalMultiMode.value === "none") {
-        modeling.updateProperties(diagramEl, {
-          assignee: undefined,
-          candidateUsers: undefined,
-          candidateGroups: csv,
-          assigneeKind: "dept",
-          candidateUserNames: undefined,
-          candidateDeptNames: nameCsv,
-          candidateGroupNames: undefined,
-        });
-        clearLoop(diagramEl, bo, modeling);
-        return;
-      }
-      if (approvalMultiMode.value === "countersign" || approvalMultiMode.value === "orSign") {
-        modeling.updateProperties(diagramEl, {
-          assignee: undefined,
-          candidateUsers: undefined,
-          candidateGroups: csv,
-          assigneeKind: "dept",
-          candidateUserNames: undefined,
-          candidateDeptNames: nameCsv,
-          candidateGroupNames: undefined,
-        });
-        writeSignLoop(diagramEl, bo, modeling, moddle, "dept", approvalMultiMode.value);
-        return;
-      }
-      if (approvalMultiMode.value === "custom") {
-        modeling.updateProperties(diagramEl, {
-          assignee: undefined,
-          candidateUsers: undefined,
-          candidateGroups: csv,
-          assigneeKind: "dept",
-          candidateUserNames: undefined,
-          candidateDeptNames: nameCsv,
-          candidateGroupNames: undefined,
-        });
-        writeCustomLoop(diagramEl, bo, modeling, moddle);
-        return;
-      }
+      commitGroupKind(ctx, "dept", ids, nameCsv);
+      return;
     }
-
     if (assigneeKind.value === "group") {
       const ids = selectedGroups.value.map((g) => g.id).filter(Boolean);
       const nameCsv = selectedGroups.value.map((g) => g.name).join(",");
-      if (ids.length === 0) {
-        modeling.updateProperties(diagramEl, {
-          assignee: undefined,
-          candidateUsers: undefined,
-          candidateGroups: undefined,
-          ...CLEAR_ASSIGNEE_META,
-        });
-        if (approvalMultiMode.value === "custom") {
-          writeCustomLoop(diagramEl, bo, modeling, moddle);
-          return;
-        }
-        clearLoop(diagramEl, bo, modeling);
-        return;
-      }
-      if (ids.length === 1) {
-        modeling.updateProperties(diagramEl, {
-          assignee: undefined,
-          candidateUsers: undefined,
-          candidateGroups: ids[0],
-          assigneeKind: "group",
-          candidateUserNames: undefined,
-          candidateDeptNames: undefined,
-          candidateGroupNames: nameCsv,
-        });
-        if (approvalMultiMode.value === "countersign" || approvalMultiMode.value === "orSign") {
-          clearLoop(diagramEl, bo, modeling);
-          return;
-        }
-        if (approvalMultiMode.value === "custom") {
-          writeCustomLoop(diagramEl, bo, modeling, moddle);
-          return;
-        }
-        clearLoop(diagramEl, bo, modeling);
-        return;
-      }
-      const csv = ids.join(",");
-      if (approvalMultiMode.value === "none") {
-        modeling.updateProperties(diagramEl, {
-          assignee: undefined,
-          candidateUsers: undefined,
-          candidateGroups: csv,
-          assigneeKind: "group",
-          candidateUserNames: undefined,
-          candidateDeptNames: undefined,
-          candidateGroupNames: nameCsv,
-        });
-        clearLoop(diagramEl, bo, modeling);
-        return;
-      }
-      if (approvalMultiMode.value === "countersign" || approvalMultiMode.value === "orSign") {
-        modeling.updateProperties(diagramEl, {
-          assignee: undefined,
-          candidateUsers: undefined,
-          candidateGroups: csv,
-          assigneeKind: "group",
-          candidateUserNames: undefined,
-          candidateDeptNames: undefined,
-          candidateGroupNames: nameCsv,
-        });
-        writeSignLoop(diagramEl, bo, modeling, moddle, "group", approvalMultiMode.value);
-        return;
-      }
-      if (approvalMultiMode.value === "custom") {
-        modeling.updateProperties(diagramEl, {
-          assignee: undefined,
-          candidateUsers: undefined,
-          candidateGroups: csv,
-          assigneeKind: "group",
-          candidateUserNames: undefined,
-          candidateDeptNames: undefined,
-          candidateGroupNames: nameCsv,
-        });
-        writeCustomLoop(diagramEl, bo, modeling, moddle);
-        return;
-      }
+      commitGroupKind(ctx, "group", ids, nameCsv);
     }
   }
 

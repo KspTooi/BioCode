@@ -170,9 +170,9 @@ export default {
       }
       const moddle = m.get("moddle");
       const modeling = m.get("modeling");
-      ext = moddle.create("bpmn:ExtensionElements", { values: [] });
+      ext = moddle.create("bpmn:ExtensionElements", { values: [] }) as Record<string, unknown>;
       modeling.updateModdleProperties(processEl, bo, { extensionElements: ext });
-      return ext!;
+      return ext;
     }
 
     function buildListenerProps(): Record<string, unknown> {
