@@ -29,7 +29,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/registry")
-@Tag(name = "注册表管理", description = "注册表管理")
+@Tag(name = "CORE-注册表管理", description = "注册表管理")
 @Slf4j
 public class RegistryController {
 

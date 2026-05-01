@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/appStatus")
-@Tag(name = "应用性能监控", description = "应用性能监控")
+@Tag(name = "CORE-应用性能监控", description = "应用性能监控")
 @Slf4j
 public class AppStatusController {
 

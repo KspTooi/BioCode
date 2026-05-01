@@ -153,11 +153,19 @@ public class MaintainService {
         // 添加超级权限
         var superCode = new PermissionPo();
         superCode.setCode("*:*:*");
-        superCode.setName("超级权限");
-        superCode.setRemark("拥有此权限的用户组不受任何权限限制");
+        superCode.setName("超级操作权限");
+        superCode.setRemark("拥有此权限的用户组不受任何操作权限限制");
         superCode.setSeq(0);
         superCode.setIsSystem(1);
         scannedPermissions.add(superCode);
+
+        var superRsCode = new PermissionPo();
+        superRsCode.setCode("*:*:*:*");
+        superRsCode.setName("超级数据权限(RS)");
+        superRsCode.setRemark("拥有此权限的用户组不受任何数据权限限制");
+        superRsCode.setSeq(0);
+        superRsCode.setIsSystem(1);
+        scannedPermissions.add(superRsCode);
 
         // 扫描数据库中已定义的全部权限码(这不包含那些用户自己定义的权限码 只获取系统权限码)
         Set<PermissionPo> existingPermissions = permissionRepository.getAllSystemPermissions();

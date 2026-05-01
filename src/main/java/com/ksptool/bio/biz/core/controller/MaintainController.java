@@ -32,7 +32,7 @@ import java.sql.Connection;
 @Controller
 @RestController
 @RequestMapping("/maintain")
-@Tag(name = "维护中心", description = "维护中心")
+@Tag(name = "CORE-维护中心", description = "维护中心")
 public class MaintainController {
 
     @Autowired

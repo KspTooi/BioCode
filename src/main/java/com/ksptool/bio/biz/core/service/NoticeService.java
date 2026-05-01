@@ -83,7 +83,7 @@ public class NoticeService {
 
         //如果拿得到AUD 则设置发送人ID和发送人姓名
         if (aud != null) {
-            insertPo.setSenderId(aud.getId());
+            insertPo.setSenderId(aud.getUserId());
             insertPo.setSenderName(aud.getUsername());
         }
 

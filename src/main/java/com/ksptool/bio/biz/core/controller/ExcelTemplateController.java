@@ -24,7 +24,7 @@ import java.util.Objects;
 @PrintLog
 @RestController
 @RequestMapping("/excelTemplate")
-@Tag(name = "Excel导入模板管理", description = "Excel导入模板管理")
+@Tag(name = "CORE-Excel导入模板管理", description = "Excel导入模板管理")
 @Slf4j
 public class ExcelTemplateController {
 

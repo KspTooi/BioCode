@@ -22,7 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 @PrintLog
 @RestController
 @RequestMapping("/attach")
-@Tag(name = "文件附件", description = "文件附件模块")
+@Tag(name = "CORE-文件附件", description = "文件附件模块")
 @Slf4j
 public class AttachController {
 
