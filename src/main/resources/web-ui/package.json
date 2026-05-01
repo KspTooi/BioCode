@@ -59,7 +59,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@iconify/vue": "^5.0.0",
-    "@tailwindcss/postcss": "^4.1.16",
+    "@tailwindcss/postcss": "^4.2.4",
     "@tsconfig/node22": "^22.0.0",
     "@types/node": "^22.13.9",
     "@vitejs/plugin-vue": "^6.0.6",
