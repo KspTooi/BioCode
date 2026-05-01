@@ -4,17 +4,22 @@ import com.ksptool.assembly.entity.exception.AuthException;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
+import com.ksptool.bio.biz.core.common.TupleMapper;
+import com.ksptool.bio.biz.core.repository.UserRepository;
 import com.ksptool.bio.biz.qf.commons.QfMemberKinds;
+import com.ksptool.bio.biz.qf.commons.util.Flowable8NodeUtil;
+import com.ksptool.bio.biz.qf.model.qfbizform.vo.GetQfBizFormDetailsVo;
 import com.ksptool.bio.biz.qf.model.qftodo.QfTodoPo;
 import com.ksptool.bio.biz.qf.model.qftodo.dto.AddQfTodoDto;
 import com.ksptool.bio.biz.qf.model.qftodo.dto.ApproveQfTodoDto;
 import com.ksptool.bio.biz.qf.model.qftodo.dto.EditQfTodoDto;
 import com.ksptool.bio.biz.qf.model.qftodo.dto.GetQfTodoListDto;
 import com.ksptool.bio.biz.qf.model.qftodo.vo.GetQfTodoDetailsVo;
+import com.ksptool.bio.biz.qf.model.qftodo.vo.ApproveFlowRecordVo;
 import com.ksptool.bio.biz.qf.model.qftodo.vo.GetQfTodoListVo;
 import com.ksptool.bio.biz.qf.repository.QfTodoRepository;
-import com.ksptool.bio.biz.core.common.TupleMapper;
 import jakarta.persistence.Tuple;
+import jakarta.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.engine.IdentityService;
 import org.flowable.engine.TaskService;
@@ -26,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 import static com.ksptool.bio.biz.auth.service.SessionService.session;
 import static com.ksptool.entities.Entities.as;
@@ -58,6 +64,15 @@ public class QfTodoService {
 
     @Autowired
     private IdentityService fiService;
+
+    @Autowired
+    private QfBizFormService bizFormService;
+
+    @Autowired
+    private Flowable8NodeUtil flowable8NodeUtil;
+
+    @Autowired
+    private UserRepository userRepository;
 
     /**
      * 查询待办事项列表
@@ -107,7 +122,6 @@ public class QfTodoService {
     public void editQfTodo(EditQfTodoDto dto) throws BizException {
         QfTodoPo updatePo = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("更新失败,数据不存在或无权限访问."));
-
         assign(dto, updatePo);
         repository.save(updatePo);
     }
@@ -122,7 +136,13 @@ public class QfTodoService {
     public GetQfTodoDetailsVo getQfTodoDetails(CommonIdDto dto) throws BizException {
         QfTodoPo po = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("查询详情失败,数据不存在或无权限访问."));
-        return as(po, GetQfTodoDetailsVo.class);
+        CommonIdDto commonIdDto = new CommonIdDto();
+        commonIdDto.setId(po.getBizFormId());
+        GetQfBizFormDetailsVo getQfBizFormDetailsVo = bizFormService.getBizFormDetails(commonIdDto);
+        GetQfTodoDetailsVo details = as(po, GetQfTodoDetailsVo.class);
+        details.setRouteMobile(getQfBizFormDetailsVo.getRouteMobile());
+        details.setRoutePc(getQfBizFormDetailsVo.getRoutePc());
+        return details;
     }
 
     /**
@@ -158,13 +178,13 @@ public class QfTodoService {
 
         var aud = session();
         var uid = aud.getUserId();
-
+        var userPo = userRepository.findById(uid);
 
         //判断是不是我的待办
         if (updatePo.getMemberType() == QfMemberKinds.USER.getValue()) {
 
             //如果待办是给用户的，判断我是不是这个用户
-            if (updatePo.getMemberId() != uid) {
+            if (!Objects.equals(updatePo.getMemberId(), uid)) {
                 throw new BizException("该待办属于用户:" + updatePo.getMemberId() + "，审批人不是本人，无法审批.");
             }
 
@@ -195,7 +215,7 @@ public class QfTodoService {
         }
 
         var vars = new HashMap<String, Object>();
-        vars.put("approved", dto.getAction() == 0 ? true : false);   // 用于排他网关走向 true/false 分支
+        vars.put("approved", dto.getAction() == 0);   // 用于排他网关走向 true/false 分支
         vars.put("comment", comment);     // 审批意见
 
         //设置审批人(为了让 Flowable 在历史表 ACT_HI_TASKINST 记录"谁办的)
@@ -214,14 +234,49 @@ public class QfTodoService {
 
             //更新实际办理人
             updatePo.setFinMemberId(uid);
-            updatePo.setFinMemberName(aud.getNickname());
+            //todo 获取用户昵称 目前临时从core域获取，以后还是会从auth域session中获取
+            updatePo.setFinMemberName(userPo.get().getNickname());
             updatePo.setFinTime(LocalDateTime.now());
             updatePo.setAction(dto.getAction());
+            updatePo.setComment(comment);
             repository.save(updatePo);
 
         } finally {
             fiService.setAuthenticatedUserId(null);
         }
 
+    }
+
+    public String getQfTodoApproveFlow(@Valid CommonIdDto dto) throws BizException {
+        QfTodoPo po = repository.findById(dto.getId())
+                .orElseThrow(() -> new BizException("查询失败,数据不存在或无权限访问."));
+        return flowable8NodeUtil.generateColorBpmnXml(po.getEngProcId());
+    }
+
+    /**
+     * 获取待办事项流程流转记录
+     * 按时间顺序返回：节点名称、节点审批人、节点审批时间、节点审批结果
+     *
+     * @param dto 查询条件
+     * @return 流转记录列表
+     * @throws BizException 业务异常
+     */
+    public List<ApproveFlowRecordVo> getQfTodoApproveFlowRecord(CommonIdDto dto) throws BizException {
+        QfTodoPo po = repository.findById(dto.getId())
+                .orElseThrow(() -> new BizException("查询失败,数据不存在或无权限访问."));
+
+        // 通过流程ID查询该流程所有待办，即为流转记录
+        List<QfTodoPo> todoList = repository.findAllByEngProcIdOrderByCreateTimeAsc(po.getEngProcId());
+
+        return todoList.stream().map(todo -> {
+            ApproveFlowRecordVo vo = new ApproveFlowRecordVo();
+            vo.setNodeName(todo.getNodeName());
+            vo.setFinMemberName(todo.getFinMemberName());
+            vo.setFinTime(todo.getFinTime());
+            vo.setAction(todo.getAction());
+            vo.setComment(todo.getComment());
+            vo.setStatus(todo.getStatus());
+            return vo;
+        }).toList();
     }
 }

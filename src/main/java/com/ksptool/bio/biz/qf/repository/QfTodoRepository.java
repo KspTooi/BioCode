@@ -73,6 +73,12 @@ public interface QfTodoRepository extends JpaRepository<QfTodoPo, Long> {
     List<QfTodoPo> findAllByEngProcIdAndStatus(String engProcId, Integer status);
 
     /**
+     * 按引擎流程实例ID查询所有待办（流转记录）
+     */
+    List<QfTodoPo> findAllByEngProcIdOrderByCreateTimeAsc(String engProcId);
+
+
+    /**
      * 检查还有多少未完成的待办在用这个表单
      *
      * @param bizFormId 业务表单ID
