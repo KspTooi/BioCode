@@ -37,7 +37,7 @@ export interface GetExampleDetailsVo {
 }
 
 /**
- * 新增DTO
+ * 创建DTO
  */
 export interface AddExampleDto {
   name: string; // 名称
@@ -75,7 +75,7 @@ export default {
   },
 
   /**
-   * 新增示例
+   * 创建示例
    */
   addExample: async (dto: AddExampleDto): Promise<string> => {
     const result = await Http.postEntity<Result<string>>("/example/addExample", dto);

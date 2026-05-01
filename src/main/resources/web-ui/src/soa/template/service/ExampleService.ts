@@ -101,7 +101,7 @@ export default {
   },
 
   /**
-   * 模态框管理（统一处理新增和编辑）
+   * 模态框管理（统一处理创建和编辑）
    */
   useExampleModal(modalFormRef: Ref<FormInstance | undefined>, reloadCallback: () => void) {
     const modalVisible = ref(false);
@@ -204,7 +204,7 @@ export default {
             status: modalForm.status,
           };
           await ExampleApi.addExample(addDto);
-          ElMessage.success("新增成功");
+          ElMessage.success("创建成功");
           modalVisible.value = false;
           resetModal();
           reloadCallback();

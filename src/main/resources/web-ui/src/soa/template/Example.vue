@@ -23,7 +23,7 @@
 
     <!-- 操作按钮区域 -->
     <StdListAreaAction class="flex gap-2">
-      <el-button type="success" @click="openModal('add', null)">新增内容</el-button>
+      <el-button type="primary" @click="openModal('add', null)">创建内容</el-button>
     </StdListAreaAction>
 
     <!-- 列表表格区域 -->
@@ -74,10 +74,10 @@
       </template>
     </StdListAreaTable>
 
-    <!-- 新增/编辑模态框 -->
+    <!-- 创建/编辑模态框 -->
     <el-dialog
       v-model="modalVisible"
-      :title="modalMode === 'edit' ? '编辑示例' : '新增示例'"
+      :title="modalMode === 'edit' ? '编辑示例' : '创建示例'"
       width="600px"
       :close-on-click-modal="false"
       @close="
