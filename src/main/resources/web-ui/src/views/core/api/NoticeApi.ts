@@ -20,7 +20,7 @@ export interface GetNoticeListDto extends PageQuery {
  * 列表VO
  */
 export interface GetNoticeListVo {
-  id: number; // 主键ID
+  id: string; // 主键ID
   title: string; // 标题
   kind: number; // 种类: 0公告, 1业务提醒, 2私信
   priority: number; // 优先级: 0:低 1:中 2:高
@@ -35,7 +35,7 @@ export interface GetNoticeListVo {
  * 详情VO
  */
 export interface GetNoticeDetailsVo {
-  id: number; // 主键ID
+  id: string; // 主键ID
   title: string; // 标题
   kind: number; // 种类: 0公告, 1业务提醒, 2私信
   content: string; // 通知内容
@@ -47,6 +47,7 @@ export interface GetNoticeDetailsVo {
   forward: string; // 跳转URL/路由地址
   params: string; // 动态参数 (JSON格式)
   createTime: string; // 创建时间
+  _targetIds: string[]; // 接收对象ID列表
 }
 
 /**
@@ -66,7 +67,7 @@ export interface AddNoticeDto {
  * 编辑DTO
  */
 export interface EditNoticeDto {
-  id: number; // 主键ID
+  id: string; // 主键ID
   title: string; // 标题
   kind: number; // 种类: 0公告, 1业务提醒, 2私信
   content?: string; // 通知内容

@@ -121,15 +121,20 @@ export default {
     const modalVisible = ref(false);
     const modalLoading = ref(false);
     const modalMode = ref<ModalMode>("add");
-    const modalForm = reactive<AddNoticeDto & EditNoticeDto & Partial<GetNoticeDetailsVo>>({
-      id: undefined,
-      title: "",
-      kind: 0,
-      content: "",
-      priority: 0,
-      category: "",
-      targetKind: 0,
-      targetIds: [],
+    const modalForm = reactive<GetNoticeDetailsVo>({
+      id: "", // 主键ID
+      title: "", // 标题
+      kind: 0, // 种类: 0公告, 1业务提醒, 2私信
+      content: "", // 通知内容
+      priority: 0, // 优先级: 0:低 1:中 2:高
+      category: "", // 业务类型/分类
+      targetKind: 0, // 接收对象类型 0:全员 1:指定部门 2:指定用户
+      senderId: 0, // 发送人ID (NULL为系统)
+      senderName: "", // 发送人姓名
+      forward: "", // 跳转URL/路由地址
+      params: "", // 动态参数 (JSON格式)
+      createTime: "", // 创建时间
+      _targetIds: [], // 接收对象ID列表
     });
 
     /**
@@ -187,7 +192,7 @@ export default {
         modalForm.priority = 0;
         modalForm.category = "";
         modalForm.targetKind = 0;
-        modalForm.targetIds = [];
+        modalForm._targetIds = [];
         modalVisible.value = true;
         return;
       }
@@ -229,7 +234,7 @@ export default {
       modalForm.priority = 0;
       modalForm.category = "";
       modalForm.targetKind = 0;
-      modalForm.targetIds = [];
+      modalForm._targetIds = [];
     };
 
     /**
@@ -257,7 +262,7 @@ export default {
             priority: modalForm.priority,
             category: modalForm.category || undefined,
             targetKind: modalForm.targetKind,
-            targetIds: modalForm.targetIds,
+            targetIds: modalForm._targetIds,
           };
           await NoticeApi.addNotice(addDto);
           ElMessage.success("新增成功");
@@ -310,7 +315,7 @@ export default {
         return;
       }
 
-      modalForm.targetIds = depts.map((dept) => dept.id);
+      modalForm._targetIds = depts.map((dept) => dept.id);
     };
 
     /**
@@ -320,14 +325,14 @@ export default {
       if (modalForm.targetKind !== 2) {
         return;
       }
-      modalForm.targetIds = users.map((user) => user.id);
+      modalForm._targetIds = users.map((user) => user.id);
     };
 
     //处理接收对象类型变化时清空接收对象ID列表
     watch(
       () => modalForm.targetKind,
       (): void => {
-        modalForm.targetIds = [];
+        modalForm._targetIds = [];
       }
     );
 
