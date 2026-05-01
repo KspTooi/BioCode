@@ -246,7 +246,7 @@ import type { GetGroupListVo, GetGroupPermissionMenuViewVo, GetGroupPermissionNo
 import { ElMessage, type TableInstance } from "element-plus";
 import { ref, watch } from "vue";
 import { Icon } from "@iconify/vue";
-import UserGpModalService from "@/views/auth/service/UserGpModalService.vue.ts";
+import UserGpModalService from "@/views/auth/service/UserGpModalService";
 
 const props = defineProps<{
   visible: boolean;

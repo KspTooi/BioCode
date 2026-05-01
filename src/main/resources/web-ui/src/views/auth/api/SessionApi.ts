@@ -12,7 +12,7 @@ export interface GetSessionListVo {
   id: string; // 会话ID
   username: string; // 用户名
   createTime: string; // 登入时间
-  rsMax: number; // 最大RowScope等级 0:全部 1:本公司/租户及以下 2:本部门及以下 3:本部门 4:仅本人 5:指定部门
+  rsMax: number; // 最大RowScope等级 0:全部权限 10:本公司+下级公司 20:仅本公司 30:本部门+下级部门 40:本部门 50:仅本人 60:指定组织
   expiresAt: string; // 过期时间
 }
 
@@ -22,7 +22,7 @@ export interface GetSessionDetailsVo {
   createTime: string; // 登入时间
   expiresAt: string; // 过期时间
   permissions: string[]; // 权限节点
-  rsMax: number; // 最大RowScope等级 0:全部 1:本公司/租户及以下 2:本部门及以下 3:本部门 4:仅本人 5:指定部门
+  rsMax: number; // 最大RowScope等级 0:全部权限 10:本公司+下级公司 20:仅本公司 30:本部门+下级部门 40:本部门 50:仅本人 60:指定组织
   rsDeptNames: string[]; // RowScope允许访问的部门名称列表
 }
 

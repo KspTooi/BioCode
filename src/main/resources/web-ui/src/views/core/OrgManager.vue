@@ -43,15 +43,12 @@
         <el-table-column prop="name" label="组织机构名称" min-width="200" show-overflow-tooltip />
         <el-table-column prop="kind" label="类型" min-width="100">
           <template #default="scope">
-            <el-tag v-if="scope.row.kind === 0" type="success">企业</el-tag>
-            <el-tag v-if="scope.row.kind === 1" type="primary">子企业</el-tag>
+            <el-tag v-if="scope.row.kind === 0" type="primary">企业</el-tag>
+            <el-tag v-if="scope.row.kind === 1" type="warning">子企业</el-tag>
             <el-tag v-if="scope.row.kind === 2" type="info">部门</el-tag>
-            <el-tag v-if="scope.row.kind === 3" type="warning">班组</el-tag>
-            <!-- <el-tag :type="scope.row.kind === 1 ? 'primary' : 'info'">
-              {{ scope.row.kind === 1 ? "企业" : "部门" }}
-            </el-tag> -->
           </template>
         </el-table-column>
+        <el-table-column prop="level" label="等级" min-width="100" />
         <el-table-column prop="seq" label="排序" min-width="100">
           <template #default="scope">
             <ComSeqFixer
@@ -67,7 +64,7 @@
         <el-table-column label="操作" fixed="right" min-width="200">
           <template #default="scope">
             <el-button link type="success" size="small" :icon="PlusIcon" @click="openModal('add-item', scope.row)">
-              新增子级
+              创建子级
             </el-button>
             <el-button link type="primary" size="small" :icon="EditIcon" @click="openModal('edit', scope.row)">
               编辑
@@ -79,10 +76,10 @@
     </template>
   </StdListLayout>
 
-  <!-- 组织机构编辑/新增模态框 -->
+  <!-- 组织机构编辑/创建模态框 -->
   <el-dialog
     v-model="modalVisible"
-    :title="modalMode === 'edit' ? '编辑' + modalKindName : modalMode === 'add-item' ? '新增子级' : '添加' + modalKindName"
+    :title="modalMode === 'edit' ? '编辑' + modalKindName : modalMode === 'add-item' ? '创建子级' : '创建' + modalKindName"
     width="500px"
     :close-on-click-modal="false"
     @close="
@@ -99,9 +96,16 @@
       :validate-on-rule-change="false"
     >
       <el-form-item :label="modalKindName + '名称'" prop="name">
-        <el-input v-model="modalForm.name" :placeholder="'请输入' + modalKindName + '名称'" />
+        <el-input v-model="modalForm.name" :placeholder="'请输入' + modalKindName + '名称'" maxlength="80" show-word-limit />
       </el-form-item>
-
+      <el-form-item :label="modalKindName + '简称'" prop="shortName">
+        <el-input
+          v-model="modalForm.shortName"
+          :placeholder="'请输入' + modalKindName + '简称'"
+          maxlength="40"
+          show-word-limit
+        />
+      </el-form-item>
       <el-form-item v-if="modalMode !== 'edit'" :label="modalKindName + '类型'" prop="kind">
         <el-radio-group
           v-model="modalForm.kind"
@@ -114,7 +118,6 @@
           <el-radio :value="0" :disabled="modalMode === 'add-item'">企业</el-radio>
           <el-radio :value="1">子企业</el-radio>
           <el-radio :value="2">部门</el-radio>
-          <el-radio :value="3">班组</el-radio>
         </el-radio-group>
       </el-form-item>
 
@@ -130,17 +133,16 @@
           node-key="value"
         />
       </el-form-item>
-
-      <!-- <el-form-item :label="modalKindName + '主管ID'" prop="principalId" v-if="modalForm.kind === 0">
-        <el-input v-model="modalForm.principalId" placeholder="请输入主管ID" clearable />
-      </el-form-item> -->
       <el-form-item :label="modalKindName + '排序'" prop="seq">
         <el-input-number v-model="modalForm.seq" :min="0" style="width: 100%" />
+      </el-form-item>
+      <el-form-item :label="modalKindName + '备注'" prop="remark">
+        <el-input v-model="modalForm.remark" placeholder="请输入备注" type="textarea" maxlength="200" show-word-limit />
       </el-form-item>
     </el-form>
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="modalVisible = false">取消</el-button>
+        <el-button @click="modalVisible = false">关闭</el-button>
         <el-button type="primary" :loading="modalLoading" @click="submitModal">
           {{ modalMode === "add" ? "创建" : modalMode === "add-item" ? "创建" : "保存" }}
         </el-button>
@@ -204,17 +206,94 @@ const filterTreeSelectData = computed(() => {
     });
   };
 
-  if (modalMode.value === "edit" && modalForm.kind === 0) {
-    const currentRootId = modalForm.rootId;
-    const currentId = modalForm.id;
+  // 如果当前是编辑，并且编辑的是企业(kind===0)或子企业(kind===1)，则屏蔽所有kind===2（部门）节点
+  if (modalMode.value === "edit" && (modalForm.kind === 0 || modalForm.kind === 1)) {
+    const findKind2Nodes = (nodes: any[]): any[] => {
+      let kind2Nodes: any[] = [];
+      nodes.forEach((node) => {
+        if (node.kind === 2) {
+          kind2Nodes.push(node);
+        }
+        if (node.children && Array.isArray(node.children) && node.children.length > 0) {
+          kind2Nodes = kind2Nodes.concat(findKind2Nodes(node.children));
+        }
+      });
+      return kind2Nodes;
+    };
+    const kind2Nodes = findKind2Nodes(treeSelectData.value);
+    // 遍历kind2Nodes，提取每个对象的value属性，组成一个新数组
+    const idsToDisable = kind2Nodes.map((node) => node.value);
+    let result = treeSelectData.value;
+    idsToDisable.forEach((id) => {
+      result = disableNode(result, id);
+    });
+    return result;
+  }
 
-    for (const item of treeSelectData.value) {
-      if (item.value !== currentRootId) {
-        item.disabled = true;
+  // 如果当前是编辑，并且编辑的是部门(kind===2)，则只能选择本企业的节点
+  if (modalMode.value === "edit" && modalForm.kind === 2) {
+    // for (const item of treeSelectData.value) {
+    // 递归查找指定rootId的对象节点
+    const findNodeById = (nodes: any[], id: string | null): any | null => {
+      if (!id) {
+        return null;
       }
+      for (const node of nodes) {
+        if (node.value === id) {
+          return node;
+        }
+        if (node.children && Array.isArray(node.children)) {
+          const found = findNodeById(node.children, id);
+          if (found) {
+            return found;
+          }
+        }
+      }
+      return null;
+    };
+
+    const nodeWithRootId = findNodeById(treeSelectData.value, modalForm.id);
+
+    // 查找某个节点的最顶级父节点
+    function findTopLevelParent(nodes: any[], targetNode: any): any | null {
+      // 用于递归查找父节点链
+      function findParentRecursively(currentNodes: any[], id: string): any[] {
+        for (const node of currentNodes) {
+          if (node.value === id) {
+            // 找到目标节点，直接返回自身
+            return [node];
+          }
+          if (node.children && Array.isArray(node.children)) {
+            const path = findParentRecursively(node.children, id);
+            if (path.length > 0) {
+              // 递归返回的路径上添加当前节点（父级）
+              return [node, ...path];
+            }
+          }
+        }
+        return [];
+      }
+      if (!targetNode) {
+        return null;
+      }
+      const path = findParentRecursively(nodes, targetNode.value);
+      if (path.length > 0) {
+        return path[0]; // 最顶上的父级对象
+      }
+      return null;
     }
 
-    return disableNode(treeSelectData.value, currentId);
+    const topLevelParent = findTopLevelParent(treeSelectData.value, nodeWithRootId);
+
+    const filteredItems = treeSelectData.value.filter((item) => item.value !== topLevelParent?.value);
+
+    // 提取filteredItems数组中第一层的value，合并成一个数组并打印出来
+    const firstLevelValues = filteredItems.map((item) => item.value);
+    let result = treeSelectData.value;
+    firstLevelValues.forEach((id) => {
+      result = disableNode(result, id);
+    });
+    return result;
   }
 
   return treeSelectData.value;

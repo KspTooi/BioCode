@@ -34,7 +34,7 @@
         :loading="listLoading"
         @click="removeListBatch(listSelected)"
       >
-        删除选中项
+        批量删除
       </el-button>
     </template>
 
@@ -134,10 +134,10 @@
     </template>
   </StdListLayout>
 
-  <!-- 权限编辑/新增模态框 -->
+  <!-- 权限编辑/创建模态框 -->
   <el-dialog
     v-model="modalVisible"
-    :title="modalMode === 'edit' ? '编辑权限节点' : '添加权限节点'"
+    :title="modalMode === 'edit' ? '编辑权限节点' : '创建权限节点'"
     width="500px"
     :close-on-click-modal="false"
     @close="
@@ -178,13 +178,15 @@
       </el-form-item>
       <el-form-item label="权限名称" prop="name">
         <el-input
+          :maxlength="32"
+          show-word-limit
           v-model="modalForm.name"
           :disabled="modalMode === 'edit' && modalForm.isSystem === 1"
           :placeholder="modalMode === 'edit' && modalForm.isSystem === 1 ? '系统权限不可修改名称' : '请输入权限名称'"
         />
       </el-form-item>
       <el-form-item label="权限描述" prop="remark">
-        <el-input v-model="modalForm.remark" type="textarea" :rows="3" placeholder="请输入权限描述" />
+        <el-input show-word-limit :maxlength="200" v-model="modalForm.remark" type="textarea" :rows="3" placeholder="请输入权限描述" />
       </el-form-item>
       <el-form-item label="排序号" prop="seq">
         <el-input-number v-model="modalForm.seq" :min="0" />
@@ -198,7 +200,7 @@
     </el-form>
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="modalVisible = false">取消</el-button>
+        <el-button @click="modalVisible = false">关闭</el-button>
         <el-button type="primary" :loading="modalLoading" @click="submitModal">
           {{ modalMode === "add" ? "创建" : "保存" }}
         </el-button>

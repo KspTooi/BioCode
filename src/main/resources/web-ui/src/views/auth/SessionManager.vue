@@ -30,12 +30,13 @@
         <el-table-column prop="username" label="用户名" min-width="150" />
         <el-table-column prop="rsMax" label="数据权限(RS)等级" min-width="150">
           <template #default="scope">
-            <el-tag v-if="scope.row.rsMax === 0" type="success">全部</el-tag>
-            <el-tag v-if="scope.row.rsMax === 1">本公司/租户及以下</el-tag>
-            <el-tag v-if="scope.row.rsMax === 2">本部门及以下</el-tag>
-            <el-tag v-if="scope.row.rsMax === 3">本部门</el-tag>
-            <el-tag v-if="scope.row.rsMax === 4">仅本人</el-tag>
-            <el-tag v-if="scope.row.rsMax === 5" type="warning">指定部门</el-tag>
+            <el-tag v-if="scope.row.rsMax === 0" type="success">全集团</el-tag>
+            <el-tag v-if="scope.row.rsMax === 10">本公司+下级公司</el-tag>
+            <el-tag v-if="scope.row.rsMax === 20">仅本公司</el-tag>
+            <el-tag v-if="scope.row.rsMax === 30">本部门+下级部门</el-tag>
+            <el-tag v-if="scope.row.rsMax === 40">仅本部门</el-tag>
+            <el-tag v-if="scope.row.rsMax === 50">仅本人</el-tag>
+            <el-tag v-if="scope.row.rsMax === 60" type="warning">指定组织</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="登入时间" min-width="180" />
@@ -88,12 +89,13 @@
         <el-descriptions-item label="会话ID" :span="2">{{ currentSessionDetails.id }}</el-descriptions-item>
         <el-descriptions-item label="用户名">{{ currentSessionDetails.username }}</el-descriptions-item>
         <el-descriptions-item label="数据权限(RS)等级">
-          <el-tag v-if="currentSessionDetails.rsMax === 0" type="success">全部</el-tag>
-          <el-tag v-if="currentSessionDetails.rsMax === 1">本公司/租户及以下</el-tag>
-          <el-tag v-if="currentSessionDetails.rsMax === 2">本部门及以下</el-tag>
-          <el-tag v-if="currentSessionDetails.rsMax === 3">本部门</el-tag>
-          <el-tag v-if="currentSessionDetails.rsMax === 4">仅本人</el-tag>
-          <el-tag v-if="currentSessionDetails.rsMax === 5" type="warning">指定部门</el-tag>
+          <el-tag v-if="currentSessionDetails.rsMax === 0" type="success">全集团</el-tag>
+          <el-tag v-if="currentSessionDetails.rsMax === 10">本公司+下级公司</el-tag>
+          <el-tag v-if="currentSessionDetails.rsMax === 20">仅本公司</el-tag>
+          <el-tag v-if="currentSessionDetails.rsMax === 30">本部门+下级部门</el-tag>
+          <el-tag v-if="currentSessionDetails.rsMax === 40">仅本部门</el-tag>
+          <el-tag v-if="currentSessionDetails.rsMax === 50">仅本人</el-tag>
+          <el-tag v-if="currentSessionDetails.rsMax === 60" type="warning">指定组织</el-tag>
         </el-descriptions-item>
         <el-descriptions-item label="登入时间">{{ currentSessionDetails.createTime }}</el-descriptions-item>
         <el-descriptions-item label="过期时间">{{ currentSessionDetails.expiresAt }}</el-descriptions-item>

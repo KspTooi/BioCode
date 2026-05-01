@@ -156,25 +156,25 @@ export default {
             type: "warning",
             dangerouslyUseHTMLString: true,
             beforeClose: async (action, instance, done) => {
-              if (action === "confirm") {
-                instance.confirmButtonLoading = true;
-                instance.confirmButtonText = "执行中...";
-                globalLoading.value = true;
-
-                try {
-                  const result = await operation.action();
-                  done();
-                  // 延迟一小会儿确保弹窗关闭动画完成
-                  setTimeout(() => handleResult(result), 300);
-                } catch (error: any) {
-                  done();
-                  ElMessage.error(error.message || "操作执行失败");
-                } finally {
-                  instance.confirmButtonLoading = false;
-                  globalLoading.value = false;
-                }
-              } else {
+              if (action !== "confirm") {
                 done();
+                return;
+              }
+              instance.confirmButtonLoading = true;
+              instance.confirmButtonText = "执行中...";
+              globalLoading.value = true;
+
+              try {
+                const result = await operation.action();
+                done();
+                // 延迟一小会儿确保弹窗关闭动画完成
+                setTimeout(() => handleResult(result), 300);
+              } catch (error: any) {
+                done();
+                ElMessage.error(error.message || "操作执行失败");
+              } finally {
+                instance.confirmButtonLoading = false;
+                globalLoading.value = false;
               }
             },
           });

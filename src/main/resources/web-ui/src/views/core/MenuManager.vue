@@ -125,7 +125,7 @@
         <el-table-column label="操作" fixed="right" width="230">
           <template #default="scope">
             <div class="inline-flex justify-end items-center gap-2 w-full">
-              <!-- 按钮下无法新增子项 -->
+              <!-- 按钮下无法创建子项 -->
               <el-button
                 v-if="scope.row.kind !== 2"
                 link
@@ -134,7 +134,7 @@
                 :icon="PlusIcon"
                 @click="openModal('add-item', scope.row)"
               >
-                新增子项
+                创建子项
               </el-button>
 
               <el-button link type="primary" size="small" :icon="EditIcon" @click="openModal('edit', scope.row)">
@@ -163,7 +163,7 @@
   <!-- 菜单编辑模态框 -->
   <el-dialog
     v-model="modalVisible"
-    :title="modalMode === 'edit' ? '编辑' + modalFormLabel : '添加' + modalFormLabel"
+    :title="modalMode === 'edit' ? '编辑' + modalFormLabel : modalMode === 'add' ? '创建' + modalFormLabel : '创建子项' + modalFormLabel"
     width="550px"
     :close-on-click-modal="false"
     @close="
@@ -231,7 +231,7 @@
       <div class="dialog-footer">
         <el-button @click="modalVisible = false">关闭</el-button>
         <el-button type="primary" :loading="modalLoading" @click="submitModal">
-          {{ modalMode === "add" ? "创建" : "保存" }}
+          {{ modalMode === "edit" ? "保存" : "创建" }}
         </el-button>
       </div>
     </template>

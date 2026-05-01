@@ -22,6 +22,7 @@ export interface GetGroupListVo {
   name: string; // 组名称
   memberCount: number; // 成员数量
   permissionCount: number; // 权限节点数量
+  rowScope: number; // RS数据权限等级 0:全集团 10:本公司+下级公司 20:仅本公司 30:本部门+下级部门 40:仅本部门 50:仅本人 60:指定组织
   isSystem: number; // 系统内置组 0:否 1:是
   status: number; // 组状态：0-禁用，1-启用
   seq: number; // 排序号
@@ -105,6 +106,19 @@ export interface GrantAndRevokeDto {
   type: number; // 类型 0:授权 1:取消授权
 }
 
+export interface SimulateRsDto {
+  orgId: string; // 模拟用户所在的组织节点ID
+  rsLevel: number; // 模拟的RS等级 0/10/20/30/40/50/100
+}
+
+export interface SimulateRsVo {
+  rsLevel: number; // 本次模拟使用的RS等级
+  orgId: string; // 模拟节点ID
+  nodeKind: number; // 模拟节点的kind 0:企业 1:子企业 2:部门 3:班组
+  allMode: boolean; // 是否为全量模式(rsLevel=0时为true)
+  visibleOrgIds: string[]; // 该等级下可见的组织节点ID集合
+}
+
 export default {
   /**
    * 获取组列表
@@ -161,6 +175,17 @@ export default {
    */
   getGroupPermissionNodeView: async (dto: GetGroupPermissionNodeDto): Promise<PageResult<GetGroupPermissionNodeVo>> => {
     return await Http.postEntity<PageResult<GetGroupPermissionNodeVo>>("/group/getGroupPermissionNodeView", dto);
+  },
+
+  /**
+   * 模拟RS数据权限
+   */
+  simulateRs: async (dto: SimulateRsDto): Promise<SimulateRsVo> => {
+    const result = await Http.postEntity<Result<SimulateRsVo>>("/group/simulateRs", dto);
+    if (result.code == 0) {
+      return result.data;
+    }
+    throw new Error(result.message);
   },
 
   /**

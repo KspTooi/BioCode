@@ -7,19 +7,21 @@ export interface UserLoginDto {
 }
 
 export interface UserLoginVo {
-  id: string; // 用户ID
+  userId: string; // 用户ID
   username: string; // 用户名
   nickname: string; // 用户昵称
   gender: number; // 用户性别
   phone: string; // 用户手机号
   email: string; // 用户邮箱
-  status: number; // 用户状态
-  lastLoginTime: string; // 最后登录时间
-  rootId: string; // 所属企业ID
-  deptId: string; // 所属部门ID
-  rootName: string; // 所属企业名称
-  deptName: string; // 所属部门名称
-  avatarAttachId: string; // 用户头像附件ID
+  status: number; // 用户状态 0:正常 1:封禁
+  lastLoginTime: string; // 最后登录时间 格式:yyyy-MM-dd HH:mm:ss
+  avatarAttachId: number; // 用户头像附件ID
+  rootId: string; // AUS字段: 租户ID
+  orgId: string; // AUS字段: 直属企业ID
+  deptId: string; // AUS字段: 直属部门ID
+  rootName: string; // AUS字段: 租户名称
+  orgName: string; // AUS字段: 直属企业名称
+  deptName: string; // AUS字段: 直属部门名称
   isSystem: number; // 是否为系统内置用户 0:否 1:是
   createTime: string; // 创建时间
   sessionId: string; // 用户会话ID

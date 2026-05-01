@@ -8,6 +8,8 @@ import type {
   UserGroupVo,
   BatchEditUserDto,
 } from "@/views/core/api/UserApi.ts";
+import UserAuthService from "@/views/auth/service/UserAuthService";
+const { AuthStore } = UserAuthService;
 import AdminUserApi from "@/views/core/api/UserApi.ts";
 import { Result } from "@/commons/model/Result";
 import { ElMessage, ElMessageBox, type FormInstance } from "element-plus";
@@ -26,6 +28,7 @@ export default {
       username: "",
       status: null,
       orgId: null,
+      rootName: "",
     });
 
     const listData = ref<GetUserListVo[]>([]);
@@ -62,6 +65,7 @@ export default {
       listForm.value.username = "";
       listForm.value.status = null;
       listForm.value.nickname = "";
+      listForm.value.rootName = "";
       QueryPersistService.clearQuery("user-manager");
       loadList(orgId ?? null);
     };
@@ -119,7 +123,7 @@ export default {
     const modalCurrentRow = ref<GetUserListVo | null>(null);
     const modalForm = reactive<GetUserDetailsVo>({
       id: "",
-      deptId: "",
+      orgId: "",
       username: "",
       nickname: "",
       gender: 0,
@@ -144,7 +148,7 @@ export default {
       return treeData.map((node) => {
         const processedNode: any = {
           id: node.id,
-          rootId: node.rootId,
+          topId: node.topId,
           parentId: node.parentId,
           kind: node.kind,
           name: node.name,
@@ -241,7 +245,7 @@ export default {
 
       // 获取组织架构树并处理，禁用企业节点
       const treeData = await OrgApi.getOrgTree({});
-      orgTreeOptions.value = processOrgTreeData(treeData);
+      orgTreeOptions.value = treeData;
 
       //如果是编辑模式则需要加载详情数据
       if (mode === "edit" && currentRow) {
@@ -257,7 +261,7 @@ export default {
           modalForm.status = ret.status;
           modalForm.isSystem = ret.isSystem ?? 0;
           modalForm.groups = ret.groups || [];
-          modalForm.deptId = ret.deptId;
+          modalForm.orgId = ret.orgId;
 
           groupOptions.value = ret.groups || [];
           selectedGroupIds.value = ret.groups ? ret.groups.filter((group) => group.hasGroup).map((group) => group.id) : [];
@@ -291,7 +295,7 @@ export default {
           const org = findOrgItem(orgTreeOptions.value, orgId?.value);
 
           if (org?.kind === 0 && orgId?.value) {
-            modalForm.deptId = orgId?.value;
+            modalForm.orgId = orgId?.value;
           }
         }
 
@@ -329,7 +333,7 @@ export default {
       modalForm.status = 0;
       modalForm.isSystem = 0;
       modalForm.groups = [];
-      modalForm.deptId = "";
+      modalForm.orgId = "";
       modalFormPassword.value = "";
       selectedGroupIds.value = [];
 
@@ -362,7 +366,7 @@ export default {
             phone: modalForm.phone,
             email: modalForm.email,
             status: modalForm.status,
-            deptId: modalForm.deptId || undefined,
+            orgId: modalForm.orgId,
             groupIds: selectedGroupIds.value,
           };
           const result = await AdminUserApi.addUser(addDto);
@@ -386,7 +390,7 @@ export default {
             phone: modalForm.phone,
             email: modalForm.email,
             status: modalForm.status,
-            deptId: modalForm.deptId || undefined,
+            orgId: modalForm.orgId,
             groupIds: selectedGroupIds.value,
           };
           if (modalFormPassword.value) {
@@ -454,7 +458,7 @@ export default {
       }
 
       let kind = 0;
-      let deptId: string | undefined = undefined;
+      let orgId = null; // 将deptId转成了orgId
 
       // 处理变更部门：需要先选择部门
       if (command === "changeDept") {
@@ -467,7 +471,7 @@ export default {
           if (Array.isArray(dept)) {
             return;
           }
-          deptId = dept.id;
+          orgId = dept.id;
         } catch {
           // 用户取消选择
           return;
@@ -516,7 +520,7 @@ export default {
         }
       }
 
-      const dto: BatchEditUserDto = { ids, kind, deptId };
+      const dto: BatchEditUserDto = { ids, kind, orgId: orgId };
 
       // 执行批量操作
       try {
