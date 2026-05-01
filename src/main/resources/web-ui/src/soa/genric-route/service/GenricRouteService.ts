@@ -7,6 +7,15 @@ import GenricRouteRegister from "@/soa/genric-route/service/GenricRouteRegister"
 import ComPageLanding from "@/soa/com-series/ComPageLanding.vue";
 import ComTabService from "@/soa/com-series/service/ComTabService";
 
+/**
+ * 全局路由服务(GRS)
+ * GRS是整个项目的路由服务，负责管理整个项目的路由，包括路由的注册、删除、获取等。它是整个项目中路由的单一事实来源。
+ * GRS的注册方式是通过注册器(GRR)来注册的，注册器是一个抽象类，需要子类来实现，在子类里面可以注册多条路由、配置前置守卫和后置守卫。
+ *
+ * 注意：你不可以绕过GRS直接操作Vue路由，这会破坏整个项目的路由一致性，也会破坏路由表和GRS的注册机制，严重时会导致项目无法正常运行。
+ *
+ */
+
 //是否已初始化
 let hasInitialized = false;
 
