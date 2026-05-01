@@ -18,12 +18,6 @@ import checkFile from "eslint-plugin-check-file";
  * 的次数远比被编写的次数多。写代码时多花的那几秒钟"展开写清楚"，能为未来每一次阅读节省
  * 数分钟的理解成本。这就是这套规则存在的意义：帮助你更快地完成从"能写"到"写得好"的跨越。
  *
- * 关于对象扩展运算符（...）：
- * { ...userInput, ...defaultConfig } 这样的写法虽然简洁，但会将来源对象的所有属性隐式地
- * 合并到目标中。如果来源对象意外携带了多余字段（如 isAdmin: true），排查由此产生的覆盖问题
- * 成本较高。显式逐一赋值虽然代码更长，但每个字段的来源和去向都一目了然。
- * 此规则为警告级别，在必要场景下允许使用，但请优先考虑显式赋值。
- *
  * 关于 AI 协作编程：
  * 在 AI 辅助编程日益普及的今天，显式代码风格还带来了一个额外的重要优势——它对 AI 极其友好。
  * AI 模型（无论是代码补全、Code Review 还是自动重构）的工作方式本质上也是"阅读理解"：
@@ -82,7 +76,7 @@ export default defineConfigWithVueTs(
       //允许使用多单词组件名
       "vue/multi-word-component-names": "off",
 
-      //Vue SFC：<script> 超过 200 行时应将业务逻辑拆分到 *Service.ts 等模块，保持组件以视图编排为主
+      //Vue SFC：<script> 超过 300 行时应将业务逻辑拆分到 *Service.ts 等模块，保持组件以视图编排为主
       "vue/max-lines-per-block": [
         "error",
         {
