@@ -43,7 +43,7 @@
     "json-editor-vue": "^0.18.1",
     "marked": "^15.0.7",
     "monaco-editor-vue3": "^0.1.10",
-    "pinia": "^3.0.1",
+    "pinia": "^3.0.4",
     "pinia-plugin-persistedstate": "^4.7.1",
     "splitpanes": "^4.0.4",
     "vanilla-jsoneditor": "^3.8.0",
