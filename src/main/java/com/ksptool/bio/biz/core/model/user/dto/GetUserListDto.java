@@ -10,6 +10,9 @@ import lombok.Setter;
 @Setter
 public class GetUserListDto extends PageQuery {
 
+    @Schema(description = "所属租户名称")
+    private String rootName;
+
     @Schema(description = "用户名")
     private String username;
 

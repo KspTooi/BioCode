@@ -1,9 +1,10 @@
 package com.ksptool.bio.biz.core.model.user;
 
 import com.ksptool.assembly.entity.exception.AuthException;
+import com.ksptool.bio.biz.auth.common.aop.RowScopePo;
+import com.ksptool.bio.biz.auth.service.SessionService;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
 import com.ksptool.bio.biz.core.model.attach.AttachPo;
-import com.ksptool.bio.biz.rdbg.model.userrequestenv.UserRequestEnvPo;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,12 +27,21 @@ import java.time.LocalDateTime;
 @Setter
 @SQLDelete(sql = "UPDATE core_user SET delete_time = NOW() WHERE id = ?")
 @SQLRestriction("delete_time IS NULL")
-public class UserPo {
+public class UserPo extends RowScopePo{
 
     @Id
     @SnowflakeIdGenerated
     @Column(name = "id", comment = "用户ID")
     private Long id;
+
+    @Column(name = "root_id", nullable = false, comment = "租户ID")
+    private Long rootId;
+
+    @Column(name = "org_id", comment = "直属企业ID")
+    private Long orgId;
+
+    @Column(name = "dept_id", comment = "直属部门ID")
+    private Long deptId;
 
     @Column(name = "username", nullable = false, length = 80, comment = "用户名")
     private String username;
@@ -39,16 +49,16 @@ public class UserPo {
     @Column(name = "password", nullable = false, length = 1280, comment = "密码")
     private String password;
 
-    @Column(name = "nickname", length = 50, comment = "昵称")
+    @Column(name = "nickname", length = 80, comment = "昵称")
     private String nickname;
 
     @Column(name = "gender", columnDefinition = "tinyint", comment = "性别 0:男 1:女 2:不愿透露")
     private Integer gender;
 
-    @Column(name = "phone", length = 64, comment = "手机号")
+    @Column(name = "phone", length = 20, comment = "手机号")
     private String phone;
 
-    @Column(name = "email", length = 64, comment = "邮箱")
+    @Column(name = "email", length = 128, comment = "邮箱")
     private String email;
 
     @Column(name = "login_count", nullable = false, comment = "登录次数")
@@ -59,22 +69,6 @@ public class UserPo {
 
     @Column(name = "last_login_time", comment = "最后登录时间")
     private LocalDateTime lastLoginTime;
-
-    @Column(name = "root_id", comment = "所属企业ID")
-    private Long rootId;
-
-    @Column(name = "dept_id", comment = "所属部门ID")
-    private Long deptId;
-
-    @Column(name = "root_name", length = 32, comment = "所属企业名")
-    private String rootName;
-
-    @Column(name = "dept_name", length = 255, comment = "所属部门名")
-    private String deptName;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "active_env_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), comment = "已激活的环境 为null时表示未激活任何环境")
-    private UserRequestEnvPo activeEnv;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "avatar_attach_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), comment = "用户头像附件")
@@ -120,6 +114,11 @@ public class UserPo {
         if (dataVersion == null) {
             dataVersion = 0L;
         }
+
+        if(rootId == null){
+            rootId = SessionService.session().getRootId();
+        }
+
     }
 
     @PreUpdate
@@ -134,6 +133,19 @@ public class UserPo {
      */
     public boolean isSystem() {
         return isSystem == 1;
+    }
+
+    /**
+     * 获取最细粒度的组织架构ID
+     * 如果用户有直属部门则返回直属部门ID，否则返回直属企业ID
+     *
+     * @return 最细粒度的组织架构ID
+     */
+    public Long getMinOrgId() {
+        if(deptId != null){
+            return deptId;
+        }
+        return orgId;
     }
 
 }

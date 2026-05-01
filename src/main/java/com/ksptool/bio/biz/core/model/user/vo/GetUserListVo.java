@@ -1,27 +1,29 @@
 package com.ksptool.bio.biz.core.model.user.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
 public class GetUserListVo {
 
     @Schema(description = "用户ID")
     private Long id;
 
-    @Schema(description = "所属企业ID")
+    @Schema(description = "所属租户ID")
     private Long rootId;
 
-    @Schema(description = "所属企业名称")
+    @Schema(description = "所属租户名称")
     private String rootName;
+
+    @Schema(description = "所属企业ID")
+    private Long orgId;
+
+    @Schema(description = "所属企业名称")
+    private String orgName;
 
     @Schema(description = "所属部门ID")
     private Long deptId;

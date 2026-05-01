@@ -17,12 +17,12 @@ public class BatchEditUserDto {
     @NotEmpty(message = "用户ID列表不能为空")
     private List<Long> ids;
 
-    @Schema(description = "批量操作类型 0:启用 1:封禁 2:删除 3:变更部门")
+    @Schema(description = "批量操作类型 0:启用 1:封禁 2:删除 3:变更组织架构")
     @NotNull(message = "批量操作类型不能为空")
     @Range(min = 0, max = 3, message = "批量操作类型只能在0-3之间")
     private Integer kind;
 
-    @Schema(description = "变更部门ID 当kind为3时必填")
-    private Long deptId;
+    @Schema(description = "变更组织架构ID 当kind为3时必填 允许为公司、子公司、部门")
+    private Long orgId;
 
 }

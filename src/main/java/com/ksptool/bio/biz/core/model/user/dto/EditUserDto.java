@@ -45,8 +45,8 @@ public class EditUserDto {
     @Schema(description = "用户状态：0-禁用，1-启用")
     private Integer status;
 
-    @Schema(description = "所属组织架构ID 只能为部门")
-    private Long deptId;
+    @Schema(description = "所属组织架构ID 允许为公司、子公司、部门")
+    private Long orgId;
 
     @Schema(description = "用户组ID列表")
     private List<Long> groupIds;

@@ -9,6 +9,7 @@ import java.util.List;
 @Getter
 @Setter
 public class GetUserDetailsVo {
+
     @Schema(description = "用户ID")
     private Long id;
 
@@ -36,8 +37,8 @@ public class GetUserDetailsVo {
     @Schema(description = "最后登录时间")
     private String lastLoginTime;
 
-    @Schema(description = "所属部门ID")
-    private Long deptId;
+    @Schema(description = "所属组织机构ID")
+    private Long orgId;
 
     @Schema(description = "是否为系统内置用户 0:否 1:是")
     private Integer isSystem;
