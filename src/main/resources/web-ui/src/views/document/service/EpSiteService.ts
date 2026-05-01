@@ -182,7 +182,8 @@ export default {
           const successful = document.execCommand("copy");
           if (successful) {
             ElMessage.success(`${label}已复制到剪贴板`);
-          } else {
+          }
+          if (!successful) {
             ElMessage.error("复制失败，请手动复制");
           }
         } catch {

@@ -100,7 +100,8 @@ const renderCode = (): void => {
   if (lang && hljs.getLanguage(lang)) {
     result = hljs.highlight(codeContent.value, { language: lang });
     detectedLanguage.value = lang;
-  } else {
+  }
+  if (!lang || !hljs.getLanguage(lang)) {
     result = hljs.highlightAuto(codeContent.value);
     detectedLanguage.value = result.language || "text";
   }

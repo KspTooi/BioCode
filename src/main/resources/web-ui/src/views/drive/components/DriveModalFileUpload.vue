@@ -36,7 +36,7 @@ import { ref, onUnmounted } from "vue";
 import { ElMessage } from "element-plus";
 import AttachApi, { type PreCheckAttachDto, type ApplyChunkVo } from "@/views/core/api/AttachApi.ts";
 import { Result } from "@/commons/model/Result.ts";
-import Sha256Worker from "@/views/drive/workers/sha256.worker.ts?worker";
+import Sha256Worker from "@/views/drive/workers/Sha256C.worker.ts?worker";
 import type { AddEntryDto } from "@/views/drive/api/DriveTypes.ts";
 import DriveApi from "@/views/drive/api/DriveApi.ts";
 import { DriveStore } from "@/views/drive/service/DriveStore";

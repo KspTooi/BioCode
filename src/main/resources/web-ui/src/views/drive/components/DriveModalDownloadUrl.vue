@@ -93,7 +93,8 @@ const copyUrl = async (): Promise<void> => {
       document.execCommand("copy");
       ElMessage.success("下载链接已复制到剪贴板");
       closeModal();
-    } else {
+    }
+    if (!input) {
       ElMessage.error("复制失败，请手动复制");
     }
   }
