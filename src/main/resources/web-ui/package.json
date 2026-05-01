@@ -45,7 +45,6 @@
     "monaco-editor-vue3": "^0.1.10",
     "pinia": "^3.0.1",
     "pinia-plugin-persistedstate": "^4.7.1",
-    "pnpm": "^10.14.0",
     "splitpanes": "^4.0.4",
     "vanilla-jsoneditor": "^3.8.0",
     "vue": "^3.5.13",
@@ -83,6 +82,7 @@
     "vite": "^8.0.10",
     "vite-plugin-checker": "^0.13.0",
     "vite-plugin-vue-devtools": "^8.1.1",
-    "vue-tsc": "^2.2.8"
+    "vue-tsc": "^2.2.8",
+    "pnpm": "^10.33.0"
   }
 }
