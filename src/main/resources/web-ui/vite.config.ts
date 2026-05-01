@@ -8,27 +8,31 @@ import Components from "unplugin-vue-components/vite";
 import checker from "vite-plugin-checker";
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   // 设置静态资源路径
   base: "/",
 
   plugins: [
     vue(),
     vueDevTools(),
-    checker({
-      vueTsc: true,
-      eslint: {
-        useFlatConfig: true,
-        lintCommand: 'eslint "./src/**/*.{ts,tsx,vue,js,jsx}"',
-        dev: {
-          logLevel: ["error"],
-        },
-      },
-      overlay: {
-        initialIsOpen: true,
-        position: "tr", // 悬浮框位置：Top Right
-      },
-    }),
+    ...(command === "serve"
+      ? [
+          checker({
+            vueTsc: true,
+            eslint: {
+              useFlatConfig: true,
+              lintCommand: 'eslint "./src/**/*.{ts,tsx,vue,js,jsx}"',
+              dev: {
+                logLevel: ["error"],
+              },
+            },
+            overlay: {
+              initialIsOpen: true,
+              position: "tr", // 悬浮框位置：Top Right
+            },
+          }),
+        ]
+      : []),
     // (monacoEditorPlugin as any).default({
     //   languageWorkers: ['editorWorkerService', 'css', 'html', 'json', 'typescript']
     // }),
@@ -87,4 +91,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));
