@@ -74,7 +74,7 @@
     "postcss": "^8.5.13",
     "prettier": "^3.8.3",
     "sass-embedded": "^1.99.0",
-    "tailwindcss": "^4.1.16",
+    "tailwindcss": "^4.2.4",
     "typescript": "~5.8.0",
     "typescript-eslint": "^8.57.1",
     "unplugin-icons": "^22.2.0",
