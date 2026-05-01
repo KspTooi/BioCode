@@ -48,10 +48,10 @@ const vueRouter = createRouter({
 });
 
 // 路由守卫
-vueRouter.beforeEach((to, from, next) => {
+vueRouter.beforeEach((to, from) => {
   // 仅在访问根路径时尝试恢复标签页，其他路径直接放行
   if (to.path !== "/") {
-    return next();
+    return;
   }
 
   const { tabs, getActiveTab } = ComTabService.useTabService();
@@ -61,7 +61,7 @@ vueRouter.beforeEach((to, from, next) => {
 
   // 优先恢复当前激活标签，但排除根路径和登录页，避免自跳转/无意义跳转
   if (activeTab && activeTab.path !== "/" && activeTab.path !== "/auth/login" && activeTab.path !== to.path) {
-    return next(activeTab.path);
+    return activeTab.path;
   }
 
   // 激活标签不可用时，回退到最近访问的业务标签（同样排除根路径和登录页）
@@ -69,11 +69,8 @@ vueRouter.beforeEach((to, from, next) => {
 
   // 防止重定向到当前目标，避免产生循环跳转
   if (fallbackTab && fallbackTab.path !== to.path) {
-    return next(fallbackTab.path);
+    return fallbackTab.path;
   }
-
-  // 无可恢复标签时停留在根路径
-  return next();
 });
 
 export default {
