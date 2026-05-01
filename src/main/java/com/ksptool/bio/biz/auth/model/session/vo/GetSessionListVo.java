@@ -28,12 +28,4 @@ public class GetSessionListVo {
     @Schema(description = "过期时间")
     private LocalDateTime expiresAt;
 
-    public GetSessionListVo(Long id, String username, Integer rsMax, LocalDateTime createTime, LocalDateTime expiresAt) {
-        this.id = id;
-        this.username = username;
-        this.rsMax = rsMax;
-        this.createTime = createTime;
-        this.expiresAt = expiresAt;
-    }
-
 }

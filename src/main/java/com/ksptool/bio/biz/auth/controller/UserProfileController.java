@@ -17,7 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import static com.ksptool.bio.biz.auth.service.SessionService.session;
 
-@Tag(name = "用户档案管理", description = "用户档案管理")
+@Tag(name = "AUTH-用户档案管理", description = "用户档案管理")
 @RestController
 @RequestMapping("/profile")
 public class UserProfileController {
