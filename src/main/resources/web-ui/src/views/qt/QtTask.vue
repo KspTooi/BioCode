@@ -36,8 +36,8 @@
 
     <!-- 操作按钮区域 -->
     <StdListAreaAction>
-      <el-button type="success" @click="openModal('add', null)">新增任务调度</el-button>
-      <el-button type="danger" :disabled="listSelected.length === 0" @click="removeListBatch">删除选中项</el-button>
+      <el-button type="success" @click="openModal('add', null)">创建任务调度</el-button>
+      <el-button type="danger" :disabled="listSelected.length === 0" @click="removeListBatch">批量删除</el-button>
       <el-button type="primary" :icon="UploadIcon" @click="importWizardRef?.openModal()">导入任务</el-button>
     </StdListAreaAction>
 
@@ -168,7 +168,7 @@
         <el-form-item label="一次性参数 (JSON)" prop="targetParam">
           <el-input
             v-model="execModalForm.targetParam"
-            placeholder='请输入 JSON 格式参数，例如: {"key": "value"}'
+            placeholder="请输入 JSON 格式参数，例如: {&quot;key&quot;: &quot;value&quot;}"
             clearable
             type="textarea"
             :rows="6"
@@ -177,7 +177,7 @@
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="execModalVisible = false">取消</el-button>
+          <el-button @click="execModalVisible = false">关闭</el-button>
           <el-button type="primary" :loading="execModalLoading" icon="CaretRight" @click="execSubmitModal">
             立即执行
           </el-button>
@@ -185,10 +185,10 @@
       </template>
     </el-dialog>
 
-    <!-- 新增/编辑模态框 -->
+    <!-- 创建/编辑模态框 -->
     <el-dialog
       v-model="modalVisible"
-      :title="modalMode === 'edit' ? '编辑任务调度' : '新增任务调度'"
+      :title="modalMode === 'edit' ? '编辑任务调度' : '创建任务调度'"
       width="850px"
       :close-on-click-modal="false"
       @close="
@@ -406,7 +406,7 @@
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="modalVisible = false">取消</el-button>
+          <el-button @click="modalVisible = false">关闭</el-button>
           <el-button type="primary" :loading="modalLoading" @click="submitModal">
             {{ modalMode === "add" ? "创建" : "保存" }}
           </el-button>

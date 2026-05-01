@@ -29,8 +29,8 @@
 
     <!-- 操作按钮区域 -->
     <StdListAreaAction>
-      <el-button type="success" @click="openModal('add', null)">新增任务分组</el-button>
-      <el-button type="danger" :disabled="listSelected?.length === 0" @click="removeListBatch">删除选中项</el-button>
+      <el-button type="success" @click="openModal('add', null)">创建任务分组</el-button>
+      <el-button type="danger" :disabled="listSelected?.length === 0" @click="removeListBatch">批量删除</el-button>
     </StdListAreaAction>
 
     <!-- 列表表格区域 -->
@@ -81,10 +81,10 @@
       </template>
     </StdListAreaTable>
 
-    <!-- 新增/编辑模态框 -->
+    <!-- 创建/编辑模态框 -->
     <el-dialog
       v-model="modalVisible"
-      :title="modalMode === 'edit' ? '编辑任务分组' : '新增任务分组'"
+      :title="modalMode === 'edit' ? '编辑任务分组' : '创建任务分组'"
       width="600px"
       :close-on-click-modal="false"
       @close="
@@ -117,7 +117,7 @@
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="modalVisible = false">取消</el-button>
+          <el-button @click="modalVisible = false">关闭</el-button>
           <el-button type="primary" :loading="modalLoading" @click="submitModal">
             {{ modalMode === "add" ? "创建" : "保存" }}
           </el-button>
