@@ -27,7 +27,7 @@ public interface QfMemberService {
      * @param task 任务
      * @return 办理成员ID
      */
-    public Long getMemberId(Task task);
+    Long getMemberId(Task task);
 
     /**
      * 根据任务ID获取办理成员类型
@@ -35,7 +35,7 @@ public interface QfMemberService {
      * @param task 任务
      * @return 办理成员类型
      */
-    public QfMemberKinds getMemberKind(Task task);
+    QfMemberKinds getMemberKind(Task task);
 
 
     /**
@@ -44,6 +44,6 @@ public interface QfMemberService {
      * @param memberId 办理成员ID
      * @return 人员所属组(角色)ID列表
      */
-    public List<Long> getMemberGroupIds(Long memberId);
+    List<Long> getMemberGroupIds(Long memberId);
 
 }
