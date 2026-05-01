@@ -15,7 +15,7 @@
   "compilerOptions": {
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
-    "baseUrl": ".",
+    /* "baseUrl": ".", */
     "types": ["unplugin-icons/types/vue"],
     "paths": {
       "@/*": ["./src/*"]
