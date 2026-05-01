@@ -18,11 +18,14 @@ export default defineConfig(({ command }) => ({
     ...(command === "serve"
       ? [
           checker({
-            vueTsc: true,
+            vueTsc: {
+              tsconfigPath: "./tsconfig.json",
+              buildMode: true,
+            },
             eslint: {
               useFlatConfig: true,
               lintCommand:
-                'eslint --cache --cache-location ./node_modules/.cache/eslint/ --cache-strategy content "./src/**/*.{ts,vue}"',
+                'eslint --cache --cache-location ./node_modules/.cache/eslint/ --cache-strategy content "./src/AdminMain.ts"',
               dev: {
                 logLevel: ["error"],
               },
