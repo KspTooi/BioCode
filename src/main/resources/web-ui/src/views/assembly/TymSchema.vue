@@ -51,7 +51,13 @@
         <el-table-column label="操作" fixed="right" min-width="220">
           <template #default="scope">
             <!-- 方案字段管理：CDRC 跳转至 tym-schema-field-manager，不再使用子组件模态框 -->
-            <el-button link type="primary" size="small" :icon="EditIcon" @click="cdrcRedirect('tym-schema-field-manager', scope.row)">
+            <el-button
+              link
+              type="primary"
+              size="small"
+              :icon="EditIcon"
+              @click="cdrcRedirect('tym-schema-field-manager', scope.row)"
+            >
               管理方案
             </el-button>
             <el-button link type="primary" size="small" :icon="EditIcon" @click="openModal('edit', scope.row)">
@@ -162,7 +168,9 @@ const { listForm, listData, listTotal, listLoading, loadList, resetList, removeL
 watch(
   () => route.query["cdrc-return-id"],
   (id) => {
-    if (!id) return;
+    if (!id) {
+      return;
+    }
     loadList();
   },
   { immediate: true }
@@ -174,7 +182,6 @@ const modalFormRef = ref<FormInstance>();
 // 模态框打包
 const { modalVisible, modalLoading, modalMode, modalForm, modalRules, openModal, resetModal, submitModal } =
   TymSchemaService.useTymSchemaModal(modalFormRef, loadList);
-
 </script>
 
 <style scoped></style>

@@ -46,33 +46,13 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from "vue";
 import DriveEntryItem from "@/views/drive/components/DriveEntryItem.vue";
-import DriveEntryGridService from "@/views/drive/service/DriveEntryGridService.ts";
+import DriveEntryGridService, { type EntryGridEmitter } from "@/views/drive/service/DriveEntryGridService.ts";
 import type { CurrentDirPo, EntryPo } from "@/views/drive/api/DriveTypes.ts";
 
 const props = defineProps<{
   //搜索关键词
   keyword: string | null;
 }>();
-
-export interface EntryGridEmitter {
-  //目录切换
-  (e: "on-directory-change", currentDir: CurrentDirPo): void;
-
-  //条目列表加载完成
-  (e: "on-entries-loaded", items: EntryPo[], total: number): void;
-
-  //条目单击
-  (e: "on-entry-click", entry: EntryPo): void;
-
-  //条目双击
-  (e: "on-entry-dblclick", entry: EntryPo): void;
-
-  //拖拽条目
-  (e: "on-entry-drag", target: EntryPo, entries: EntryPo[], currentDir: CurrentDirPo): void;
-
-  //右键菜单打开
-  (e: "on-entry-contextmenu", entries: EntryPo[], event: MouseEvent): void;
-}
 
 const emit = defineEmits<EntryGridEmitter>();
 

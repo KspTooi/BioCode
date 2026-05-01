@@ -3,9 +3,28 @@ import DriveApi from "@/views/drive/api/DriveApi.ts";
 import { ElMessage } from "element-plus";
 import { ref, onUnmounted, type Ref, reactive, computed, type Reactive, watch } from "vue";
 import type { CurrentDirPo, EntryPo, GetEntryListDto, GetEntryListVo } from "@/views/drive/api/DriveTypes.ts";
-import type { EntryGridEmitter } from "@/views/drive/components/DriveEntryGrid.vue";
 import { DriveStore } from "@/views/drive/service/DriveStore";
 import type Result from "@/commons/model/Result";
+
+export interface EntryGridEmitter {
+  //目录切换
+  (e: "on-directory-change", currentDir: CurrentDirPo): void;
+
+  //条目列表加载完成
+  (e: "on-entries-loaded", items: EntryPo[], total: number): void;
+
+  //条目单击
+  (e: "on-entry-click", entry: EntryPo): void;
+
+  //条目双击
+  (e: "on-entry-dblclick", entry: EntryPo): void;
+
+  //拖拽条目
+  (e: "on-entry-drag", target: EntryPo, entries: EntryPo[], currentDir: CurrentDirPo): void;
+
+  //右键菜单打开
+  (e: "on-entry-contextmenu", entries: EntryPo[], event: MouseEvent): void;
+}
 
 /**
  * DriveEntryGrid 服务模块
