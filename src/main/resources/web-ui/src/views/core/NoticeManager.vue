@@ -135,7 +135,7 @@
       <!-- 部门选择器 -->
       <CoreOrgDeptSelectModal
         v-model="deptSelectVisible"
-        :default-selected="modalForm.targetIds"
+        :default-selected="modalForm._targetIds"
         title="选择接收部门"
         multiple
         type="dept"
@@ -145,7 +145,7 @@
       <!-- 用户选择器 -->
       <CoreUserSelectModal
         v-model="userSelectVisible"
-        :default-selected="modalForm.targetIds"
+        :default-selected="modalForm._targetIds"
         title="选择接收用户"
         multiple
         @confirm="onUserSelect"
@@ -204,13 +204,13 @@
           <el-form-item v-if="modalForm.targetKind === 1 && modalMode === 'add'" label="选择接收部门" prop="targetIds">
             <div class="flex items-center gap-4 text-cyan-600 ml-4">
               <el-button type="primary" size="small" @click="deptSelectVisible = true">选择接收部门</el-button>
-              <span>已选择 {{ modalForm.targetIds.length }} 个部门</span>
+              <span>已选择 {{ modalForm._targetIds.length }} 个部门</span>
             </div>
           </el-form-item>
           <el-form-item v-if="modalForm.targetKind === 2 && modalMode === 'add'" label="选择接收用户" prop="targetIds">
             <div class="flex items-center gap-4 text-cyan-600 ml-4">
               <el-button type="primary" size="small" @click="userSelectVisible = true">选择接收用户</el-button>
-              <span>已选择 {{ modalForm.targetIds.length }} 位用户</span>
+              <span>已选择 {{ modalForm._targetIds.length }} 位用户</span>
             </div>
           </el-form-item>
         </el-form>

@@ -15,21 +15,7 @@ export default defineConfig({
   plugins: [
     vue(),
     vueDevTools(),
-    checker({
-      /* vueTsc: true, */
-      typescript: true,
-      eslint: {
-        useFlatConfig: true,
-        lintCommand: 'eslint "./src/**/*.{ts,tsx,vue,js,jsx}"',
-        dev: {
-          logLevel: ["error"],
-        },
-      },
-      overlay: {
-        initialIsOpen: true,
-        position: "tr", // 悬浮框位置：Top Right
-      },
-    }),
+
     // (monacoEditorPlugin as any).default({
     //   languageWorkers: ['editorWorkerService', 'css', 'html', 'json', 'typescript']
     // }),
