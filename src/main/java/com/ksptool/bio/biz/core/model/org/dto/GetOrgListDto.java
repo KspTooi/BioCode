@@ -9,8 +9,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class
-GetOrgListDto extends PageQuery {
+public class GetOrgListDto extends PageQuery {
 
 
     @Schema(description = "主键id")

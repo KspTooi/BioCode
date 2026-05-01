@@ -13,8 +13,8 @@ public class GetOrgListVo {
     @Schema(description = "主键id")
     private Long id;
 
-    @Schema(description = "一级组织ID")
-    private Long rootId;
+    @Schema(description = "顶级组织ID")
+    private Long topId;
 
     @Schema(description = "上级组织ID NULL顶级组织")
     private Long parentId;

@@ -17,6 +17,28 @@ import java.util.List;
 @Repository
 public interface OrgRepository extends JpaRepository<OrgPo, Long> {
 
+
+    /**
+     * 根据名称和级别查询组织机构数量
+     *
+     * @param name  组织机构名称
+     * @param level 组织机构级别
+     * @return 组织机构数量
+     */
+    @Query("SELECT COUNT(u) FROM OrgPo u WHERE u.name = :name AND u.level = :level")
+    int countByNameAndLevel(@Param("name") String name, @Param("level") Integer level);
+
+    /**
+     * 根据名称和上级组织ID查询组织机构数量 排除指定ID
+     *
+     * @param name     组织机构名称
+     * @param parentId 上级组织ID
+     * @param id       需排除的ID
+     * @return 组织机构数量
+     */
+    @Query("SELECT COUNT(u) FROM OrgPo u WHERE u.name = :name AND u.parentId = :parentId AND(:id IS NULL OR u.id != :id)")
+    int countByNameAndParentIdExcludeId(@Param("name") String name, @Param("parentId") Long parentId, @Param("id") Long id);
+
     /**
      * 根据名称查询企业(租户)
      *
@@ -83,7 +105,6 @@ public interface OrgRepository extends JpaRepository<OrgPo, Long> {
             AND (:#{#po.kind} IS NULL OR u.kind  = :#{#po.kind} )
             AND (:#{#po.name} IS NULL OR u.name  LIKE CONCAT('%', :#{#po.name}, '%') )
             AND (:#{#po.principalId} IS NULL OR u.principalId  = :#{#po.principalId} )
-            AND (:#{#po.principalName} IS NULL OR u.principalName  LIKE CONCAT('%', :#{#po.principalName}, '%') )
             ORDER BY u.updateTime DESC
             """)
     Page<OrgPo> getOrgList(@Param("po") OrgPo po, Pageable pageable);
@@ -179,6 +200,34 @@ public interface OrgRepository extends JpaRepository<OrgPo, Long> {
             """)
     List<OrgPo> getChildDeptsByDeptId(@Param("deptId") Long deptId);
 
+
+    /**
+     * 根据组织ID查询组织以及其子组织
+     *
+     * @param orgId 组织ID
+     * @return 组织以及其子组织
+     */
+    @Query("""
+            SELECT d FROM OrgPo d
+            WHERE (
+                d.id = :orgId
+                OR CONCAT(',', d.orgPathIds, ',') LIKE CONCAT('%,', :orgId, ',%')
+            )
+            """)
+    List<OrgPo> getChildByOrgId(@Param("orgId") Long orgId);
+
+    /**
+     * RS=20 仅本公司：当前公司 + 当前公司直属的所有非企业组织(部门或者班组或者其他机构)
+     *
+     * @param orgId 组织ID
+     * @return 组织列表
+     */
+    @Query("""
+            SELECT o FROM OrgPo o
+            WHERE o.id = :orgId OR (o.orgId = :orgId AND o.kind > 1)
+            """)
+    List<OrgPo> getRowScope20OrgScopeListByOrgId(@Param("orgId") Long orgId);
+
     /**
      * 根据父级ID查询组织
      *
@@ -191,4 +240,24 @@ public interface OrgRepository extends JpaRepository<OrgPo, Long> {
             ORDER BY d.seq ASC
             """)
     List<OrgPo> getByParentId(@Param("parentId") Long parentId);
+
+    /**
+     * 根据ID查询组织
+     *
+     * @param ids ID
+     * @return 组织
+     */
+    @Query("""
+            SELECT d FROM OrgPo d
+            WHERE d.id in :ids
+            """)
+    List<OrgPo> getByIds(@Param("ids") List<Long> ids);
+
+
+    @Query("""
+            SELECT d FROM OrgPo d
+            WHERE d.rootId = :rootId
+            order by d.seq asc
+            """)
+    List<OrgPo> getAllByRootId(@Param("rootId") Long rootId);
 }

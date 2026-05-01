@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
 
 @Getter
 @Setter
@@ -17,22 +18,22 @@ public class EditOrgDto{
     @Schema(description = "上级组织ID NULL顶级组织")
     private Long parentId;
 
-    /* @Range(min = 0, max = 1, message = "组织机构类型必须在0和1之间")
-    @NotNull(message = "组织机构类型不能为空")
-    @Schema(description = "0:部门 1:企业")
-    private Integer kind; */
-
     @NotNull(message = "组织机构名称不能为空")
-    @Size(max = 128, message = "组织机构名称长度不能超过128个字符")
+    @Size(max = 80, message = "组织机构名称长度不能超过80个字符")
     @Schema(description = "组织机构名称")
     private String name;
 
-    @Schema(description = "主管ID")
-    private Long principalId;
+    @Length(max = 40, message = "组织机构简称长度不能超过40个字符")
+    @Schema(description = "组织机构简称")
+    private String shortName;
 
     @NotNull(message = "排序不能为空")
     @Schema(description = "排序")
     private Integer seq;
+
+    @Schema(description = "备注")
+    @Length(max = 200, message = "备注长度不能超过200个字符")
+    private String remark;
 
 }
 

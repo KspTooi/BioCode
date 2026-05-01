@@ -1,5 +1,8 @@
 package com.ksptool.bio.biz.core.controller;
 
+import com.ksptool.assembly.entity.web.CommonIdDto;
+import com.ksptool.assembly.entity.web.Result;
+import com.ksptool.bio.biz.auth.common.aop.RowScope;
 import com.ksptool.bio.biz.core.model.org.dto.AddOrgDto;
 import com.ksptool.bio.biz.core.model.org.dto.EditOrgDto;
 import com.ksptool.bio.biz.core.model.org.dto.GetOrgTreeDto;
@@ -7,8 +10,6 @@ import com.ksptool.bio.biz.core.model.org.vo.GetOrgDetailsVo;
 import com.ksptool.bio.biz.core.model.org.vo.GetOrgTreeVo;
 import com.ksptool.bio.biz.core.service.OrgService;
 import com.ksptool.bio.biz.core.service.UserService;
-import com.ksptool.assembly.entity.web.CommonIdDto;
-import com.ksptool.assembly.entity.web.Result;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -25,8 +26,9 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/org")
-@Tag(name = "组织机构管理", description = "组织机构管理")
+@Tag(name = "CORE-组织机构管理", description = "组织机构管理")
 @Slf4j
+@RowScope(mode = RowScope.Mode.ROOT_ONLY)
 public class OrgController {
 
     @Autowired
