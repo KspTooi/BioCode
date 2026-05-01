@@ -31,7 +31,7 @@ public class GetGroupDetailsVo {
     @Schema(description = "排序号")
     private Integer seq;
 
-    @Schema(description = "数据权限 0:全部 1:本公司/租户及以下 2:本部门及以下 3:本部门 4:仅本人 5:指定部门")
+    @Schema(description = "数据权限 ")
     private Integer rowScope;
 
     @Schema(description = "部门ID列表")

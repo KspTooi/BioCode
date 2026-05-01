@@ -11,9 +11,11 @@ import com.ksptool.bio.biz.auth.model.group.dto.*;
 import com.ksptool.bio.biz.auth.model.group.vo.*;
 import com.ksptool.bio.biz.auth.model.permission.PermissionPo;
 import com.ksptool.bio.biz.auth.repository.*;
+import com.ksptool.bio.biz.core.model.org.OrgPo;
 import com.ksptool.bio.biz.core.repository.MenuRepository;
 import com.ksptool.bio.biz.core.repository.OrgRepository;
 import com.ksptool.bio.commons.dataprocess.Str;
+import jakarta.persistence.Tuple;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
+import static com.ksptool.bio.biz.core.common.TupleMapper.tupleAs;
 import static com.ksptool.entities.Entities.as;
 
 
@@ -59,8 +62,8 @@ public class GroupService {
      * @return 用户组列表
      */
     public PageResult<GetGroupListVo> getGroupList(GetGroupListDto dto) {
-        Page<GetGroupListVo> pagePos = repository.getGroupList(dto, dto.pageRequest());
-        return PageResult.success(pagePos.getContent(), pagePos.getTotalElements());
+        Page<Tuple> page = repository.getGroupList(dto, dto.pageRequest());
+        return PageResult.success(tupleAs(page.getContent(), GetGroupListVo.class), page.getTotalElements());
     }
 
     /**
@@ -115,7 +118,8 @@ public class GroupService {
      */
     @Transactional(rollbackFor = Exception.class)
     public void addGroup(AddGroupDto dto) throws BizException {
-        if (repository.existsByCode(dto.getCode())) {
+
+        if (repository.countByCodeExcludeId(dto.getCode(), null) > 0) {
             throw new BizException("用户组标识已存在");
         }
 
@@ -196,10 +200,30 @@ public class GroupService {
      */
     @Transactional(rollbackFor = Exception.class)
     public void editGroup(EditGroupDto dto) throws BizException {
+
         GroupPo group = repository.findById(dto.getId()).orElseThrow(() -> new BizException("用户组不存在"));
 
+
+        //处理系统内置用户组的更新逻辑
+        if(group.isSystem()){
+
+            //内置用户组不可调整RS数据权限
+            if(dto.getRowScope() != null && dto.getRowScope() != group.getRowScope()){
+                throw new BizException("内置用户组不允许调整RS数据权限！");
+            }
+
+            //内置用户组不可调整状态
+            if(dto.getStatus() != null && dto.getStatus() != group.getStatus()){
+                throw new BizException("内置用户组不允许调整状态！");
+            }
+
+        }
+
+
+
+        //如果修改了标识 则需要检查是否重复
         if (!group.getCode().equals(dto.getCode())) {
-            if (repository.existsByCode(dto.getCode())) {
+            if (repository.countByCodeExcludeId(dto.getCode(), group.getId()) > 0) {
                 throw new BizException("用户组标识重复");
             }
         }
@@ -540,6 +564,151 @@ public class GroupService {
         }
     }
 
+
+    /**
+     * 模拟RS数据权限
+     * <p>
+     * 接收"模拟节点ID + 模拟RS等级",在不影响真实用户/组的前提下,
+     * 实时计算并返回该等级下可见的组织节点ID集合。
+     * <p>
+     * 计算逻辑与 RsCalculator 完全对齐,以"虚拟用户"形式推导:
+     * - kind=0/1(企业/子企业): 虚拟orgId=节点ID, 虚拟deptId=null
+     * - kind=2/3(部门/班组): 虚拟deptId=节点ID, 虚拟orgId=节点的org_id
+     *
+     * @param dto 模拟参数
+     * @return 模拟结果
+     */
+    public SimulateRsVo simulateRs(SimulateRsDto dto) throws Exception {
+
+        int rsLevel = dto.getRsLevel();
+
+        //校验RS等级 不支持60(指定组织,依赖组配置无法单点模拟)
+        if (rsLevel == 60) {
+            throw new BizException("模拟器不支持 RS=60(指定组织)");
+        }
+
+        //校验RS等级合法值
+        boolean validLevel = rsLevel == 0 || rsLevel == 10 || rsLevel == 20
+                || rsLevel == 30 || rsLevel == 40 || rsLevel == 50 || rsLevel == 100;
+        if (!validLevel) {
+            throw new BizException("非法的RS等级: " + rsLevel);
+        }
+
+        //获取当前登录用户的租户ID,用于隔离校验
+        var session = SessionService.session();
+        Long rootId = session.getRootId();
+
+        //校验模拟节点存在且属于本租户
+        OrgPo node = orgRepository.findById(dto.getOrgId())
+                .orElseThrow(() -> new BizException("组织节点不存在"));
+
+        if (!Objects.equals(node.getRootId(), rootId)) {
+            throw new BizException("组织节点不属于当前租户");
+        }
+
+        //根据节点kind推导虚拟用户的orgId(公司)和deptId(部门)
+        Long virtualOrgId = null;
+        Long virtualDeptId = null;
+
+        //kind=0(企业) 或 kind=1(子企业): 虚拟用户挂在该公司
+        if (node.getKind() == 0 || node.getKind() == 1) {
+            virtualOrgId = node.getId();
+        }
+
+        //kind>=2(部门/班组等): 虚拟用户挂在该部门,公司取org_id
+        if (node.getKind() >= 2) {
+            virtualDeptId = node.getId();
+            virtualOrgId = node.getOrgId();
+        }
+
+        //构建结果VO基础信息
+        var vo = new SimulateRsVo();
+        vo.setRsLevel(rsLevel);
+        vo.setOrgId(node.getId());
+        vo.setNodeKind(node.getKind());
+        vo.setAllMode(false);
+
+        //rsLevel=0 全集团 SQL层直接放行租户全量,前端高亮全部节点
+        if (rsLevel == 0) {
+            vo.setAllMode(true);
+            vo.setVisibleOrgIds(new ArrayList<>());
+            return vo;
+        }
+
+        //rsLevel=100 拒绝所有 orgIds永远不会匹配到任何ID
+        if (rsLevel == 100) {
+            vo.setVisibleOrgIds(new ArrayList<>());
+            return vo;
+        }
+
+        //rsLevel=50 仅本人 SQL层用creator_id过滤,组织树层面无命中节点
+        if (rsLevel == 50) {
+            vo.setVisibleOrgIds(new ArrayList<>());
+            return vo;
+        }
+
+        var visibleIds = new HashSet<Long>();
+
+        //rsLevel=10 本公司+下级公司 需要虚拟orgId
+        if (rsLevel == 10) {
+            if (virtualOrgId == null) {
+                vo.setVisibleOrgIds(new ArrayList<>());
+                return vo;
+            }
+            var orgs = orgRepository.getChildByOrgId(virtualOrgId);
+            for (var org : orgs) {
+                visibleIds.add(org.getId());
+            }
+            visibleIds.add(virtualOrgId);
+            vo.setVisibleOrgIds(new ArrayList<>(visibleIds));
+            return vo;
+        }
+
+        //rsLevel=20 仅本公司(本公司直属部门,排除子公司及其下部门) 需要虚拟orgId
+        if (rsLevel == 20) {
+            if (virtualOrgId == null) {
+                vo.setVisibleOrgIds(new ArrayList<>());
+                return vo;
+            }
+            var orgs = orgRepository.getRowScope20OrgScopeListByOrgId(virtualOrgId);
+            for (var org : orgs) {
+                visibleIds.add(org.getId());
+            }
+            visibleIds.add(virtualOrgId);
+            vo.setVisibleOrgIds(new ArrayList<>(visibleIds));
+            return vo;
+        }
+
+        //rsLevel=30 本部门+下级部门 需要虚拟deptId
+        if (rsLevel == 30) {
+            if (virtualDeptId == null) {
+                vo.setVisibleOrgIds(new ArrayList<>());
+                return vo;
+            }
+            var orgs = orgRepository.getChildByOrgId(virtualDeptId);
+            for (var org : orgs) {
+                visibleIds.add(org.getId());
+            }
+            visibleIds.add(virtualDeptId);
+            vo.setVisibleOrgIds(new ArrayList<>(visibleIds));
+            return vo;
+        }
+
+        //rsLevel=40 仅本部门 需要虚拟deptId
+        if (rsLevel == 40) {
+            if (virtualDeptId == null) {
+                vo.setVisibleOrgIds(new ArrayList<>());
+                return vo;
+            }
+            visibleIds.add(virtualDeptId);
+            vo.setVisibleOrgIds(new ArrayList<>(visibleIds));
+            return vo;
+        }
+
+        //兜底返回空集(理论上不会到达此分支,前面已覆盖全部合法值)
+        vo.setVisibleOrgIds(new ArrayList<>());
+        return vo;
+    }
 
     /**
      * 移除用户组

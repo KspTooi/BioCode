@@ -3,7 +3,7 @@ package com.ksptool.bio.biz.auth.repository;
 
 import com.ksptool.bio.biz.auth.model.group.GroupPo;
 import com.ksptool.bio.biz.auth.model.group.dto.GetGroupListDto;
-import com.ksptool.bio.biz.auth.model.group.vo.GetGroupListVo;
+import jakarta.persistence.Tuple;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -32,9 +32,16 @@ public interface GroupRepository extends JpaRepository<GroupPo, Long>, JpaSpecif
     List<GroupPo> getGroupsByUserId(@Param("userId") Long userId);
 
     /**
-     * 检查用户组标识是否存在
+     * 根据标识统计用户组数量 排除指定ID
+     *
+     * @param code 用户组标识
+     * @param id   需排除的ID
+     * @return 用户组数量
      */
-    boolean existsByCode(String code);
+    @Query("""
+            SELECT COUNT(g) FROM GroupPo g WHERE g.code = :code AND (:id IS NULL OR g.id != :id)
+            """)
+    int countByCodeExcludeId(@Param("code") String code, @Param("id") Long id);
 
     /**
      * 根据ID列表获取用户组及其关联的用户和权限
@@ -60,17 +67,17 @@ public interface GroupRepository extends JpaRepository<GroupPo, Long>, JpaSpecif
     Integer findMaxSortOrder();
 
     @Query("""
-            SELECT new com.ksptool.bio.biz.auth.model.group.vo.GetGroupListVo(
-                g.id,
-                g.code,
-                g.name,
-                CAST((SELECT COUNT(ug) FROM UserGroupPo ug WHERE ug.groupId = g.id) AS integer),
-                CAST((SELECT COUNT(gp) FROM GroupPermissionPo gp WHERE gp.groupId = g.id) AS integer),
-                g.isSystem,
-                g.status,
-                g.seq,
-                g.createTime
-            )
+            SELECT
+            g.id AS id,
+            g.code AS code,
+            g.name AS name,
+            (SELECT COUNT(ug) FROM UserGroupPo ug WHERE ug.groupId = g.id) AS memberCount,
+            (SELECT COUNT(gp) FROM GroupPermissionPo gp WHERE gp.groupId = g.id) AS permissionCount,
+            g.rowScope AS rowScope,
+            g.isSystem AS isSystem,
+            g.status AS status,
+            g.seq AS seq,
+            g.createTime AS createTime
             FROM GroupPo g
             WHERE (:#{#dto.keyword} IS NULL OR g.code LIKE %:#{#dto.keyword}%
                 OR g.name LIKE %:#{#dto.keyword}%
@@ -78,7 +85,7 @@ public interface GroupRepository extends JpaRepository<GroupPo, Long>, JpaSpecif
             AND (:#{#dto.status} IS NULL OR g.status = :#{#dto.status})
             ORDER BY g.seq ASC, g.id DESC
             """)
-    Page<GetGroupListVo> getGroupList(@Param("dto") GetGroupListDto dto, Pageable pageable);
+    Page<Tuple> getGroupList(@Param("dto") GetGroupListDto dto, Pageable pageable);
 
 
     /**
