@@ -5,7 +5,7 @@ import lombok.Setter;
 import org.springframework.context.ApplicationEvent;
 
 /**
- * 流程结束事件
+ * 任务结束事件
  *
  * @author KspTool(ksptool@outlook.com)
  * @license Proprietary
@@ -15,7 +15,7 @@ import org.springframework.context.ApplicationEvent;
  */
 @Getter
 @Setter
-public class QfProcFinishedEvent extends ApplicationEvent {
+public class QfTaskFinishedEvent extends ApplicationEvent {
 
     //业务表单ID
     private Long bizFormId;
@@ -25,9 +25,17 @@ public class QfProcFinishedEvent extends ApplicationEvent {
 
     //业务数据主键ID
     private Long dataId;
+
+    //当前节点名
+    private String currentNodeName;
+
+    //下一任务节点名
+    private String nextNodeName;
+
     //操作 0:同意 1:驳回
     private Integer action;
-    public QfProcFinishedEvent(Object source) {
+
+    public QfTaskFinishedEvent(Object source) {
         super(source);
     }
 

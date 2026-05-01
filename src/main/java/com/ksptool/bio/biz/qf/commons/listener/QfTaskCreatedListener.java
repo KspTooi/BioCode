@@ -3,6 +3,7 @@ package com.ksptool.bio.biz.qf.commons.listener;
 import com.ksptool.bio.biz.qf.commons.QfMemberKinds;
 import com.ksptool.bio.biz.qf.commons.QfProcTools;
 import com.ksptool.bio.biz.qf.commons.QfVarsProc;
+import com.ksptool.bio.biz.qf.commons.event.QfTaskStartedEvent;
 import com.ksptool.bio.biz.qf.model.qftodo.QfTodoPo;
 import com.ksptool.bio.biz.qf.repository.QfTodoRepository;
 import com.ksptool.bio.biz.qf.service.QfMemberService;
@@ -13,6 +14,7 @@ import org.flowable.engine.TaskService;
 import org.flowable.engine.delegate.event.AbstractFlowableEngineEventListener;
 import org.flowable.task.api.Task;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Set;
 import static com.ksptool.bio.biz.qf.commons.QfProcTools.trunc;
+import static com.ksptool.entities.Entities.assign;
 /**
  * Flowable 任务创建监听器
  * 监听引擎 TASK_CREATED 事件，将每个新生成的UserTask映射为一条 QfTodoPo (待办)。
@@ -49,6 +52,11 @@ public class QfTaskCreatedListener extends AbstractFlowableEngineEventListener {
     @Lazy
     @Autowired
     private TaskService taskService;
+
+    //事件发布器
+    @Lazy
+    @Autowired
+    private ApplicationEventPublisher aep;
 
     public QfTaskCreatedListener() {
         // 仅订阅 TASK_CREATED, 其他事件无需回调
@@ -114,7 +122,6 @@ public class QfTaskCreatedListener extends AbstractFlowableEngineEventListener {
         var initiatorName = QfProcTools.varString(vars, QfVarsProc.INITIATOR_NAME, "");
         var initiatorTime = QfProcTools.varDateTime(vars, QfVarsProc.INITIATOR_TIME, LocalDateTime.now());
 
-
         //创建待办数据
         QfTodoPo po = new QfTodoPo();
         po.setRootId(rid);
@@ -132,7 +139,14 @@ public class QfTaskCreatedListener extends AbstractFlowableEngineEventListener {
         po.setInitiatorName(trunc(initiatorName, 20));
         po.setInitiatorTime(initiatorTime);
         po.setStatus(0); //0:待办 1:已办 10:已作废
+
         qfTodoRepository.save(po);
+
+        //发布任务启动事件
+        QfTaskStartedEvent fireEvent = new QfTaskStartedEvent(this);
+        assign(po, fireEvent);
+        fireEvent.setTodoId(po.getId());
+        aep.publishEvent(fireEvent);
     }
 
 

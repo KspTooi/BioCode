@@ -1,5 +1,7 @@
 package com.ksptool.bio.biz.qf.commons.listener;
 
+import com.ksptool.bio.biz.qf.commons.event.QfTaskFinishedEvent;
+import com.ksptool.bio.biz.qf.commons.event.QfTaskStartedEvent;
 import com.ksptool.bio.biz.qf.repository.QfTodoRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.common.engine.api.delegate.event.FlowableEngineEntityEvent;
@@ -7,11 +9,14 @@ import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
 import org.flowable.engine.delegate.event.AbstractFlowableEngineEventListener;
 import org.flowable.task.api.Task;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.Set;
+
+import static com.ksptool.entities.Entities.assign;
 
 /**
  * 任务完成监听器
@@ -34,7 +39,9 @@ public class QfTaskFinishedListener extends AbstractFlowableEngineEventListener 
     @Lazy
     @Autowired
     private QfTodoRepository qfTodoRepository;
-
+    @Lazy
+    @Autowired
+    private ApplicationEventPublisher aep;
     public QfTaskFinishedListener() {
         super(Set.of(FlowableEngineEventType.TASK_COMPLETED));
     }
@@ -56,6 +63,10 @@ public class QfTaskFinishedListener extends AbstractFlowableEngineEventListener 
         po.setStatus(1);
         po.setFinTime(LocalDateTime.now());
         qfTodoRepository.save(po);
+        //发布任务完成事件
+        QfTaskFinishedEvent fireEvent = new QfTaskFinishedEvent(this);
+        assign(po, fireEvent);
+        aep.publishEvent(fireEvent);
         log.debug("[QfTaskFinishedListener] 待办已标记为已办, todoId: {}", po.getId());
     }
 }
