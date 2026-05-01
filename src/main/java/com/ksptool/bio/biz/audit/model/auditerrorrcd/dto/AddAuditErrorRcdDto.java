@@ -1,4 +1,4 @@
-package com.ksptool.bio.biz.audit.modal.auditerrorrcd.vo;
+package com.ksptool.bio.biz.audit.model.auditerrorrcd.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
@@ -8,13 +8,8 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class GetAuditErrorRcdDetailsVo {
+public class AddAuditErrorRcdDto {
 
-    @Schema(description = "错误ID")
-    private Long id;
-
-    @Schema(description = "错误代码")
-    private String errorCode;
 
     @Schema(description = "请求地址")
     private String requestUri;

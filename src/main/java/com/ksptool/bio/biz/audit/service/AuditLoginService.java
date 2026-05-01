@@ -3,10 +3,10 @@ package com.ksptool.bio.biz.audit.service;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
-import com.ksptool.bio.biz.audit.modal.auditlogin.AuditLoginPo;
-import com.ksptool.bio.biz.audit.modal.auditlogin.dto.GetAuditLoginListDto;
-import com.ksptool.bio.biz.audit.modal.auditlogin.vo.GetAuditLoginDetailsVo;
-import com.ksptool.bio.biz.audit.modal.auditlogin.vo.GetAuditLoginListVo;
+import com.ksptool.bio.biz.audit.model.auditlogin.AuditLoginPo;
+import com.ksptool.bio.biz.audit.model.auditlogin.dto.GetAuditLoginListDto;
+import com.ksptool.bio.biz.audit.model.auditlogin.vo.GetAuditLoginDetailsVo;
+import com.ksptool.bio.biz.audit.model.auditlogin.vo.GetAuditLoginListVo;
 import com.ksptool.bio.biz.audit.repository.AuditLoginRepository;
 import eu.bitwalker.useragentutils.UserAgent;
 import lombok.extern.slf4j.Slf4j;
@@ -79,11 +79,12 @@ public class AuditLoginService {
 
     /**
      * 异步记录登录审计日志
-     * @param userId 用户ID
+     *
+     * @param userId   用户ID
      * @param username 用户名
-     * @param status 状态 0:成功 1:失败
-     * @param message 消息
-     * @param ipAddr IP地址
+     * @param status   状态 0:成功 1:失败
+     * @param message  消息
+     * @param ipAddr   IP地址
      * @param uaString 用户代理字符串
      */
     @Async

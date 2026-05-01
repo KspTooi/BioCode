@@ -1,4 +1,4 @@
-package com.ksptool.bio.biz.audit.modal.auditlogin.dto;
+package com.ksptool.bio.biz.audit.model.auditlogin.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;

@@ -1,6 +1,6 @@
 package com.ksptool.bio.biz.audit.repository;
 
-import com.ksptool.bio.biz.audit.modal.auditerrorrcd.AuditErrorRcdPo;
+import com.ksptool.bio.biz.audit.model.auditerrorrcd.AuditErrorRcdPo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

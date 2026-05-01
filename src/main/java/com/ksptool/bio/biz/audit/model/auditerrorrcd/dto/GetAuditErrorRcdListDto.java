@@ -1,15 +1,16 @@
-package com.ksptool.bio.biz.audit.modal.auditerrorrcd.dto;
+package com.ksptool.bio.biz.audit.model.auditerrorrcd.dto;
 
+import com.ksptool.assembly.entity.web.PageQuery;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 @Getter
 @Setter
-public class AddAuditErrorRcdDto {
+public class GetAuditErrorRcdListDto extends PageQuery {
 
+    @Schema(description = "错误代码")
+    private String errorCode;
 
     @Schema(description = "请求地址")
     private String requestUri;
@@ -28,9 +29,6 @@ public class AddAuditErrorRcdDto {
 
     @Schema(description = "完整堆栈信息")
     private String errorStackTrace;
-
-    @Schema(description = "创建时间")
-    private LocalDateTime createTime;
 
 }
 

@@ -1,15 +1,13 @@
-package com.ksptool.bio.biz.audit.modal.auditerrorrcd;
+package com.ksptool.bio.biz.audit.model.auditerrorrcd;
 
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
-import com.ksptool.bio.commons.utils.IdWorker;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
-
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Setter

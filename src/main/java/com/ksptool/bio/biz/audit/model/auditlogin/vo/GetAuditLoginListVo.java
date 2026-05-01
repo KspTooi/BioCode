@@ -1,4 +1,4 @@
-package com.ksptool.bio.biz.audit.modal.auditlogin.vo;
+package com.ksptool.bio.biz.audit.model.auditlogin.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class GetAuditLoginDetailsVo {
+public class GetAuditLoginListVo {
 
     @Schema(description = "登录日志主键")
     private Long id;
