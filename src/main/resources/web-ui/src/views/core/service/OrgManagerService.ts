@@ -181,10 +181,7 @@ export default {
       name: "",
       shortName: "",
       remark: "",
-      principalId: null as string | null,
       seq: 0,
-      // rootId: "",
-      principalName: "",
     });
 
     const modalRules = computed(() => ({
@@ -228,10 +225,7 @@ export default {
           modalForm.name = ret.name;
           modalForm.shortName = ret.shortName;
           modalForm.remark = ret.remark ?? "";
-          modalForm.principalId = ret.principalId;
           modalForm.seq = ret.seq;
-          // modalForm.rootId = ret.rootId;
-          modalForm.principalName = ret.principalName;
         } catch (error: any) {
           ElMessage.error(error.message || "获取组织机构详情失败");
           return;
@@ -251,7 +245,6 @@ export default {
       modalForm.name = "";
       modalForm.shortName = "";
       modalForm.remark = "";
-      modalForm.principalId = null;
       modalForm.seq = 0;
 
       if (modalFormRef.value) {
@@ -281,7 +274,6 @@ export default {
             name: modalForm.name,
             shortName: modalForm.shortName,
             remark: modalForm.remark,
-            principalId: modalForm.principalId,
             seq: modalForm.seq,
           };
           const result = await OrgApi.addOrg(addDto);
@@ -303,7 +295,6 @@ export default {
             name: modalForm.name,
             shortName: modalForm.shortName,
             remark: modalForm.remark,
-            principalId: modalForm.principalId,
             seq: modalForm.seq,
           };
           const result = await OrgApi.editOrg(editDto);

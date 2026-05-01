@@ -242,21 +242,6 @@ const initSelection = (): void => {
     selectedUser.value = user;
     tableRef.value?.setCurrentRow(user);
   }
-
-  // if (props.defaultSelected && Array.isArray(props.defaultSelected) && props.defaultSelected.length > 0) {
-  //   if (props.multiple) {
-  //     nextTick(() => {
-  //       restoreMultipleSelection();
-  //     });
-  //   }
-  // } else if (props.defaultSelected && typeof props.defaultSelected === "string") {
-  //   //单选也需要高亮选中
-  //   const user = listData.value.find((item) => item.id === props.defaultSelected);
-  //   if (user) {
-  //     selectedUser.value = user;
-  //     tableRef.value?.setCurrentRow(user);
-  //   }
-  // }
 };
 
 const restoreMultipleSelection = (): void => {
