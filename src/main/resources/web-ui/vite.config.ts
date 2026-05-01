@@ -21,7 +21,8 @@ export default defineConfig(({ command }) => ({
             vueTsc: true,
             eslint: {
               useFlatConfig: true,
-              lintCommand: 'eslint "./src/**/*.{ts,tsx,vue,js,jsx}"',
+              lintCommand:
+                'eslint --cache --cache-location ./node_modules/.cache/eslint/ --cache-strategy content "./src/**/*.{ts,vue}"',
               dev: {
                 logLevel: ["error"],
               },

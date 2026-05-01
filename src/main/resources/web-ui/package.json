@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "//dev": "启动开发服务器。这是你的**“快乐摸鱼模式”**，支持热更新（HMR），你改一行代码，浏览器抖一下，让你觉得自己效率很高。",
-    "dev": "vite",
+    "dev": "cross-env NODE_OPTIONS=\"--max-old-space-size=8192\" vite",
     "//serve": "基本上是 dev 的僵尸变体。留着它是为了照顾那些还没从 Vue CLI 时代转过弯来的老古董们的肌肉记忆。",
     "serve": "vite",
     "//build": "终极缝合怪。使用 npm-run-all 工具并行（run-p）执行类型检查和构建。它的逻辑是：既然你都要发布了，那就一边检查报错一边打包，主打一个效率。",
@@ -67,6 +67,7 @@
     "@vue/eslint-config-typescript": "^14.7.0",
     "@vue/tsconfig": "^0.7.0",
     "autoprefixer": "^10.4.21",
+    "cross-env": "^10.1.0",
     "eslint": "^10.1.0",
     "eslint-plugin-check-file": "^3.3.1",
     "eslint-plugin-vue": "^10.8.0",

@@ -167,6 +167,15 @@ export default defineConfigWithVueTs(
 
   // 忽略目录
   {
-    ignores: ["dist/**", "node_modules/**", "*.d.ts", "**/public/**/*.ts", "**/public/**/*.js"],
+    ignores: [
+      "dist/**",
+      "node_modules/**",
+      "*.d.ts",
+      "**/public/**/*.ts",
+      "**/public/**/*.js",
+      "components.d.ts",
+      "auto-imports.d.ts",
+      "env.d.ts",
+    ],
   }
 );
