@@ -5,6 +5,7 @@ import vueDevTools from "vite-plugin-vue-devtools";
 import icons from "unplugin-icons/vite";
 import IconsResolver from "unplugin-icons/resolver";
 import Components from "unplugin-vue-components/vite";
+import checker from "vite-plugin-checker";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -14,6 +15,21 @@ export default defineConfig({
   plugins: [
     vue(),
     vueDevTools(),
+    checker({
+      /* vueTsc: true, */
+      typescript: true,
+      eslint: {
+        useFlatConfig: true,
+        lintCommand: 'eslint "./src/**/*.{ts,tsx,vue,js,jsx}"',
+        dev: {
+          logLevel: ["error"],
+        },
+      },
+      overlay: {
+        initialIsOpen: true,
+        position: "tr", // 悬浮框位置：Top Right
+      },
+    }),
     // (monacoEditorPlugin as any).default({
     //   languageWorkers: ['editorWorkerService', 'css', 'html', 'json', 'typescript']
     // }),

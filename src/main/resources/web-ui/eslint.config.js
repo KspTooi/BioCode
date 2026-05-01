@@ -1,6 +1,7 @@
 import js from "@eslint/js";
 import pluginVue from "eslint-plugin-vue";
 import { defineConfigWithVueTs, vueTsConfigs } from "@vue/eslint-config-typescript";
+import checkFile from "eslint-plugin-check-file";
 
 /**
  * ESLint 配置 — Vue + TypeScript + JavaScript 语法与风格检查
@@ -48,7 +49,20 @@ export default defineConfigWithVueTs(
   ...pluginVue.configs["flat/recommended"],
 
   {
+    plugins: {
+      "check-file": checkFile,
+    },
+
     rules: {
+      //新增命名规范检查规则
+      "check-file/filename-naming-convention": [
+        "error",
+        {
+          "src/**/*.vue": "PASCAL_CASE",
+          "src/**/*.ts": "PASCAL_CASE",
+        },
+        { ignoreMiddleExtensions: true },
+      ],
       //关闭Vue自带的一些规则(因为这与prettier的格式化冲突)
       "vue/html-closing-bracket-newline": "off",
       "vue/singleline-html-element-content-newline": "off",
@@ -80,8 +94,11 @@ export default defineConfigWithVueTs(
       // 允许使用常量条件 因为常量条件在编译时已经确定，不会影响性能
       "no-constant-condition": "off",
 
-      // 函数参数不超过 16 个，超出时建议用 VO/DTO/PO 封装，以提高可读性和可维护性
-      "max-params": ["error", 16],
+      // 函数参数不超过 6 个，超出时建议用 VO/DTO/PO 封装，以提高可读性和可维护性
+      "max-params": ["error", 6],
+
+      // 圈复杂度上限 32。超过此阈值意味着函数承担了过多职责，应拆分为更小的独立函数以降低认知负担
+      complexity: ["error", { max: 32 }],
 
       // 禁止嵌套三元表达式。嵌套三元需要读者在脑中维护多层条件栈，可读性极差，请改用 if-return 卫语句
       "no-nested-ternary": "error",
