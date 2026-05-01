@@ -34,7 +34,7 @@
     <template #actions>
       <el-button type="success" @click="openUploadDialog">上传模板</el-button>
       <el-button type="danger" :disabled="listSelected.length === 0" :loading="listLoading" @click="removeTemplateBatch">
-        删除选中项
+        批量删除
       </el-button>
     </template>
 
@@ -189,7 +189,7 @@
 
     <template #footer>
       <div class="dialog-footer">
-        <el-button :disabled="uploadLoading" @click="uploadDialogVisible = false">取消</el-button>
+        <el-button :disabled="uploadLoading" @click="uploadDialogVisible = false">关闭</el-button>
         <el-button type="primary" :loading="uploadLoading" :disabled="fileList.length === 0" @click="submitUpload()">
           上传 {{ fileList.length > 0 ? `(${fileList.length})` : "" }}
         </el-button>
@@ -231,7 +231,7 @@
     </el-form>
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="editDialogVisible = false">取消</el-button>
+        <el-button @click="editDialogVisible = false">关闭</el-button>
         <el-button type="primary" :loading="editLoading" @click="submitEdit"> 保存 </el-button>
       </div>
     </template>
@@ -410,22 +410,24 @@ const submitUpload = async (): Promise<void> => {
 
     const result = await ExcelTemplateApi.uploadExcelTemplate(files);
 
-    if (Result.isSuccess(result)) {
-      ElMessage.success(`成功上传 ${files.length} 个模板文件`);
-      uploadDialogVisible.value = false;
-      resetUploadDialog();
-      await loadList();
-    } else if (Result.isError(result)) {
+    if (Result.isError(result)) {
       ElMessage.error(`上传失败：${result.message || "未知错误"}`);
+      return;
     }
+    ElMessage.success(`成功上传 ${files.length} 个模板文件`);
+    uploadDialogVisible.value = false;
+    resetUploadDialog();
+    await loadList();
   } catch (error: any) {
     if (error.response) {
       ElMessage.error(`上传失败：${error.response.data?.message || error.message || "服务器错误"}`);
-    } else if (error.request) {
-      ElMessage.error("上传失败：网络请求失败，请检查网络连接");
-    } else {
-      ElMessage.error(`上传失败：${error.message || "未知错误"}`);
+      return;
     }
+    if (error.request) {
+      ElMessage.error("上传失败：网络请求失败，请检查网络连接");
+      return;
+    }
+    ElMessage.error(`上传失败：${error.message || "未知错误"}`);
   } finally {
     uploadLoading.value = false;
   }
