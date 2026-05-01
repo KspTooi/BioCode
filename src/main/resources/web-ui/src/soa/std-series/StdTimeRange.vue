@@ -2,29 +2,39 @@
   <div class="oper-time-edit">
     <div class="oper-time-edit__item">
       <el-date-picker
+        ref="startPickerRef"
         v-model="rangeStartValue"
         class="min-w-0!"
-        type="datetime"
+        :type="type === 'datetimerange' ? 'datetime' : 'date'"
         :placeholder="startPlaceholder"
         :value-format="valueFormat"
         :format="valueFormat"
         :disabled="disableds?.[0]"
-        :disabled-date="disableStartDate"
+        :disabled-date="resolveDisableStartDate"
+        :disabled-hours="resolveDisableStartHours"
+        :disabled-minutes="resolveDisableStartMinutes"
+        :disabled-seconds="resolveDisableStartSeconds"
+        @visible-change="onStartPickerVisibleChange"
       />
       <div v-if="showMsg && startValidateMessage" class="oper-time-edit__message">{{ startValidateMessage }}</div>
     </div>
     <span class="oper-time-edit__separator">{{ rangeSeparator }}</span>
     <div class="oper-time-edit__item">
       <el-date-picker
+        ref="endPickerRef"
         v-model="rangeEndValue"
         class="min-w-0!"
-        type="datetime"
+        :type="type === 'datetimerange' ? 'datetime' : 'date'"
         :placeholder="endPlaceholder"
         :value-format="valueFormat"
         :format="valueFormat"
         clearable
         :disabled="disableds?.[1]"
-        :disabled-date="disableEndDate"
+        :disabled-date="resolveDisableEndDate"
+        :disabled-hours="resolveDisableEndHours"
+        :disabled-minutes="resolveDisableEndMinutes"
+        :disabled-seconds="resolveDisableEndSeconds"
+        @visible-change="onEndPickerVisibleChange"
       />
       <div v-if="showMsg && endValidateMessage" class="oper-time-edit__message">{{ endValidateMessage }}</div>
     </div>
@@ -32,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch, ref } from "vue";
+import StdTimeRangeService from "@/soa/std-series/service/StdTimeRangeService";
 
 /**
  * 默认属性
@@ -43,17 +53,20 @@ import { computed, watch, ref } from "vue";
  * clearable: 是否可清除
  * rangeSeparator: 范围分隔符
  */
-withDefaults(
+const props = withDefaults(
   defineProps<{
-    type?: "daterange" | "datetimerange";
-    startPlaceholder?: string;
-    endPlaceholder?: string;
-    valueFormat?: string;
-    clearable?: boolean;
-    rangeSeparator?: string;
-    disableds?: boolean[];
-    showMsg?: boolean;
-    width?: string;
+    type?: "daterange" | "datetimerange"; //日期范围类型，daterange: 日期范围，datetimerange: 日期时间范围
+    startPlaceholder?: string; //开始日期占位符
+    endPlaceholder?: string; //结束日期占位符
+    valueFormat?: string; //日期格式
+    clearable?: boolean; //是否可清除
+    rangeSeparator?: string; //范围分隔符
+    disableds?: boolean[]; //是否禁用
+    showMsg?: boolean; //是否显示验证消息
+    width?: string; //宽度
+    isFocus?: boolean; //是否聚焦
+    disableStartDate?: (date: Date) => boolean; //开始日期禁用逻辑
+    disableEndDate?: (date: Date) => boolean; //结束日期禁用逻辑
   }>(),
   {
     type: "datetimerange",
@@ -65,139 +78,46 @@ withDefaults(
     disableds: () => [false, false],
     showMsg: true,
     width: "100%",
+    isFocus: true,
+    disableStartDate: undefined,
+    disableEndDate: undefined,
   }
 );
 
 /**
- * 开始日期
+ * 开始日期   --- table筛选 选中单个时间重置时要注意 需要把传值置为null 为空监听不到 重置会无效
  */
 const rangeStart = defineModel<string>("rangeStart", { default: "" });
 /**
- * 结束日期
+ * 结束日期   --- table筛选 选中单个时间重置时要注意 需要把传值置为null 为空监听不到 重置会无效
  */
 const rangeEnd = defineModel<string>("rangeEnd", { default: "" });
 
-const innerRangeStart = ref(rangeStart.value); //内部开始日期
-const innerRangeEnd = ref(rangeEnd.value); //内部结束日期
-let isSyncingInner = false; //是否正在同步到父组件
-
-/**
- * 监听开始日期和结束日期变化
- */
-watch([() => rangeStart.value, () => rangeEnd.value], ([start, end]) => {
-  if (isSyncingInner) {
-    return;
-  }
-  innerRangeStart.value = start;
-  innerRangeEnd.value = end;
+const {
+  startPickerRef,
+  endPickerRef,
+  rangeStartValue,
+  rangeEndValue,
+  onStartPickerVisibleChange,
+  onEndPickerVisibleChange,
+  startValidateMessage,
+  endValidateMessage,
+  resolveDisableStartDate,
+  resolveDisableEndDate,
+  resolveDisableStartHours,
+  resolveDisableStartMinutes,
+  resolveDisableStartSeconds,
+  resolveDisableEndHours,
+  resolveDisableEndMinutes,
+  resolveDisableEndSeconds,
+} = StdTimeRangeService.useStdTimeRange({
+  rangeStart,
+  rangeEnd,
+  getType: () => props.type,
+  getIsFocus: () => props.isFocus,
+  getDisableStartDate: () => props.disableStartDate,
+  getDisableEndDate: () => props.disableEndDate,
 });
-
-/**
- * 同步开始日期和结束日期到父组件
- */
-function syncRangeToParent(): void {
-  //将内部开始日期和结束日期同步到父组件
-  isSyncingInner = true;
-  if (!innerRangeStart.value || !innerRangeEnd.value) {
-    rangeStart.value = "";
-    rangeEnd.value = "";
-    queueMicrotask(() => {
-      isSyncingInner = false;
-    });
-    return;
-  }
-  rangeStart.value = innerRangeStart.value;
-  rangeEnd.value = innerRangeEnd.value;
-  queueMicrotask(() => {
-    isSyncingInner = false;
-  });
-}
-
-/**
- * 开始时间代理，拦截非法输入
- */
-const rangeStartValue = computed({
-  get: () => innerRangeStart.value,
-  set: (val: string) => {
-    if (!val) {
-      innerRangeStart.value = "";
-      syncRangeToParent();
-      return;
-    }
-    if (innerRangeEnd.value && new Date(val).getTime() > new Date(innerRangeEnd.value).getTime()) {
-      return;
-    }
-    innerRangeStart.value = val;
-    if (!innerRangeEnd.value) {
-      syncRangeToParent();
-      return;
-    }
-    syncRangeToParent();
-  },
-});
-
-/**
- * 结束时间代理，拦截非法输入
- */
-const rangeEndValue = computed({
-  get: () => innerRangeEnd.value,
-  set: (val: string) => {
-    if (!val) {
-      innerRangeEnd.value = "";
-      syncRangeToParent();
-      return;
-    }
-    if (innerRangeStart.value && new Date(val).getTime() < new Date(innerRangeStart.value).getTime()) {
-      return;
-    }
-    innerRangeEnd.value = val;
-    if (!innerRangeStart.value) {
-      syncRangeToParent();
-      return;
-    }
-    syncRangeToParent();
-  },
-});
-
-const startValidateMessage = computed(() => {
-  if (!innerRangeEnd.value) {
-    return "";
-  }
-  if (innerRangeStart.value) {
-    return "";
-  }
-  return "请选择开始时间";
-});
-
-const endValidateMessage = computed(() => {
-  if (!innerRangeStart.value) {
-    return "";
-  }
-  if (innerRangeEnd.value) {
-    return "";
-  }
-  return "请选择结束时间";
-});
-
-/**
- * 开始时间不能晚于结束时间
- */
-function disableStartDate(date: Date): boolean {
-  if (!innerRangeEnd.value) {
-    return false;
-  }
-  return date.getTime() > new Date(innerRangeEnd.value).getTime();
-}
-
-/**
- * 结束时间不能早于开始时间
- */
-function disableEndDate(date: Date): boolean {
-  if (!innerRangeStart.value) {
-    return false;
-  }
-  return date.getTime() < new Date(innerRangeStart.value).getTime();
-}
 </script>
 
 <style scoped>
