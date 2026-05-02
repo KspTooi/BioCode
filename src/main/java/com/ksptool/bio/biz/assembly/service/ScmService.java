@@ -19,7 +19,6 @@ import com.ksptool.bio.biz.assembly.model.scm.vo.GetAnchorPointsVo;
 import com.ksptool.bio.biz.assembly.model.scm.vo.GetScmDetailsVo;
 import com.ksptool.bio.biz.assembly.model.scm.vo.GetScmListVo;
 import com.ksptool.bio.biz.assembly.repository.ScmRepository;
-import com.ksptool.bio.biz.auth.common.aop.rsuser.RowScopeUser;
 import com.ksptool.bio.biz.core.common.AppRegistry;
 import com.ksptool.bio.biz.core.service.AttachService;
 import com.ksptool.bio.biz.core.service.RegistrySdk;
@@ -56,7 +55,6 @@ import static com.ksptool.entities.Entities.assign;
 
 @Slf4j
 @Service
-@RowScopeUser
 public class ScmService {
 
     @Autowired

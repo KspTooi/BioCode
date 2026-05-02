@@ -11,6 +11,7 @@ import com.ksptool.bio.biz.assembly.model.scm.vo.GetAnchorPointsVo;
 import com.ksptool.bio.biz.assembly.model.scm.vo.GetScmDetailsVo;
 import com.ksptool.bio.biz.assembly.model.scm.vo.GetScmListVo;
 import com.ksptool.bio.biz.assembly.service.ScmService;
+import com.ksptool.bio.biz.auth.common.aop.RowScope;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/scm")
 @Tag(name = "代码装配-SCM管理", description = "SCM管理")
 @Slf4j
+@RowScope(mode = RowScope.Mode.USER_ONLY)
 public class ScmController {
 
     @Autowired

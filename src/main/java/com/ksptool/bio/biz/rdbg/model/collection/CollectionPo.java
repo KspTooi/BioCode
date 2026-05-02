@@ -1,7 +1,7 @@
 package com.ksptool.bio.biz.rdbg.model.collection;
 
-import com.ksptool.bio.commons.utils.IdWorker;
 import com.ksptool.assembly.entity.exception.AuthException;
+import com.ksptool.bio.commons.utils.IdWorker;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -103,7 +103,7 @@ public class CollectionPo {
             this.updaterId = session().getUserId();
         }
         if (this.companyId == null) {
-            this.companyId = session().getCompanyId();
+            this.companyId = session().getRootId();
         }
 
     }

@@ -49,7 +49,7 @@ public class CollectionService {
     public List<GetCollectionTreeVo> getCollectionTree() throws Exception {
 
         //获取当前公司ID
-        Long companyId = session().getCompanyId();
+        Long companyId = session().getRootId();
 
         //获取公司所拥有的全部请求集合树节点
         List<CollectionPo> nodePos = repository.getCollectionTreeListByCompanyId(companyId);
@@ -101,7 +101,7 @@ public class CollectionService {
     @Transactional(rollbackFor = Exception.class)
     public void addCollection(AddCollectionDto dto) throws BizException, Exception {
 
-        Long companyId = session().getCompanyId();
+        Long companyId = session().getRootId();
         CollectionPo parentPo = null;
 
         //如果父级ID不为空，则校验父级节点
@@ -144,7 +144,7 @@ public class CollectionService {
     @Transactional(rollbackFor = Exception.class)
     public void moveCollection(MoveCollectionDto dto) throws BizException, Exception {
 
-        Long companyId = session().getCompanyId();
+        Long companyId = session().getRootId();
 
         //查找对象节点
         CollectionPo nodePo = repository.getByIdAndCompanyId(dto.getNodeId(), companyId);
@@ -340,7 +340,7 @@ public class CollectionService {
     @Transactional(rollbackFor = Exception.class)
     public void copyCollection(CommonIdDto dto) throws BizException, Exception {
 
-        Long companyId = session().getCompanyId();
+        Long companyId = session().getRootId();
 
         CollectionPo sourceNodePo = repository.getByIdAndCompanyId(dto.getId(), companyId);
 
@@ -424,7 +424,7 @@ public class CollectionService {
     @Transactional(rollbackFor = Exception.class)
     public void editCollection(EditCollectionDto dto) throws BizException, Exception {
 
-        Long companyId = session().getCompanyId();
+        Long companyId = session().getRootId();
         CollectionPo updatePo = repository.getByIdAndCompanyId(dto.getId(), companyId);
 
         if (updatePo == null) {
@@ -472,7 +472,7 @@ public class CollectionService {
      */
     public GetCollectionDetailsVo getCollectionDetails(CommonIdDto dto) throws BizException, Exception {
 
-        Long companyId = session().getCompanyId();
+        Long companyId = session().getRootId();
         CollectionPo po = repository.getByIdAndCompanyId(dto.getId(), companyId);
         if (po == null) {
             throw new BizException("对象节点不存在或无权限访问");
@@ -508,7 +508,7 @@ public class CollectionService {
     @Transactional(rollbackFor = Exception.class)
     public void removeCollection(CommonIdDto dto) throws BizException, Exception {
 
-        Long companyId = session().getCompanyId();
+        Long companyId = session().getRootId();
 
         var ids = dto.toIds();
 
@@ -532,7 +532,7 @@ public class CollectionService {
     @Transactional(rollbackFor = Exception.class)
     public GetCollectionHistoryDetailsVo sendRequest(CommonIdDto dto) throws BizException, Exception {
 
-        var companyId = session().getCompanyId();
+        var companyId = session().getRootId();
 
         CollectionPo po = repository.getByIdAndCompanyId(dto.getId(), companyId);
 
