@@ -27,9 +27,9 @@ export default {
       },
       {
         title: "用户体系冷启动",
-        description: "检查并自动初始化系统默认的用户组和内置账号（如管理员组和 admin 账号），确保用户体系完整可用。",
+        description: "检查并自动创建系统默认租户、超级管理员账号及权限组，确保核心用户体系完整可用。",
         icon: UserFilled,
-        buttonText: "执行冷启动",
+        buttonText: "执行初始化",
         bgColor: "rgba(103, 194, 58, 0.1)",
         iconColor: "#67C23A",
         key: "coldstart",

@@ -48,8 +48,8 @@ public interface MaintainRepository extends JpaRepository<CoreRootPo, Long> {
      * @return 创建的超级组ID
      */
     @Query("""
-            INSERT INTO GroupPo (id, rootId, code, name, remark, status, seq, isSystem, createTime, creatorId, updateTime, updaterId) 
-            VALUES (:id, :rootId, :code, :name, :remark, 1, 0, 1, NOW(), -1, NOW(), -1)
+            INSERT INTO GroupPo (id, rootId, code, name, remark, status, seq, rowScope, isSystem, createTime, creatorId, updateTime, updaterId) 
+            VALUES (:id, :rootId, :code, :name, :remark, 1, 0, 0, 1, NOW(), -1, NOW(), -1)
             """)
     @Modifying
     int createDefaultGroup(@Param("id") Long id, @Param("rootId") Long rootId, @Param("code") String code, @Param("name") String name, @Param("remark") String remark);

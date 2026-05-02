@@ -59,7 +59,7 @@ public class GroupPo extends RowScopePo {
     @Column(name = "seq", nullable = false, comment = "排序号")
     private Integer seq;
 
-    @Column(name = "row_scope", columnDefinition = "TINYINT", nullable = false, comment = "数据范围 0:全部 1:本公司/租户及以下 2:本部门及以下 3:本部门 4:仅本人 5:指定部门")
+    @Column(name = "row_scope", columnDefinition = "TINYINT", nullable = false, comment = "数据范围 0:全部 10:本公司+下级公司 20:仅本公司 30:本部门+下级部门 40:仅本部门 50:仅本人 60:指定组织")
     private Integer rowScope;
 
     @Column(name = "is_system", columnDefinition = "TINYINT", nullable = false, comment = "系统内置组 0:否 1:是")

@@ -42,7 +42,7 @@ export default {
   },
 
   /**
-   * 用户体系冷启动
+   * 初始化内置数据（默认租户、超级管理员账号及权限组）
    */
   userSystemColdStartup: async (): Promise<MaintainUpdateVo> => {
     const result = await Http.postEntity<Result<MaintainUpdateVo>>("/maintain/userSystemColdStartup", {});
