@@ -18,33 +18,51 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Host ""
 
-# 设置固定环境变量
+# 从用户环境变量读取并设置到当前会话，若不存在则使用默认值并写回用户环境变量
 Write-Host "[2/3] 正在配置环境变量..." -ForegroundColor Yellow
-$env:ANTHROPIC_BASE_URL = "https://api.deepseek.com/anthropic"
-$env:ANTHROPIC_MODEL = "deepseek-v4-pro[1m]"
-$env:ANTHROPIC_DEFAULT_OPUS_MODEL = "deepseek-v4-pro[1m]"
-$env:ANTHROPIC_DEFAULT_SONNET_MODEL = "deepseek-v4-pro[1m]"
-$env:ANTHROPIC_DEFAULT_HAIKU_MODEL = "deepseek-v4-flash"
-$env:CLAUDE_CODE_SUBAGENT_MODEL = "deepseek-v4-flash"
-$env:CLAUDE_CODE_EFFORT_LEVEL = "max"
+
+$envVars = @{
+    "ANTHROPIC_BASE_URL"              = "https://api.deepseek.com/anthropic"
+    "ANTHROPIC_MODEL"                 = "deepseek-v4-pro[1m]"
+    "ANTHROPIC_DEFAULT_OPUS_MODEL"    = "deepseek-v4-pro[1m]"
+    "ANTHROPIC_DEFAULT_SONNET_MODEL"  = "deepseek-v4-pro[1m]"
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL"   = "deepseek-v4-flash"
+    "CLAUDE_CODE_SUBAGENT_MODEL"      = "deepseek-v4-flash"
+    "CLAUDE_CODE_EFFORT_LEVEL"        = "max"
+}
+
+foreach ($key in $envVars.Keys) {
+    $userVal = [System.Environment]::GetEnvironmentVariable($key, "User")
+    if ($userVal) {
+        Set-Item -Path "Env:$key" -Value $userVal
+    } else {
+        $default = $envVars[$key]
+        [System.Environment]::SetEnvironmentVariable($key, $default, "User")
+        Set-Item -Path "Env:$key" -Value $default
+        Write-Host "已初始化用户环境变量 $key = $default" -ForegroundColor DarkGray
+    }
+}
 
 # 处理 API Key
-if ($env:ANTHROPIC_AUTH_TOKEN) {
-    $masked = $env:ANTHROPIC_AUTH_TOKEN.Substring(0, [Math]::Min(8, $env:ANTHROPIC_AUTH_TOKEN.Length)) + "..."
+$storedKey = [System.Environment]::GetEnvironmentVariable("ANTHROPIC_AUTH_TOKEN", "User")
+if ($storedKey) {
+    $masked = $storedKey.Substring(0, [Math]::Min(8, $storedKey.Length)) + "..."
     Write-Host "检测到已有 API Key: $masked（已隐藏）" -ForegroundColor Green
+    $env:ANTHROPIC_AUTH_TOKEN = $storedKey
 } else {
-    Write-Host "未检测到 ANTHROPIC_AUTH_TOKEN 环境变量。" -ForegroundColor DarkYellow
+    Write-Host "未检测到 ANTHROPIC_AUTH_TOKEN 用户环境变量。" -ForegroundColor DarkYellow
 }
 Write-Host ""
 
 $inputKey = Read-Host "请输入 DeepSeek API Key（直接回车使用现有配置）"
 
 if ($inputKey -ne "") {
+    [System.Environment]::SetEnvironmentVariable("ANTHROPIC_AUTH_TOKEN", $inputKey, "User")
     $env:ANTHROPIC_AUTH_TOKEN = $inputKey
-    Write-Host "API Key 已设置为本次会话环境变量。" -ForegroundColor Green
+    Write-Host "API Key 已保存到用户环境变量。" -ForegroundColor Green
 } elseif (-not $env:ANTHROPIC_AUTH_TOKEN) {
     Write-Host ""
-    Write-Host "[错误] 未提供 API Key 且环境变量中也不存在，无法启动。" -ForegroundColor Red
+    Write-Host "[错误] 未提供 API Key 且用户环境变量中也不存在，无法启动。" -ForegroundColor Red
     Read-Host "按回车键退出"
     exit 1
 } else {
