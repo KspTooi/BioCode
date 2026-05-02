@@ -9,6 +9,7 @@ import com.ksptool.bio.biz.auth.repository.GroupRepository;
 import com.ksptool.bio.biz.auth.repository.UserGroupRepository;
 import com.ksptool.bio.biz.auth.repository.UserSessionRepository;
 import com.ksptool.bio.biz.auth.service.SessionService;
+import com.ksptool.bio.biz.core.common.Switch;
 import com.ksptool.bio.biz.core.model.org.OrgPo;
 import com.ksptool.bio.biz.core.model.user.UserPo;
 import com.ksptool.bio.biz.core.model.user.dto.*;
@@ -144,7 +145,7 @@ public class UserService {
         UserPo user = new UserPo();
         assign(dto, user);
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
-        user.setIsSystem(0);
+        user.setIsSystem(Switch.no());
 
         //处理组织架构
         if (dto.getOrgId() != null) {
@@ -235,8 +236,8 @@ public class UserService {
             }
 
             //内置用户不允许封禁
-            if (dto.getStatus() != null && dto.getStatus() == 1) {
-                throw new BizException("内置用户不允许修改状态！");
+            if (dto.getStatus() != null && dto.getStatus() == Switch.off()) {
+                throw new BizException("内置用户不允许封禁！");
             }
 
         }
@@ -413,7 +414,7 @@ public class UserService {
             user.setPhone(dto.getPhone());
             user.setEmail(dto.getEmail());
             user.setLoginCount(0);
-            user.setStatus(0);//正常
+            user.setStatus(Switch.on());//正常
 
             //处理所属企业(如果有)
             if (Str.isNotBlank(dto.getRootName())) {
@@ -473,7 +474,7 @@ public class UserService {
         //处理批量解封
         if (dto.getKind() == 0) {
             for (UserPo user : userPos) {
-                user.setStatus(0);
+                user.setStatus(Switch.on());
             }
             userRepository.saveAll(userPos);
             return userPos.size();
@@ -488,7 +489,7 @@ public class UserService {
                     continue;
                 }
 
-                user.setStatus(1);
+                user.setStatus(Switch.off());
             }
             userRepository.saveAll(userPos);
             return userPos.size();

@@ -45,7 +45,7 @@ public class AddUserDto {
     private String email;
 
     @Range(min = 0, max = 1, message = "用户状态只能在0或1之间")
-    @Schema(description = "用户状态：0-禁用，1-启用")
+    @Schema(description = "用户状态 0:封禁 1:正常")
     private Integer status;
 
     @Schema(description = "所属组织架构ID 允许为公司、子公司、部门")

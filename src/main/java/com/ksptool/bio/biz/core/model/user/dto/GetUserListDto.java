@@ -25,7 +25,7 @@ public class GetUserListDto extends PageQuery {
     @Schema(description = "组织架构ID")
     private Long orgId;
 
-    @Schema(description = "0:正常 1:封禁")
+    @Schema(description = "0:封禁 1:正常")
     private Integer status;
 
 }
