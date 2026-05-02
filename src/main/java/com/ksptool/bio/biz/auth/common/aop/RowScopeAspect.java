@@ -86,17 +86,28 @@ public class RowScopeAspect {
         //根据模式决定实际生效的 rsMax 与 orgIds
         //- FULL      : 按用户真实 rsMax 与 rsAllowOrgIds 注入
         //- ROOT_ONLY : 强制 rsMax = 0,仅按租户隔离, orgIds 占位即可
-        Integer rsMax;
+        //- USER_ONLY : 强制 rsMax = 50,仅按用户隔离, creatorId 占位即可
+        Integer rsMax = 100;
         List<Long> orgIds = new ArrayList<>();
 
-        if (mode == RowScope.Mode.ROOT_ONLY) {
-            rsMax = 0;
-        } else {
+        //FULL模式下，按用户真实 rsMax 与 rsAllowOrgIds 注入
+        if (mode == RowScope.Mode.FULL) {
             rsMax = aud.getRsMax();
             if (aud.getRsAllowOrgIds() != null) {
                 orgIds.addAll(aud.getRsAllowOrgIds());
             }
         }
+
+        //ROOT_ONLY模式下，强制 rsMax = 0,仅按租户隔离, orgIds 占位即可
+        if (mode == RowScope.Mode.ROOT_ONLY) {
+            rsMax = 0;
+        }
+
+        //USER_ONLY模式下，强制 rsMax = 50,仅按用户隔离
+        if (mode == RowScope.Mode.USER_ONLY) {
+            rsMax = 50;
+        }
+
 
         //在Mybatis数据权限上下文中设置当前线程的数据权限上下文
         RsContextHolder.set(new RsContext(rsMax, aud.getUserId(), rootId, new ArrayList<>(orgIds)));

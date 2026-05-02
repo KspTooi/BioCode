@@ -38,10 +38,19 @@ public @interface RowScope {
     Mode mode() default Mode.FULL;
 
     enum Mode {
-        /** 完整 RS 数据权限过滤(默认): 租户 + 7级权限叠加 */
+        /**
+         * 完整 RS 数据权限过滤(默认): 租户 + 7级权限叠加
+         */
         FULL,
 
-        /** 仅租户隔离: 只过滤 root_id, 忽略 7级 RS, 适用于组织树/字典等租户内全局可见的表 */
+        /**
+         * 仅租户隔离: 只过滤 root_id, 忽略 7级 RS, 适用于组织树/字典等租户内全局可见的表
+         */
         ROOT_ONLY,
+
+        /**
+         * 仅用户隔离: 只过滤 creator_id, 忽略 7级 RS, 适用于用户档案等用户内全局可见的表
+         */
+        USER_ONLY,
     }
 }
