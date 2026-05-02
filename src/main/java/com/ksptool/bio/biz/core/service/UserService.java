@@ -240,6 +240,11 @@ public class UserService {
                 throw new BizException("内置用户不允许封禁！");
             }
 
+            //内置用户不能通过编辑用户来强制改密
+            if (StringUtils.isNotBlank(dto.getPassword())) {
+                throw new BizException("内置用户不允许通过编辑用户来强制改密！");
+            }
+
         }
 
 
