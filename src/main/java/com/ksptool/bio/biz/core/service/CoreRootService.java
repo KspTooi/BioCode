@@ -11,6 +11,7 @@ import com.ksptool.bio.biz.auth.repository.GroupRepository;
 import com.ksptool.bio.biz.auth.repository.PermissionRepository;
 import com.ksptool.bio.biz.auth.repository.UserGroupRepository;
 import com.ksptool.bio.biz.auth.service.SessionService;
+import com.ksptool.bio.biz.core.common.SuperEntities;
 import com.ksptool.bio.biz.core.model.root.CoreRootPo;
 import com.ksptool.bio.biz.core.model.root.dto.AddCoreRootDto;
 import com.ksptool.bio.biz.core.model.root.dto.EditCoreRootDto;
@@ -147,7 +148,7 @@ public class CoreRootService {
         ugRepository.save(ug);
 
         //查找超级权限
-        var superPermission = pRepository.getSuperPermission();
+        var superPermission = pRepository.getByCode(SuperEntities.PERMISSION.getCode());
         if (superPermission == null) {
             throw new BizException("创建租户时，超级权限不存在，请检查系统内置权限码是否完整!");
         }

@@ -4,7 +4,6 @@ import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.bio.BioRunner;
 import com.ksptool.bio.biz.auth.model.GroupPermissionPo;
 import com.ksptool.bio.biz.auth.model.UserGroupPo;
-import com.ksptool.bio.biz.auth.model.group.GroupPo;
 import com.ksptool.bio.biz.auth.model.permission.PermissionPo;
 import com.ksptool.bio.biz.auth.repository.GroupPermissionRepository;
 import com.ksptool.bio.biz.auth.repository.GroupRepository;
@@ -12,12 +11,12 @@ import com.ksptool.bio.biz.auth.repository.PermissionRepository;
 import com.ksptool.bio.biz.auth.repository.UserGroupRepository;
 import com.ksptool.bio.biz.auth.service.SessionService;
 import com.ksptool.bio.biz.core.common.AppRegistry;
+import com.ksptool.bio.biz.core.common.SuperEntities;
 import com.ksptool.bio.biz.core.model.maintain.vo.ExecuteInstallWizardVo;
 import com.ksptool.bio.biz.core.model.maintain.vo.MaintainUpdateVo;
-import com.ksptool.bio.biz.core.model.user.UserPo;
+import com.ksptool.bio.biz.core.repository.CoreRootRepository;
+import com.ksptool.bio.biz.core.repository.MaintainRepository;
 import com.ksptool.bio.biz.core.repository.UserRepository;
-import com.ksptool.bio.commons.enums.GroupEnum;
-import com.ksptool.bio.commons.enums.UserEnum;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -33,7 +32,6 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -51,7 +49,7 @@ public class MaintainService {
     private RequestMappingHandlerMapping rmhm;
 
     @Autowired
-    private GroupRepository groupRepository;
+    private GroupRepository gRepository;
 
     @Autowired
     private GroupPermissionRepository gpRepository;
@@ -60,10 +58,10 @@ public class MaintainService {
     private UserGroupRepository ugRepository;
 
     @Autowired
-    private PermissionRepository permissionRepository;
+    private PermissionRepository pRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserRepository uRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -79,6 +77,12 @@ public class MaintainService {
 
     @Autowired
     private SessionService sessionService;
+
+    @Autowired
+    private CoreRootRepository rRepository;
+
+    @Autowired
+    private MaintainRepository mRepository;
 
     /**
      * 校验系统内置权限节点
@@ -168,7 +172,7 @@ public class MaintainService {
         scannedPermissions.add(superRsCode);
 
         // 扫描数据库中已定义的全部权限码(这不包含那些用户自己定义的权限码 只获取系统权限码)
-        Set<PermissionPo> existingPermissions = permissionRepository.getAllSystemPermissions();
+        Set<PermissionPo> existingPermissions = pRepository.getAllSystemPermissions();
 
         // 需要新增的权限码
         var addedPermissions = new HashSet<PermissionPo>();
@@ -204,12 +208,12 @@ public class MaintainService {
             gpRepository.clearGpByPermissionIds(permissionIds);
 
             // 然后删除这些权限码
-            permissionRepository.deleteAllInBatch(removedPermissions);
+            pRepository.deleteAllInBatch(removedPermissions);
         }
 
         // 执行变更操作 新增权限码
         if (!addedPermissions.isEmpty()) {
-            permissionRepository.saveAll(addedPermissions);
+            pRepository.saveAll(addedPermissions);
         }
 
         // 构建响应Vo
@@ -223,149 +227,146 @@ public class MaintainService {
     }
 
     /**
-     * 校验系统内置用户
+     * 用户体系冷启动
      * 检查数据库中是否存在所有系统内置用户，如果不存在则自动创建
      * 对于Admin用户，会赋予管理员组
      *
      * @return 校验结果消息
      */
     @Transactional(rollbackFor = Exception.class)
-    public MaintainUpdateVo validateUsers() throws BizException {
+    public MaintainUpdateVo userSystemColdStartup() throws BizException {
 
-        // 先获取超级组
-        var superGroup = groupRepository.getGroupByCode(GroupEnum.ADMIN.getCode());
+        var sRootId = SuperEntities.ROOT.getId();
+        var sUserId = SuperEntities.USER.getId();
+        var sGroupId = SuperEntities.GROUP.getId();
+        var spCode = SuperEntities.PERMISSION.getCode();
+        var srCode = SuperEntities.RS_PERMISSION.getCode();
 
+        //获取超级租户
+        var superRoot = rRepository.findById(sRootId).orElse(null);
+
+        //获取超级用户
+        var superUser = uRepository.findById(sUserId).orElse(null);
+
+        //获取超级组
+        var superGroup = gRepository.findById(sGroupId).orElse(null);
+
+        //获取超级权限
+        var superPermission = pRepository.getByCode(spCode);
+
+        //获取超级数据权限
+        var superRsPermission = pRepository.getByCode(srCode);
+
+        var actions = 0;
+        var addedList = new ArrayList<String>();
+
+        //如果系统默认租户不存在 则创建
+        if (superRoot == null) {
+            actions += mRepository.createDefaultRoot(sRootId);
+            superRoot = rRepository.findById(sRootId).orElse(null);
+            addedList.add("创建 超级租户(id=" + sRootId + ")");
+        }
+
+        //如果系统默认用户不存在 则创建
+        if (superUser == null) {
+            actions += mRepository.createDefaultUser(sUserId, sRootId, "admin", passwordEncoder.encode("admin"));
+            superUser = uRepository.findById(sUserId).orElse(null);
+            addedList.add("创建 超级用户(id=" + sUserId + ")");
+        }
+
+        //如果超级组不存在 则先创建超级组
         if (superGroup == null) {
-            throw new BizException("在校验系统内置用户时出现问题，超级组不存在,请检查系统内置用户组是否完整!");
+            actions += mRepository.createDefaultGroup(sGroupId, sRootId, "admin", "超级组", "超级组是系统内置的组，拥有至高无上的权限且不受任何限制。");
+            superGroup = gRepository.findById(sGroupId).orElse(null);
+            addedList.add("创建 超级组(id=" + sGroupId + ")");
         }
 
-        // 获取所有系统内置用户枚举
-        UserEnum[] userEnums = UserEnum.values();
-
-        // 记录已存在和新增的用户数量
-        int existCount = userRepository.countBySystemUser();
-        List<String> addedUsers = new ArrayList<>();
-
-        // 遍历所有系统内置用户
-        for (UserEnum userEnum : userEnums) {
-            String username = userEnum.getUsername();
-
-            // 先查找数据库用户
-            UserPo user = userRepository.getUserByUsername(username);
-
-            // 数据库用户不存在 直接创建
-            if (user == null) {
-                user = new UserPo();
-                user.setUsername(username);
-                user.setPassword(passwordEncoder.encode(username));
-                user.setNickname(userEnum.getNickname());
-                user.setGender(2);
-                user.setLoginCount(0);
-                user.setStatus(0);
-                user.setIsSystem(1);
-
-                //由系统创建的用户其创建者ID和修改者ID为-1
-                user.setCreatorId(-1L);
-                user.setUpdaterId(-1L);
-                user = userRepository.save(user);
-            }
-
-            // 检查用户是否是管理员用户
-            if (user.getUsername().equals(UserEnum.ADMIN.getUsername())) {
-
-                // 如果管理员用户没有超级组关联 则赋予超级组
-                var ug = ugRepository.getUgByUserIdAndGroupId(user.getId(), superGroup.getId());
-                if (ug == null) {
-                    var ugPo = new UserGroupPo();
-                    ugPo.setUserId(user.getId());
-                    ugPo.setGroupId(superGroup.getId());
-                    ugRepository.save(ugPo);
-                }
-            }
-
-            addedUsers.add(username);
-        }
-
-        // 构建响应Vo
-        var vo = new MaintainUpdateVo();
-        vo.setExistCount(existCount);
-        vo.setAddedCount(addedUsers.size());
-        vo.setAddedList(addedUsers);
-        vo.setRemovedCount(0);
-        vo.setRemovedList(new ArrayList<>());
-        vo.setMessage("系统内置用户校验完成");
-        return vo;
-    }
-
-    /**
-     * 校验系统内置组
-     * 检查数据库中是否存在所有系统内置组，如果不存在则自动创建
-     * 对于管理员组，会赋予所有现有权限
-     *
-     * @return 校验结果消息
-     */
-    @Transactional(rollbackFor = Exception.class)
-    public MaintainUpdateVo validateGroups() throws BizException {
-
-        // 获取超级权限
-        var superPermission = permissionRepository.getSuperPermission();
-
+        //如果超级权限不存在 则创建超级权限
         if (superPermission == null) {
-            throw new BizException("在校验系统内置组时出现问题，超级权限不存在,请检查系统内置权限码是否完整!");
+            var p = new PermissionPo();
+            p.setCode(spCode);
+            p.setName("超级操作权限(SA)");
+            p.setRemark("拥有此权限的用户组不受任何操作权限限制。");
+            p.setSeq(0);
+            p.setIsSystem(1);
+            p.setCreatorId(-1L);
+            p.setUpdaterId(-1L);
+            superPermission = pRepository.save(p);
+            addedList.add("创建 超级操作权限 (id=" + superPermission.getId() + ")");
         }
 
-        // 获取所有系统内置组枚举
-        GroupEnum[] groupEnums = GroupEnum.values();
-
-        // 记录已存在和新增的组数量
-        int existCount = groupRepository.countBySystemGroup();
-        List<String> addedGroups = new ArrayList<>();
-
-        // 遍历所有系统内置组
-        for (GroupEnum groupEnum : groupEnums) {
-            String code = groupEnum.getCode();
-
-            // 先查找数据库组
-            var group = groupRepository.getGroupByCode(code);
-
-            // 数据库组不存在 直接创建
-            if (group == null) {
-                group = new GroupPo();
-                group.setCode(code);
-                group.setName(groupEnum.getName());
-                group.setRemark(groupEnum.getName());
-                group.setIsSystem(1);
-                group.setSeq(groupRepository.findMaxSortOrder() + 1);
-                group.setStatus(1);
-                group = groupRepository.save(group);
-            }
-
-            // 检查组是否是管理员组
-            if (group.getCode().equals(GroupEnum.ADMIN.getCode())) {
-
-                // 如果管理员组没有超级权限关联 则赋予超级权限
-                var gp = gpRepository.getGpByGroupIdAndPermissionId(group.getId(), superPermission.getId());
-
-                if (gp == null) {
-                    var gpPo = new GroupPermissionPo();
-                    gpPo.setGroupId(group.getId());
-                    gpPo.setPermissionId(superPermission.getId());
-                    gpRepository.save(gpPo);
-                }
-
-            }
-
-            addedGroups.add(code);
+        //如果超级数据权限不存在 则创建超级数据权限
+        if (superRsPermission == null) {
+            var p = new PermissionPo();
+            p.setCode(srCode);
+            p.setName("超级数据权限(SR)");
+            p.setRemark("拥有此权限的用户组不受任何数据权限限制。");
+            p.setSeq(0);
+            p.setIsSystem(1);
+            p.setCreatorId(-1L);
+            p.setUpdaterId(-1L);
+            superRsPermission = pRepository.save(p);
+            addedList.add("创建 超级数据权限 (id=" + superRsPermission.getId() + ")");
         }
 
-        // 返回结果消息
+        //检查SA + SR 是否关联超级组
+        if (superPermission == null || superRsPermission == null) {
+            throw new BizException("冷启动时出现致命错误，未能成功创建超级权限或超级数据权限，请联系维护人员处理!");
+        }
+
+        if (superPermission != null && superRsPermission != null) {
+
+            var saGp = gpRepository.getGpByGroupIdAndPermissionId(superGroup.getId(), superPermission.getId());
+            var srGp = gpRepository.getGpByGroupIdAndPermissionId(superGroup.getId(), superRsPermission.getId());
+
+            var gps = new ArrayList<GroupPermissionPo>();
+
+            if (saGp == null) {
+                var gp = new GroupPermissionPo();
+                gp.setGroupId(superGroup.getId());
+                gp.setPermissionId(superPermission.getId());
+                gps.add(gp);
+                addedList.add("超级组 连接到 超级操作权限");
+            }
+
+            if (srGp == null) {
+                var gp = new GroupPermissionPo();
+                gp.setGroupId(superGroup.getId());
+                gp.setPermissionId(superRsPermission.getId());
+                gps.add(gp);
+                addedList.add("超级组 连接到 超级数据权限");
+            }
+
+            //保存这些GP关系
+            if (!gps.isEmpty()) {
+                gpRepository.saveAll(gps);
+            }
+
+        }
+
+        if (superUser != null && superGroup != null) {
+            throw new BizException("冷启动时出现致命错误，未能成功创建超级用户或超级组，请联系维护人员处理!");
+        }
+
+        //检查超级用户是否关联超级组
+        if (superUser != null) {
+            var ug = ugRepository.getUgByUserIdAndGroupId(superUser.getId(), superGroup.getId());
+            if (ug == null) {
+                var ugPo = new UserGroupPo();
+                ugPo.setUserId(superUser.getId());
+                ugPo.setGroupId(superGroup.getId());
+                ugRepository.save(ugPo);
+                addedList.add("超级用户 连接到 超级组");
+            }
+        }
+
         var vo = new MaintainUpdateVo();
-        vo.setExistCount(existCount);
-        vo.setAddedCount(addedGroups.size());
-        vo.setAddedList(addedGroups);
+        vo.setExistCount(0);
+        vo.setAddedCount(actions);
+        vo.setAddedList(addedList);
         vo.setRemovedCount(0);
         vo.setRemovedList(new ArrayList<>());
-        vo.setMessage("系统内置组校验完成");
+        vo.setMessage("用户体系冷启动完成");
         return vo;
     }
 
@@ -588,14 +589,11 @@ public class MaintainService {
         var permResult = validatePermissions();
         changesContent.add("[权限码同步] 新增 " + permResult.getAddedCount() + " 条，移除 " + permResult.getRemovedCount() + " 条");
 
-        // Step4: 校验系统内置用户组
-        var groupResult = validateGroups();
-        changesContent.add("[用户组修复] " + groupResult.getMessage());
+        // Step4: 冷启动用户体系
+        var userSystemResult = userSystemColdStartup();
+        changesContent.add("[用户体系冷启动] " + userSystemResult.getMessage());
 
-        // Step5: 校验系统内置用户
-        var userResult = validateUsers();
-        changesContent.add("[账号修复] " + userResult.getMessage());
-
+        // Step5: 清除所有注册表缓存
         registrySdk.clearAllCache();
 
         //写入新系统版本到注册表
