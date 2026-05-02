@@ -1,7 +1,7 @@
 import { ref } from "vue";
 import type { MaintainOperation } from "@/views/core/api/MaintainApi.ts";
 import MaintainApi from "@/views/core/api/MaintainApi.ts";
-import { Lock, User, UserFilled, Cpu, Menu as IconMenu, Upload, Tools } from "@element-plus/icons-vue";
+import { Lock, UserFilled, Menu as IconMenu, Upload, Tools } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import ComMenuService from "@/soa/com-series/service/ComMenuService";
 
@@ -26,24 +26,14 @@ export default {
         action: async () => await MaintainApi.validatePermissions(),
       },
       {
-        title: "系统用户组修复",
-        description: "检查并自动修复系统默认的用户组（如管理员组）。当管理员组权限丢失时可使用此功能修复。",
+        title: "用户体系冷启动",
+        description: "检查并自动初始化系统默认的用户组和内置账号（如管理员组和 admin 账号），确保用户体系完整可用。",
         icon: UserFilled,
-        buttonText: "修复用户组",
+        buttonText: "执行冷启动",
         bgColor: "rgba(103, 194, 58, 0.1)",
         iconColor: "#67C23A",
-        key: "groups",
-        action: async () => await MaintainApi.validateGroups(),
-      },
-      {
-        title: "系统账号修复",
-        description: "检查并自动修复系统默认的账号（如 admin）。当内置账号误删或无法登录时可使用此功能修复。",
-        icon: User,
-        buttonText: "修复系统账号",
-        bgColor: "rgba(230, 162, 60, 0.1)",
-        iconColor: "#E6A23C",
-        key: "users",
-        action: async () => await MaintainApi.validateUsers(),
+        key: "coldstart",
+        action: async () => await MaintainApi.userSystemColdStartup(),
       },
       {
         title: "重置系统菜单",
