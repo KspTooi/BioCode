@@ -309,55 +309,41 @@ public class MaintainService {
             addedList.add("创建 超级数据权限 (id=" + superRsPermission.getId() + ")");
         }
 
-        //检查SA + SR 是否关联超级组
-        if (superPermission == null || superRsPermission == null) {
-            throw new BizException("冷启动时出现致命错误，未能成功创建超级权限或超级数据权限，请联系维护人员处理!");
+        //检查超级组是否关联了超级操作权限和超级数据权限
+        var saGp = gpRepository.getGpByGroupIdAndPermissionId(sGroupId, superPermission.getId());
+        var srGp = gpRepository.getGpByGroupIdAndPermissionId(sGroupId, superRsPermission.getId());
+
+        var gps = new ArrayList<GroupPermissionPo>();
+
+        if (saGp == null) {
+            var gp = new GroupPermissionPo();
+            gp.setGroupId(sGroupId);
+            gp.setPermissionId(superPermission.getId());
+            gps.add(gp);
+            addedList.add("超级组 连接到 超级操作权限");
         }
 
-        if (superPermission != null && superRsPermission != null) {
-
-            var saGp = gpRepository.getGpByGroupIdAndPermissionId(superGroup.getId(), superPermission.getId());
-            var srGp = gpRepository.getGpByGroupIdAndPermissionId(superGroup.getId(), superRsPermission.getId());
-
-            var gps = new ArrayList<GroupPermissionPo>();
-
-            if (saGp == null) {
-                var gp = new GroupPermissionPo();
-                gp.setGroupId(superGroup.getId());
-                gp.setPermissionId(superPermission.getId());
-                gps.add(gp);
-                addedList.add("超级组 连接到 超级操作权限");
-            }
-
-            if (srGp == null) {
-                var gp = new GroupPermissionPo();
-                gp.setGroupId(superGroup.getId());
-                gp.setPermissionId(superRsPermission.getId());
-                gps.add(gp);
-                addedList.add("超级组 连接到 超级数据权限");
-            }
-
-            //保存这些GP关系
-            if (!gps.isEmpty()) {
-                gpRepository.saveAll(gps);
-            }
-
+        if (srGp == null) {
+            var gp = new GroupPermissionPo();
+            gp.setGroupId(sGroupId);
+            gp.setPermissionId(superRsPermission.getId());
+            gps.add(gp);
+            addedList.add("超级组 连接到 超级数据权限");
         }
 
-        if (superUser != null && superGroup != null) {
-            throw new BizException("冷启动时出现致命错误，未能成功创建超级用户或超级组，请联系维护人员处理!");
+        //保存这些GP关系
+        if (!gps.isEmpty()) {
+            gpRepository.saveAll(gps);
         }
 
         //检查超级用户是否关联超级组
-        if (superUser != null) {
-            var ug = ugRepository.getUgByUserIdAndGroupId(superUser.getId(), superGroup.getId());
-            if (ug == null) {
-                var ugPo = new UserGroupPo();
-                ugPo.setUserId(superUser.getId());
-                ugPo.setGroupId(superGroup.getId());
-                ugRepository.save(ugPo);
-                addedList.add("超级用户 连接到 超级组");
-            }
+        var ug = ugRepository.getUgByUserIdAndGroupId(sUserId, sGroupId);
+        if (ug == null) {
+            var ugPo = new UserGroupPo();
+            ugPo.setUserId(sUserId);
+            ugPo.setGroupId(sGroupId);
+            ugRepository.save(ugPo);
+            addedList.add("超级用户 连接到 超级组");
         }
 
         var vo = new MaintainUpdateVo();
