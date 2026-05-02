@@ -3,6 +3,7 @@ package com.ksptool.bio.biz.core.model.user;
 import com.ksptool.assembly.entity.exception.AuthException;
 import com.ksptool.bio.biz.auth.common.aop.RowScopePo;
 import com.ksptool.bio.biz.auth.service.SessionService;
+import com.ksptool.bio.biz.core.common.Switch;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
 import com.ksptool.bio.biz.core.model.attach.AttachPo;
 import jakarta.persistence.*;
@@ -132,7 +133,7 @@ public class UserPo extends RowScopePo{
      * @return 是否为内置用户
      */
     public boolean isSystem() {
-        return isSystem == 1;
+        return isSystem == Switch.yes();
     }
 
     /**

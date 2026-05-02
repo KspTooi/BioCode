@@ -7,6 +7,8 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.ksptool.bio.biz.core.common.Switch;
+
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Objects;
@@ -87,13 +89,13 @@ public class AuthUserSession implements UserDetails {
     //登录次数
     private Integer loginCount;
 
-    //用户状态 0:正常 1:封禁
+    //用户状态 0:封禁 1:正常
     private Integer status;
 
     //最后登录时间
     private LocalDateTime lastLoginTime;
 
-    //是否为系统用户 0:否 1:是
+    //系统内置用户 0:否 1:是
     private Integer isSystem;
 
     //创建时间
@@ -137,7 +139,7 @@ public class AuthUserSession implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return status == 0; // 0:正常 1:封禁
+        return status == Switch.on(); // 0:封禁 1:正常
     }
 
     /**
