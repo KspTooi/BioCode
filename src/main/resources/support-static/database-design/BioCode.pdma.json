@@ -4,7 +4,7 @@
   "avatar": "",
   "version": "4.9.4",
   "createdTime": "2025-5-31 18:54:43",
-  "updatedTime": "2026-5-3 07:06:59",
+  "updatedTime": "2026-5-3 07:29:57",
   "dbConns": [],
   "profile": {
     "default": {
@@ -1064,7 +1064,7 @@
         },
         {
           "defKey": "status",
-          "defName": "用户状态 0:正常 1:封禁",
+          "defName": "用户状态 0:封禁 1:正常",
           "comment": "",
           "type": "",
           "len": "",

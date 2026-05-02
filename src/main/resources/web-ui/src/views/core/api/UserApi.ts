@@ -26,7 +26,7 @@ export interface GetUserListDto extends PageQuery {
   username?: string; // 用户名查询
   nickname?: string; // 昵称查询
   phone?: string; // 手机号查询
-  status?: number | null; // 用户状态查询: 0-正常, 1-封禁
+  status?: number | null; // 用户状态查询: 0-封禁, 1-正常
   orgId?: string | null; // 组织架构ID
   rootName?: string | null; // 租户名称
 }
@@ -70,7 +70,7 @@ export interface AddUserDto {
   gender: number; // 性别 0:男 1:女 2:不愿透露
   phone?: string; // 用户手机号
   email?: string; // 用户邮箱
-  status?: number; // 用户状态：0-禁用，1-启用
+  status?: number; // 用户状态：0-封禁，1-正常
   orgId?: string; // 所属组织机构ID
   groupIds?: string[]; // 用户组ID列表
 }
@@ -83,7 +83,7 @@ export interface EditUserDto {
   gender: number; // 性别 0:男 1:女 2:不愿透露
   phone?: string; // 用户手机号
   email?: string; // 用户邮箱
-  status?: number; // 用户状态：0-禁用，1-启用
+  status?: number; // 用户状态：0-封禁，1-正常
   orgId?: string; // 所属组织机构ID
   groupIds?: string[]; // 用户组ID列表
 }

@@ -25,8 +25,8 @@
                 </el-form-item>
                 <el-form-item label="状态">
                   <el-select v-model="listForm.status" placeholder="选择状态" clearable style="width: 180px">
-                    <el-option label="正常" :value="0" />
-                    <el-option label="封禁" :value="1" />
+                    <el-option label="正常" :value="1" />
+                    <el-option label="封禁" :value="0" />
                   </el-select>
                 </el-form-item>
               </div>
@@ -100,8 +100,8 @@
               <el-table-column prop="email" label="邮箱" min-width="160" />
               <el-table-column label="状态" min-width="100">
                 <template #default="scope">
-                  <el-tag :type="scope.row.status === 0 ? 'success' : 'danger'" size="small">
-                    {{ scope.row.status === 0 ? "正常" : "封禁" }}
+                  <el-tag :type="scope.row.status === 1 ? 'success' : 'danger'" size="small">
+                    {{ scope.row.status === 1 ? "正常" : "封禁" }}
                   </el-tag>
                 </template>
               </el-table-column>
@@ -238,8 +238,8 @@
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="modalForm.status" placeholder="请选择状态">
-            <el-radio :label="0">正常</el-radio>
-            <el-radio :label="1">封禁</el-radio>
+            <el-radio :label="1">正常</el-radio>
+            <el-radio :label="0">封禁</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item v-if="modalMode === 'edit'" label="系统用户">
