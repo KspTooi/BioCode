@@ -12,6 +12,7 @@ import com.ksptool.bio.biz.auth.repository.UserGroupRepository;
 import com.ksptool.bio.biz.auth.service.SessionService;
 import com.ksptool.bio.biz.core.common.AppRegistry;
 import com.ksptool.bio.biz.core.common.SuperEntities;
+import com.ksptool.bio.biz.core.common.Switch;
 import com.ksptool.bio.biz.core.model.maintain.vo.ExecuteInstallWizardVo;
 import com.ksptool.bio.biz.core.model.maintain.vo.MaintainUpdateVo;
 import com.ksptool.bio.biz.core.repository.CoreRootRepository;
@@ -150,7 +151,7 @@ public class MaintainService {
             po.setName(name);
             po.setRemark(remark);
             po.setSeq(100);
-            po.setIsSystem(1);
+            po.setIsSystem(Switch.yes());
             scannedPermissions.add(po);
         }
 
@@ -160,7 +161,7 @@ public class MaintainService {
         superCode.setName("超级操作权限");
         superCode.setRemark("拥有此权限的用户组不受任何操作权限限制");
         superCode.setSeq(0);
-        superCode.setIsSystem(1);
+        superCode.setIsSystem(Switch.yes());
         scannedPermissions.add(superCode);
 
         var superRsCode = new PermissionPo();
@@ -168,7 +169,7 @@ public class MaintainService {
         superRsCode.setName("超级数据权限(RS)");
         superRsCode.setRemark("拥有此权限的用户组不受任何数据权限限制");
         superRsCode.setSeq(0);
-        superRsCode.setIsSystem(1);
+        superRsCode.setIsSystem(Switch.yes());
         scannedPermissions.add(superRsCode);
 
         // 扫描数据库中已定义的全部权限码(这不包含那些用户自己定义的权限码 只获取系统权限码)
@@ -288,9 +289,9 @@ public class MaintainService {
             p.setName("超级操作权限(SA)");
             p.setRemark("拥有此权限的用户组不受任何操作权限限制。");
             p.setSeq(0);
-            p.setIsSystem(1);
-            p.setCreatorId(-1L);
-            p.setUpdaterId(-1L);
+            p.setIsSystem(Switch.yes());
+            p.setCreatorId(SuperEntities.USER.getId());
+            p.setUpdaterId(SuperEntities.USER.getId());
             superPermission = pRepository.save(p);
             addedList.add("创建 超级操作权限 (id=" + superPermission.getId() + ")");
         }
@@ -302,9 +303,9 @@ public class MaintainService {
             p.setName("超级数据权限(SR)");
             p.setRemark("拥有此权限的用户组不受任何数据权限限制。");
             p.setSeq(0);
-            p.setIsSystem(1);
-            p.setCreatorId(-1L);
-            p.setUpdaterId(-1L);
+            p.setIsSystem(Switch.yes());
+            p.setCreatorId(SuperEntities.USER.getId());
+            p.setUpdaterId(SuperEntities.USER.getId());
             superRsPermission = pRepository.save(p);
             addedList.add("创建 超级数据权限 (id=" + superRsPermission.getId() + ")");
         }
@@ -344,6 +345,21 @@ public class MaintainService {
             ugPo.setGroupId(sGroupId);
             ugRepository.save(ugPo);
             addedList.add("超级用户 连接到 超级组");
+        }
+
+        //重新初始化超级用户、超级组的归属(以防止租户数据错误)
+        if(superUser != null){
+            superUser.setRootId(sRootId);
+            superUser.setStatus(Switch.on());
+            superUser.setIsSystem(Switch.yes());
+            uRepository.save(superUser);
+        }
+        if(superGroup != null){ 
+            superGroup.setRootId(sRootId);
+            superGroup.setOrgId(null);
+            superGroup.setStatus(Switch.on());
+            superGroup.setIsSystem(Switch.yes());
+            gRepository.save(superGroup);
         }
 
         var vo = new MaintainUpdateVo();
