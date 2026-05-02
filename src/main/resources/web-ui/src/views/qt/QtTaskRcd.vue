@@ -28,7 +28,7 @@
 
     <!-- 操作按钮区域 -->
     <StdListAreaAction>
-      <el-button type="danger" :disabled="listSelected.length === 0" @click="removeListBatch"> 删除选中项 </el-button>
+      <el-button type="danger" :disabled="listSelected.length === 0" @click="removeListBatch"> 批量删除 </el-button>
     </StdListAreaAction>
 
     <!-- 列表表格区域 -->

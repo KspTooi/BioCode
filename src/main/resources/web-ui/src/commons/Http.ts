@@ -85,6 +85,25 @@ export default {
   axios: (): AxiosInstance => {
     return axiosInstance;
   },
+  /**
+   * 发送原始POST请求，不进行任何参数过滤或拦截处理
+   * @param url 请求URL
+   * @param body 请求体
+   * @param config Axios配置
+   * @returns 原始响应
+   */
+  async post<T = any>(url: string, body?: any, config?: any): Promise<Result<T>> {
+    try {
+      const response = await axiosInstance.post<Result<T>>(url, body, config);
+      return response.data as Result<T>;
+    } catch (error) {
+      return {
+        code: 2,
+        data: null as T,
+        message: error instanceof Error ? error.message : "请求失败",
+      };
+    }
+  },
 
   /**
    * 解析URL 这会使用Axios中配置的baseURL和代理配置来解析URL
@@ -117,7 +136,7 @@ export default {
   async postRaw<T>(url: string, body: any): Promise<Result<T>> {
     try {
       // 过滤空字符串参数，不应影响原始对象
-      //eslint-disable-next-line no-restricted-syntax
+
       const filteredBody = { ...body }; // 创建body的副本
       Object.keys(filteredBody).forEach((key) => {
         if (filteredBody[key] === "") {

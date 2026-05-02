@@ -3,6 +3,7 @@ package com.ksptool.bio.biz.qf.model.qftodo.vo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
 
 @Getter
 @Setter
@@ -25,5 +26,14 @@ public class GetQfTodoDetailsVo {
 
     @Schema(description = "发起人ID")
     private Long initiatorId;
+
+    @Schema(description = "PC端路由名")
+    private String routePc;
+
+    @Schema(description = "移动端路由名")
+    private String routeMobile;
+
+    @Schema(description = "物理表数据主键ID")
+     private Long dataId;
 
 }

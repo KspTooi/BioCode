@@ -19,10 +19,12 @@ import com.ksptool.bio.biz.core.model.user.vo.UserPermissionVo;
 import com.ksptool.bio.biz.core.repository.OrgRepository;
 import com.ksptool.bio.biz.core.repository.UserRepository;
 import com.ksptool.bio.commons.dataprocess.Str;
+import jakarta.persistence.Tuple;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.ksptool.bio.biz.core.common.TupleMapper.tupleAs;
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
 
@@ -73,11 +76,8 @@ public class UserService {
      * @return 用户列表VO
      */
     public PageResult<GetUserListVo> getUserList(GetUserListDto dto) {
-
-        var vPos = userRepository.getUserList(dto, dto.pageRequest());
-
-        // 返回分页视图
-        return PageResult.success(vPos.getContent(), vPos.getTotalElements());
+        Page<Tuple> page = userRepository.getUserList(dto, dto.pageRequest());
+        return PageResult.success(tupleAs(page.getContent(), GetUserListVo.class), page.getTotalElements());
     }
 
     /**
@@ -88,16 +88,11 @@ public class UserService {
      * @throws BizException 用户不存在
      */
     public GetUserDetailsVo getUserDetails(long id) throws BizException {
+
         UserPo user = userRepository.findById(id).orElseThrow(() -> new BizException("用户不存在"));
+
         GetUserDetailsVo vo = new GetUserDetailsVo();
         assign(user, vo);
-
-        if (user.getCreateTime() != null) {
-            vo.setCreateTime(user.getCreateTime().format(DATE_TIME_FORMATTER));
-        }
-        if (user.getLastLoginTime() != null) {
-            vo.setLastLoginTime(user.getLastLoginTime().format(DATE_TIME_FORMATTER));
-        }
 
         // 获取用户组信息
         List<UserGroupVo> groupVos = new ArrayList<>();
@@ -118,6 +113,9 @@ public class UserService {
         // 获取用户权限信息
         List<PermissionPo> userPermissions = userRepository.getUserPermissions(id);
         vo.setPermissions(as(userPermissions, UserPermissionVo.class));
+
+        //处理组织架构
+        vo.setOrgId(user.getMinOrgId());
         return vo;
     }
 
@@ -149,33 +147,30 @@ public class UserService {
         user.setIsSystem(0);
 
         //处理组织架构
-        if (dto.getDeptId() != null) {
+        if (dto.getOrgId() != null) {
 
-            OrgPo org = orgRepository.getDeptById(dto.getDeptId());
+            //查询组织架构
+            OrgPo org = orgRepository.findById(dto.getOrgId())
+                    .orElseThrow(() -> new BizException("无法找到组织架构: " + dto.getOrgId()));
 
-            if (org == null) {
-                throw new BizException("部门:" + dto.getDeptId() + "不存在");
+            //处理组织架构是公司或子公司的情况 
+            if (org.isCompany() || org.isSubCompany()) {
+                user.setOrgId(org.getId());
+                user.setDeptId(null);
             }
 
-            //获取部门所在的公司
-            OrgPo rootOrg = orgRepository.getRootById(org.getRootId());
-
-            if (rootOrg == null) {
-                throw new BizException("公司:" + org.getRootId() + "不存在");
+            //处理组织架构是部门的情况
+            if (org.isDepartment()) {
+                user.setOrgId(org.getOrgId()); //直属企业ID
+                user.setDeptId(org.getId());
             }
 
-            //设置用户所属公司和部门
-            user.setRootId(rootOrg.getId());
-            user.setRootName(rootOrg.getName());
-            user.setDeptId(org.getId());
-            user.setDeptName(org.getName());
         }
 
-        if (dto.getDeptId() == null) {
-            user.setRootId(null);
-            user.setRootName(null);
+        //清空组织架构
+        if (dto.getOrgId() == null) {
+            user.setOrgId(null);
             user.setDeptId(null);
-            user.setDeptName(null);
         }
 
         //保存用户
@@ -228,36 +223,53 @@ public class UserService {
             dto.setPassword(user.getPassword());
         }
 
+        //处理系统内置用户的更新逻辑
+        if(user.isSystem()){
+
+            //内置用户不能改组
+            var gIds = ugRepository.getGroupIdsByGrantedUserId(user.getId());
+            var newGIds = dto.getGroupIds() == null ? List.of() : dto.getGroupIds();
+
+            if (!new HashSet<>(gIds).equals(new HashSet<>(newGIds))) {
+                throw new BizException("内置用户不允许修改用户组！");
+            }
+
+            //内置用户不允许封禁
+            if (dto.getStatus() != null && dto.getStatus() == 1) {
+                throw new BizException("内置用户不允许修改状态！");
+            }
+
+        }
+
+
+        //合并同类项
         assign(dto, user);
 
         //处理组织架构
-        if (dto.getDeptId() != null) {
+        if (dto.getOrgId() != null) {
 
-            OrgPo org = orgRepository.getDeptById(dto.getDeptId());
+            //查询组织架构
+            OrgPo org = orgRepository.findById(dto.getOrgId())
+                    .orElseThrow(() -> new BizException("无法找到组织架构: " + dto.getOrgId()));
 
-            if (org == null) {
-                throw new BizException("部门:" + dto.getDeptId() + "不存在");
+            //处理组织架构是公司或子公司的情况 
+            if (org.isCompany() || org.isSubCompany()) {
+                user.setOrgId(org.getId());
+                user.setDeptId(null);
             }
 
-            //获取部门所在的公司
-            OrgPo rootOrg = orgRepository.getRootById(org.getRootId());
-
-            if (rootOrg == null) {
-                throw new BizException("公司:" + org.getRootId() + "不存在");
+            //处理组织架构是部门的情况
+            if (org.isDepartment()) {
+                user.setOrgId(org.getOrgId()); //直属企业ID
+                user.setDeptId(org.getId());
             }
 
-            //设置用户所属公司和部门
-            user.setRootId(rootOrg.getId());
-            user.setRootName(rootOrg.getName());
-            user.setDeptId(org.getId());
-            user.setDeptName(org.getName());
         }
 
-        if (dto.getDeptId() == null) {
-            user.setRootId(null);
-            user.setRootName(null);
+        //清空组织架构
+        if (dto.getOrgId() == null) {
+            user.setOrgId(null);
             user.setDeptId(null);
-            user.setDeptName(null);
         }
 
         //处理用户组 先清除该用户的全部用户组关联
@@ -410,8 +422,7 @@ public class UserService {
                 if (root == null) {
                     throw new BizException("所属企业:" + rootName + "不存在");
                 }
-                user.setRootId(root.getId());
-                user.setRootName(root.getName());
+                user.setOrgId(root.getId());
             }
 
             //处理所属部门(如果有)
@@ -425,17 +436,15 @@ public class UserService {
                         throw new BizException("所属部门:" + deptName + "不存在或不属于指定企业");
                     }
                     user.setDeptId(dept.getId());
-                    user.setDeptName(dept.getName());
 
                 } catch (IncorrectResultSizeDataAccessException e) {
-                    throw new BizException("公司:" + user.getRootName() + "下存在多个同名称部门:" + deptName + "，不支持批量导入");
+                    throw new BizException("公司:" + user.getOrgId() + "下存在多个同名称部门:" + deptName + "，不支持批量导入");
                 }
 
             }
 
             //2025-04-12 旧式Company彻底移除
             //user.setActiveCompany(null);
-            user.setActiveEnv(null);
             user.setAvatarAttach(null);
             user.setIsSystem(0);//0:否 1:是
             addPos.add(user);
@@ -460,7 +469,6 @@ public class UserService {
         if (userPos.size() != userIds.size()) {
             throw new BizException("部分用户不存在");
         }
-
 
         //处理批量解封
         if (dto.getKind() == 0) {
@@ -507,23 +515,24 @@ public class UserService {
         //批量变更部门
         if (dto.getKind() == 3) {
 
-            var dept = orgRepository.getDeptById(dto.getDeptId());
+            var org = orgRepository.findById(dto.getOrgId())
+                    .orElseThrow(() -> new BizException("无法找到组织架构: " + dto.getOrgId()));
 
-            if (dept == null) {
-                throw new BizException("部门:" + dto.getDeptId() + "不存在");
+            //处理组织架构是公司或子公司的情况 
+            if (org.isCompany() || org.isSubCompany()) {
+                for (UserPo user : userPos) {
+                    user.setOrgId(org.getId());
+                    user.setDeptId(null);
+                }
             }
 
-            var root = orgRepository.getRootById(dept.getRootId());
 
-            if (root == null) {
-                throw new BizException("部门上级企业:" + dept.getRootId() + "不存在");
-            }
-
-            for (UserPo user : userPos) {
-                user.setRootId(root.getId());
-                user.setRootName(root.getName());
-                user.setDeptId(dept.getId());
-                user.setDeptName(dept.getName());
+            //处理组织架构是部门的情况
+            if (org.isDepartment()) {
+                for (UserPo user : userPos) {
+                    user.setOrgId(org.getOrgId()); //直属企业ID
+                    user.setDeptId(org.getId());
+                }
             }
 
             //批量更新用户

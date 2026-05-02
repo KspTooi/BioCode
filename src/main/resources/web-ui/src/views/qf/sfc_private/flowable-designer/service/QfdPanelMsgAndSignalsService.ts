@@ -14,7 +14,7 @@ import {
   findProcessElement,
   generateBpmnLocalPart,
   getDefinitions,
-} from "@/views/qf/sfc_private/flowable-designer/flowableModelUtils";
+} from "@/views/qf/sfc_private/flowable-designer/FlowableModelUtils";
 
 type ModelerLike = { get: (name: string) => unknown };
 

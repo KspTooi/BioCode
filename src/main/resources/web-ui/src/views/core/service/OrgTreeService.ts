@@ -12,6 +12,7 @@ export default class OrgTreeService {
     loadTreeData: () => Promise<void>;
     selectedOrg: Ref<GetOrgTreeVo | null>;
     onSelectOrg: (org: GetOrgTreeVo | null) => void;
+    getDeptList: (orgId: string) => Promise<void>;
   } {
     const treeData = ref<GetOrgTreeVo[]>([]);
     const loading = ref(false);
@@ -33,6 +34,9 @@ export default class OrgTreeService {
         loading.value = false;
       }
     };
+    const getDeptList = async (orgId: string): Promise<void> => {
+      console.log(111, orgId, treeData.value);
+    };
 
     return {
       treeData,
@@ -41,6 +45,7 @@ export default class OrgTreeService {
       loadTreeData,
       selectedOrg,
       onSelectOrg,
+      getDeptList,
     };
   }
 }

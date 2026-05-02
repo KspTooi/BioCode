@@ -1,12 +1,5 @@
 package com.ksptool.bio.biz.rdbg.service;
 
-import com.ksptool.bio.biz.rdbg.model.userrequestenv.UserRequestEnvPo;
-import com.ksptool.bio.biz.rdbg.model.userrequestenv.dto.AddUserRequestEnvDto;
-import com.ksptool.bio.biz.rdbg.model.userrequestenv.dto.EditUserRequestEnvDto;
-import com.ksptool.bio.biz.rdbg.model.userrequestenv.dto.GetUserRequestEnvListDto;
-import com.ksptool.bio.biz.rdbg.model.userrequestenv.vo.GetUserRequestEnvDetailsVo;
-import com.ksptool.bio.biz.rdbg.model.userrequestenv.vo.GetUserRequestEnvListVo;
-import com.ksptool.bio.biz.rdbg.repository.UserRequestEnvRepository;
 import com.ksptool.assembly.entity.exception.AuthException;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
@@ -15,6 +8,13 @@ import com.ksptool.bio.biz.auth.service.AuthService;
 import com.ksptool.bio.biz.auth.service.SessionService;
 import com.ksptool.bio.biz.core.model.user.UserPo;
 import com.ksptool.bio.biz.core.repository.UserRepository;
+import com.ksptool.bio.biz.rdbg.model.userrequestenv.UserRequestEnvPo;
+import com.ksptool.bio.biz.rdbg.model.userrequestenv.dto.AddUserRequestEnvDto;
+import com.ksptool.bio.biz.rdbg.model.userrequestenv.dto.EditUserRequestEnvDto;
+import com.ksptool.bio.biz.rdbg.model.userrequestenv.dto.GetUserRequestEnvListDto;
+import com.ksptool.bio.biz.rdbg.model.userrequestenv.vo.GetUserRequestEnvDetailsVo;
+import com.ksptool.bio.biz.rdbg.model.userrequestenv.vo.GetUserRequestEnvListVo;
+import com.ksptool.bio.biz.rdbg.repository.UserRequestEnvRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -97,11 +97,11 @@ public class UserRequestEnvService {
         UserPo user = sessionService.requireUser();
 
         //检查是否已重复激活相同环境
-        if (user.getActiveEnv() != null && user.getActiveEnv().getId().equals(env.getId())) {
-            throw new BizException("您已激活此环境");
-        }
+        //if (user.getActiveEnv() != null && user.getActiveEnv().getId().equals(env.getId())) {
+        //    throw new BizException("您已激活此环境");
+        //}
 
-        user.setActiveEnv(env);
+        //user.setActiveEnv(env);
         userRepository.save(user);
     }
 

@@ -37,10 +37,10 @@
 
           <StdListAreaAction>
             <el-button type="success" :disabled="!currentKeyPath" @click="openModal('add', null, currentNodeId)">
-              新增条目
+              创建条目
             </el-button>
             <el-button type="danger" :disabled="!currentKeyPath || listSelected.length === 0" @click="removeListBatch">
-              删除选中项
+              批量删除
             </el-button>
             <el-button
               type="primary"
@@ -143,10 +143,10 @@
       @on-close="loadList(currentKeyPath)"
     />
 
-    <!-- 注册表编辑/新增模态框 -->
+    <!-- 注册表编辑/创建模态框 -->
     <el-dialog
       v-model="modalVisible"
-      :title="modalMode === 'edit' ? '编辑条目' : '新增条目'"
+      :title="modalMode === 'edit' ? '编辑条目' : '创建条目'"
       width="500px"
       :close-on-click-modal="false"
     >
@@ -196,7 +196,7 @@
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="modalVisible = false">取消</el-button>
+          <el-button @click="modalVisible = false">关闭</el-button>
           <el-button type="primary" :loading="modalLoading" @click="submitModal">
             {{ modalMode === "add" ? "创建" : "保存" }}
           </el-button>

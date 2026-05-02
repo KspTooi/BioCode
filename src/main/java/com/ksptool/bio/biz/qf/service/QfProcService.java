@@ -98,7 +98,7 @@ public class QfProcService {
         var aud = SessionService.session();
         var rootId = aud.getRootId();
         var deptId = aud.getDeptId();
-        var userId = aud.getId();
+        var userId = aud.getUserId();
         var nickname = aud.getNickname();
 
         if (rootId == null || deptId == null) {

@@ -2,7 +2,8 @@
   <el-dialog
     :model-value="visible"
     title="审批"
-    width="520px"
+    class="h-full"
+    fullscreen
     :close-on-click-modal="false"
     @close="service.close()"
   >

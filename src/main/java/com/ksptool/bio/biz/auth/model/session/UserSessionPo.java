@@ -1,8 +1,9 @@
 package com.ksptool.bio.biz.auth.model.session;
 
 import com.ksptool.bio.biz.auth.common.aop.RowScopePo;
+import com.ksptool.bio.biz.core.common.jpa.SetLongConv;
+import com.ksptool.bio.biz.core.common.jpa.SetStringConv;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
-import com.ksptool.bio.biz.core.model.user.UserPo;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,10 +14,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.Set;
-import java.util.UUID;
-
-import static com.ksptool.entities.Entities.toJson;
-
 
 @Getter
 @Setter
@@ -30,38 +27,46 @@ public class UserSessionPo extends RowScopePo {
     @Column(name = "id", comment = "会话ID")
     private Long id;
 
-    @Column(name = "session_id", nullable = false, unique = true, length = 128, comment = "用户凭据SessionID")
+    @Column(name = "session_id", nullable = false, unique = true, length = 200, comment = "用户凭据SessionID")
     private String sessionId;
-
-    @Column(name = "username", nullable = false, length = 80, comment = "用户名")
-    private String username;
 
     @Column(name = "user_id", nullable = false, comment = "用户ID")
     private Long userId;
 
-    @Column(name = "root_id", comment = "所属企业ID")
+    @Column(name = "root_id", nullable = false, comment = "租户ID")
     private Long rootId;
 
-    @Column(name = "root_name", length = 32, comment = "所属企业名")
-    private String rootName;
+    @Column(name = "org_id", comment = "直属企业ID")
+    private Long orgId;
 
-    @Column(name = "dept_id", comment = "所属部门ID")
+    @Column(name = "dept_id", comment = "直属部门ID")
     private Long deptId;
 
-    @Column(name = "dept_name", length = 32, comment = "所属部门名")
+    @Column(name = "root_name", nullable = false, length = 40, comment = "租户名")
+    private String rootName;
+
+    @Column(name = "org_name", length = 80, comment = "直属企业名")
+    private String orgName;
+
+    @Column(name = "dept_name", length = 80, comment = "直属部门名")
     private String deptName;
 
-    @Column(name = "company_id", comment = "公司ID")
-    private Long companyId;
+    @Column(name = "username", nullable = false, length = 80, comment = "用户名")
+    private String username;
 
+    @Column(name = "nickname", length = 80, comment = "用户昵称")
+    private String nickname;
+
+    @Convert(converter = SetStringConv.class)
     @Column(name = "permissions", nullable = false, columnDefinition = "JSON", comment = "用户权限代码JSON")
-    private String permissionCodes;
+    private Set<String> permissionCodes;
 
     @Column(name = "rs_max", nullable = false, columnDefinition = "TINYINT", comment = "最大RowScope等级 0:全部 1:本公司/租户及以下 2:本部门及以下 3:本部门 4:仅本人 5:指定部门")
     private Integer rsMax;
 
-    @Column(name = "rs_allow_depts", nullable = false, columnDefinition = "JSON", comment = "RowScope允许访问的部门IDS")
-    private String rsAllowDepts;
+    @Convert(converter = SetLongConv.class)
+    @Column(name = "rs_allow_org_ids", nullable = false, columnDefinition = "JSON", comment = "RowScope允许访问的组织IDS")
+    private Set<Long> rsAllowOrgIds;
 
     @Column(name = "data_version", nullable = false, comment = "数据版本")
     private Long dataVersion;
@@ -81,52 +86,11 @@ public class UserSessionPo extends RowScopePo {
     @Column(name = "update_time", nullable = false, comment = "修改时间")
     private LocalDateTime updateTime;
 
-    /**
-     * 创建用户会话
-     *
-     * @param userPo           用户
-     * @param permissionCodes  用户权限代码集合
-     * @param expiresInSeconds 会话过期时间（秒）
-     * @return 用户会话
-     */
-    public static UserSessionPo create(UserPo userPo, Set<String> permissionCodes, long expiresInSeconds) {
-        var session = new UserSessionPo();
-        session.setSessionId(UUID.randomUUID().toString());
-        session.setUserId(userPo.getId());
-        session.setRootId(userPo.getRootId());
-        session.setRootName(userPo.getRootName());
-        session.setDeptId(userPo.getDeptId());
-        session.setDeptName(userPo.getDeptName());
-        //session.setCompanyId(userPo.getActiveCompanyId());
-        session.setPermissionCodes(toJson(permissionCodes));
-        session.setExpiresAt(LocalDateTime.now().plusSeconds(expiresInSeconds));
-        session.setDataVersion(userPo.getDataVersion());
-        session.setCreatorId(userPo.getId());
-        return session;
-    }
-
-    /**
-     * 更新用户会话
-     *
-     * @param userPo           用户
-     * @param permissionCodes  用户权限代码集合
-     * @param expiresInSeconds 会话过期时间（秒）
-     */
-    public void update(UserPo userPo, Set<String> permissionCodes, long expiresInSeconds) {
-        this.rootId = userPo.getRootId();
-        this.rootName = userPo.getRootName();
-        this.deptId = userPo.getDeptId();
-        this.deptName = userPo.getDeptName();
-        //2025-04-12 旧式Company彻底移除
-        //this.companyId = userPo.getActiveCompanyId();
-        this.permissionCodes = toJson(permissionCodes);
-        this.expiresAt = LocalDateTime.now().plusSeconds(expiresInSeconds);
-    }
 
     /**
      * 判断会话是否已过期
      *
-     * @return 是否过期
+     * @return 是否过期 true:过期 false:未过期
      */
     public boolean isExpired() {
         return LocalDateTime.now().isAfter(expiresAt);
@@ -135,7 +99,6 @@ public class UserSessionPo extends RowScopePo {
 
     @PrePersist
     private void onCreate() {
-
 
     }
 

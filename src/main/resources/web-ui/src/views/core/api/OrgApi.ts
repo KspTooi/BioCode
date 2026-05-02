@@ -4,43 +4,48 @@ import type Result from "@/commons/model/Result.ts";
 
 export interface GetOrgTreeDto {
   name?: string; // 组织机构名称
+  topId?: string; // 顶级组织ID
 }
 
 export interface GetOrgTreeVo {
   id: string; // 主键id
-  rootId: string; // 一级组织ID
+  topId: string; // 顶级组织ID
   parentId: string | null; // 上级组织ID NULL顶级组织
   kind: number; // 0:企业 1:子企业 2:部门 3:班组
   name: string; // 组织机构名称
   seq: number; // 排序
+  level: number; // 级别
   children: GetOrgTreeVo[]; // 子组织
 }
 
 export interface GetOrgDetailsVo {
   id: string; // 主键id
-  rootId: string; // 一级组织ID
+  topId?: string; // 顶级组织ID
+  orgId?: string; // 直属企业ID
   parentId: string | null; // 上级组织ID NULL顶级组织
-  kind: number; // 0:企业 1:子企业 2:部门 3:班组
+  kind: number; // 0:企业 1:子企业 2:部门
   name: string; // 组织机构名称
-  principalId: string | null; // 主管ID
-  principalName: string; // 主管名称
+  shortName: string; // 组织机构简称
   seq: number; // 排序
+  remark: string; // 备注
 }
 
 export interface AddOrgDto {
   parentId?: string | null; // 上级组织ID NULL顶级组织
   kind: number; // 0:企业 1:子企业 2:部门 3:班组
   name: string; // 组织机构名称
-  principalId?: string | null; // 主管ID 企业不允许填
+  shortName: string; // 组织机构简称
   seq: number; // 排序
+  remark?: string; // 备注
 }
 
 export interface EditOrgDto {
   id: string; // 主键id
   parentId?: string | null; // 上级组织ID NULL顶级组织
   name: string; // 组织机构名称
-  principalId?: string | null; // 主管ID
+  shortName: string; // 组织机构简称
   seq: number; // 排序
+  remark?: string; // 备注
 }
 
 export default {

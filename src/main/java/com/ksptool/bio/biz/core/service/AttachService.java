@@ -10,7 +10,6 @@ import com.ksptool.bio.biz.core.model.attach.vo.PreCheckAttachVo;
 import com.ksptool.bio.biz.core.repository.AttachChunkRepository;
 import com.ksptool.bio.biz.core.repository.AttachRepository;
 import com.ksptool.bio.commons.config.AttachConfig;
-import com.ksptool.bio.commons.utils.IdWorker;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.Tika;
@@ -319,7 +318,6 @@ public class AttachService {
 
             //创建预检记录
             AttachPo insertPo = new AttachPo();
-            insertPo.setId(IdWorker.nextId());
             insertPo.setName(dto.getName());
             insertPo.setKind(dto.getKind());
             insertPo.setSuffix(getSuffix(dto.getName()));
@@ -329,7 +327,7 @@ public class AttachService {
             insertPo.setReceiveSize(0L);
             insertPo.setStatus(0);
             insertPo.setChunks(new ArrayList<>());
-            repository.save(insertPo);
+            insertPo = repository.save(insertPo);
 
             ret.setPreCheckId(insertPo.getId());
             ret.setName(insertPo.getName());
@@ -431,7 +429,7 @@ public class AttachService {
         var absolutePath = getAttachLocalPath(Paths.get(attach.getPath()));
 
         if (!Files.exists(absolutePath)) {
-            throw new BizException("文件系统错误,文件不存在,请确认该附件已预检过: " + absolutePath.toString());
+            throw new BizException("文件系统错误,文件不存在,请确认该附件已预检过: " + absolutePath);
         }
 
         //计算写入位置
@@ -579,7 +577,7 @@ public class AttachService {
                     var uuid = UUID.randomUUID().toString().replace("-", "");
                     var newPath = path.getParent().resolve("conflicted_" + uuid + "." + path.getFileName().toString());
                     Files.move(path, newPath);
-                    log.info("已将旧的预分配文件 {} 重命名为: {}", path.getFileName().toString(), newPath.getFileName().toString());
+                    log.info("已将旧的预分配文件 {} 重命名为: {}", path.getFileName(), newPath.getFileName().toString());
                     moveSuccess = true;
                     break; // 成功则跳出循环
                 } catch (IOException e) {
@@ -596,7 +594,7 @@ public class AttachService {
 
             if (!moveSuccess) {
                 // 如果重试多次依然失败，抛出异常
-                throw new BizException("无法预分配文件，文件被系统锁定且重命名失败: " + path.toString());
+                throw new BizException("无法预分配文件，文件被系统锁定且重命名失败: " + path);
             }
 
         }

@@ -35,6 +35,9 @@ export interface GetQfTodoDetailsVo {
   summary: string; // 摘要(如：张三提交的 5000 元报销)
   memberId: string; // 办理成员ID (用户ID或用户组标识)
   initiatorId: string; // 发起人ID
+  routePc: string; // PC端路由名
+  routeMobile: string; // 移动端路由名
+  dataId: string; // 物理表数据主键ID
 }
 
 /**
@@ -51,6 +54,18 @@ export interface ApproveQfTodoDto {
   id: string; // 主键ID
   action: number; // 操作 0:同意 1:驳回
   comment: string; // 审批意见
+}
+
+/**
+ * 审批流程流转记录Vo
+ */
+export interface ApproveFlowRecordVo {
+  nodeName: string; // 节点名称
+  finMemberName: string; // 节点审批人
+  finTime: string; // 节点审批时间
+  action: number; // 节点审批结果 0:同意 1:驳回
+  comment: string; // 审批意见
+  status: number; // 待办状态 0:待办 1:已办
 }
 
 export default {
@@ -101,6 +116,28 @@ export default {
     const result = await Http.postEntity<Result<string>>("/qfTodo/approveQfTodo", dto);
     if (result.code === 0) {
       return result.message;
+    }
+    throw new Error(result.message);
+  },
+
+  /**
+   * 获取待办事项流程图
+   */
+  getQfTodoApproveFlow: async (dto: CommonIdDto): Promise<string> => {
+    const result = await Http.postEntity<Result<string>>("/qfTodo/getQfTodoApproveFlow", dto);
+    if (result.code === 0) {
+      return result.data;
+    }
+    throw new Error(result.message);
+  },
+
+  /**
+   * 获取待办事项流程流转记录
+   */
+  getQfTodoApproveFlowRecord: async (dto: CommonIdDto): Promise<ApproveFlowRecordVo[]> => {
+    const result = await Http.postEntity<Result<ApproveFlowRecordVo[]>>("/qfTodo/getQfTodoApproveFlowRecord", dto);
+    if (result.code === 0) {
+      return result.data;
     }
     throw new Error(result.message);
   },

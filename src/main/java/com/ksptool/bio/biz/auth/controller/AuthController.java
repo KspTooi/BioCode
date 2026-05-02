@@ -9,7 +9,8 @@ import com.ksptool.assembly.entity.exception.AuthException;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.Result;
 import com.ksptool.bio.BioRunner;
-import com.ksptool.bio.biz.auth.model.auth.AuthUserDetails;
+import com.ksptool.bio.biz.auth.common.exception.RootUnavailableException;
+import com.ksptool.bio.biz.auth.model.auth.AuthUserSession;
 import com.ksptool.bio.biz.auth.model.auth.dto.UserLoginDto;
 import com.ksptool.bio.biz.auth.model.auth.vo.UserLoginVo;
 import com.ksptool.bio.biz.auth.model.session.UserSessionPo;
@@ -17,6 +18,7 @@ import com.ksptool.bio.biz.auth.model.session.vo.UserSessionVo;
 import com.ksptool.bio.biz.auth.service.SessionService;
 import com.ksptool.bio.biz.core.common.AppRegistry;
 import com.ksptool.bio.biz.core.model.user.dto.RegisterDto;
+import com.ksptool.bio.biz.core.service.MenuService;
 import com.ksptool.bio.biz.core.service.RegistrySdk;
 import com.ksptool.bio.biz.core.service.UserService;
 import com.ksptool.bio.commons.WebUtils;
@@ -28,8 +30,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.event.AuthenticationFailureServiceExceptionEvent;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
@@ -41,7 +46,7 @@ import static com.ksptool.entities.Entities.as;
 
 @PrintLog
 @RestController
-@Tag(name = "认证管理", description = "认证管理")
+@Tag(name = "AUTH-认证管理", description = "认证管理")
 @RequestMapping("/auth")
 public class AuthController {
 
@@ -60,6 +65,12 @@ public class AuthController {
     @Autowired
     private RegistrySdk regSdk;
 
+    @Autowired
+    private ApplicationEventPublisher aep;
+
+    @Autowired
+    private MenuService mService;
+
     @Operation(summary = "登录(新)")
     @PrintLog(sensitiveFields = "password")
     @PostMapping(value = "/userLogin")
@@ -69,14 +80,32 @@ public class AuthController {
 
         try {
             // 使用Spring Security进行用户名密码认证
-            auth = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(dto.getUsername(), dto.getPassword()));
+            auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(dto.getUsername(), dto.getPassword()));
+
         } catch (AuthenticationException e) {
+
+            //如果异常是租户不可用异常，则返回租户不可用异常信息
+            if (e.getCause() instanceof RootUnavailableException) {
+                //发布登录失败事件(用于记录登录审计日志)
+                aep.publishEvent(new AuthenticationFailureServiceExceptionEvent(new UsernamePasswordAuthenticationToken(dto.getUsername(), dto.getPassword()), e));
+                return Result.error(e.getMessage());
+            }
+
+            //如果异常是用户被禁用异常 返回具体异常信息
+            if (e.getCause() instanceof DisabledException) {
+                aep.publishEvent(new AuthenticationFailureServiceExceptionEvent(new UsernamePasswordAuthenticationToken(dto.getUsername(), dto.getPassword()), e));
+                return Result.error(e.getMessage());
+            }
+
             return Result.error("用户名或密码错误");
         }
 
         // 获取认证用户
-        var aud = (AuthUserDetails) auth.getPrincipal();
+        var aud = (AuthUserSession) auth.getPrincipal();
+
+        if (aud == null) {
+            return Result.error("获取当前登录主体失败!");
+        }
 
         // 创建用户会话
         var sessionId = sessionService.createSession(aud);
@@ -100,6 +129,10 @@ public class AuthController {
         var version = BioRunner.getVersion();
         vo.setAppVersion(version.toString());
         vo.setAppVersionNumeric(version.toNumericVersion());
+
+        //清除旧的用户菜单缓存
+        mService.clearUserMenuTreeCacheByUserId(aud.getUserId());
+
         return Result.success(vo);
     }
 

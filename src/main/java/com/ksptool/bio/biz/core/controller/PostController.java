@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @PrintLog
 @RestController
 @RequestMapping("/post")
-@Tag(name = "岗位管理", description = "岗位管理")
+@Tag(name = "CORE-岗位管理", description = "岗位管理")
 @Slf4j
 public class PostController {
 

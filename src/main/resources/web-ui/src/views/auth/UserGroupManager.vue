@@ -38,7 +38,7 @@
         :loading="listLoading"
         @click="removeListBatch(listSelected)"
       >
-        删除选中项
+        批量删除
       </el-button>
     </template>
 
@@ -57,13 +57,24 @@
         <el-table-column prop="code" label="用户组标识" min-width="120" />
         <el-table-column prop="memberCount" label="成员数量" min-width="100" />
         <el-table-column prop="permissionCount" label="权限数量" min-width="100" />
-        <!-- <el-table-column label="系统用户组" min-width="80">
+        <el-table-column prop="rowScope" label="数据权限" min-width="100">
+          <template #default="scope">
+            <el-tag v-if="scope.row.rowScope === 0" type="primary">全集团</el-tag>
+            <el-tag v-else-if="scope.row.rowScope === 10" type="success">本公司+下级公司</el-tag>
+            <el-tag v-else-if="scope.row.rowScope === 20" type="info">仅本公司</el-tag>
+            <el-tag v-else-if="scope.row.rowScope === 30" type="warning">本部门+下级部门</el-tag>
+            <el-tag v-else-if="scope.row.rowScope === 40" type="danger">仅本部门</el-tag>
+            <el-tag v-else-if="scope.row.rowScope === 50" type="teal">仅本人</el-tag>
+            <el-tag v-else-if="scope.row.rowScope === 60" type="purple">指定组织</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="系统用户组" min-width="80">
           <template #default="scope">
             <el-tag :type="scope.row.isSystem ? 'info' : 'success'">
               {{ scope.row.isSystem ? "是" : "否" }}
             </el-tag>
           </template>
-        </el-table-column> -->
+        </el-table-column>
         <el-table-column label="状态" min-width="80">
           <template #default="scope">
             <el-tag :type="scope.row.status === 1 ? 'success' : 'danger'">
@@ -140,14 +151,15 @@
   <CoreOrgDeptSelectModal
     v-model="deptSelectModalVisible"
     multiple
+    type="all"
     :default-selected="modalForm.deptIds"
     @confirm="onDeptSelectConfirm"
   />
 
-  <!-- 用户组编辑/新增模态框 -->
+  <!-- 用户组编辑/创建模态框 -->
   <el-dialog
     v-model="modalVisible"
-    :title="modalMode === 'edit' ? '编辑用户组' : '添加用户组'"
+    :title="modalMode === 'edit' ? '编辑用户组' : '创建用户组'"
     width="900px"
     :close-on-click-modal="false"
     @close="
@@ -173,6 +185,8 @@
             <el-form-item label="用户组标识" prop="code" label-for="group-code">
               <el-input
                 id="group-code"
+                show-word-limit
+                :maxlength="32"
                 v-model="modalForm.code"
                 :disabled="modalMode === 'edit' && isSystemGroup"
                 :placeholder="modalMode === 'edit' && isSystemGroup ? '系统用户组不可修改标识' : '请输入组标识'"
@@ -181,6 +195,8 @@
             <el-form-item label="用户组名称" prop="name" label-for="group-name">
               <el-input
                 id="group-name"
+                show-word-limit
+                :maxlength="80"
                 v-model="modalForm.name"
                 :disabled="modalMode === 'edit' && isSystemGroup"
                 :placeholder="modalMode === 'edit' && isSystemGroup ? '系统用户组不可修改名称' : '请输入组名称'"
@@ -196,24 +212,45 @@
               </el-radio-group>
             </el-form-item>
             <el-form-item label="用户组描述" prop="remark" label-for="group-remark">
-              <el-input id="group-remark" v-model="modalForm.remark" type="textarea" :rows="2" placeholder="请输入描述" />
+              <el-input
+                show-word-limit
+                :maxlength="200"
+                id="group-remark"
+                v-model="modalForm.remark"
+                type="textarea"
+                :rows="2"
+                placeholder="请输入描述"
+              />
             </el-form-item>
 
             <div class="section-title text-sm font-bold mb-4 pl-2.5 mt-5">数据权限</div>
             <el-form-item label="权限范围" prop="rowScope" label-for="group-rowScope">
-              <el-select id="group-rowScope" v-model="modalForm.rowScope" placeholder="请选择数据权限" class="w-full">
-                <el-option :value="0" label="全部" />
-                <el-option :value="1" label="本公司/租户及以下" />
-                <el-option :value="2" label="本部门及以下" />
-                <el-option :value="3" label="本部门" />
-                <el-option :value="4" label="仅本人" />
-                <el-option :value="5" label="指定部门" />
-              </el-select>
+              <div class="flex items-center justify-between w-full">
+                <el-select
+                  id="group-rowScope"
+                  v-model="modalForm.rowScope"
+                  :disabled="modalMode === 'edit' && modalForm.isSystem === 1"
+                  placeholder="请选择数据权限"
+                  class="w-full"
+                  style="width: 180px"
+                >
+                  <el-option :value="0" label="全集团" />
+                  <el-option :value="10" label="本公司+下级公司" />
+                  <el-option :value="20" label="仅本公司" />
+                  <el-option :value="30" label="本部门+下级部门" />
+                  <el-option :value="40" label="仅本部门" />
+                  <el-option :value="50" label="仅本人" />
+                  <el-option :value="60" label="指定组织" />
+                </el-select>
+                <el-button type="primary" size="small" style="margin-left: 5px" @click="openRsSimulationModal"
+                  >数据权限模拟器</el-button
+                >
+              </div>
             </el-form-item>
-            <el-form-item v-if="modalForm.rowScope === 5" label="指定部门" prop="deptIds">
+            <el-form-item v-if="modalForm.rowScope === 60" label="指定组织" prop="deptIds">
               <div class="flex items-center">
-                <el-button type="primary" size="small" @click="openDeptSelect">选择部门</el-button>
-                <span class="ml-2 text-gray-500">已选择 {{ modalForm.deptIds?.length || 0 }} 个部门</span>
+                <el-button type="primary" size="small" @click="openDeptSelect">选择组织</el-button>
+                <span class="ml-2 text-gray-500">已选择 {{ modalForm.deptIds?.length || 0 }} 个组织</span>
               </div>
             </el-form-item>
           </div>
@@ -258,13 +295,14 @@
     </el-form>
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="modalVisible = false">取消</el-button>
+        <el-button @click="modalVisible = false">关闭</el-button>
         <el-button type="primary" :loading="modalLoading" @click="submitModal">
           {{ modalMode === "add" ? "创建" : "保存" }}
         </el-button>
       </div>
     </template>
   </el-dialog>
+  <RsSimulationModal :visible="rsSimulationModalVisible" @close="rsSimulationModalVisible = false" />
 </template>
 
 <script setup lang="ts">
@@ -278,6 +316,7 @@ import UserGpModal from "@/views/auth/components/UserGpModal.vue";
 import CoreOrgDeptSelectModal from "@/views/core/components/public/CoreOrgDeptSelectModal.vue";
 import StdListLayout from "@/soa/std-series/StdListLayout.vue";
 import ComSeqFixer from "@/soa/com-series/ComSeqFixer.vue";
+import RsSimulationModal from "@/views/auth/components/RsSimulationModal.vue";
 
 const EditIcon = markRaw(Edit);
 const DeleteIcon = markRaw(Delete);
@@ -333,6 +372,11 @@ const listSelected = ref<GetGroupListVo[]>([]);
  */
 const getGroupDetailForSeq = async (id: string): Promise<GetGroupDetailsVo> => {
   return await AdminGroupApi.getGroupDetails({ id });
+};
+
+const rsSimulationModalVisible = ref(false);
+const openRsSimulationModal = (): void => {
+  rsSimulationModalVisible.value = true;
 };
 
 /**

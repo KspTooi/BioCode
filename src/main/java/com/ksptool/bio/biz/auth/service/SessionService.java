@@ -3,7 +3,7 @@ package com.ksptool.bio.biz.auth.service;
 import com.ksptool.assembly.entity.exception.AuthException;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.PageResult;
-import com.ksptool.bio.biz.auth.model.auth.AuthUserDetails;
+import com.ksptool.bio.biz.auth.model.auth.AuthUserSession;
 import com.ksptool.bio.biz.auth.model.session.UserSessionPo;
 import com.ksptool.bio.biz.auth.model.session.dto.GetSessionListDto;
 import com.ksptool.bio.biz.auth.model.session.vo.GetSessionDetailsVo;
@@ -14,6 +14,7 @@ import com.ksptool.bio.biz.core.model.user.UserPo;
 import com.ksptool.bio.biz.core.repository.OrgRepository;
 import com.ksptool.bio.biz.core.repository.UserRepository;
 import com.ksptool.bio.commons.utils.SHA256;
+import jakarta.persistence.Tuple;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,7 +33,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.ksptool.entities.Entities.*;
+import static com.ksptool.bio.biz.core.common.TupleMapper.tupleAs;
+import static com.ksptool.entities.Entities.assign;
 
 @Slf4j
 @Service
@@ -62,7 +64,7 @@ public class SessionService {
      * @return 当前用户会话
      * @throws AuthException 如果用户会话不存在，或用户未登录。
      */
-    public static AuthUserDetails session() throws AuthException {
+    public static AuthUserSession session() throws AuthException {
 
         var authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -70,7 +72,7 @@ public class SessionService {
             throw new AuthException("用户未登录");
         }
 
-        return (AuthUserDetails) authentication.getPrincipal();
+        return (AuthUserSession) authentication.getPrincipal();
     }
 
     /**
@@ -78,7 +80,7 @@ public class SessionService {
      *
      * @return 当前用户会话，如果用户未登录，则返回null
      */
-    public static AuthUserDetails sessionWithNullable() {
+    public static AuthUserSession sessionWithNullable() {
         try {
             return session();
         } catch (Exception e) {
@@ -118,8 +120,8 @@ public class SessionService {
      * @return 在线用户会话列表
      */
     public PageResult<GetSessionListVo> getSessionList(GetSessionListDto dto) {
-        Page<GetSessionListVo> pPos = userSessionRepository.getSessionList(dto, dto.pageRequest());
-        return PageResult.success(pPos.getContent(), pPos.getTotalElements());
+        Page<Tuple> page = userSessionRepository.getSessionList(dto, dto.pageRequest());
+        return PageResult.success(tupleAs(page.getContent(), GetSessionListVo.class), page.getTotalElements());
     }
 
     /**
@@ -141,18 +143,18 @@ public class SessionService {
                 .ifPresent(user -> vo.setUsername(user.getUsername()));
         vo.setCreateTime(session.getCreateTime());
         vo.setExpiresAt(session.getExpiresAt());
-        vo.setPermissions(new HashSet<>(fromJsonArray(session.getPermissionCodes(), String.class)));
+        vo.setPermissions(session.getPermissionCodes());
 
         //RS 0:全部 1:本公司/租户及以下 2:本部门及以下 3:本部门 4:仅本人 5:指定部门
         var maxRs = session.getRsMax();
-        var rsAllowDepts = fromJsonArray(session.getRsAllowDepts(), Long.class);
+        var rsAllowDepts = session.getRsAllowOrgIds();
         var rsAllowDeptNames = new ArrayList<String>();
 
 
         //处理RS权限列表
         if (maxRs == 2 || maxRs == 3 || maxRs == 5) {
 
-            var depts = orgRepository.getDeptsByIds(rsAllowDepts);
+            var depts = orgRepository.getDeptsByIds(new ArrayList<>(rsAllowDepts));
 
             if (depts.isEmpty()) {
                 return vo;
@@ -219,6 +221,16 @@ public class SessionService {
     }
 
     /**
+     * 关闭租户下所有用户会话
+     *
+     * @param rootId 租户ID
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void closeSessionByRootId(Long rootId) {
+        closeSession(userSessionRepository.getOnlineUserIdsByRootId(rootId));
+    }
+
+    /**
      * 根据SessionId关闭用户会话
      *
      * @param sessionPrimaryKey 会话PK
@@ -252,37 +264,39 @@ public class SessionService {
     /**
      * 创建用户会话
      *
-     * @param aud 认证用户详情
+     * @param aus 认证用户详情
      * @return 用户会话ID(未经过SHA256的SessionId)
      */
-    public String createSession(AuthUserDetails aud) throws BizException {
+    public String createSession(AuthUserSession aus) throws BizException {
 
         var sessionId = UUID.randomUUID().toString();
         var hashedSessionId = SHA256.hex(sessionId);
 
         var newSession = new UserSessionPo();
-        assign(aud, newSession);
+
+        //合并同类项
+        assign(aus, newSession);
 
         //搜集权限码
         var permCodes = new HashSet<String>();
 
-        for (var authority : aud.getAuthorities()) {
+        for (var authority : aus.getAuthorities()) {
             permCodes.add(authority.getAuthority());
         }
 
         //存入数据库
         newSession.setId(null);
-        newSession.setUsername(aud.getUsername());
-        newSession.setUserId(aud.getId());
+        newSession.setUsername(aus.getUsername());
+        newSession.setUserId(aus.getUserId());
         newSession.setSessionId(hashedSessionId);
-        newSession.setPermissionCodes(toJson(permCodes));
+        newSession.setPermissionCodes(permCodes);
         newSession.setExpiresAt(LocalDateTime.now().plusSeconds(expiresInSeconds));
-        newSession.setCreatorId(aud.getId());
-        newSession.setDataVersion(aud.getDataVersion());
+        newSession.setCreatorId(aus.getUserId());
+        newSession.setDataVersion(aus.getDataVersion());
         userSessionRepository.save(newSession);
 
         //处理用户登录次数与最后登录时间
-        var userPo = userRepository.findById(aud.getId()).orElseThrow(() -> new BizException("用户不存在"));
+        var userPo = userRepository.findById(aus.getUserId()).orElseThrow(() -> new BizException("用户不存在"));
         userPo.setLoginCount(userPo.getLoginCount() + 1);
         userPo.setLastLoginTime(LocalDateTime.now());
 
@@ -310,7 +324,7 @@ public class SessionService {
         }
 
         //更新基本信息
-        var aud = (AuthUserDetails) userDetailsService.loadUserByUsername(oldSession.getUsername());
+        var aud = (AuthUserSession) userDetailsService.loadUserByUsername(oldSession.getUsername());
 
         oldSession.setUsername(aud.getUsername());
         oldSession.setRootId(aud.getRootId());
@@ -325,11 +339,11 @@ public class SessionService {
         for (var authority : aud.getAuthorities()) {
             permCodes.add(authority.getAuthority());
         }
-        oldSession.setPermissionCodes(toJson(permCodes));
+        oldSession.setPermissionCodes(permCodes);
 
         //更新RS数据
         oldSession.setRsMax(aud.getRsMax());
-        oldSession.setRsAllowDepts(toJson(aud.getRsAllowDepts()));
+        oldSession.setRsAllowOrgIds(new HashSet<>(aud.getRsAllowOrgIds()));
 
         //更新过期时间
         oldSession.setExpiresAt(LocalDateTime.now().plusSeconds(expiresInSeconds));

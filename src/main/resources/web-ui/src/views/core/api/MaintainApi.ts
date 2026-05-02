@@ -42,21 +42,10 @@ export default {
   },
 
   /**
-   * 校验系统内置用户组
+   * 初始化内置数据（默认租户、超级管理员账号及权限组）
    */
-  validateGroups: async (): Promise<MaintainUpdateVo> => {
-    const result = await Http.postEntity<Result<MaintainUpdateVo>>("/maintain/validateGroups", {});
-    if (result.code === 0) {
-      return result.data;
-    }
-    throw new Error(result.message);
-  },
-
-  /**
-   * 校验系统内置用户
-   */
-  validateUsers: async (): Promise<MaintainUpdateVo> => {
-    const result = await Http.postEntity<Result<MaintainUpdateVo>>("/maintain/validateUsers", {});
+  userSystemColdStartup: async (): Promise<MaintainUpdateVo> => {
+    const result = await Http.postEntity<Result<MaintainUpdateVo>>("/maintain/userSystemColdStartup", {});
     if (result.code === 0) {
       return result.data;
     }

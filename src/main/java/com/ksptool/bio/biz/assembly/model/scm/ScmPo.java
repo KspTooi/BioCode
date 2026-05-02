@@ -1,19 +1,18 @@
 package com.ksptool.bio.biz.assembly.model.scm;
 
 import com.ksptool.assembly.entity.exception.AuthException;
-import com.ksptool.bio.biz.auth.common.aop.rsuser.RowScopeUserPo;
+import com.ksptool.bio.biz.auth.common.aop.RowScopePo;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
-
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -22,7 +21,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
         @Index(name = "uk_scm_name", columnList = "name", unique = true)
 })
 @EntityListeners(AuditingEntityListener.class)
-public class ScmPo extends RowScopeUserPo{
+public class ScmPo extends RowScopePo {
 
     @Id
     @SnowflakeIdGenerated

@@ -17,8 +17,11 @@
                 <el-form-item label="用户名">
                   <el-input v-model="listForm.username" placeholder="输入用户名" clearable />
                 </el-form-item>
-                <el-form-item label="用户昵称">
-                  <el-input v-model="listForm.nickname" placeholder="输入用户昵称" clearable />
+                <el-form-item label="昵称">
+                  <el-input v-model="listForm.nickname" placeholder="输入昵称" clearable />
+                </el-form-item>
+                <el-form-item v-has-super label="租户">
+                  <el-input v-model="listForm.rootName" placeholder="输入租户" clearable />
                 </el-form-item>
                 <el-form-item label="状态">
                   <el-select v-model="listForm.status" placeholder="选择状态" clearable style="width: 180px">
@@ -75,9 +78,15 @@
                   <span v-if="scope.row.gender === 2">不愿透露</span>
                 </template>
               </el-table-column>
-              <el-table-column prop="rootName" label="企业" min-width="160" :v-show="orgId == null" show-overflow-tooltip>
+              <el-table-column v-has-super prop="rootName" label="租户" min-width="160" show-overflow-tooltip>
                 <template #default="scope">
                   <span v-if="scope.row.rootName">{{ scope.row.rootName }}</span>
+                  <span v-else>-</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="orgName" label="企业" min-width="160" :v-show="orgId == null" show-overflow-tooltip>
+                <template #default="scope">
+                  <span v-if="scope.row.orgName">{{ scope.row.orgName }}</span>
                   <span v-else>-</span>
                 </template>
               </el-table-column>
@@ -161,10 +170,10 @@
     <!-- 部门选择器 (用于批量变更部门等操作) -->
     <CoreOrgDeptSelectModal ref="deptSelectModalRef" v-model="deptSelectVisible" title="选择目标部门" />
 
-    <!-- 用户编辑/新增模态框 -->
+    <!-- 用户编辑/创建模态框 -->
     <el-dialog
       v-model="modalVisible"
-      :title="modalMode === 'edit' ? '编辑用户' : '添加用户'"
+      :title="modalMode === 'edit' ? '编辑用户' : '创建用户'"
       width="500px"
       :close-on-click-modal="false"
       @close="
@@ -181,26 +190,34 @@
         :validate-on-rule-change="false"
       >
         <el-form-item label="用户名" prop="username">
-          <el-input v-model="modalForm.username" :disabled="modalMode === 'edit'" placeholder="请输入用户名" />
+          <el-input
+            show-word-limit
+            :maxlength="20"
+            v-model="modalForm.username"
+            :disabled="modalMode === 'edit'"
+            placeholder="请输入用户名"
+          />
         </el-form-item>
         <el-form-item label="密码" prop="password">
           <el-input
             v-model="modalFormPassword"
             type="password"
+            show-word-limit
+            :maxlength="128"
             show-password
             :placeholder="modalMode === 'add' ? '请输入密码' : '不修改密码请留空'"
           />
           <div v-if="modalMode === 'edit'" class="form-tip">不修改密码请留空</div>
         </el-form-item>
         <el-form-item label="昵称" prop="nickname">
-          <el-input v-model="modalForm.nickname" placeholder="请输入昵称" />
+          <el-input show-word-limit :maxlength="50" v-model="modalForm.nickname" placeholder="请输入用户姓名" />
         </el-form-item>
-        <el-form-item label="所属部门" prop="deptId">
+        <el-form-item label="所属组织机构" prop="orgId">
           <el-tree-select
-            v-model="modalForm.deptId"
+            v-model="modalForm.orgId"
             :data="orgTreeOptions"
             :props="{ label: 'name', value: 'id', children: 'children', disabled: 'disabled' }"
-            placeholder="请选择所属部门（可选）"
+            placeholder="请选择所属组织机构（可选）"
             check-strictly
             clearable
             style="width: 100%"
@@ -214,10 +231,10 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="手机号" prop="phone">
-          <el-input v-model="modalForm.phone" placeholder="请输入手机号" />
+          <el-input show-word-limit :maxlength="64" v-model="modalForm.phone" placeholder="请输入手机号" />
         </el-form-item>
         <el-form-item label="邮箱" prop="email">
-          <el-input v-model="modalForm.email" placeholder="请输入邮箱" />
+          <el-input show-word-limit :maxlength="64" v-model="modalForm.email" placeholder="请输入邮箱" />
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="modalForm.status" placeholder="请选择状态">
@@ -230,14 +247,20 @@
           <span v-if="modalForm.isSystem === 0">否</span>
         </el-form-item>
         <el-form-item label="所属用户组" prop="groupIds">
-          <el-select v-model="selectedGroupIds" multiple placeholder="请选择用户组" style="width: 100%">
+          <el-select
+            v-model="selectedGroupIds"
+            :disabled="modalMode === 'edit' && modalForm.isSystem === 1"
+            multiple
+            placeholder="请选择用户组"
+            style="width: 100%"
+          >
             <el-option v-for="group in groupOptions" :key="group.id" :label="group.name" :value="group.id" />
           </el-select>
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="modalVisible = false">取消</el-button>
+          <el-button @click="modalVisible = false">关闭</el-button>
           <el-button v-hasCode="['core:user:edit']" type="primary" :loading="modalLoading" @click="submitModal">
             {{ modalMode === "add" ? "创建" : "保存" }}
           </el-button>
@@ -248,7 +271,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, markRaw } from "vue";
+import { ref, markRaw, onMounted } from "vue";
 import { Edit, Delete, Upload } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
 import { Splitpanes, Pane } from "splitpanes";
@@ -265,7 +288,7 @@ import CoreOrgDeptSelectModal from "@/views/core/components/public/CoreOrgDeptSe
 import UserAuthService from "@/views/auth/service/UserAuthService";
 
 //按钮级权限打包
-const { vHasCode } = UserAuthService.usePreAuthorize();
+const { vHasCode, vHasSuper } = UserAuthService.usePreAuthorize();
 
 // 使用markRaw包装图标组件，防止被Vue响应式系统处理
 const EditIcon = markRaw(Edit);

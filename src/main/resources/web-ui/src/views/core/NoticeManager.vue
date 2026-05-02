@@ -56,7 +56,7 @@
     </template>
 
     <template #actions>
-      <el-button type="success" @click="openModal('add', null)">新增消息</el-button>
+      <el-button type="success" @click="openModal('add', null)">创建消息</el-button>
     </template>
 
     <template #table>
@@ -135,25 +135,26 @@
       <!-- 部门选择器 -->
       <CoreOrgDeptSelectModal
         v-model="deptSelectVisible"
-        :default-selected="modalForm.targetIds"
+        :default-selected="modalForm._targetIds"
         title="选择接收部门"
         multiple
+        type="dept"
         @confirm="onDeptSelect"
       />
 
       <!-- 用户选择器 -->
       <CoreUserSelectModal
         v-model="userSelectVisible"
-        :default-selected="modalForm.targetIds"
+        :default-selected="modalForm._targetIds"
         title="选择接收用户"
         multiple
         @confirm="onUserSelect"
       />
 
-      <!-- 新增/编辑模态框 -->
+      <!-- 创建/编辑模态框 -->
       <el-dialog
         v-model="modalVisible"
-        :title="modalMode === 'edit' ? '编辑消息' : '新增消息'"
+        :title="modalMode === 'edit' ? '编辑消息' : '创建消息'"
         width="600px"
         :close-on-click-modal="false"
         @close="
@@ -203,19 +204,19 @@
           <el-form-item v-if="modalForm.targetKind === 1 && modalMode === 'add'" label="选择接收部门" prop="targetIds">
             <div class="flex items-center gap-4 text-cyan-600 ml-4">
               <el-button type="primary" size="small" @click="deptSelectVisible = true">选择接收部门</el-button>
-              <span>已选择 {{ modalForm.targetIds.length }} 个部门</span>
+              <span>已选择 {{ modalForm._targetIds.length }} 个部门</span>
             </div>
           </el-form-item>
           <el-form-item v-if="modalForm.targetKind === 2 && modalMode === 'add'" label="选择接收用户" prop="targetIds">
             <div class="flex items-center gap-4 text-cyan-600 ml-4">
               <el-button type="primary" size="small" @click="userSelectVisible = true">选择接收用户</el-button>
-              <span>已选择 {{ modalForm.targetIds.length }} 位用户</span>
+              <span>已选择 {{ modalForm._targetIds.length }} 位用户</span>
             </div>
           </el-form-item>
         </el-form>
         <template #footer>
           <div class="dialog-footer">
-            <el-button @click="modalVisible = false">取消</el-button>
+            <el-button @click="modalVisible = false">关闭</el-button>
             <el-button type="primary" :loading="modalLoading" @click="submitModal">
               {{ modalMode === "add" ? "创建" : "保存" }}
             </el-button>

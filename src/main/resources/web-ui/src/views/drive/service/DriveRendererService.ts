@@ -41,7 +41,8 @@ export default {
 
         if (e.deltaY < 0) {
           newScale += step; // 放大
-        } else {
+        }
+        if (e.deltaY > 0) {
           newScale -= step; // 缩小
         }
 

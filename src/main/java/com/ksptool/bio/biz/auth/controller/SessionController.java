@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @PrintLog
 @RestController
 @RequestMapping("/session")
-@Tag(name = "用户会话管理", description = "用户会话管理")
+@Tag(name = "AUTH-用户会话管理", description = "用户会话管理")
 public class SessionController {
 
     @Autowired
@@ -52,4 +52,6 @@ public class SessionController {
         service.closeSessionByPrimaryKey(dto.getId());
         return Result.success("关闭成功");
     }
+
+    
 }

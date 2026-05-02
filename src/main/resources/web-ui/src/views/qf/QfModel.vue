@@ -22,20 +22,20 @@
           </el-form-item>
         </div>
         <el-form-item>
-          <el-button type="primary" @click="loadList" :disabled="listLoading">查询</el-button>
-          <el-button @click="resetList" :disabled="listLoading">重置</el-button>
+          <el-button type="primary" :disabled="listLoading" @click="loadList">查询</el-button>
+          <el-button :disabled="listLoading" @click="resetList">重置</el-button>
         </el-form-item>
       </el-form>
     </StdListAreaQuery>
 
     <!-- 操作按钮区域 -->
     <StdListAreaAction class="flex gap-2">
-      <el-button type="success" @click="openModal('add', null)">新增流程模型</el-button>
+      <el-button type="primary" @click="openModal('add', null)">创建流程模型</el-button>
     </StdListAreaAction>
 
     <!-- 列表表格区域 -->
     <StdListAreaTable>
-      <el-table :data="listData" stripe v-loading="listLoading" border height="100%">
+      <el-table v-loading="listLoading" :data="listData" stripe border height="100%">
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
         <el-table-column prop="groupName" label="模型分组" min-width="120" show-overflow-tooltip>
           <template #default="scope">
@@ -80,11 +80,12 @@
               :icon="Edit"
               :disabled="scope.row.status !== 1"
               @click="createNewVersion(scope.row)"
-              >创建新版本</el-button
             >
-            <el-button link type="primary" size="small" @click="cdrcRedirect('qfModelDesigner', scope.row)" :icon="Edit"
-              >设计</el-button
-            >
+              创建新版本
+            </el-button>
+            <el-button link type="primary" size="small" :icon="Edit" @click="cdrcRedirect('qfModelDesigner', scope.row)">
+              设计
+            </el-button>
             <el-button
               link
               type="primary"
@@ -92,28 +93,30 @@
               :icon="Edit"
               :disabled="scope.row.status !== 0"
               @click="deployQfModel(scope.row)"
-              >部署</el-button
             >
+              部署
+            </el-button>
             <el-button
+              v-show="scope.row.status === 0"
               link
               type="primary"
               size="small"
-              @click="openModal('edit', scope.row)"
               :icon="EditIcon"
-              v-show="scope.row.status === 0"
+              @click="openModal('edit', scope.row)"
             >
               编辑
             </el-button>
             <el-button
+              v-show="scope.row.status !== 0"
               link
               type="primary"
               size="small"
-              @click="openModal('view', scope.row)"
               :icon="View"
-              v-show="scope.row.status !== 0"
-              >查看</el-button
+              @click="openModal('view', scope.row)"
             >
-            <el-button link type="danger" size="small" @click="removeList(scope.row)" :icon="DeleteIcon"> 删除 </el-button>
+              查看
+            </el-button>
+            <el-button link type="danger" size="small" :icon="DeleteIcon" @click="removeList(scope.row)"> 删除 </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -125,6 +128,7 @@
           :page-sizes="[10, 20, 50, 100]"
           layout="total, sizes, prev, pager, next, jumper"
           :total="listTotal"
+          background
           @size-change="
             (val: number) => {
               listForm.pageSize = val;
@@ -137,15 +141,14 @@
               loadList();
             }
           "
-          background
         />
       </template>
     </StdListAreaTable>
 
-    <!-- 新增/编辑模态框 -->
+    <!-- 创建/编辑模态框 -->
     <el-dialog
       v-model="modalVisible"
-      :title="modalMode === 'edit' ? '编辑流程模型' : '新增流程模型'"
+      :title="modalMode === 'edit' ? '编辑流程模型' : '创建流程模型'"
       width="600px"
       :close-on-click-modal="false"
       @close="
@@ -195,8 +198,8 @@
         </el-form-item>
         <el-form-item label="排序" prop="seq">
           <el-input
-            type="number"
             v-model.number="modalForm.seq"
+            type="number"
             placeholder="请输入排序"
             clearable
             :disabled="modalMode === 'view'"
@@ -206,7 +209,7 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="modalVisible = false">关闭</el-button>
-          <el-button type="primary" @click="submitModal" :loading="modalLoading" v-show="modalMode !== 'view'">
+          <el-button v-show="modalMode !== 'view'" type="primary" :loading="modalLoading" @click="submitModal">
             {{ modalMode === "add" ? "创建" : "保存" }}
           </el-button>
         </div>

@@ -21,20 +21,20 @@
           </el-form-item>
         </div>
         <el-form-item>
-          <el-button type="primary" @click="loadList" :disabled="listLoading">查询</el-button>
-          <el-button @click="resetList" :disabled="listLoading">重置</el-button>
+          <el-button type="primary" :disabled="listLoading" @click="loadList">查询</el-button>
+          <el-button :disabled="listLoading" @click="resetList">重置</el-button>
         </el-form-item>
       </el-form>
     </StdListAreaQuery>
 
     <!-- 操作按钮区域 -->
     <StdListAreaAction class="flex gap-2">
-      <el-button type="success" @click="openModal('add', null)">新增业务表单</el-button>
+      <el-button type="primary" @click="openModal('add', null)">创建业务表单</el-button>
     </StdListAreaAction>
 
     <!-- 列表表格区域 -->
     <StdListAreaTable>
-      <el-table :data="listData" stripe v-loading="listLoading" border height="100%">
+      <el-table v-loading="listLoading" :data="listData" stripe border height="100%">
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
         <el-table-column prop="name" label="业务名称" min-width="120" show-overflow-tooltip />
         <el-table-column prop="code" label="业务编码" min-width="120" show-overflow-tooltip />
@@ -54,10 +54,10 @@
         <el-table-column prop="seq" label="排序" min-width="120" show-overflow-tooltip />
         <el-table-column label="操作" fixed="right" min-width="180">
           <template #default="scope">
-            <el-button link type="primary" size="small" @click="openModal('edit', scope.row)" :icon="EditIcon">
+            <el-button link type="primary" size="small" :icon="EditIcon" @click="openModal('edit', scope.row)">
               编辑
             </el-button>
-            <el-button link type="danger" size="small" @click="removeList(scope.row)" :icon="DeleteIcon"> 删除 </el-button>
+            <el-button link type="danger" size="small" :icon="DeleteIcon" @click="removeList(scope.row)"> 删除 </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -69,6 +69,7 @@
           :page-sizes="[10, 20, 50, 100]"
           layout="total, sizes, prev, pager, next, jumper"
           :total="listTotal"
+          background
           @size-change="
             (val: number) => {
               listForm.pageSize = val;
@@ -81,15 +82,14 @@
               loadList();
             }
           "
-          background
         />
       </template>
     </StdListAreaTable>
 
-    <!-- 新增/编辑模态框 -->
+    <!-- 创建/编辑模态框 -->
     <el-dialog
       v-model="modalVisible"
-      :title="modalMode === 'edit' ? '编辑业务表单' : '新增业务表单'"
+      :title="modalMode === 'edit' ? '编辑业务表单' : '创建业务表单'"
       width="600px"
       :close-on-click-modal="false"
       @close="
@@ -150,8 +150,8 @@
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="modalVisible = false">取消</el-button>
-          <el-button type="primary" @click="submitModal" :loading="modalLoading">
+          <el-button @click="modalVisible = false">关闭</el-button>
+          <el-button type="primary" :loading="modalLoading" @click="submitModal">
             {{ modalMode === "add" ? "创建" : "保存" }}
           </el-button>
         </div>

@@ -12,7 +12,7 @@
     <div v-loading="listLoading" class="modal-body">
       <splitpanes class="custom-theme">
         <pane size="20" min-size="10" max-size="40">
-          <div class="pt-2 px-1" style="height: 100%; box-sizing: border-box;">
+          <div class="pt-2 px-1" style="height: 100%; box-sizing: border-box">
             <OrgTree :show-header="true" @on-select="onSelectOrg" />
           </div>
         </pane>
@@ -219,19 +219,28 @@ const initSelection = (): void => {
   selectedUser.value = null;
 
   // 如果有默认选中，则恢复选中状态
-  if (props.defaultSelected && Array.isArray(props.defaultSelected) && props.defaultSelected.length > 0) {
-    if (props.multiple) {
-      nextTick(() => {
-        restoreMultipleSelection();
-      });
+  if (!(props.defaultSelected && (Array.isArray(props.defaultSelected) || typeof props.defaultSelected === "string"))) {
+    return;
+  }
+
+  if (Array.isArray(props.defaultSelected) && props.defaultSelected.length > 0) {
+    if (!props.multiple) {
+      return;
     }
-  } else if (props.defaultSelected && typeof props.defaultSelected === "string") {
-    //单选也需要高亮选中
+    nextTick(() => {
+      restoreMultipleSelection();
+    });
+    return;
+  }
+
+  if (typeof props.defaultSelected === "string") {
+    // 单选也需要高亮选中
     const user = listData.value.find((item) => item.id === props.defaultSelected);
-    if (user) {
-      selectedUser.value = user;
-      tableRef.value?.setCurrentRow(user);
+    if (!user) {
+      return;
     }
+    selectedUser.value = user;
+    tableRef.value?.setCurrentRow(user);
   }
 };
 

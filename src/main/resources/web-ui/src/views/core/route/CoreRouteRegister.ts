@@ -106,6 +106,13 @@ export default class CoreRouteRegister extends GenricRouteRegister {
         component: () => import("@/views/core/AppStatus.vue"),
         meta: { breadcrumb: "系统探针" },
       }),
+      RouteEntryPo.build({
+        biz: "core",
+        path: "core-root",
+        name: "core-root",
+        component: () => import("@/views/core/CoreRoot.vue"),
+        meta: { breadcrumb: "租户管理" },
+      }),
     ];
   }
 }

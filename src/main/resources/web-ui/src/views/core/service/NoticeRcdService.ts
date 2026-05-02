@@ -139,11 +139,7 @@ export default {
         const result = await NoticeRcdApi.getUserNoticeRcdList(params);
 
         if (Result.isSuccess(result)) {
-          if (pageNum.value === 1) {
-            listData.value = result.data;
-          } else {
-            listData.value.push(...result.data);
-          }
+          listData.value = pageNum.value === 1 ? result.data : [...listData.value, ...result.data];
           listTotal.value = result.total;
 
           // 如果有数据返回，页码加1

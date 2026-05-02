@@ -2,7 +2,6 @@ package com.ksptool.bio.biz.drive.service;
 
 import com.ksptool.assembly.entity.exception.AuthException;
 import com.ksptool.assembly.entity.exception.BizException;
-import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.bio.biz.core.model.attach.AttachPo;
 import com.ksptool.bio.biz.core.repository.AttachRepository;
 import com.ksptool.bio.biz.core.service.AttachService;
@@ -44,7 +43,7 @@ public class EntryService {
      */
     public GetDriveInfo getDriveInfo() throws Exception {
 
-        var companyId = session().getCompanyId();
+        var companyId = session().getRootId();
         var ret = repository.getDriveInfo();
 
         //总容量为2TB

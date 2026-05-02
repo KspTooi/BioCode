@@ -1,0 +1,489 @@
+---
+description: 前端 views 模块（API / Service / SFC / 路由）编码规范
+globs: *.vue,*.ts,*.js
+alwaysApply: false
+---
+
+# 前端 views 模块编码规范
+
+适用于 `src/main/resources/web-ui/src/views/**` 下的所有 API、Service、SFC、Route。
+
+> 本规范以 `src/main/resources/support-static/code-generator/qbe_vue/` 下的代码生成器模板为基准。
+> 任何手写代码都应该与生成器产物保持一致，不允许出现"另一种风格"。
+
+---
+
+## 1. 类型声明位置（硬性）
+
+所有与后端交互的接口类型（`*Dto`、`*Vo`）**必须**声明在对应模块的 `api/XxxApi.ts` 中，禁止在 Service / SFC 中重复声明或就地定义。
+
+Service / SFC 一律通过 `import type { ... } from "@/views/.../api/XxxApi.ts"` 引用。
+
+参考：`src/main/resources/web-ui/src/views/core/api/NoticeApi.ts`
+
+---
+
+## 2. 类型字段必须与后端一致（硬性）
+
+前端类型的字段名、类型、顺序、注释含义必须与后端 Java DTO/VO **完全对齐**：
+
+- 顺序一致：方便对照后端定义快速 review
+- 注释一致：每个字段尾随 `// xxx` 单行注释，与后端字段含义保持一致
+- ID 字段：后端 `Long` 一律映射为前端 `string`（防止精度丢失）
+- 字段类型映射：
+  - 必填用 `string` / `number`，可选/可为空用 `field?: string`
+  - `List<T>` → `T[]`
+  - 后端 `Date / LocalDateTime` → `string`（已格式化的字符串）
+- 前端专用字段（详见第 3 条）以 `_` 开头，统一放在结构末尾
+
+---
+
+## 3. 表单参数必须使用 DetailsVo（硬性 / 严禁违反）
+
+> 这是项目最重要的硬性规定，绝对禁止违反。
+
+### 规则
+
+1. 表单 `modalForm` **必须**使用 `GetXxxDetailsVo` 作为类型：
+   ```ts
+   const modalForm = reactive<GetXxxDetailsVo>({ ... });
+   ```
+2. 提交时，**手动**根据当前 mode 构造 `AddXxxDto` 或 `EditXxxDto`（或后端需要的其他 Dto），逐字段赋值后再调用 Api。
+3. 若 `Add/Edit` 需要的字段不在 `Details` 中（例如 `targetIds`、`permissionIds` 这类前端专用聚合字段），**必须**在 `GetXxxDetailsVo` 中以 `_` 开头补充（前端专用，不参与后端反序列化）。
+4. **严禁**：
+   - `type FormType = AddXxxDto & EditXxxDto`、`Partial<XxxDto>`、`Pick / Omit` 等手段拼合表单类型
+   - 直接把 `modalForm` 透传给 `addXxx / editXxx`
+   - 为表单单独造一个 `XxxFormDto`
+
+### 重构优先
+
+如果在改动一个模块时发现该模块违反了第 3 条（用了 `Partial`、合用类型、自造 FormDto 等），**必须先重构为 DetailsVo + 手动构造 Dto 的写法**，再实现新功能。不允许"沿用旧写法"。
+
+### 正确示例
+
+```ts
+const modalForm = reactive<GetNoticeDetailsVo>({
+  id: "",
+  title: "",
+  // ...后端 Details 字段...
+  _targetIds: [], // 前端专用：Add 需要但 Details 不返回
+});
+
+const submitModal = async () => {
+  if (modalMode.value === "add") {
+    const addDto: AddNoticeDto = {
+      title: modalForm.title,
+      kind: modalForm.kind,
+      targetIds: modalForm._targetIds,
+      // ...逐字段赋值...
+    };
+    await NoticeApi.addNotice(addDto);
+    return;
+  }
+  if (modalMode.value === "edit") {
+    const editDto: EditNoticeDto = {
+      id: modalForm.id!,
+      title: modalForm.title,
+      // ...逐字段赋值...
+    };
+    await NoticeApi.editNotice(editDto);
+  }
+};
+```
+
+### 错误示例
+
+```ts
+// ❌ 用 Partial / 联合类型合用表单
+const modalForm = reactive<Partial<AddNoticeDto & EditNoticeDto>>({});
+
+// ❌ 直接把 modalForm 当 Dto 传
+await NoticeApi.addNotice(modalForm as AddNoticeDto);
+
+// ❌ 在 Service 里就地造类型
+interface NoticeFormDto { ... }
+```
+
+---
+
+## 4. Api 文件结构
+
+参考 `code-generator/qbe_vue/.../#{std}Api.ts.vm` 与 `core/api/NoticeApi.ts`。
+
+### 类型声明顺序（固定）
+
+```
+GetXxxListDto extends PageQuery
+GetXxxListVo
+GetXxxDetailsVo
+AddXxxDto
+EditXxxDto
+（其他业务 Dto/Vo 按需追加）
+```
+
+### 默认导出对象的方法（命名固定）
+
+| 方法            | 入参            | 返回                                               |
+| --------------- | --------------- | -------------------------------------------------- |
+| `getXxxList`    | `GetXxxListDto` | `PageResult<GetXxxListVo>`（直接 return，不拆包）  |
+| `getXxxDetails` | `CommonIdDto`   | `GetXxxDetailsVo`（拆 `Result`，code !== 0 throw） |
+| `addXxx`        | `AddXxxDto`     | `string`（拆 `Result`，code !== 0 throw）          |
+| `editXxx`       | `EditXxxDto`    | `string`（拆 `Result`，code !== 0 throw）          |
+| `removeXxx`     | `CommonIdDto`   | `string`（拆 `Result`，支持单/批量）               |
+
+### 其他
+
+- 所有请求走 `Http.postEntity`，URL 与后端 `@RequestMapping` **完全对齐**（含模块前缀和方法名）
+- 删除统一使用 `CommonIdDto`，单个传 `{ id }`、批量传 `{ ids: [...] }`，**不要**新建专用删除 Dto
+- 列表查询继承 `PageQuery`，**不要**手写 `pageNum / pageSize`
+
+---
+
+## 5. Service 文件结构
+
+参考 `code-generator/qbe_vue/.../#{std}Service.ts.vm` 与 `core/service/NoticeService.ts`。
+
+### 默认导出对象 + Composition 函数
+
+按职责拆分：`useXxxList()` / `useXxxModal(modalFormRef, reloadCallback)` / 其他业务 Hook。
+
+### `useXxxList` 必须暴露（命名固定）
+
+`listForm / listData / listTotal / listLoading / loadList / resetList / removeList`，需要批量时再加 `removeListBatch`。
+
+- 在 `onMounted` 中加载首屏数据
+- 列表查询参数支持持久化时使用 `QueryPersistService.persistQuery / loadQuery / clearQuery`
+- **`resetList` 必须逐字段赋值**，禁止 `listForm.value = { ... }` 整体替换（破坏响应式与持久化）
+
+### `useXxxModal` 必须暴露（命名固定）
+
+`modalVisible / modalLoading / modalMode / modalForm / modalRules / openModal / resetModal / submitModal`
+
+- `modalMode` 类型：`type ModalMode = "add" | "edit"`
+- `openModal(mode, row)`：`add` 时清空字段；`edit` 时调用 `getXxxDetails` 拉详情，逐字段赋值给 `modalForm`
+- `resetModal` 调用 `modalFormRef.value.resetFields()` 后再逐字段重置
+- `submitModal` 流程：`validate → 构造 Add/Edit Dto → 调用 Api → ElMessage.success → reloadCallback → modalVisible = false`
+
+### 错误/提示统一
+
+- 删除前必须 `ElMessageBox.confirm` 二次确认，用户取消（catch）直接 `return`
+- 调用 Api 的 try/catch：成功 `ElMessage.success(...)`，失败 `ElMessage.error(error.message)`
+- 列表分页接口用 `Result.isSuccess` / `Result.isError` 判断
+
+---
+
+## 6. SFC 结构（管理页）
+
+参考生成器模板 `#{std}.vue.vm` 与 `core/NoticeManager.vue` / `auth/UserGroupManager.vue`。
+
+### 布局
+
+使用 SOA 标准布局组件，**不要**自己写 div 排版：
+
+- `StdListLayout` + `#query / #actions / #table / #pagination / #modal` 插槽（推荐）
+- 或 `StdListContainer` + `StdListAreaQuery / StdListAreaAction / StdListAreaTable`（生成器默认）
+
+### 模态框约定
+
+- 必须 `v-if="modalVisible"` 包裹 `<el-form>`，否则会出现脏校验
+- `<el-form>` 必须设置 `:validate-on-rule-change="false"`
+- `<el-dialog>` 的 `@close` 统一为 `"resetModal(); loadList();"`
+- `:close-on-click-modal="false"`
+
+### 图标
+
+```ts
+import { Edit, Delete } from "@element-plus/icons-vue";
+const EditIcon = markRaw(Edit); // 必须 markRaw
+const DeleteIcon = markRaw(Delete);
+```
+
+### 解构 Service
+
+固定写法：
+
+```ts
+const {
+  listForm,
+  listData,
+  listTotal,
+  listLoading,
+  loadList,
+  resetList,
+  removeList,
+} = XxxService.useXxxList();
+
+const modalFormRef = ref<FormInstance>();
+
+const {
+  modalVisible,
+  modalLoading,
+  modalMode,
+  modalForm,
+  modalRules,
+  openModal,
+  resetModal,
+  submitModal,
+} = XxxService.useXxxModal(modalFormRef, loadList);
+```
+
+---
+
+## 7. 路由（每个域只有一个）
+
+**每个域有且仅有一个路由文件**：`views/<域>/route/<域大驼峰>RouteRegister.ts`，所有该域下的页面路由都在这一个文件里集中注册。
+
+参考：`src/main/resources/web-ui/src/views/core/route/CoreRouteRegister.ts`
+
+新增页面时**只能在已存在的 `XxxRouteRegister.ts` 中追加 `RouteEntryPo`**，禁止：
+
+- 在 `views/<域>/route/` 下新建第二个 Register 文件
+- 在 SFC 同级或其他位置自建路由声明
+- 在生成代码时按生成器模板的"一页一文件"模式产出（生成器模板与本规则冲突时以本规则为准，需要合并到域 Register 中）
+
+模板：
+
+```ts
+import { RouteEntryPo } from "@/soa/genric-route/api/RouteEntryPo.ts";
+import GenricRouteRegister from "@/soa/genric-route/service/GenricRouteRegister";
+
+export default class XxxRouteRegister extends GenricRouteRegister {
+  public doRegister(): RouteEntryPo[] {
+    return [
+      RouteEntryPo.build({
+        biz: "<域>",
+        path: "<kebab-case>",
+        name: "<kebab-case>",
+        component: () => import("@/views/<域>/Xxx.vue"),
+        meta: { breadcrumb: "<中文名>" },
+      }),
+      // 新增页面 → 继续往这里追加
+    ];
+  }
+}
+```
+
+---
+
+## 8. 组件存放位置（硬性）
+
+### 域内组件 → `views/<域>/components/`
+
+只在当前域内被引用的组件，必须放在当前域的 `components/` 下，禁止放到 `public/`、`@/soa/`、`@/components/` 等其他位置。
+
+### 跨域复用组件 → `views/<源域>/public/`
+
+被其他域引用的组件，必须放在**组件所属域**（提供方）的 `public/` 目录下（与 `components/` 同级，**不是** `components/public/`），并以**所属域大驼峰**作为文件名前缀。
+
+| 组件                      | 路径                                 | 命名  |
+| ------------------------- | ------------------------------------ | ----- |
+| `qf` 域对外提供的审批组件 | `views/qf/public/QfApprove.vue`      | `Qf*` |
+| `qf` 域对外提供的审批弹窗 | `views/qf/public/QfApproveModal.vue` | `Qf*` |
+
+跨域引用示例：
+
+```ts
+// 在其他域使用 qf 域对外提供的审批弹窗
+import QfApproveModal from "@/views/qf/public/QfApproveModal.vue";
+```
+
+> 历史遗留位于 `views/core/components/public/...` 的组件（如 `CoreUserSelectModal`、`CoreOrgDeptSelectModal`）属于不规范放置，**新增对外组件统一放到 `views/<源域>/public/`**。改动这些历史组件时不要顺手"再加一个错位置"，如需重构请向用户确认。
+
+### 严禁向 `@/soa/` 写新文件
+
+`@/soa/` 是平台基础设施（`std-series` 布局组件、`com-series` 通用业务小组件、`genric-route` 等），**AI 不得在 `@/soa/` 下新建任何文件或目录**，除非用户明确指示"在 SOA 下新建 xxx"。如果发现需要复用的能力 SOA 没有提供：
+
+1. 优先放在当前域的 `components/`（仅本域使用）
+2. 或放在所属域的 `public/`（跨域使用）
+3. 提示用户该能力是否需要沉淀到 SOA，由用户决定后再操作
+
+### 引用前缀总览
+
+- `Std*` / `Com*` → `@/soa/std-series/` / `@/soa/com-series/`（**只读**，不新增）
+- `<源域大驼峰>*` → `@/views/<源域>/public/...`（跨域复用）
+- 域内组件命名以业务功能为主，无强制前缀
+
+---
+
+## 9. 文件命名规范
+
+### 目录
+
+- 域目录全小写：`core / auth / qt / qf / drive / audit / relay / document / assembly / rdbg ...`
+- 子目录固定：`api / service / route / components / public`
+- 域目录与后端 `biz/<域>/` 一一对应
+
+### SFC（PascalCase）
+
+| 类型 | 命名 | 示例 |
+| --- | --- | --- |
+| 列表/管理页 | `Xxx**Manager**.vue` | `NoticeManager.vue` / `UserGroupManager.vue` |
+| 单页/工作台 | `Xxx.vue`（业务名） | `Drive.vue` / `QfModel.vue` |
+| 弹窗组件 | `Xxx**Modal**.vue` | `UserGpModal.vue` / `RsSimulationModal.vue` |
+| 渲染器 | `Xxx**Renderer**.vue` | `PhotoRenderer.vue` / `ExcelRenderer.vue` |
+| 树形组件 | `XxxTree.vue` | `OrgTree.vue` |
+
+新增"列表 + 增删改查"的页面，**优先使用 `XxxManager.vue`**；不带 Manager 的简短命名只用于非列表型主页面。
+
+### Api 文件
+
+- 命名：`<业务实体>Api.ts`，PascalCase，**不**带 `Manager / Vue / Service` 后缀
+- 一个 `Api.ts` 对应**一个后端 Controller / 一个业务实体**，与 SFC 不一一对应（同一个 SFC 可能引用多个 Api，同一个 Api 也可能被多个 SFC 引用）
+- 示例：`NoticeApi.ts` / `PostApi.ts` / `OrgApi.ts` / `GroupApi.ts` / `QtTaskApi.ts`
+
+### Service 文件
+
+- 命名：**对应 SFC / Modal / 内部组件文件名 + `Service`**
+- 示例：
+  - `RegistryManager.vue` → `RegistryManagerService.ts`
+  - `MenuManager.vue` → `MenuManagerService.ts`
+  - `OrgManager.vue` → `OrgManagerService.ts`
+  - `Post.vue` → `PostService.ts`
+  - `UserGpModal.vue` → `UserGpModalService.ts`
+  - `DriveEntryRightMenu.vue` → `DriveEntryRightMenuService.ts`
+- 历史遗留 `NoticeManager.vue → NoticeService.ts`、`UserGroupManager.vue → UserGroupService.ts` 这类"去掉 Manager"的写法是不规范的，**新增一律保留 SFC 名 + Service**
+- 一个 SFC 对应一个 Service，不要把多个页面的逻辑塞进一个 Service
+
+### Route 文件
+
+- 命名：`<域大驼峰>RouteRegister.ts`（全域唯一）
+- 示例：`CoreRouteRegister.ts` / `AuthRouteRegister.ts` / `QtRouteRegister.ts`
+
+### Type 命名
+
+| 用途 | 命名 | 示例 |
+| --- | --- | --- |
+| 列表查询 Dto | `Get<Entity>ListDto` | `GetNoticeListDto` |
+| 列表行 Vo | `Get<Entity>ListVo` | `GetNoticeListVo` |
+| 详情 Vo | `Get<Entity>DetailsVo` | `GetNoticeDetailsVo` |
+| 新增 Dto | `Add<Entity>Dto` | `AddNoticeDto` |
+| 编辑 Dto | `Edit<Entity>Dto` | `EditNoticeDto` |
+| 其他业务 Dto/Vo | 动词/名词驼峰 + `Dto / Vo` | `GrantAndRevokeDto` / `SimulateRsVo` |
+
+### Path / Route Name
+
+- `path` 与 `name` 一律 **kebab-case**：`user-manager` / `notice-template` / `app-status`
+- 与 SFC 文件名（PascalCase）、Service 内部 hook 名（camelCase）解耦
+
+---
+
+## 10. Service 命名规范（内部）
+
+### Composition 函数
+
+- 命名：`use<功能模块名>()`，camelCase，动宾不带 `Service` 后缀
+- 列表型：`use<Entity>List()` → `useNoticeList()` / `useUserGroupList()`
+- 表单型：`use<Entity>Modal(modalFormRef, reloadCallback)` → `useNoticeModal()`
+- 业务子模块：`use<Entity><子功能>()` → `useGpMenuViewList()` / `useGpPermissionOperations()`
+
+### 暴露的属性 / 方法（命名固定）
+
+| 类别 | 名称 | 含义 |
+| --- | --- | --- |
+| 列表 | `listForm / listData / listTotal / listLoading` | 查询条件 / 数据 / 总数 / loading |
+| 列表选择 | `listSelected` | 多选选中项（仅在需要批量时） |
+| 列表方法 | `loadList / resetList / removeList / removeListBatch` | 加载 / 重置 / 单删 / 批量删 |
+| 模态框 | `modalVisible / modalLoading / modalMode / modalForm / modalRules` | 状态 / 数据 / 校验 |
+| 模态框方法 | `openModal / resetModal / submitModal` | 打开 / 重置 / 提交 |
+| 模式类型 | `type ModalMode = "add" \| "edit"` | 固定写法 |
+
+> 严禁自创同义命名（如 `queryForm / tableData / pageInfo / loadData / showModal / saveForm`），违反将影响 SFC 解构的统一写法。
+
+### 文件结构
+
+```ts
+import { ... } from "vue";
+import type { ... } from "@/views/<域>/api/XxxApi.ts";
+import XxxApi from "@/views/<域>/api/XxxApi.ts";
+import { Result } from "@/commons/model/Result.ts";
+import { ElMessage, ElMessageBox } from "element-plus";
+
+type ModalMode = "add" | "edit";
+
+export default {
+  useXxxList() { ... },
+  useXxxModal(modalFormRef, reloadCallback) { ... },
+  // 其他业务 Hook
+};
+```
+
+- 顶部统一 `import type` 引入类型，再 `import XxxApi from ...` 引入默认导出
+- 默认 `export default { ... }` 一个对象，**不**使用 `export function useXxx`
+
+---
+
+## 11. 严格一致性检查（Validation）
+
+> 每次生成或修改 `views/**` 下任意文件后，AI **必须**在交付前自检并自我修正，不允许把检查项遗漏给用户。
+
+### 必检项
+
+1. **DTO/VO 字段对齐**：
+   - 比对参考的后端 Java DTO/VO（同名 `Get<X>ListDto / GetXListVo / GetXDetailsVo / AddXDto / EditXDto`）
+   - **字段名、类型、顺序、行内注释含义** 必须与 Java 端逐项一致
+   - `Long` → `string`、`List<T>` → `T[]`、`Date / LocalDateTime` → `string`
+   - 前端专用字段必须以 `_` 开头并放在结构末尾，不允许混入后端字段中间
+2. **类型声明位置**：所有 `Dto/Vo` 仅在 `api/XxxApi.ts` 中声明（§1）
+3. **表单 = DetailsVo**：`modalForm` 必须 `reactive<GetXxxDetailsVo>(...)`，提交时手动构造 `Add/Edit Dto`，无 `Partial / & / Pick / Omit` 拼合（§3）
+4. **Service 命名/暴露集合**：函数名、属性名、方法名与 §10 的固定清单完全一致
+5. **文件命名**：SFC / Service / Api / Route 命名符合 §9
+6. **组件位置**：域内 → `components/`；跨域 → `<源域>/public/`；不向 `@/soa/` 写新文件（§8）
+7. **路由**：新增页面只追加到该域唯一的 `<域>RouteRegister.ts`（§7）
+8. **通用约束**：短路优先、禁 `else/switch`、`@/` 导入、ID 用 `string`（§12）
+
+### 自主重构权
+
+如果在改动过程中发现**被改动模块或其直接依赖**违反上述任一条款（典型场景：旧代码用了 `Partial<XxxDto>`、表单类型自造、Service 函数名不规范、Service 文件名带/不带 `Manager` 与 SFC 不一致、Dto 字段顺序与后端错位、跨域组件放在 `components/public/` 等），AI **有权直接进行重构**：
+
+- **不需要**先征求用户同意
+- 重构范围限定为：本次改动的文件 + 被改动文件直接 import 的文件
+- 重构与功能改动应作为整体一次性提交，避免"半合规"中间态
+- 在最终回复中**简要列出**做了哪些自主重构（一句话/一行 bullet 即可）
+
+如果违规波及到非直接依赖的大面积模块（例如全局的同种问题），不要擅自全量改，应在完成本次任务后向用户提示"还存在 N 处同类问题"，由用户决定是否批量重构。
+
+---
+
+## 12. "清道夫"协议（Scavenger）
+
+> 改前端代码 = 顺手清理。AI **不保留任何无用代码**，不留任何"以后可能要用"的怀旧痕迹。
+
+### 必须立即删除
+
+- 被本次改动**替换/淘汰**的旧实现（函数、变量、import、类型、props、emit、composable）
+- 仅为了"前向兼容"的过渡代码：旧字段别名、旧入参签名、旧返回结构包装
+- 注释掉的废弃代码块（`// const oldXxx = ...` / `<!-- <OldComponent /> -->` / `/* ... */`）
+- 不再被引用的 `import`、未使用的变量、未使用的 props/emit
+- 调试残留：`console.log` / `debugger` / 临时 `// TODO 调试` / 注释掉的 `alert(...)`
+
+### 处理方式
+
+- **直接 `Delete`**，不要用注释包起来
+- 不要写 `// @deprecated` 之类的标记替代删除（项目当前不维护 deprecated 周期）
+- 不保留"旧 API + 新 API"的双轨实现
+- 不保留为了"以防万一"的 try/catch 空块
+- 不在新代码里加 `// 兼容老版本 xxx` 之类的兼容分支
+
+### 仅有的例外
+
+- 用户在当前对话中**明确说**"先保留，标记 deprecated" / "暂不删除" / "保留兼容"
+- 删除会破坏当前对话之外的已知调用方（此时应在回复中提示并请用户确认，不得擅自删除外部调用方）
+
+### 自检
+
+完成改动后，AI 应快速扫一遍改动文件，确认：
+
+- 没有以 `//` / `/* */` / `<!-- -->` 包裹的成块旧代码
+- 没有"曾经被用到、本次改完不再被引用"的导入与符号
+- 没有为了兼容旧字段而保留的 if 分支或字段映射
+
+---
+
+## 13. 通用约束
+
+- 短路优先：`if-return` / `if-continue` / `if-throw`，**禁用** `else` 与 `switch`
+- 路径导入统一 `@/...`，禁止相对路径
+- ID 字段一律 `string`
+- 不写"解释当前行做什么"的口水注释，只在表达非显然意图时添加
+- 字符串判空 TS 端：直接 `if (!str)` / `if (str.length === 0)`
+- 不要重复造轮子：HTTP 用 `@/commons/Http`、Result 用 `@/commons/model/Result`、列表查询持久化用 `@/commons/service/QueryPersistService`

@@ -28,11 +28,7 @@
               <ILineMdMenuUnfoldRight />
             </div>
             <!-- 面包屑导航，放在头部区域 -->
-            <el-breadcrumb v-if="autoBreadcrumbs.length" separator="/" class="admin-breadcrumb">
-              <el-breadcrumb-item v-for="(item, index) in autoBreadcrumbs" :key="index" :to="item.to">
-                {{ item.text }}
-              </el-breadcrumb-item>
-            </el-breadcrumb>
+            <StdBreadcrumb />
           </div>
         </el-header>
 
@@ -69,6 +65,7 @@ import ComUserProfile from "@/soa/com-series/sfc_private/ComUserProfile.vue";
 import ComLeftMenuShort from "@/soa/com-series/sfc_private/ComLeftMenuShort.vue";
 import CoreUserNoticeDropMenu from "@/views/core/components/public/CoreUserNoticeDropMenu.vue";
 import UserAuthService from "@/views/auth/service/UserAuthService.ts";
+import StdBreadcrumb from "@/soa/std-series/StdBreadcrumb.vue";
 
 const route = useRoute();
 

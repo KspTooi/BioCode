@@ -37,11 +37,12 @@ export default {
           if (matchesName) {
             return {
               id: node.id,
-              rootId: node.rootId,
+              // rootId: node.rootId,
               parentId: node.parentId,
               kind: node.kind,
               name: node.name,
               seq: node.seq,
+              level: node.level,
               children: filteredChildren,
             };
           }
@@ -49,11 +50,12 @@ export default {
           if (filteredChildren.length > 0) {
             return {
               id: node.id,
-              rootId: node.rootId,
+              // rootId: node.rootId,
               parentId: node.parentId,
               kind: node.kind,
               name: node.name,
               seq: node.seq,
+              level: node.level,
               children: filteredChildren,
             };
           }
@@ -77,7 +79,19 @@ export default {
       return tree.map((node) => ({
         value: node.id,
         label: node.name,
+        kind: node.kind,
         children: node.children && node.children.length > 0 ? convertToTreeSelect(node.children) : undefined,
+      }));
+    };
+
+    /**
+     * 接口未返回 level 时，按树深度补全（与后端「顶级为 1」约定一致）
+     */
+    const ensureTreeLevels = (tree: GetOrgTreeVo[], depth = 1): GetOrgTreeVo[] => {
+      return tree.map((node) => ({
+        ...node,
+        level: typeof node.level === "number" && !Number.isNaN(node.level) ? node.level : depth,
+        children: node.children?.length ? ensureTreeLevels(node.children, depth + 1) : [],
       }));
     };
 
@@ -88,7 +102,7 @@ export default {
       listLoading.value = true;
       try {
         const result = await OrgApi.getOrgTree({ name: queryForm.name });
-        listData.value = result;
+        listData.value = ensureTreeLevels(result);
       } catch (error: any) {
         ElMessage.error(error.message || "获取组织机构树失败");
       }
@@ -163,20 +177,21 @@ export default {
     const modalForm = reactive<GetOrgDetailsVo>({
       id: "",
       parentId: null as string | null,
-      kind: 0, // 0:企业 1:子企业 2:部门 3:班组
+      kind: 0, // 0:企业 1:子企业 2:部门
       name: "",
-      principalId: null as string | null,
+      shortName: "",
+      remark: "",
       seq: 0,
-      rootId: "",
-      principalName: "",
     });
 
     const modalRules = computed(() => ({
       kind: [{ required: true, message: "请选择组织机构类型", trigger: "change" }],
       name: [
         { required: true, message: "请输入组织机构名称", trigger: "blur" },
-        { min: 1, max: 128, message: "组织机构名称长度必须在1-128个字符之间", trigger: "blur" },
+        { min: 1, max: 80, message: "组织机构名称长度必须在1-80个字符之间", trigger: "blur" },
       ],
+      shortName: [{ min: 1, max: 40, message: "组织机构简称长度必须在1-40个字符之间", trigger: "blur" }],
+      remark: [{ max: 200, message: "备注长度不能超过200个字符", trigger: "blur" }],
       parentId: [1, 2, 3].includes(modalForm.kind) ? [{ required: true, message: "请选择上级组织", trigger: "change" }] : [],
       seq: [{ required: true, message: "请输入排序", trigger: "blur" }],
     }));
@@ -197,7 +212,7 @@ export default {
 
       if (mode === "add-item" && row) {
         modalForm.parentId = row.id;
-        modalForm.kind = 1; // 子级默认为子企业
+        modalForm.kind = 2; // 子级默认为部门
       }
 
       //如果是编辑模式则需要加载详情数据
@@ -208,10 +223,9 @@ export default {
           modalForm.parentId = ret.parentId;
           modalForm.kind = ret.kind;
           modalForm.name = ret.name;
-          modalForm.principalId = ret.principalId;
+          modalForm.shortName = ret.shortName;
+          modalForm.remark = ret.remark ?? "";
           modalForm.seq = ret.seq;
-          modalForm.rootId = ret.rootId;
-          modalForm.principalName = ret.principalName;
         } catch (error: any) {
           ElMessage.error(error.message || "获取组织机构详情失败");
           return;
@@ -229,7 +243,8 @@ export default {
       modalForm.parentId = null;
       modalForm.kind = 0;
       modalForm.name = "";
-      modalForm.principalId = null;
+      modalForm.shortName = "";
+      modalForm.remark = "";
       modalForm.seq = 0;
 
       if (modalFormRef.value) {
@@ -257,7 +272,8 @@ export default {
             parentId: modalForm.parentId,
             kind: modalForm.kind,
             name: modalForm.name,
-            principalId: modalForm.principalId,
+            shortName: modalForm.shortName,
+            remark: modalForm.remark,
             seq: modalForm.seq,
           };
           const result = await OrgApi.addOrg(addDto);
@@ -277,7 +293,8 @@ export default {
             id: modalForm.id,
             parentId: modalForm.parentId,
             name: modalForm.name,
-            principalId: modalForm.principalId,
+            shortName: modalForm.shortName,
+            remark: modalForm.remark,
             seq: modalForm.seq,
           };
           const result = await OrgApi.editOrg(editDto);
@@ -307,7 +324,6 @@ export default {
         0: "企业",
         1: "子企业",
         2: "部门",
-        3: "班组",
       };
       return kindNameMap[modalForm.kind] || "";
     });

@@ -3,7 +3,7 @@ package com.ksptool.bio.biz.core.repository;
 import com.ksptool.bio.biz.auth.model.permission.PermissionPo;
 import com.ksptool.bio.biz.core.model.user.UserPo;
 import com.ksptool.bio.biz.core.model.user.dto.GetUserListDto;
-import com.ksptool.bio.biz.core.model.user.vo.GetUserListVo;
+import jakarta.persistence.Tuple;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,6 +17,8 @@ import java.util.Set;
 
 @Repository
 public interface UserRepository extends JpaRepository<UserPo, Long> {
+
+
 
     /**
      * 根据用户名获取用户
@@ -32,32 +34,41 @@ public interface UserRepository extends JpaRepository<UserPo, Long> {
 
 
     @Query("""
-            SELECT new com.ksptool.bio.biz.core.model.user.vo.GetUserListVo(
-                p.id,
-                p.rootId,
-                p.rootName,
-                p.deptId,
-                p.deptName,
-                p.username,
-                p.nickname,
-                p.gender,
-                p.phone,
-                p.email,
-                p.createTime,
-                p.lastLoginTime,
-                p.status,
-                p.isSystem
-            )
-            FROM UserPo p
-            LEFT JOIN OrgPo o ON p.deptId = o.id
-            WHERE (:#{#dto.username} IS NULL OR p.username LIKE CONCAT('%', :#{#dto.username}, '%'))
-              AND (:#{#dto.nickname} IS NULL OR p.nickname LIKE CONCAT('%', :#{#dto.nickname}, '%'))
-              AND (:#{#dto.phone} IS NULL OR p.phone LIKE CONCAT('%', :#{#dto.phone}, '%'))
-              AND (:#{#dto.status} IS NULL OR p.status = :#{#dto.status})
-              AND (:#{#dto.orgId} IS NULL OR o.id = :#{#dto.orgId} OR o.orgPathIds LIKE CONCAT('%', :#{#dto.orgId}, '%')) OR o.rootId = :#{#dto.orgId}
-            ORDER BY p.createTime DESC
+            SELECT
+            u.id AS id,
+            u.rootId AS rootId,
+            r.name AS rootName,
+            u.orgId AS orgId,
+            c.name AS orgName,
+            u.deptId AS deptId,
+            d.name AS deptName,
+            u.username AS username,
+            u.nickname AS nickname,
+            u.gender AS gender,
+            u.phone AS phone,
+            u.email AS email,
+            u.createTime AS createTime,
+            u.lastLoginTime AS lastLoginTime,
+            u.status AS status,
+            u.isSystem AS isSystem
+            FROM UserPo u
+            LEFT JOIN CoreRootPo r ON u.rootId = r.id
+            LEFT JOIN OrgPo c ON u.orgId = c.id
+            LEFT JOIN OrgPo d ON u.deptId = d.id
+            WHERE (:#{#dto.username} IS NULL OR u.username LIKE CONCAT('%', :#{#dto.username}, '%'))
+              AND (:#{#dto.nickname} IS NULL OR u.nickname LIKE CONCAT('%', :#{#dto.nickname}, '%'))
+              AND (:#{#dto.phone} IS NULL OR u.phone LIKE CONCAT('%', :#{#dto.phone}, '%'))
+              AND (:#{#dto.status} IS NULL OR u.status = :#{#dto.status})
+              AND (:#{#dto.rootName} IS NULL OR r.name LIKE CONCAT('%', :#{#dto.rootName}, '%'))
+              AND (
+                    :#{#dto.orgId} IS NULL
+                    OR c.id = :#{#dto.orgId}
+                    OR d.id = :#{#dto.orgId}
+                    OR CONCAT(',', d.orgPathIds, ',') LIKE CONCAT('%,', :#{#dto.orgId}, ',%')
+                  )
+            ORDER BY u.createTime DESC
             """)
-    Page<GetUserListVo> getUserList(@Param("dto") GetUserListDto dto, Pageable pageable);
+    Page<Tuple> getUserList(@Param("dto") GetUserListDto dto, Pageable pageable);
 
 
     /**
@@ -216,4 +227,17 @@ public interface UserRepository extends JpaRepository<UserPo, Long> {
             """)
     List<Long> getOnlineUserIdsByPermissionId(@Param("permissionId") Long permissionId);
 
+    @Query("""
+                    SELECT u FROM UserPo u
+                    LEFT JOIN OrgPo o ON u.rootId = o.id
+                    WHERE u.id IN :memberIds AND u.rootId = :orgId
+            """)
+    List<UserPo> getUserByIdsAndOrgId(@Param("memberIds") List<Long> memberIds, @Param("orgId") Long orgId);
+
+    @Query(value = """
+                SELECT *
+                FROM core_user
+                WHERE id IN (:userIds)
+            """, nativeQuery = true)
+    List<UserPo> getUserListByUserIds(@Param("userIds") Set<Long> userIds);
 }

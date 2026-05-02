@@ -11,11 +11,12 @@
   >
     <div v-loading="loading" class="modal-body">
       <div class="tree-container">
+        <!-- 改为全部节点都可以选择（select-kind="all"） -->
         <OrgTree
           ref="orgTreeRef"
           :multiple="multiple"
           :show-header="!multiple"
-          select-kind="dept"
+          :select-kind="type === 'all' ? 'all' : 'dept'"
           @on-select="onSelect"
           @on-check="onCheck"
         />
@@ -48,6 +49,7 @@ const props = withDefaults(
     width?: string | number; // 弹窗宽度，默认为 "450px"
     multiple?: boolean; // 是否开启多选模式，默认为 false
     defaultSelected?: string | string[]; // 默认选中的节点 ID 或 ID 数组
+    type?: "dept" | "all"; // 选择类型，默认为 "dept"
   }>(),
   {
     modelValue: false,
@@ -55,6 +57,7 @@ const props = withDefaults(
     width: "450px",
     multiple: false,
     defaultSelected: undefined,
+    type: "dept",
   }
 );
 
@@ -178,7 +181,7 @@ const onConfirm = (): void => {
   if (promiseResolve) {
     promiseResolve(result);
   }
-  emit("confirm", result);
+  emit("confirm", selectedNodes.value);
   visible.value = false;
 };
 

@@ -104,7 +104,7 @@ public class EntryAccessService {
         }
 
         var params = new HashMap<String, Object>();
-        params.put("cid", SessionService.session().getCompanyId());
+        params.put("cid", SessionService.session().getRootId());
         params.put("eids", entryPos.stream().map(EntryPo::getId).map(String::valueOf).collect(Collectors.joining(",")));
         params.put("t", System.currentTimeMillis());
         params.put("s", driveConfig.getSignSecretKey());

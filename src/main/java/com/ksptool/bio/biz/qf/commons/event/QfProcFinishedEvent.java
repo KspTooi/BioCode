@@ -25,7 +25,8 @@ public class QfProcFinishedEvent extends ApplicationEvent {
 
     //业务数据主键ID
     private Long dataId;
-
+    //操作 0:同意 1:驳回
+    private Integer action;
     public QfProcFinishedEvent(Object source) {
         super(source);
     }

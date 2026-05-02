@@ -44,7 +44,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, markRaw, onMounted } from "vue";
+import { ref, markRaw, onMounted, nextTick } from "vue";
 import type { ElTree } from "element-plus";
 import { Search, OfficeBuilding } from "@element-plus/icons-vue";
 import type { GetOrgTreeVo } from "@/views/core/api/OrgApi";
@@ -65,12 +65,15 @@ const props = withDefaults(
     multiple?: boolean;
     defaultCheckedKeys?: string[];
     selectKind?: "all" | "root" | "dept";
+    /** 树加载完成后默认选中的组织节点 id（如当前登录用户所属企业 rootId） */
+    initialSelectedOrgId?: string;
   }>(),
   {
     showHeader: true,
     multiple: false,
     defaultCheckedKeys: () => [],
     selectKind: "all",
+    initialSelectedOrgId: undefined,
   }
 );
 
@@ -139,6 +142,35 @@ const onNodeClick = (data: GetOrgTreeVo): void => {
   onSelectOrg(data);
 };
 
+function findOrgById(nodes: GetOrgTreeVo[], id: string): GetOrgTreeVo | null {
+  for (const n of nodes) {
+    if (n.id === id) {
+      return n;
+    }
+    if (n.children?.length) {
+      const found = findOrgById(n.children, id);
+      if (found) {
+        return found;
+      }
+    }
+  }
+  return null;
+}
+
+/** 按 id 选中组织节点（用于默认选中当前企业等场景） */
+const selectOrgById = (id: string): boolean => {
+  const node = findOrgById(treeData.value, id);
+  if (!node || isNodeDisabled(node)) {
+    return false;
+  }
+  isAllSelected.value = false;
+  currentSelectedKey.value = node.id;
+  treeRef.value?.setCurrentKey(node.id);
+  emit("on-select", node);
+  onSelectOrg(node);
+  return true;
+};
+
 const onCheckChange = (): void => {
   if (!treeRef.value) {
     return;
@@ -162,8 +194,12 @@ const setCheckedKeys = (keys: string[]): void => {
   treeRef.value?.setCheckedKeys(keys);
 };
 
-onMounted(() => {
-  loadTreeData();
+onMounted(async () => {
+  await loadTreeData();
+  if (props.initialSelectedOrgId) {
+    await nextTick();
+    selectOrgById(props.initialSelectedOrgId);
+  }
 });
 
 defineExpose({
@@ -171,6 +207,7 @@ defineExpose({
   getCheckedNodes,
   setCheckedKeys,
   loadTreeData,
+  selectOrgById,
 });
 </script>
 

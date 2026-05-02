@@ -99,7 +99,7 @@ export default {
       },
     });
 
-    const contentType = response.headers["content-type"];
+    const contentType = response.headers["content-type"] as string;
 
     if (contentType && contentType.includes("application/json")) {
       const text = await response.data.text();

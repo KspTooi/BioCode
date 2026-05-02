@@ -59,8 +59,7 @@ export default {
     const res = await Http.postEntity<Result<GetRequestDetailsVo>>("/request/getRequestDetails", { id: id });
     if (res.code === 0) {
       return res.data;
-    } else {
-      throw new Error(res.message);
     }
+    throw new Error(res.message);
   },
 };

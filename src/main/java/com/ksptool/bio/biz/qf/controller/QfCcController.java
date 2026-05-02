@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 @PrintLog
 @RestController
 @RequestMapping("/qfCc")
-@Tag(name = "抄送", description = "抄送")
+@Tag(name = "QF-抄送", description = "抄送")
 @Slf4j
 public class QfCcController {
 

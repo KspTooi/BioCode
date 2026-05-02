@@ -2,7 +2,7 @@ package com.ksptool.bio.biz.auth.repository;
 
 import com.ksptool.bio.biz.auth.model.session.UserSessionPo;
 import com.ksptool.bio.biz.auth.model.session.dto.GetSessionListDto;
-import com.ksptool.bio.biz.auth.model.session.vo.GetSessionListVo;
+import jakarta.persistence.Tuple;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,18 +25,18 @@ public interface UserSessionRepository extends JpaRepository<UserSessionPo, Long
      * @return 会话列表
      */
     @Query("""
-            SELECT new com.ksptool.bio.biz.auth.model.session.vo.GetSessionListVo(
-              us.id,
-              u.username,
-              us.rsMax,
-              us.createTime,
-              us.expiresAt
-            ) FROM UserSessionPo us
+            SELECT
+            us.id AS id,
+            u.username AS username,
+            us.rsMax AS rsMax,
+            us.createTime AS createTime,
+            us.expiresAt AS expiresAt
+            FROM UserSessionPo us
             LEFT JOIN UserPo u ON us.userId = u.id
             WHERE (:#{#dto.userName} IS NULL OR u.username LIKE %:#{#dto.userName}%)
             ORDER BY us.createTime DESC
             """)
-    Page<GetSessionListVo> getSessionList(@Param("dto") GetSessionListDto dto, Pageable page);
+    Page<Tuple> getSessionList(@Param("dto") GetSessionListDto dto, Pageable page);
 
 
     /**
@@ -104,5 +104,19 @@ public interface UserSessionRepository extends JpaRepository<UserSessionPo, Long
             WHERE us.userId IN :userIds AND us.expiresAt > NOW()    
             """)
     List<Long> getOnlineUserIdsByUserIds(@Param("userIds") List<Long> userIds);
+
+
+    /**
+     * 根据租户ID获取未过期的用户ID列表
+     * 在线用户的判断标准是会话未过期（expiresAt > 当前时间）
+     *
+     * @param rootId 租户ID
+     * @return 用户ID列表
+     */
+    @Query("""
+            SELECT us.userId FROM UserSessionPo us
+            WHERE us.rootId = :rootId AND us.expiresAt > NOW()
+            """)
+    List<Long> getOnlineUserIdsByRootId(@Param("rootId") Long rootId);
 
 }

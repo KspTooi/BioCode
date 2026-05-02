@@ -1,5 +1,7 @@
 package com.ksptool.bio.biz.qf.commons.listener;
 
+import com.ksptool.bio.biz.qf.commons.QfVarsProc;
+import com.ksptool.bio.biz.qf.commons.event.QfProcFinishedEvent;
 import com.ksptool.bio.biz.qf.model.qftodo.QfTodoPo;
 import com.ksptool.bio.biz.qf.repository.QfTodoRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -8,10 +10,12 @@ import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
 import org.flowable.engine.delegate.event.AbstractFlowableEngineEventListener;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -37,7 +41,9 @@ public class QfProcFinishedListener extends AbstractFlowableEngineEventListener 
     @Lazy
     @Autowired
     private QfTodoRepository qfTodoRepository;
-
+    @Lazy
+    @Autowired
+    private ApplicationEventPublisher aep;
     public QfProcFinishedListener() {
         super(Set.of(FlowableEngineEventType.PROCESS_COMPLETED));
     }
@@ -47,17 +53,41 @@ public class QfProcFinishedListener extends AbstractFlowableEngineEventListener 
         ProcessInstance pi = (ProcessInstance) event.getEntity();
         String procId = pi.getId();
 
+        //从流程变量获取业务数据
+        Map<String, Object> vars = pi.getProcessVariables();
+        Long bizFormId = vars.get(QfVarsProc.BIZ_FORM_ID.toString()) != null
+                ? Long.valueOf(vars.get(QfVarsProc.BIZ_FORM_ID.toString()).toString())
+                : null;
+        Long dataId = vars.get(QfVarsProc.DATA_ID.toString()) != null
+                ? Long.valueOf(vars.get(QfVarsProc.DATA_ID.toString()).toString())
+                : null;
+
+        //处理残留待办
         List<QfTodoPo> remaining = qfTodoRepository.findAllByEngProcIdAndStatus(procId, 0);
-
-        if (remaining.isEmpty()) {
-            return;
-        }
-
         for (QfTodoPo po : remaining) {
             po.setStatus(10);
             qfTodoRepository.save(po);
         }
 
-        log.debug("[QfProcFinishedListener] 流程结束，共作废 {} 条残留待办, procId: {}", remaining.size(), procId);
+        //无论是否有残留待办，都发布流程结束事件
+        if (bizFormId != null && dataId != null) {
+            //从流程变量获取审批结果（排他网关实际使用的判断依据）
+            // approved=true 同意结束, approved=false 驳回结束
+            Boolean approved = vars.get("approved") != null
+                    ? Boolean.valueOf(vars.get("approved").toString())
+                    : null;
+            Integer action = approved != null ? (approved ? 0 : 1) : 0;
+
+            QfProcFinishedEvent fireEvent = new QfProcFinishedEvent(this);
+            fireEvent.setBizFormId(bizFormId);
+            fireEvent.setDataId(dataId);
+            fireEvent.setAction(action);
+            aep.publishEvent(fireEvent);
+            log.info("[QfProcFinishedListener] 流程结束事件已发布, bizFormId: {}, dataId: {}, approved: {}", bizFormId, dataId, approved);
+        }
+
+        if (!remaining.isEmpty()) {
+            log.info("[QfProcFinishedListener] 流程结束，共作废 {} 条残留待办, procId: {}", remaining.size(), procId);
+        }
     }
 }

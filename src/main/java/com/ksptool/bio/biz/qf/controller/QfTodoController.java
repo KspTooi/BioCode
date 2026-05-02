@@ -6,6 +6,7 @@ import com.ksptool.assembly.entity.web.Result;
 import com.ksptool.bio.biz.qf.model.qftodo.dto.ApproveQfTodoDto;
 import com.ksptool.bio.biz.qf.model.qftodo.dto.GetQfTodoListDto;
 import com.ksptool.bio.biz.qf.model.qftodo.vo.GetQfTodoDetailsVo;
+import com.ksptool.bio.biz.qf.model.qftodo.vo.ApproveFlowRecordVo;
 import com.ksptool.bio.biz.qf.model.qftodo.vo.GetQfTodoListVo;
 import com.ksptool.bio.biz.qf.service.QfTodoService;
 import com.ksptool.bio.commons.annotation.PrintLog;
@@ -16,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
+import java.util.List;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -76,4 +78,35 @@ public class QfTodoController {
         return Result.success("操作成功");
     }
 
+    /**
+     * 代办审批的时候回显审批流画布
+     *
+     */
+    @PreAuthorize("@auth.hasCode('qf:todo:view')")
+    @Operation(summary = "获取待办事项审批流")
+    @PostMapping("/getQfTodoApproveFlow")
+    public Result<String> getQfTodoApproveFlow(@RequestBody @Valid CommonIdDto dto) throws Exception {
+        String flow = qfTodoService.getQfTodoApproveFlow(dto);
+        if (flow == null) {
+            return Result.error("无数据");
+        }
+        return Result.success(flow);
+    }
+
+    /**
+     * 代办的流程的流转记录
+     * 返回按照时间的顺序
+     * 返回 节点名称，节点审批人，节点审批时间，节点审批结果
+     *
+     */
+    @PreAuthorize("@auth.hasCode('qf:todo:view')")
+    @Operation(summary = "获取待办事项流程流转记录")
+    @PostMapping("/getQfTodoApproveFlowRecord")
+    public Result<List<ApproveFlowRecordVo>> getQfTodoApproveFlowRecord(@RequestBody @Valid CommonIdDto dto) throws Exception {
+        List<ApproveFlowRecordVo> records = qfTodoService.getQfTodoApproveFlowRecord(dto);
+        if (records == null || records.isEmpty()) {
+            return Result.error("无数据");
+        }
+        return Result.success(records);
+    }
 }

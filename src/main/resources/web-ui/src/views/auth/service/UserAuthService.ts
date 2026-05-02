@@ -96,6 +96,11 @@ export default {
       return codeList.some((code) => authorities.includes(code));
     };
 
+    // 检查当前用户是否拥有超级权限
+    const hasSuper = (): boolean => {
+      return AuthStore().userInfo?.authorities?.includes("*:*:*") ?? false;
+    };
+
     // v-hasCode 自定义指令，无权限时隐藏元素
     const vHasCode: Directive = {
       mounted(el: HTMLElement, binding: DirectiveBinding<string | string[]>) {
@@ -112,6 +117,22 @@ export default {
       },
     };
 
-    return { hasCode, vHasCode };
+    // v-hasSuper 自定义指令，非超级权限时隐藏元素
+    const vHasSuper: Directive = {
+      mounted(el: HTMLElement) {
+        if (!hasSuper()) {
+          el.style.display = "none";
+        }
+      },
+      updated(el: HTMLElement) {
+        if (!hasSuper()) {
+          el.style.display = "none";
+          return;
+        }
+        el.style.display = "";
+      },
+    };
+
+    return { hasCode, vHasCode, hasSuper, vHasSuper };
   },
 };

@@ -368,7 +368,8 @@ const loadList = async (): Promise<void> => {
   if (timeRange.value) {
     listForm.startTime = formatDateTime(timeRange.value[0]);
     listForm.endTime = formatDateTime(timeRange.value[1]);
-  } else {
+  }
+  if (!timeRange.value) {
     listForm.startTime = null;
     listForm.endTime = null;
   }

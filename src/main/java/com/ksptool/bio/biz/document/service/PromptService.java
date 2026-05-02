@@ -29,7 +29,7 @@ import static com.ksptool.entities.Entities.assign;
 
 
 @Service
-@RowScope(requireRoot = true)
+@RowScope
 public class PromptService {
 
     @Autowired
@@ -147,9 +147,9 @@ public class PromptService {
         var vo = as(po, GetPromptDetailsVo.class);
 
         vo.setParamSlots(new ArrayList<>());
-        
+
         //如果内容不为空则获取参数槽位
-        if(StringUtils.isNotBlank(po.getContent())){
+        if (StringUtils.isNotBlank(po.getContent())) {
             PreparedPrompt prompt = new PreparedPrompt(po.getContent());
             vo.setParamSlots(Arrays.asList(prompt.getUnsetParameters()));
         }
@@ -190,7 +190,7 @@ public class PromptService {
 
         PreparedPrompt prompt = new PreparedPrompt(po.getContent());
 
-        if(prompt.getUnsetParameters().length < 1){
+        if (prompt.getUnsetParameters().length < 1) {
             throw new BizException("编译失败,该提示词没有参数槽位.");
         }
 

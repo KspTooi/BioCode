@@ -1,6 +1,7 @@
 import js from "@eslint/js";
 import pluginVue from "eslint-plugin-vue";
 import { defineConfigWithVueTs, vueTsConfigs } from "@vue/eslint-config-typescript";
+import checkFile from "eslint-plugin-check-file";
 
 /**
  * ESLint 配置 — Vue + TypeScript + JavaScript 语法与风格检查
@@ -16,12 +17,6 @@ import { defineConfigWithVueTs, vueTsConfigs } from "@vue/eslint-config-typescri
  * Review、或者接手半年前别人写的模块时，就会切身体会到————代码的读者远比作者多，代码被阅读
  * 的次数远比被编写的次数多。写代码时多花的那几秒钟"展开写清楚"，能为未来每一次阅读节省
  * 数分钟的理解成本。这就是这套规则存在的意义：帮助你更快地完成从"能写"到"写得好"的跨越。
- *
- * 关于对象扩展运算符（...）：
- * { ...userInput, ...defaultConfig } 这样的写法虽然简洁，但会将来源对象的所有属性隐式地
- * 合并到目标中。如果来源对象意外携带了多余字段（如 isAdmin: true），排查由此产生的覆盖问题
- * 成本较高。显式逐一赋值虽然代码更长，但每个字段的来源和去向都一目了然。
- * 此规则为警告级别，在必要场景下允许使用，但请优先考虑显式赋值。
  *
  * 关于 AI 协作编程：
  * 在 AI 辅助编程日益普及的今天，显式代码风格还带来了一个额外的重要优势——它对 AI 极其友好。
@@ -48,7 +43,20 @@ export default defineConfigWithVueTs(
   ...pluginVue.configs["flat/recommended"],
 
   {
+    plugins: {
+      "check-file": checkFile,
+    },
+
     rules: {
+      //新增命名规范检查规则
+      "check-file/filename-naming-convention": [
+        "error",
+        {
+          "src/**/*.vue": "PASCAL_CASE",
+          "src/**/*.ts": "PASCAL_CASE",
+        },
+        { ignoreMiddleExtensions: true },
+      ],
       //关闭Vue自带的一些规则(因为这与prettier的格式化冲突)
       "vue/html-closing-bracket-newline": "off",
       "vue/singleline-html-element-content-newline": "off",
@@ -68,7 +76,7 @@ export default defineConfigWithVueTs(
       //允许使用多单词组件名
       "vue/multi-word-component-names": "off",
 
-      //Vue SFC：<script> 超过 200 行时应将业务逻辑拆分到 *Service.ts 等模块，保持组件以视图编排为主
+      //Vue SFC：<script> 超过 300 行时应将业务逻辑拆分到 *Service.ts 等模块，保持组件以视图编排为主
       "vue/max-lines-per-block": [
         "error",
         {
@@ -80,8 +88,11 @@ export default defineConfigWithVueTs(
       // 允许使用常量条件 因为常量条件在编译时已经确定，不会影响性能
       "no-constant-condition": "off",
 
-      // 函数参数不超过 16 个，超出时建议用 VO/DTO/PO 封装，以提高可读性和可维护性
-      "max-params": ["error", 16],
+      // 函数参数不超过 6 个，超出时建议用 VO/DTO/PO 封装，以提高可读性和可维护性
+      "max-params": ["error", 6],
+
+      // 圈复杂度上限 32。超过此阈值意味着函数承担了过多职责，应拆分为更小的独立函数以降低认知负担
+      complexity: ["error", { max: 32 }],
 
       // 禁止嵌套三元表达式。嵌套三元需要读者在脑中维护多层条件栈，可读性极差，请改用 if-return 卫语句
       "no-nested-ternary": "error",
@@ -156,6 +167,15 @@ export default defineConfigWithVueTs(
 
   // 忽略目录
   {
-    ignores: ["dist/**", "node_modules/**", "*.d.ts", "**/public/**/*.ts", "**/public/**/*.js"],
+    ignores: [
+      "dist/**",
+      "node_modules/**",
+      "*.d.ts",
+      "**/public/**/*.ts",
+      "**/public/**/*.js",
+      "components.d.ts",
+      "auto-imports.d.ts",
+      "env.d.ts",
+    ],
   }
 );

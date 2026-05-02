@@ -157,7 +157,7 @@ export default {
     const modalRules = {
       code: [
         { required: true, message: "请输入组标识", trigger: "blur" },
-        { min: 2, max: 50, message: "组标识长度必须在2-50个字符之间", trigger: "blur" },
+        { min: 2, max: 32, message: "组标识长度必须在2-32个字符之间", trigger: "blur" },
         {
           pattern: /^[a-zA-Z][a-zA-Z_]*$/,
           message: "组标识只能包含英文字符和下划线，且必须以字母开头",
@@ -166,7 +166,7 @@ export default {
       ],
       name: [
         { required: true, message: "请输入组名称", trigger: "blur" },
-        { min: 2, max: 50, message: "组名称长度必须在2-50个字符之间", trigger: "blur" },
+        { min: 2, max: 80, message: "组名称长度必须在2-80个字符之间", trigger: "blur" },
       ],
       remark: [{ max: 200, message: "描述不能超过200个字符", trigger: "blur" }],
       seq: [
@@ -373,6 +373,10 @@ export default {
     const deselectAllPermissions = (): void => {
       selectedPermissionIds.value = [];
     };
+    const rsSimulationModalVisible = ref(false);
+    const openRsSimulationModal = (): void => {
+      rsSimulationModalVisible.value = true;
+    };
 
     // 监听 rowScope 变化，触发 deptIds 验证
     watch(
@@ -408,6 +412,7 @@ export default {
       submitModal,
       selectAllPermissions,
       deselectAllPermissions,
+      openRsSimulationModal,
     };
   },
 

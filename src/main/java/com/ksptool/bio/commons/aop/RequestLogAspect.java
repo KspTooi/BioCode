@@ -3,6 +3,7 @@ package com.ksptool.bio.commons.aop;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
+import com.ksptool.bio.biz.core.common.config.gson.LocalDateAdapter;
 import com.ksptool.bio.commons.utils.GsonUtils;
 import com.ksptool.bio.commons.annotation.PrintLog;
 import com.ksptool.bio.commons.config.LocalDateTimeAdapter;
@@ -22,6 +23,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.lang.annotation.Annotation;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,7 +38,10 @@ import java.util.List;
 public class RequestLogAspect {
 
     private static final Logger log = LoggerFactory.getLogger(RequestLogAspect.class);
-    private static final Gson gson = new GsonBuilder().registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter()).create();
+    private static final Gson gson = new GsonBuilder()
+            .registerTypeAdapter(LocalDate.class, new LocalDateAdapter())
+            .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
+            .create();
 
     @Pointcut("@annotation(com.ksptool.bio.commons.annotation.PrintLog)")
     public void printPointCut() {

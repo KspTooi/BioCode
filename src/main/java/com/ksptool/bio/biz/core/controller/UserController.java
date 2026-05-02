@@ -3,6 +3,7 @@ package com.ksptool.bio.biz.core.controller;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.assembly.entity.web.Result;
+import com.ksptool.bio.biz.auth.common.aop.RowScope;
 import com.ksptool.bio.biz.core.model.user.dto.*;
 import com.ksptool.bio.biz.core.model.user.vo.GetUserDetailsVo;
 import com.ksptool.bio.biz.core.model.user.vo.GetUserListVo;
@@ -13,9 +14,7 @@ import com.ksptool.bio.commons.dataprocess.ImportWizard;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-
 import java.util.List;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -27,7 +26,8 @@ import org.springframework.web.multipart.MultipartFile;
 @PrintLog
 @RestController
 @RequestMapping("/user")
-@Tag(name = "用户管理", description = "用户管理")
+@Tag(name = "CORE-用户管理", description = "用户管理")
+@RowScope(mode = RowScope.Mode.ROOT_ONLY)
 public class UserController {
 
     @Autowired
@@ -119,9 +119,9 @@ public class UserController {
     @CacheEvict(cacheNames = {"userSession", "userProfile", "menuTree"}, allEntries = true)
     public Result<String> batchEditUser(@RequestBody @Valid BatchEditUserDto dto) throws Exception {
 
-        //校验变更部门ID
-        if (dto.getKind() == 3 && dto.getDeptId() == null) {
-            return Result.error("变更部门ID不能为空");
+        //校验变更组织架构ID
+        if (dto.getKind() == 3 && dto.getOrgId() == null) {
+            return Result.error("变更组织架构ID不能为空");
         }
 
         var count = service.batchEditUser(dto);

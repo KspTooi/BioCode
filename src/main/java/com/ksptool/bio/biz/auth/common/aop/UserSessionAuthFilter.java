@@ -1,7 +1,7 @@
 package com.ksptool.bio.biz.auth.common.aop;
 
 import com.ksptool.assembly.entity.exception.BizException;
-import com.ksptool.bio.biz.auth.model.auth.AuthUserDetails;
+import com.ksptool.bio.biz.auth.model.auth.AuthUserSession;
 import com.ksptool.bio.biz.auth.model.session.UserSessionPo;
 import com.ksptool.bio.biz.auth.service.SessionService;
 import com.ksptool.bio.biz.core.common.AppRegistry;
@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.util.HashSet;
 
 import static com.ksptool.entities.Entities.as;
-import static com.ksptool.entities.Entities.fromJsonArray;
 
 /**
  * 基于 core_user_session 的无状态认证过滤器模板。
@@ -129,7 +128,7 @@ public class UserSessionAuthFilter extends OncePerRequestFilter {
         var authorities = new HashSet<GrantedAuthority>();
 
         // 解析会话中的权限码(存储在数据库中的权限码是JSON数组且角色已有ROLE_前缀)
-        var permissionCodes = fromJsonArray(sessionPo.getPermissionCodes(), String.class);
+        var permissionCodes = sessionPo.getPermissionCodes();
 
         for (var permissionCode : permissionCodes) {
             if (StringUtils.isBlank(permissionCode)) {
@@ -139,12 +138,12 @@ public class UserSessionAuthFilter extends OncePerRequestFilter {
         }
 
         // UserSessionPo 转换为 AuthUserDetails
-        var aud = as(sessionPo, AuthUserDetails.class);
-        aud.setId(sessionPo.getUserId());
+        var aud = as(sessionPo, AuthUserSession.class);
+        aud.setUserId(sessionPo.getUserId());
 
         // 设置RS数据权限到AUD中
         aud.setRsMax(sessionPo.getRsMax());
-        aud.setRsAllowDepts(fromJsonArray(sessionPo.getRsAllowDepts(), Long.class));
+        aud.setRsAllowOrgIds(sessionPo.getRsAllowOrgIds());
         var authentication = new UsernamePasswordAuthenticationToken(aud, null, authorities);
 
         // 设置认证详情

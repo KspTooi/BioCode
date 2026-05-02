@@ -30,7 +30,7 @@ import static com.ksptool.bio.biz.auth.service.SessionService.session;
 @PrintLog
 @RestController
 @RequestMapping("/menu")
-@Tag(name = "菜单与按钮管理", description = "菜单与按钮管理")
+@Tag(name = "CORE-菜单管理", description = "菜单与按钮管理")
 @Slf4j
 public class MenuController {
 

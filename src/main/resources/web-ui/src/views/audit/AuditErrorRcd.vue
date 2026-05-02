@@ -52,7 +52,7 @@
         :loading="listLoading"
         @click="() => removeListBatch(listSelected)"
       >
-        删除选中项
+        批量删除
       </el-button>
     </template>
 

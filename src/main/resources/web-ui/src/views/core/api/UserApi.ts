@@ -28,6 +28,7 @@ export interface GetUserListDto extends PageQuery {
   phone?: string; // 手机号查询
   status?: number | null; // 用户状态查询: 0-正常, 1-封禁
   orgId?: string | null; // 组织架构ID
+  rootName?: string | null; // 租户名称
 }
 
 export interface GetUserListVo {
@@ -40,7 +41,8 @@ export interface GetUserListVo {
   createTime: string; // 创建时间
   lastLoginTime: string; // 最后登录时间
   status: number; // 用户状态
-  rootName?: string; // 所属企业名称
+  rootName?: string; // 所属租户名称
+  orgName?: string; // 所属企业名称
   deptName?: string; // 部门名称
   isSystem: number; // 是否为系统内置用户 0:否 1:是
 }
@@ -48,14 +50,14 @@ export interface GetUserListVo {
 export interface GetUserDetailsVo {
   id: string; // 用户ID
   username: string; // 用户名
-  nickname: string; // 用户昵称
+  nickname: string; // 昵称
   gender: number; // 用户性别
   phone: string; // 用户手机号
   email: string; // 用户邮箱
   status: number; // 用户状态
   createTime: string; // 创建时间
   lastLoginTime: string; // 最后登录时间
-  deptId: string; // 所属部门ID
+  orgId: string; // 所属组织机构ID
   isSystem: number; // 是否为系统内置用户 0:否 1:是
   groups: UserGroupVo[]; // 用户组列表
   permissions: UserPermissionVo[]; // 用户权限列表
@@ -64,12 +66,12 @@ export interface GetUserDetailsVo {
 export interface AddUserDto {
   username: string; // 用户名
   password: string; // 用户密码
-  nickname?: string; // 用户昵称
+  nickname?: string; // 昵称
   gender: number; // 性别 0:男 1:女 2:不愿透露
   phone?: string; // 用户手机号
   email?: string; // 用户邮箱
   status?: number; // 用户状态：0-禁用，1-启用
-  deptId?: string; // 所属部门ID
+  orgId?: string; // 所属组织机构ID
   groupIds?: string[]; // 用户组ID列表
 }
 
@@ -77,19 +79,19 @@ export interface EditUserDto {
   id: string; // 用户ID
   username: string; // 用户名
   password?: string; // 用户密码，编辑时可选
-  nickname?: string; // 用户昵称
+  nickname?: string; // 昵称
   gender: number; // 性别 0:男 1:女 2:不愿透露
   phone?: string; // 用户手机号
   email?: string; // 用户邮箱
   status?: number; // 用户状态：0-禁用，1-启用
-  deptId?: string; // 所属部门ID
+  orgId?: string; // 所属组织机构ID
   groupIds?: string[]; // 用户组ID列表
 }
 
 export interface BatchEditUserDto {
   ids: string[]; // 用户ID列表（后端Long类型对应前端string）
   kind: number; // 批量操作类型 0:启用 1:封禁 2:删除 3:变更部门
-  deptId?: string; // 变更部门ID 当kind为3时必填（后端Long类型对应前端string）
+  orgId?: string; // 变更组织机构ID 当kind为3时必填
 }
 
 export default {

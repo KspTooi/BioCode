@@ -279,10 +279,14 @@ const openModal = (cron?: string): void => {
       if (StringUtils.contains(s, "/")) {
         config.intervalUnit = "second";
         config.intervalValue = parseInt(s.split("/")[1]);
-      } else if (StringUtils.contains(m, "/")) {
+        return;
+      }
+      if (StringUtils.contains(m, "/")) {
         config.intervalUnit = "minute";
         config.intervalValue = parseInt(m.split("/")[1]);
-      } else if (StringUtils.contains(h, "/")) {
+        return;
+      }
+      if (StringUtils.contains(h, "/")) {
         config.intervalUnit = "hour";
         config.intervalValue = parseInt(h.split("/")[1]);
       }

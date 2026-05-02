@@ -1,41 +1,44 @@
 package com.ksptool.bio.biz.auth.model.group.vo;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 @Getter
 @Setter
-@AllArgsConstructor
 public class GetGroupListVo {
 
-    // 组ID
+    @Schema(description = "组ID")
     private Long id;
 
-    // 组标识
+    @Schema(description = "组标识")
     private String code;
 
-    // 组名称
+    @Schema(description = "组名称")
     private String name;
 
-    // 成员数量
+    @Schema(description = "成员数量")
     private Integer memberCount;
 
-    // 权限节点数量
+    @Schema(description = "权限节点数量")
     private Integer permissionCount;
 
-    // 系统内置组 0:否 1:是
+    @Schema(description = "RS数据权限等级 0:全集团 10:本公司+下级公司 20:仅本公司 30:本部门+下级部门 40:仅本部门 50:仅本人 60:指定组织")
+    private Integer rowScope;
+
+    @Schema(description = "系统内置组 0:否 1:是")
     private Integer isSystem;
 
-    // 组状态：0-禁用，1-启用
+    @Schema(description = "组状态：0-禁用，1-启用")
     private Integer status;
     
-    // 排序号
+    @Schema(description = "排序号")
     private Integer seq;
 
-    // 创建时间
+    @Schema(description = "创建时间")
     private LocalDateTime createTime;
 
 }

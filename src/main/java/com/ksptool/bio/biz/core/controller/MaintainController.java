@@ -32,7 +32,7 @@ import java.sql.Connection;
 @Controller
 @RestController
 @RequestMapping("/maintain")
-@Tag(name = "维护中心", description = "维护中心")
+@Tag(name = "CORE-维护中心", description = "维护中心")
 public class MaintainController {
 
     @Autowired
@@ -54,19 +54,12 @@ public class MaintainController {
         return Result.success(maintainService.validatePermissions());
     }
 
-    @PreAuthorize(value = "@auth.hasCode('maintain:validate:groups')")
-    @Operation(summary = "校验系统内置用户组")
-    @PostMapping("/validateGroups")
-    public Result<MaintainUpdateVo> validateGroups() throws BizException {
-        return Result.success(maintainService.validateGroups());
+    @Operation(summary = "用户体系冷启动")
+    @PostMapping("/userSystemColdStartup")
+    public Result<MaintainUpdateVo> userSystemColdStartup() throws BizException {
+        return Result.success(maintainService.userSystemColdStartup());
     }
 
-    @PreAuthorize(value = "@auth.hasCode('maintain:validate:users')")
-    @Operation(summary = "校验系统内置用户")
-    @PostMapping("/validateUsers")
-    public Result<MaintainUpdateVo> validateUsers() throws BizException {
-        return Result.success(maintainService.validateUsers());
-    }
 
     @PreAuthorize(value = "@auth.hasCode('maintain:reset:menus')")
     @Operation(summary = "维护中心:重置菜单")

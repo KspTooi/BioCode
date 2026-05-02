@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/noticeRcd")
-@Tag(name = "消息通知管理(用户记录)", description = "用户通知记录(接收状态)")
+@Tag(name = "CORE-消息通知管理(用户记录)", description = "用户通知记录(接收状态)")
 @Slf4j
 public class NoticeRcdController {
 

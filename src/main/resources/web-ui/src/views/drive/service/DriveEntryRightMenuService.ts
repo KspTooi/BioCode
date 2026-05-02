@@ -1,7 +1,21 @@
 import { DriveStore } from "@/views/drive/service/DriveStore.ts";
 import { computed, onMounted, onUnmounted, ref, type Ref } from "vue";
 import type { EntryPo } from "@/views/drive/api/DriveTypes";
-import type { RightMenuEmitter } from "@/views/drive/components/DriveEntryRightMenu.vue";
+
+export interface RightMenuEmitter {
+  (e: "on-refresh"): void; //刷新
+  (e: "on-paste"): void; //粘贴
+  (e: "on-create-folder"): void; //创建文件夹
+  (e: "on-upload-file"): void; //上传文件
+  (e: "on-preview", entry: EntryPo): void; //预览
+  (e: "on-download", entries: EntryPo[]): void; //下载
+  (e: "on-download-url", entries: EntryPo[]): void; //创建下载链接
+  (e: "on-cut", entries: EntryPo[]): void; //剪切
+  (e: "on-copy", entries: EntryPo[]): void; //复制
+  (e: "on-delete", entries: EntryPo[]): void; //删除
+  (e: "on-rename", entry: EntryPo): void; //重命名
+  (e: "on-properties", entry: EntryPo): void; //属性
+}
 
 export default {
   /**

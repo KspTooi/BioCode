@@ -89,6 +89,9 @@ export default {
       summary: "",
       memberId: "",
       initiatorId: "",
+      routePc: "",
+      routeMobile: "",
+      dataId: "",
     });
 
     const modalRules: FormRules = {};

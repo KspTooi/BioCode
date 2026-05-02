@@ -4,11 +4,14 @@ package com.ksptool.bio.biz.auth.controller;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.assembly.entity.web.Result;
+import com.ksptool.bio.biz.auth.common.aop.RowScope;
 import com.ksptool.bio.biz.auth.model.group.dto.*;
 import com.ksptool.bio.biz.auth.model.group.vo.GetGroupDetailsVo;
 import com.ksptool.bio.biz.auth.model.group.vo.GetGroupListVo;
 import com.ksptool.bio.biz.auth.model.group.vo.GetGroupPermissionMenuViewVo;
 import com.ksptool.bio.biz.auth.model.group.vo.GetGroupPermissionNodeVo;
+import com.ksptool.bio.biz.auth.model.group.dto.SimulateRsDto;
+import com.ksptool.bio.biz.auth.model.group.vo.SimulateRsVo;
 import com.ksptool.bio.biz.auth.service.GroupService;
 import com.ksptool.bio.biz.core.service.MenuService;
 import com.ksptool.bio.biz.core.service.UserService;
@@ -29,7 +32,8 @@ import java.util.List;
 @PrintLog
 @RestController
 @RequestMapping("/group")
-@Tag(name = "用户组管理", description = "用户组管理")
+@Tag(name = "AUTH-用户组管理", description = "用户组管理")
+@RowScope
 public class GroupController {
 
     @Autowired
@@ -60,12 +64,6 @@ public class GroupController {
     @Operation(summary = "新增组")
     @PostMapping("addGroup")
     public Result<String> addGroup(@RequestBody @Valid AddGroupDto dto) throws Exception {
-
-        //验证入参
-        if (dto.validate() != null) {
-            return Result.error(dto.validate());
-        }
-
         service.addGroup(dto);
         return Result.success("新增成功");
     }
@@ -75,11 +73,6 @@ public class GroupController {
     @PostMapping("editGroup")
     @CacheEvict(cacheNames = {"userSession", "userProfile", "menuTree"}, allEntries = true)
     public Result<String> editGroup(@RequestBody @Valid EditGroupDto dto) throws Exception {
-
-        //验证入参
-        if (dto.validate() != null) {
-            return Result.error(dto.validate());
-        }
 
         service.editGroup(dto);
 
@@ -119,6 +112,13 @@ public class GroupController {
         //清菜单缓存
         menuService.clearUserMenuTreeCache();
         return Result.success("授权或取消授权成功");
+    }
+
+    @PreAuthorize("@auth.hasCode('auth:group:view')")
+    @Operation(summary = "模拟RS数据权限")
+    @PostMapping("simulateRs")
+    public Result<SimulateRsVo> simulateRs(@RequestBody @Valid SimulateRsDto dto) throws Exception {
+        return Result.success(service.simulateRs(dto));
     }
 
     @PreAuthorize("@auth.hasCode('auth:group:remove')")
