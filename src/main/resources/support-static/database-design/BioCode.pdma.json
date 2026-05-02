@@ -4,7 +4,7 @@
   "avatar": "",
   "version": "4.9.4",
   "createdTime": "2025-5-31 18:54:43",
-  "updatedTime": "2026-5-3 06:55:22",
+  "updatedTime": "2026-5-3 07:02:54",
   "dbConns": [],
   "profile": {
     "default": {
@@ -15310,13 +15310,13 @@
     {
       "id": "18D12A28-19AD-40E9-9046-9F5895B37770",
       "defKey": "core_attach_chunk",
-      "defName": "文件附件区块",
+      "defName": "附件分块数据",
       "comment": "",
       "properties": {},
       "fields": [
         {
           "defKey": "id",
-          "defName": "",
+          "defName": "主键ID",
           "comment": "",
           "domain": "3F9E08C8-96C1-4FD0-9F00-BEF0DB7FB7B9",
           "type": "",
@@ -15344,7 +15344,7 @@
         },
         {
           "defKey": "attach_id",
-          "defName": "",
+          "defName": "附件ID",
           "comment": "",
           "domain": "3F9E08C8-96C1-4FD0-9F00-BEF0DB7FB7B9",
           "type": "",
@@ -15372,7 +15372,7 @@
         },
         {
           "defKey": "chunk_id",
-          "defName": "",
+          "defName": "分块ID",
           "comment": "",
           "domain": "3F9E08C8-96C1-4FD0-9F00-BEF0DB7FB7B9",
           "type": "",
@@ -15400,10 +15400,10 @@
         },
         {
           "defKey": "create_time",
-          "defName": "",
+          "defName": "创建时间",
           "comment": "",
-          "domain": "",
-          "type": "DATETIME",
+          "domain": "0C248E7A-4D9E-4356-9584-9A274C88D86B",
+          "type": "",
           "len": "",
           "scale": "",
           "primaryKey": false,
@@ -15422,7 +15422,7 @@
           "attr8": "",
           "attr9": "",
           "id": "C9F3A053-80F2-4B3E-81BA-A2DCA8728F86",
-          "baseType": "",
+          "baseType": "C89F4D46-7F8C-4F81-9C1C-64094A0027E5",
           "extProps": {},
           "uiHint": "642D2E0A-8846-4549-BE56-8C0473F26EDE"
         }
