@@ -5,6 +5,7 @@ CREATE TABLE core_root(
                           `expire_time` DATETIME   COMMENT '到期时间(null长期)' ,
                           `remark` VARCHAR(200)   COMMENT '备注' ,
                           `status` TINYINT NOT NULL  COMMENT '状态 1:正常，0:停用' ,
+                          `admin_user_id` BIGINT NOT NULL  COMMENT '租户管理账号UID' ,
                           `create_time` DATETIME NOT NULL  COMMENT '创建时间' ,
                           `creator_id` BIGINT NOT NULL  COMMENT '创建人ID' ,
                           `update_time` DATETIME NOT NULL  COMMENT '更新时间' ,
