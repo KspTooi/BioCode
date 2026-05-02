@@ -70,7 +70,31 @@ if ($inputKey -ne "") {
 }
 Write-Host ""
 
+# 处理全自动模式
+$storedDangerously = [System.Environment]::GetEnvironmentVariable("CLAUDE_CODE_DANGEROUSLY_SKIP_PERMISSIONS", "User")
+$defaultPrompt = if ($storedDangerously -eq "1") { "上次：开启，回车保持" } else { "上次：关闭，回车保持" }
+Write-Host "全自动模式（--dangerously-skip-permissions）：$defaultPrompt" -ForegroundColor DarkYellow
+$inputDangerously = Read-Host "是否开启全自动模式？(y=开启 / n=关闭 / 回车保持上次选择)"
+
+if ($inputDangerously -eq "y") {
+    [System.Environment]::SetEnvironmentVariable("CLAUDE_CODE_DANGEROUSLY_SKIP_PERMISSIONS", "1", "User")
+    $dangerouslyMode = $true
+    Write-Host "全自动模式已开启。" -ForegroundColor Green
+} elseif ($inputDangerously -eq "n") {
+    [System.Environment]::SetEnvironmentVariable("CLAUDE_CODE_DANGEROUSLY_SKIP_PERMISSIONS", "0", "User")
+    $dangerouslyMode = $false
+    Write-Host "全自动模式已关闭。" -ForegroundColor Green
+} else {
+    $dangerouslyMode = ($storedDangerously -eq "1")
+    Write-Host "保持上次选择：$(if ($dangerouslyMode) { '开启' } else { '关闭' })" -ForegroundColor Green
+}
+Write-Host ""
+
 # 启动 claude
 Write-Host "[3/3] 正在启动 ClaudeCode..." -ForegroundColor Yellow
 Write-Host ""
-claude
+if ($dangerouslyMode) {
+    claude --dangerously-skip-permissions
+} else {
+    claude
+}
