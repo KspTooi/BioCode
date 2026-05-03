@@ -232,9 +232,9 @@
         </el-form-item>
         <el-form-item label="性别" prop="gender">
           <el-radio-group v-model="modalForm.gender">
-            <el-radio :label="0">男</el-radio>
-            <el-radio :label="1">女</el-radio>
-            <el-radio :label="2">不愿透露</el-radio>
+            <el-radio :value="0">男</el-radio>
+            <el-radio :value="1">女</el-radio>
+            <el-radio :value="2">不愿透露</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="手机号" prop="phone">
@@ -245,8 +245,8 @@
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="modalForm.status" placeholder="请选择状态">
-            <el-radio :label="1" :disabled="modalMode === 'edit' && modalForm.isSystem === 1">正常</el-radio>
-            <el-radio :label="0" :disabled="modalMode === 'edit' && modalForm.isSystem === 1">封禁</el-radio>
+            <el-radio :value="1" :disabled="modalMode === 'edit' && modalForm.isSystem === 1">正常</el-radio>
+            <el-radio :value="0" :disabled="modalMode === 'edit' && modalForm.isSystem === 1">封禁</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item v-if="modalMode === 'edit'" label="系统用户">
