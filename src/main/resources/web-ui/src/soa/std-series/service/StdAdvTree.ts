@@ -106,6 +106,9 @@ export default {
 
     const onNodeClick = (data: any): void => {
       const key = data[props.nk ?? "id"];
+      if (key === currentSelectedKey.value) {
+        return;
+      }
       currentSelectedKey.value = key;
       emit("update:modelValue", key);
       emit("on-select", data);
@@ -153,6 +156,9 @@ export default {
     });
 
     const onRootClick = (): void => {
+      if (isRootSelected.value) {
+        return;
+      }
       currentSelectedKey.value = nrKey.value;
       treeRef.value?.setCurrentKey(null);
       emit("update:modelValue", nrKey.value);
