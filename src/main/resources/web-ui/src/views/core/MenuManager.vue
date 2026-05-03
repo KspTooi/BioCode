@@ -164,13 +164,22 @@
                     </el-input>
                   </el-form-item>
                   <el-form-item v-if="panelForm.kind == 1 || panelForm.kind == 2" label="所需权限" prop="permissionCode">
-                    <el-input
+                    <el-select
                       v-model="panelForm.permissionCode"
-                      placeholder="请输入所需权限"
+                      multiple
+                      filterable
+                      allow-create
+                      default-first-option
+                      placeholder="请选择或输入所需权限"
                       clearable
-                      maxlength="500"
-                      show-word-limit
-                    />
+                    >
+                      <el-option
+                        v-for="item in panelPermissionCodes"
+                        :key="item.code"
+                        :label="`${item.name} (${item.code})`"
+                        :value="item.code"
+                      />
+                    </el-select>
                   </el-form-item>
                   <el-form-item v-if="panelForm.kind == 0 || panelForm.kind == 1" :label="panelFormLabel + '图标'" prop="icon">
                     <StdIconPicker v-model="panelForm.icon" />
@@ -255,6 +264,7 @@ const {
   panelMode,
   panelCurrentRow,
   panelForm,
+  panelPermissionCodes,
   panelFormLabel,
   panelBreadcrumb,
   panelRules,
@@ -443,6 +453,10 @@ const {
 
 .panel-form {
   padding: 20px 28px 8px;
+}
+
+.panel-form :deep(.el-select) {
+  width: 100%;
 }
 
 .panel-section {

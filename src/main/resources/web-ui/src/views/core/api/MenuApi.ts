@@ -9,7 +9,7 @@ export interface AddMenuDto {
   path?: string | null; // 菜单路径(目录不能填写)
   icon?: string | null; // 菜单图标
   hide?: number | null; // 是否隐藏 0:否 1:是
-  permissionCode?: string | null; // 所需权限
+  permissionCode?: string[]; // 所需权限码列表
   seq?: number | null; // 排序
   remark?: string | null; // 备注
 }
@@ -22,7 +22,7 @@ export interface EditMenuDto {
   path?: string | null; // 菜单路径(目录不能填写)
   icon?: string | null; // 菜单图标
   hide?: number | null; // 是否隐藏 0:否 1:是
-  permissionCode?: string | null; // 所需权限
+  permissionCode?: string[]; // 所需权限码列表
   seq?: number | null; // 排序
   remark?: string | null; // 备注
 }
@@ -35,7 +35,7 @@ export interface GetMenuDetailsVo {
   path?: string | null; // 菜单路径(目录不能填写)
   icon?: string | null; // 菜单图标
   hide?: number | null; // 是否隐藏 0:否 1:是
-  permissionCode?: string | null; // 所需权限
+  permissionCode?: string[]; // 所需权限码列表
   seq?: number | null; // 排序
   remark?: string | null; // 备注
 }
@@ -54,7 +54,7 @@ export interface GetMenuTreeVo {
   path?: string | null; // 菜单路径
   icon?: string | null; // 菜单图标
   hide?: number | null; // 是否隐藏 0:否 1:是
-  permissionCode?: string | null; // 所需权限
+  permissionCode?: string[]; // 所需权限码列表
   missingPermission?: number | null; // 是否缺失权限节点 0:否 1:完全缺失 2:部分缺失
   seq?: number | null; // 排序
   children: GetMenuTreeVo[]; // 子菜单
@@ -68,7 +68,7 @@ export interface GetUserMenuTreeVo {
   kind?: number | null; // 菜单类型 0:目录 1:菜单 2:按钮
   path?: string | null; // 菜单路径
   hide?: number | null; // 是否隐藏 0:否 1:是
-  permissionCode?: string | null; // 所需权限
+  permissionCode?: string[]; // 所需权限码列表
   seq?: number | null; // 排序
   children: GetUserMenuTreeVo[]; // 子菜单
 }

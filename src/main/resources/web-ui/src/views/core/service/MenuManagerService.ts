@@ -28,7 +28,7 @@ const useMenuServiceStore = defineStore("menuManagerTreeStore", {
       path: "",
       icon: "",
       hide: 0,
-      permissionCode: "",
+      permissionCode: [] as string[],
       seq: 0,
       remark: "",
     } as GetMenuDetailsVo,
@@ -108,6 +108,11 @@ export default {
         await MenuApi.removeMenu({ id });
         await loadTree();
         loadMenus();
+
+        //如果被删的是当前选的 直接重置选中状态
+        if (treeCurrent.value === id) {
+          treeStore.resetSelected();
+        }
       } catch (error: any) {
         ElMessage.error(error.message);
         return;
@@ -159,7 +164,6 @@ export default {
         { required: true, message: "请输入菜单路径", trigger: "blur" },
         { max: 512, message: "菜单路径长度不能超过512个字符", trigger: "blur" },
       ],
-      permissionCode: [{ max: 500, message: "所需权限长度不能超过500个字符", trigger: "blur" }],
       remark: [{ max: 200, message: "备注长度不能超过200个字符", trigger: "blur" }],
       seq: [
         { required: true, message: "请输入排序", trigger: "blur" },
@@ -266,7 +270,7 @@ export default {
       treeStore.panelForm.path = "";
       treeStore.panelForm.icon = "";
       treeStore.panelForm.hide = 0;
-      treeStore.panelForm.permissionCode = "";
+      treeStore.panelForm.permissionCode = [];
       treeStore.panelForm.seq = 0;
       treeStore.panelForm.remark = "";
       if (!full) {
@@ -351,6 +355,9 @@ export default {
       treeStore.resetSelected();
     };
 
+    /**
+     * 提交面板表单
+     */
     const submitPanel = async (): Promise<void> => {
       try {
         await panelFormRef?.value?.validate();
@@ -361,6 +368,7 @@ export default {
       panelLoading.value = true;
 
       try {
+        //新增模式或新增子项模式
         if (treeStore.panelMode === "add" || treeStore.panelMode === "add-item") {
           const addDto: AddMenuDto = {
             parentId: treeStore.panelForm.parentId,
@@ -379,9 +387,19 @@ export default {
             return;
           }
           ElMessage.success("操作成功");
-          treeStore.panelVisible = false;
+
+          //如果是新增模式提交成功、则清除表单继续新增
+          if (treeStore.panelMode === "add") {
+            resetPanel(true);
+          }
+
+          //如果是新增子项模式提交成功、则清除表单继续新增子项
+          if (treeStore.panelMode === "add-item") {
+            resetPanel(false);
+          }
         }
 
+        //编辑模式
         if (treeStore.panelMode === "edit") {
           const editDto: EditMenuDto = {
             id: treeStore.panelForm.id,
@@ -395,14 +413,20 @@ export default {
             seq: treeStore.panelForm.seq,
             remark: treeStore.panelForm.remark,
           };
+
           const ret = await MenuApi.editMenu(editDto);
           if (Result.isError(ret)) {
             ElMessage.error(ret.message);
             return;
           }
           ElMessage.success("操作成功");
-          treeStore.panelVisible = false;
+          //treeStore.panelVisible = false;
         }
+      } catch (error: any) {
+        ElMessage.error(error.message);
+        //保存失败
+        treeStore.resetSelected();
+        return;
       } finally {
         panelLoading.value = false;
         reloadCallback();
@@ -424,6 +448,7 @@ export default {
       panelMode: computed(() => treeStore.panelMode),
       panelCurrentRow: computed(() => treeStore.panelCurrentRow),
       panelForm: computed(() => treeStore.panelForm),
+      panelPermissionCodes: computed(() => treeStore.panelPermissionCodes),
       panelFormLabel,
       panelBreadcrumb,
       panelRules,
