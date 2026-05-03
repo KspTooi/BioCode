@@ -129,7 +129,7 @@ export default {
       gender: 0,
       phone: "",
       email: "",
-      status: 0,
+      status: 1,
       createTime: "",
       lastLoginTime: "",
       isSystem: 0,
@@ -330,7 +330,7 @@ export default {
       modalForm.gender = 0;
       modalForm.phone = "";
       modalForm.email = "";
-      modalForm.status = 0;
+      modalForm.status = 1;
       modalForm.isSystem = 0;
       modalForm.groups = [];
       modalForm.orgId = "";
