@@ -28,7 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 @PrintLog
 @RestController
 @RequestMapping("/epStdWord")
-@Tag(name = "EpStdWord", description = "标准词管理")
+@Tag(name = "EP-标准词管理", description = "标准词管理")
 @Slf4j
 public class EpStdWordController {
 

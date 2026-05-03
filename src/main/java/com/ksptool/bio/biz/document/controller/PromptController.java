@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @PrintLog
 @RestController
 @RequestMapping("/prompt")
-@Tag(name = "提示词管理", description = "提示词管理")
+@Tag(name = "EP-提示词管理", description = "提示词管理")
 @Slf4j
 public class PromptController {
 
