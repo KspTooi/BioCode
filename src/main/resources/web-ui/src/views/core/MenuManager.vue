@@ -8,6 +8,7 @@
             <StdAdvTree
               v-model="treeCurrent"
               :data="treeData"
+              :init-value="treeCurrent"
               :loading="treeLoading"
               :nr="true"
               :nr-title="'全部菜单'"

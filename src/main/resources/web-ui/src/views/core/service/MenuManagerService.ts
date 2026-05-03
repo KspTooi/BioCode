@@ -4,16 +4,45 @@ import MenuApi from "@/views/core/api/MenuApi.ts";
 import { Result } from "@/commons/model/Result";
 import { ElMessage, ElMessageBox, type FormInstance } from "element-plus";
 import ComMenuService from "@/soa/com-series/service/ComMenuService.ts";
+import { defineStore, storeToRefs } from "pinia";
 
 type PanelMode = "add" | "edit" | "add-item";
 
 export default {
+  useMenuTreeStore() {
+    const store = defineStore("menuManagerTreeStore", {
+      state: () => ({
+        treeCurrent: "-1" as string,
+        panelCurrentRow: null as GetMenuTreeVo | null,
+        panelMode: "add" as PanelMode,
+        panelForm: {
+          id: "",
+          parentId: "",
+          name: "",
+          kind: 0,
+          path: "",
+          icon: "",
+          hide: 0,
+          permissionCode: "",
+          seq: 0,
+          remark: "",
+        } as GetMenuDetailsVo,
+      }),
+      persist: {
+        key: "np_menu_manager_tree",
+        pick: ["treeCurrent", "panelCurrentRow"],
+      },
+    });
+    return store();
+  },
+
   useMenuTree() {
     const { loadMenus } = ComMenuService.useMenuService();
+    const treeStore = this.useMenuTreeStore();
+    const { treeCurrent } = storeToRefs(treeStore);
 
     const treeData = ref<GetMenuTreeVo[]>([]);
     const treeLoading = ref(true);
-    const treeCurrent = ref<string>("-1");
 
     const loadTree = async (): Promise<void> => {
       treeLoading.value = true;
@@ -66,34 +95,21 @@ export default {
 
   useMenuTreePanel(panelFormRef: Ref<FormInstance>, reloadCallback: () => void) {
     const { loadMenus } = ComMenuService.useMenuService();
-
+    const treeStore = this.useMenuTreeStore();
     const panelVisible = ref(false);
     const panelLoading = ref(false);
     const panelMode = ref<PanelMode>("add");
     const panelCurrentRow = ref<GetMenuTreeVo | null>(null);
     const fullMenuTree = ref<GetMenuTreeVo[]>([]);
 
-    const panelForm = reactive<GetMenuDetailsVo>({
-      id: "",
-      parentId: "",
-      name: "",
-      kind: 0,
-      path: "",
-      icon: "",
-      hide: 0,
-      permissionCode: "",
-      seq: 0,
-      remark: "",
-    });
-
     const panelFormLabel = computed(() => {
-      if (panelForm.kind == 0) {
+      if (treeStore.panelForm.kind == 0) {
         return "目录";
       }
-      if (panelForm.kind == 1) {
+      if (treeStore.panelForm.kind == 1) {
         return "菜单";
       }
-      if (panelForm.kind == 2) {
+      if (treeStore.panelForm.kind == 2) {
         return "按钮";
       }
       return "";
@@ -124,10 +140,10 @@ export default {
 
     // kind 变为目录时清空菜单路径
     watch(
-      () => panelForm.kind,
+      () => treeStore.panelForm.kind,
       (newVal: number | null | undefined) => {
         if (newVal == 0) {
-          panelForm.path = "";
+          treeStore.panelForm.path = "";
         }
       },
       { immediate: true }
@@ -142,19 +158,19 @@ export default {
           .filter((item) => item.kind !== 2)
           .map((item) => {
             let disabled = false;
-            if (isEditMode && item.id === panelForm.id) {
+            if (isEditMode && item.id === treeStore.panelForm.id) {
               disabled = true;
             }
             // 目录：父级只能是目录
-            if (panelForm.kind === 0 && item.kind !== 0) {
+            if (treeStore.panelForm.kind === 0 && item.kind !== 0) {
               disabled = true;
             }
             // 菜单：父级只能是目录
-            if (panelForm.kind === 1 && item.kind !== 0) {
+            if (treeStore.panelForm.kind === 1 && item.kind !== 0) {
               disabled = true;
             }
             // 按钮：父级只能是菜单
-            if (panelForm.kind === 2 && item.kind !== 1) {
+            if (treeStore.panelForm.kind === 2 && item.kind !== 1) {
               disabled = true;
             }
             return {
@@ -175,13 +191,13 @@ export default {
       };
 
       // 菜单和按钮不能直接挂在根节点下
-      const rootDisabled = panelForm.kind === 1 || panelForm.kind === 2;
+      const rootDisabled = treeStore.panelForm.kind === 1 || treeStore.panelForm.kind === 2;
       return [{ id: "", name: "根节点", disabled: rootDisabled, children: filter(fullMenuTree.value) }];
     });
 
     const panelBreadcrumb = computed<string[]>(() => {
       const root = ["全部菜单"];
-      if (!panelForm.parentId) {
+      if (!treeStore.panelForm.parentId) {
         return root;
       }
       const findPath = (nodes: GetMenuTreeVo[], targetId: string, acc: string[]): string[] | null => {
@@ -199,7 +215,7 @@ export default {
         }
         return null;
       };
-      const ancestors = findPath(fullMenuTree.value, panelForm.parentId, []);
+      const ancestors = findPath(fullMenuTree.value, treeStore.panelForm.parentId, []);
       if (ancestors) {
         return [...root, ...ancestors];
       }
@@ -214,19 +230,19 @@ export default {
     };
 
     const resetPanel = (full: boolean = false): void => {
-      panelForm.id = "";
-      panelForm.name = "";
-      panelForm.path = "";
-      panelForm.icon = "";
-      panelForm.hide = 0;
-      panelForm.permissionCode = "";
-      panelForm.seq = 0;
-      panelForm.remark = "";
+      treeStore.panelForm.id = "";
+      treeStore.panelForm.name = "";
+      treeStore.panelForm.path = "";
+      treeStore.panelForm.icon = "";
+      treeStore.panelForm.hide = 0;
+      treeStore.panelForm.permissionCode = "";
+      treeStore.panelForm.seq = 0;
+      treeStore.panelForm.remark = "";
       if (!full) {
         return;
       }
-      panelForm.parentId = "";
-      panelForm.kind = 0;
+      treeStore.panelForm.parentId = "";
+      treeStore.panelForm.kind = 0;
     };
 
     const openPanel = async (mode: PanelMode, currentRow: GetMenuTreeVo | null): Promise<void> => {
@@ -236,14 +252,14 @@ export default {
       resetPanel();
 
       if (mode === "add") {
-        panelForm.parentId = "";
+        treeStore.panelForm.parentId = "";
       }
 
       if (mode === "add-item" && currentRow) {
-        panelForm.parentId = currentRow.id;
+        treeStore.panelForm.parentId = currentRow.id;
         // 父节点是菜单时，子项默认选按钮
         if (currentRow.kind == 1) {
-          panelForm.kind = 2;
+          treeStore.panelForm.kind = 2;
         }
       }
 
@@ -253,16 +269,16 @@ export default {
           ElMessage.error(ret.message);
           return;
         }
-        panelForm.id = ret.data.id;
-        panelForm.parentId = ret.data.parentId ?? "";
-        panelForm.name = ret.data.name;
-        panelForm.kind = ret.data.kind;
-        panelForm.path = ret.data.path;
-        panelForm.icon = ret.data.icon;
-        panelForm.hide = ret.data.hide;
-        panelForm.permissionCode = ret.data.permissionCode;
-        panelForm.seq = ret.data.seq;
-        panelForm.remark = ret.data.remark;
+        treeStore.panelForm.id = ret.data.id;
+        treeStore.panelForm.parentId = ret.data.parentId ?? "";
+        treeStore.panelForm.name = ret.data.name;
+        treeStore.panelForm.kind = ret.data.kind;
+        treeStore.panelForm.path = ret.data.path;
+        treeStore.panelForm.icon = ret.data.icon;
+        treeStore.panelForm.hide = ret.data.hide;
+        treeStore.panelForm.permissionCode = ret.data.permissionCode;
+        treeStore.panelForm.seq = ret.data.seq;
+        treeStore.panelForm.remark = ret.data.remark;
       }
 
       panelVisible.value = true;
@@ -286,15 +302,15 @@ export default {
       try {
         if (panelMode.value === "add" || panelMode.value === "add-item") {
           const addDto: AddMenuDto = {
-            parentId: panelForm.parentId,
-            name: panelForm.name,
-            kind: panelForm.kind,
-            path: panelForm.path,
-            icon: panelForm.icon,
-            hide: panelForm.hide,
-            permissionCode: panelForm.permissionCode,
-            seq: panelForm.seq,
-            remark: panelForm.remark,
+            parentId: treeStore.panelForm.parentId,
+            name: treeStore.panelForm.name,
+            kind: treeStore.panelForm.kind,
+            path: treeStore.panelForm.path,
+            icon: treeStore.panelForm.icon,
+            hide: treeStore.panelForm.hide,
+            permissionCode: treeStore.panelForm.permissionCode,
+            seq: treeStore.panelForm.seq,
+            remark: treeStore.panelForm.remark,
           };
           const ret = await MenuApi.addMenu(addDto);
           if (Result.isError(ret)) {
@@ -307,16 +323,16 @@ export default {
 
         if (panelMode.value === "edit") {
           const editDto: EditMenuDto = {
-            id: panelForm.id,
-            parentId: panelForm.parentId,
-            name: panelForm.name,
-            kind: panelForm.kind,
-            path: panelForm.path,
-            icon: panelForm.icon,
-            hide: panelForm.hide,
-            permissionCode: panelForm.permissionCode,
-            seq: panelForm.seq,
-            remark: panelForm.remark,
+            id: treeStore.panelForm.id,
+            parentId: treeStore.panelForm.parentId,
+            name: treeStore.panelForm.name,
+            kind: treeStore.panelForm.kind,
+            path: treeStore.panelForm.path,
+            icon: treeStore.panelForm.icon,
+            hide: treeStore.panelForm.hide,
+            permissionCode: treeStore.panelForm.permissionCode,
+            seq: treeStore.panelForm.seq,
+            remark: treeStore.panelForm.remark,
           };
           const ret = await MenuApi.editMenu(editDto);
           if (Result.isError(ret)) {
@@ -339,7 +355,7 @@ export default {
       panelLoading,
       panelMode,
       panelCurrentRow,
-      panelForm,
+      panelForm: treeStore.panelForm,
       panelFormLabel,
       panelBreadcrumb,
       panelRules,
