@@ -14,6 +14,7 @@ const useMenuTreeStore = defineStore("menuManagerTreeStore", {
   state: () => ({
     treeData: [] as GetMenuTreeVo[],
     treeCurrent: "-1" as string,
+    panelVisible: false as boolean,
     panelCurrentRow: null as GetMenuTreeVo | null,
     panelMode: "add" as PanelMode,
     panelForm: {
@@ -31,7 +32,23 @@ const useMenuTreeStore = defineStore("menuManagerTreeStore", {
   }),
   persist: {
     key: "np_menu_manager_tree",
-    pick: ["treeCurrent", "panelCurrentRow"],
+    pick: ["treeCurrent", "panelVisible", "panelCurrentRow", "panelMode", "panelForm"],
+  },
+
+  actions: {
+    /**
+     * 重置选中状态
+     */
+    resetSelected() {
+      //先把树的选中状态重置为根节点
+      this.treeCurrent = "-1";
+      this.panelCurrentRow = null;
+
+      //然后把面板状态重置回初始
+      this.panelVisible = false;
+      this.panelMode = "add";
+      this.panelCurrentRow = null;
+    },
   },
 });
 
@@ -108,7 +125,6 @@ export default {
     const { loadMenus } = ComMenuService.useMenuService();
     const treeStore = useMenuTreeStore();
     const { treeData } = storeToRefs(treeStore);
-    const panelVisible = ref(false);
     const panelLoading = ref(false);
 
     const panelFormLabel = computed(() => {
@@ -231,6 +247,10 @@ export default {
       return root;
     });
 
+    /**
+     * 重置面板表单
+     * @param full 是否完全重置(包括父级ID和类型)
+     */
     const resetPanel = (full: boolean = false): void => {
       treeStore.panelForm.id = "";
       treeStore.panelForm.name = "";
@@ -255,43 +275,66 @@ export default {
     const openPanel = async (mode: PanelMode, currentRow: GetMenuTreeVo | null): Promise<void> => {
       treeStore.panelMode = mode;
       treeStore.panelCurrentRow = currentRow;
-      resetPanel();
 
-      if (mode === "add") {
-        treeStore.panelForm.parentId = "";
+      //编辑模式时加载详情数据
+      if (mode === "edit" && currentRow) {
+        panelLoading.value = true;
+
+        try {
+          const ret = await MenuApi.getMenuDetails({ id: currentRow.id });
+          if (Result.isError(ret)) {
+            ElMessage.error(ret.message);
+            return;
+          }
+          Object.assign(treeStore.panelForm, {
+            id: ret.data.id,
+            parentId: ret.data.parentId ?? "",
+            name: ret.data.name,
+            kind: ret.data.kind,
+            path: ret.data.path,
+            icon: ret.data.icon,
+            hide: ret.data.hide,
+            permissionCode: ret.data.permissionCode,
+            seq: ret.data.seq,
+            remark: ret.data.remark,
+          });
+        } catch (error: any) {
+          ElMessage.error(error.message);
+
+          //加载失败时把tree状态重置为初始状态
+          treeStore.resetSelected();
+          return;
+        } finally {
+          panelLoading.value = false;
+        }
       }
 
-      if (mode === "add-item" && currentRow) {
+      //新增模式时重置表单
+      if (mode === "add") {
+        resetPanel(true);
+      }
+
+      //新增子项模式时设置父级ID
+      if (mode === "add-item") {
+        resetPanel(true);
         treeStore.panelForm.parentId = currentRow.id;
-        // 父节点是菜单时，子项默认选按钮
+
+        //父级是目录时，子项默认选菜单
+        if (currentRow.kind == 0) {
+          treeStore.panelForm.kind = 1;
+        }
+
+        //父级是菜单时，子项默认选按钮
         if (currentRow.kind == 1) {
           treeStore.panelForm.kind = 2;
         }
       }
 
-      if (mode === "edit" && currentRow) {
-        const ret = await MenuApi.getMenuDetails({ id: currentRow.id });
-        if (Result.isError(ret)) {
-          ElMessage.error(ret.message);
-          return;
-        }
-        treeStore.panelForm.id = ret.data.id;
-        treeStore.panelForm.parentId = ret.data.parentId ?? "";
-        treeStore.panelForm.name = ret.data.name;
-        treeStore.panelForm.kind = ret.data.kind;
-        treeStore.panelForm.path = ret.data.path;
-        treeStore.panelForm.icon = ret.data.icon;
-        treeStore.panelForm.hide = ret.data.hide;
-        treeStore.panelForm.permissionCode = ret.data.permissionCode;
-        treeStore.panelForm.seq = ret.data.seq;
-        treeStore.panelForm.remark = ret.data.remark;
-      }
-
-      panelVisible.value = true;
+      treeStore.panelVisible = true;
     };
 
     const closePanel = (): void => {
-      panelVisible.value = false;
+      treeStore.panelVisible = false;
       resetPanel(true);
       reloadCallback();
     };
@@ -324,7 +367,7 @@ export default {
             return;
           }
           ElMessage.success("操作成功");
-          panelVisible.value = false;
+          treeStore.panelVisible = false;
         }
 
         if (treeStore.panelMode === "edit") {
@@ -346,7 +389,7 @@ export default {
             return;
           }
           ElMessage.success("操作成功");
-          panelVisible.value = false;
+          treeStore.panelVisible = false;
         }
       } finally {
         panelLoading.value = false;
@@ -364,7 +407,7 @@ export default {
     });
 
     return {
-      panelVisible,
+      panelVisible: computed(() => treeStore.panelVisible),
       panelLoading,
       panelMode: computed(() => treeStore.panelMode),
       panelCurrentRow: computed(() => treeStore.panelCurrentRow),

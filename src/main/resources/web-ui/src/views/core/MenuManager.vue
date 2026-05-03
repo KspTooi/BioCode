@@ -79,14 +79,6 @@
                   <div class="panel-breadcrumb">{{ panelBreadcrumb.join(" / ") }}</div>
                 </div>
               </div>
-              <div v-if="panelMode === 'edit'" class="panel-header-right">
-                <el-tag v-if="panelForm.kind === 0" type="info" size="small">目录</el-tag>
-                <el-tag v-if="panelForm.kind === 1" type="success" size="small">菜单</el-tag>
-                <el-tag v-if="panelForm.kind === 2" size="small">按钮</el-tag>
-                <el-tag :type="panelForm.hide === 1 ? 'danger' : 'success'" size="small">
-                  {{ panelForm.hide === 1 ? "隐藏" : "正常" }}
-                </el-tag>
-              </div>
             </div>
 
             <!-- 表单内容区 -->
