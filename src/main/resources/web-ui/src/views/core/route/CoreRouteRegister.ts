@@ -26,7 +26,7 @@ export default class CoreRouteRegister extends GenricRouteRegister {
         biz: "core",
         path: "group-manager",
         name: "group-manager",
-        component: () => import("@/views/auth/UserGroupManager.vue"),
+        component: () => import("@/views/auth/group/GroupManager.vue"),
         meta: { breadcrumb: "用户组" },
       }),
       RouteEntryPo.build({
