@@ -11,6 +11,7 @@ import com.ksptool.bio.biz.auth.model.group.dto.*;
 import com.ksptool.bio.biz.auth.model.group.vo.*;
 import com.ksptool.bio.biz.auth.model.permission.PermissionPo;
 import com.ksptool.bio.biz.auth.repository.*;
+import com.ksptool.bio.biz.core.common.SuperEntities;
 import com.ksptool.bio.biz.core.common.Switch;
 import com.ksptool.bio.biz.core.model.org.OrgPo;
 import com.ksptool.bio.biz.core.repository.MenuRepository;
@@ -38,7 +39,7 @@ public class GroupService {
     private GroupRepository repository;
 
     @Autowired
-    private PermissionRepository permissionRepository;
+    private PermissionRepository pRepository;
 
     @Autowired
     private UserGroupRepository ugRepository;
@@ -79,7 +80,7 @@ public class GroupService {
         GroupPo po = repository.findById(id).orElseThrow(() -> new BizException("用户组不存在"));
 
         //获取系统中的全部权限列表
-        List<PermissionPo> allPermPos = permissionRepository.findAll();
+        List<PermissionPo> allPermPos = pRepository.findAll();
 
         //获取该用户组拥有的权限IDS
         var groupPermIds = gpRepository.getPermissionIdsByGroupId(id);
@@ -137,7 +138,7 @@ public class GroupService {
         GroupPo save = repository.save(group);
 
         //处理权限关系
-        var permissionPos = permissionRepository.findAllById(dto.getPermissionIds());
+        var permissionPos = pRepository.findAllById(dto.getPermissionIds());
         var gpPos = new ArrayList<GroupPermissionPo>();
 
         for (var permission : permissionPos) {
@@ -222,6 +223,18 @@ public class GroupService {
                 throw new BizException("内置用户组不允许调整编码！");
             }
 
+            //获取超级操作权限
+            var sa = pRepository.getByCode(SuperEntities.PERMISSION.getCode());
+
+            if(sa == null){
+                throw new BizException("系统异常，未能获取超级操作权限！");
+            }
+
+            //检测dto里面是否把超级操作权限去除了 如果去除了则补回它
+            if(!dto.getPermissionIds().contains(sa.getId())){
+                dto.getPermissionIds().add(sa.getId());
+            }
+
         }
 
 
@@ -241,7 +254,7 @@ public class GroupService {
 
         //处理权限关系 先清除该用户组下挂载的权限关系
         gpRepository.clearPermissionByGroupId(group.getId());
-        var permissionPos = permissionRepository.findAllById(dto.getPermissionIds());
+        var permissionPos = pRepository.findAllById(dto.getPermissionIds());
         var gpPos = new ArrayList<GroupPermissionPo>();
 
         for (var permission : permissionPos) {
@@ -358,7 +371,7 @@ public class GroupService {
         }
 
         //查找数据库中不存在的权限
-        Set<String> existingPermissions = permissionRepository.getExistingPermissionsByCode(permissions);
+        Set<String> existingPermissions = pRepository.getExistingPermissionsByCode(permissions);
         Set<String> missingPermissions = new HashSet<>(permissions);
         missingPermissions.removeAll(existingPermissions);
 
@@ -397,7 +410,7 @@ public class GroupService {
         }
 
         //获取该组拥有的权限
-        var groupPerms = permissionRepository.getPermissionsByGroupId(group.getId());
+        var groupPerms = pRepository.getPermissionsByGroupId(group.getId());
 
         //设置菜单当前组是否有权限
         for (var vo : flatVos) {
@@ -485,10 +498,10 @@ public class GroupService {
         GroupPo group = repository.findById(dto.getGroupId()).orElseThrow(() -> new BizException("用户组不存在"));
 
         //查找权限节点
-        var pPos = permissionRepository.getPermissionsByKeywordAndGroup(dto.getKeyword(), group.getId(), dto.getHasPermission(), dto.pageRequest());
+        var pPos = pRepository.getPermissionsByKeywordAndGroup(dto.getKeyword(), group.getId(), dto.getHasPermission(), dto.pageRequest());
         List<GetGroupPermissionNodeVo> vos = as(pPos.getContent(), GetGroupPermissionNodeVo.class);
 
-        var groupPerms = permissionRepository.getPermissionsByGroupId(group.getId());
+        var groupPerms = pRepository.getPermissionsByGroupId(group.getId());
 
         for (var vo : vos) {
             vo.setHasPermission(0);
@@ -515,10 +528,10 @@ public class GroupService {
         GroupPo group = repository.findById(dto.getGroupId()).orElseThrow(() -> new BizException("用户组不存在"));
 
         //获取当前组拥有的权限
-        var groupPerms = permissionRepository.getPermissionsByGroupId(group.getId());
+        var groupPerms = pRepository.getPermissionsByGroupId(group.getId());
 
         //获取要操作的权限
-        var permPos = permissionRepository.getPermissionsByCodes(dto.getPermissionCodes());
+        var permPos = pRepository.getPermissionsByCodes(dto.getPermissionCodes());
 
         //清空该组下挂载的权限关系
         gpRepository.clearPermissionByGroupId(group.getId());
