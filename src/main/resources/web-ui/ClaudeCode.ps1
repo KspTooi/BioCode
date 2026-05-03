@@ -28,7 +28,6 @@ $envVars = @{
     "ANTHROPIC_DEFAULT_SONNET_MODEL"  = "deepseek-v4-pro[1m]"
     "ANTHROPIC_DEFAULT_HAIKU_MODEL"   = "deepseek-v4-flash"
     "CLAUDE_CODE_SUBAGENT_MODEL"      = "deepseek-v4-flash"
-    "CLAUDE_CODE_EFFORT_LEVEL"        = "max"
 }
 
 foreach ($key in $envVars.Keys) {
@@ -67,6 +66,37 @@ if ($inputKey -ne "") {
     exit 1
 } else {
     Write-Host "使用现有 API Key。" -ForegroundColor Green
+}
+Write-Host ""
+
+# 处理思考强度
+$storedEffort = [System.Environment]::GetEnvironmentVariable("CLAUDE_CODE_EFFORT_LEVEL", "User")
+$effortDisplay = if ($storedEffort) { $storedEffort } else { "unset" }
+Write-Host "思考强度（CLAUDE_CODE_EFFORT_LEVEL）：上次：$effortDisplay，回车保持" -ForegroundColor DarkYellow
+Write-Host "可选：low / medium / high / xhigh / max / unset（回车保持上次选择）" -ForegroundColor DarkGray
+$inputEffort = Read-Host "请输入思考强度"
+
+if ($inputEffort -ne "") {
+    if ($inputEffort -eq "unset") {
+        [System.Environment]::SetEnvironmentVariable("CLAUDE_CODE_EFFORT_LEVEL", $null, "User")
+        Remove-Item -Path "Env:CLAUDE_CODE_EFFORT_LEVEL" -ErrorAction SilentlyContinue
+        Write-Host "思考强度已取消设置（unset）。" -ForegroundColor Green
+    } elseif ($inputEffort -in @("low", "medium", "high", "xhigh", "max")) {
+        [System.Environment]::SetEnvironmentVariable("CLAUDE_CODE_EFFORT_LEVEL", $inputEffort, "User")
+        $env:CLAUDE_CODE_EFFORT_LEVEL = $inputEffort
+        Write-Host "思考强度已设置为：$inputEffort" -ForegroundColor Green
+    } else {
+        Write-Host "无效输入，保持上次选择：$effortDisplay" -ForegroundColor DarkYellow
+        if ($storedEffort) { $env:CLAUDE_CODE_EFFORT_LEVEL = $storedEffort }
+    }
+} else {
+    if ($storedEffort) {
+        $env:CLAUDE_CODE_EFFORT_LEVEL = $storedEffort
+        Write-Host "保持上次选择：$storedEffort" -ForegroundColor Green
+    } else {
+        Remove-Item -Path "Env:CLAUDE_CODE_EFFORT_LEVEL" -ErrorAction SilentlyContinue
+        Write-Host "保持上次选择：unset" -ForegroundColor Green
+    }
 }
 Write-Host ""
 
