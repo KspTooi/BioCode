@@ -14,7 +14,7 @@ public class GetMenuTreeDto {
     @Schema(description = "菜单类型 0:目录 1:菜单 2:按钮")
     private Integer kind;
 
-    @Schema(description = "权限码(模糊)")
+    @Schema(description = "权限码")
     private String permissionCode;
 
 }

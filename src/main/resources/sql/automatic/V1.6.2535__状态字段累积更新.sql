@@ -1,1 +1,0 @@
-ALTER TABLE `core_user` MODIFY COLUMN `status` tinyint NOT NULL COMMENT '用户状态 0:封禁 1:正常' AFTER `login_count`

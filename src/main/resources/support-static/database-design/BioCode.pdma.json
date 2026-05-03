@@ -4,7 +4,7 @@
   "avatar": "",
   "version": "4.9.4",
   "createdTime": "2025-5-31 18:54:43",
-  "updatedTime": "2026-5-3 07:29:57",
+  "updatedTime": "2026-5-3 09:12:59",
   "dbConns": [],
   "profile": {
     "default": {
@@ -25634,7 +25634,7 @@
           "refDict": "",
           "baseType": "D4F3414B-7780-49DE-979F-E697B65AE78D",
           "extProps": {},
-          "domain": "6AF16962-271B-4EAD-A807-705E81F24B8C",
+          "domain": "3F9E08C8-96C1-4FD0-9F00-BEF0DB7FB7B9",
           "id": "6D80BD2D-5E51-4328-AC66-5A30F03946B7"
         },
         {
@@ -25652,26 +25652,8 @@
           "refDict": "",
           "baseType": "D4F3414B-7780-49DE-979F-E697B65AE78D",
           "extProps": {},
-          "domain": "6AF16962-271B-4EAD-A807-705E81F24B8C",
+          "domain": "3F9E08C8-96C1-4FD0-9F00-BEF0DB7FB7B9",
           "id": "87A78281-076A-4A1E-A73B-022B8D8B02FC"
-        },
-        {
-          "defKey": "dept_id",
-          "defName": "部门ID",
-          "comment": "",
-          "type": "",
-          "len": "",
-          "scale": "",
-          "primaryKey": false,
-          "notNull": true,
-          "autoIncrement": false,
-          "defaultValue": "",
-          "hideInGraph": false,
-          "refDict": "",
-          "baseType": "D4F3414B-7780-49DE-979F-E697B65AE78D",
-          "extProps": {},
-          "domain": "6AF16962-271B-4EAD-A807-705E81F24B8C",
-          "id": "2E547545-B0C6-4378-A737-1DC5811B7E3A"
         },
         {
           "defKey": "parent_id",
@@ -25688,7 +25670,7 @@
           "refDict": "",
           "baseType": "D4F3414B-7780-49DE-979F-E697B65AE78D",
           "extProps": {},
-          "domain": "6AF16962-271B-4EAD-A807-705E81F24B8C",
+          "domain": "3F9E08C8-96C1-4FD0-9F00-BEF0DB7FB7B9",
           "id": "CCB53AD3-325A-4D66-9385-8C3D75889F11"
         },
         {
@@ -25706,7 +25688,7 @@
           "refDict": "",
           "baseType": "566FB128-DBDE-4D78-9260-24C96D09CFE0",
           "extProps": {},
-          "domain": "E8BE6EBB-CA13-475A-BBEE-6E54CB5815E5",
+          "domain": "7A89EED8-9148-4AB5-ADE2-62B78EDDA47F",
           "id": "1A9DC43F-FEC5-46BB-9DFF-5398594ACFF8"
         },
         {
@@ -25731,8 +25713,8 @@
           "defKey": "path",
           "defName": "指向路径",
           "comment": "",
-          "type": "VARCHAR",
-          "len": 500,
+          "type": "",
+          "len": "",
           "scale": "",
           "primaryKey": false,
           "notNull": false,
@@ -25742,7 +25724,7 @@
           "refDict": "",
           "baseType": "566FB128-DBDE-4D78-9260-24C96D09CFE0",
           "extProps": {},
-          "domain": "",
+          "domain": "B64A0102-0F8B-442C-AB6D-4F0971BC71DA",
           "id": "9BCBAC85-B21D-4DD0-9555-D092FA9D081A"
         },
         {
@@ -25783,10 +25765,10 @@
         },
         {
           "defKey": "permission_code",
-          "defName": "所需权限码(多个逗号)",
+          "defName": "所需权限码Set<String>",
           "comment": "",
-          "type": "VARCHAR",
-          "len": 500,
+          "type": "",
+          "len": "",
           "scale": "",
           "primaryKey": false,
           "notNull": false,
@@ -25794,9 +25776,9 @@
           "defaultValue": "",
           "hideInGraph": false,
           "refDict": "",
-          "baseType": "566FB128-DBDE-4D78-9260-24C96D09CFE0",
+          "baseType": "2F88EAF9-55AD-4118-AD4B-CF341ECC9A4D",
           "extProps": {},
-          "domain": "",
+          "domain": "6EDF7824-209D-43F3-AE9D-02247D33147B",
           "id": "DED18897-1EEE-474A-A462-C234A9F9CA10"
         },
         {
@@ -25814,7 +25796,7 @@
           "refDict": "",
           "baseType": "D6F266BC-0AF9-4E75-BD79-56B34FA0191F",
           "extProps": {},
-          "domain": "D209B1E4-22F0-448B-B944-33EC0844DDFC",
+          "domain": "5FAA886E-14ED-43BD-8790-93F649EB8354",
           "id": "D24BB0FA-D6C7-4E94-9284-56CD207F10E7"
         },
         {
@@ -25830,9 +25812,9 @@
           "defaultValue": "",
           "hideInGraph": false,
           "refDict": "",
-          "baseType": "B283AF71-114C-45F0-AAA1-FE89710DF493",
+          "baseType": "566FB128-DBDE-4D78-9260-24C96D09CFE0",
           "extProps": {},
-          "domain": "932160CF-A8A5-421F-833D-4375EDDF3F3C",
+          "domain": "D37A0C33-C576-4073-AFD6-C935ECB22DEA",
           "id": "9E9016DD-7F48-45F7-B8F4-C7DE072F19E9"
         },
         {

@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -31,8 +32,8 @@ public class GetUserMenuTreeVo {
     @Schema(description = "是否隐藏 0:否 1:是")
     private Integer hide;
 
-    @Schema(description = "所需权限")
-    private String permissionCode;
+    @Schema(description = "权限码列表")
+    private Set<String> permissionCode;
 
     @Schema(description = "排序")
     private Integer seq;

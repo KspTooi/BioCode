@@ -365,9 +365,7 @@ public class GroupService {
         //搜集菜单中的权限列表
         var permissions = new HashSet<String>();
         for (var menuPo : menuPos) {
-            if (StringUtils.isNotBlank(menuPo.getPermissionCode())) {
-                permissions.addAll(Str.safeSplit(menuPo.getPermissionCode(), ";"));
-            }
+            permissions.addAll(menuPo.getPermissionCode());
         }
 
         //查找数据库中不存在的权限
