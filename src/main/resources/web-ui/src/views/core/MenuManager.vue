@@ -6,7 +6,7 @@
         <div class="left-pane">
           <div class="tree-area">
             <StdAdvTree
-              v-model="currentKey"
+              v-model="treeCurrent"
               :data="treeData"
               :loading="treeLoading"
               :nr="true"
@@ -103,7 +103,7 @@
                   <el-form-item label="父级菜单" prop="parentId">
                     <el-tree-select
                       v-model="panelForm.parentId"
-                      :data="menuTreeForSelect"
+                      :data="panelParentMenuTree"
                       node-key="id"
                       :props="{ value: 'id', label: 'name', children: 'children' }"
                       check-strictly
@@ -250,7 +250,7 @@ const openGRCM = (): void => {
 
 const panelFormRef = ref<FormInstance>();
 
-const { treeData, treeLoading, currentKey, loadTree, removeNode } = MenuManagerService.useMenuTree();
+const { treeData, treeLoading, treeCurrent, loadTree, removeNode } = MenuManagerService.useMenuTree();
 
 const {
   panelVisible,
@@ -261,7 +261,7 @@ const {
   panelFormLabel,
   panelBreadcrumb,
   panelRules,
-  menuTreeForSelect,
+  panelParentMenuTree,
   openPanel,
   closePanel,
   submitPanel,

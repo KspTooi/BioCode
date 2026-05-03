@@ -13,7 +13,7 @@ export default {
 
     const treeData = ref<GetMenuTreeVo[]>([]);
     const treeLoading = ref(true);
-    const currentKey = ref<string>("-1");
+    const treeCurrent = ref<string>("-1");
 
     const loadTree = async (): Promise<void> => {
       treeLoading.value = true;
@@ -58,7 +58,7 @@ export default {
     return {
       treeData,
       treeLoading,
-      currentKey,
+      treeCurrent,
       loadTree,
       removeNode,
     };
@@ -134,7 +134,7 @@ export default {
     );
 
     // 父级选择树：过滤掉按钮，并根据当前菜单类型禁用不合法的父级
-    const menuTreeForSelect = computed(() => {
+    const panelParentMenuTree = computed(() => {
       const isEditMode = panelMode.value === "edit";
 
       const filter = (menuTree: GetMenuTreeVo[]): GetMenuTreeVo[] => {
@@ -343,7 +343,7 @@ export default {
       panelFormLabel,
       panelBreadcrumb,
       panelRules,
-      menuTreeForSelect,
+      panelParentMenuTree,
       openPanel,
       resetPanel,
       closePanel,
