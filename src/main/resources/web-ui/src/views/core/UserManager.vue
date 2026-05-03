@@ -205,12 +205,19 @@
             show-word-limit
             :maxlength="128"
             show-password
-            :placeholder="modalMode === 'add' ? '请输入密码' : '不修改密码请留空'"
+            :disabled="modalMode === 'edit' && modalForm.isSystem === 1"
+            :placeholder="
+              modalMode === 'edit' && modalForm.isSystem === 1
+                ? '系统内置用户不允许改密'
+                : modalMode === 'add'
+                  ? '请输入密码'
+                  : '不修改密码请留空'
+            "
           />
-          <div v-if="modalMode === 'edit'" class="form-tip">不修改密码请留空</div>
+          <div v-if="modalMode === 'edit' && modalForm.isSystem !== 1" class="form-tip">不修改密码请留空</div>
         </el-form-item>
         <el-form-item label="昵称" prop="nickname">
-          <el-input show-word-limit :maxlength="50" v-model="modalForm.nickname" placeholder="请输入用户姓名" />
+          <el-input show-word-limit :maxlength="50" v-model="modalForm.nickname" placeholder="请输入用户昵称" />
         </el-form-item>
         <el-form-item label="所属组织机构" prop="orgId">
           <el-tree-select
@@ -238,8 +245,8 @@
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="modalForm.status" placeholder="请选择状态">
-            <el-radio :label="1">正常</el-radio>
-            <el-radio :label="0">封禁</el-radio>
+            <el-radio :label="1" :disabled="modalMode === 'edit' && modalForm.isSystem === 1">正常</el-radio>
+            <el-radio :label="0" :disabled="modalMode === 'edit' && modalForm.isSystem === 1">封禁</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item v-if="modalMode === 'edit'" label="系统用户">
