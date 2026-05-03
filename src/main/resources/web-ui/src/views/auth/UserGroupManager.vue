@@ -186,13 +186,7 @@
               />
             </el-form-item>
             <el-form-item label="用户组名称" prop="name" label-for="group-name">
-              <el-input
-                id="group-name"
-                show-word-limit
-                :maxlength="80"
-                v-model="modalForm.name"
-                placeholder="请输入组名称"
-              />
+              <el-input id="group-name" show-word-limit :maxlength="80" v-model="modalForm.name" placeholder="请输入组名称" />
             </el-form-item>
             <el-form-item label="排序号" prop="seq">
               <el-input-number v-model="modalForm.seq" :min="0" :max="655350" class="w-full" />
@@ -270,7 +264,10 @@
               <div class="h-[380px] overflow-y-auto p-2.5">
                 <el-checkbox-group v-model="selectedPermissionIds">
                   <div v-for="permission in filteredPermissions" :key="permission.id" class="permission-row py-1.5">
-                    <el-checkbox :value="permission.id">
+                    <el-checkbox
+                      :value="permission.id"
+                      :disabled="modalMode === 'edit' && isSystemGroup && permission.code === '*:*:*'"
+                    >
                       <div class="flex flex-col leading-snug ml-2">
                         <div class="text-[13px] perm-name-color">{{ permission.name }}</div>
                         <div class="text-[11px] font-mono perm-code-color">{{ permission.code }}</div>
