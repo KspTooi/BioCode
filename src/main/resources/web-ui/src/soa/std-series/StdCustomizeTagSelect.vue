@@ -1,3 +1,8 @@
+<!--
+ * @Author: KspTooi
+ * @Date: 2026-04-29 16:36:26
+ * @Description: 自定义标签选择组件，这个组件除了输出CTJ格式的双向绑定外，其他与el-select组件一致。
+-->
 <template>
   <el-select :model-value="selectValue" multiple v-bind="$attrs" @update:model-value="onChange">
     <el-option v-for="tag in tags" :key="tag.n" :label="tag.n" :value="tag.n" />
