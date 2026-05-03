@@ -1,5 +1,6 @@
-package com.ksptool.bio.biz.auth.common;
+package com.ksptool.bio.biz.auth.common.jpa;
 
+import com.ksptool.bio.biz.auth.common.RowScopes;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
@@ -11,7 +12,7 @@ import jakarta.persistence.Converter;
  * @since 2026-04-29
  */
 @Converter(autoApply = true)
-public class RowScopesConverter implements AttributeConverter<RowScopes, Integer> {
+public class RowScopesConv implements AttributeConverter<RowScopes, Integer> {
 
     @Override
     public Integer convertToDatabaseColumn(RowScopes attribute) {
