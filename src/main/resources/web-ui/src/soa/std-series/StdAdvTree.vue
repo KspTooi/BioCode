@@ -29,7 +29,7 @@
           </el-icon>
           <span class="node-label">{{ nrTitle || "全部" }}</span>
         </span>
-        <span class="adv-tree-actions flex items-center">
+        <span class="adv-tree-actions flex items-center" @click.stop>
           <slot name="root-actions" />
         </span>
       </div>
@@ -57,19 +57,19 @@
               <span class="node-label">{{ node.label }}</span>
               <slot name="append" :node="node" :data="nodeData" />
             </span>
-            <span class="adv-tree-actions flex items-center">
+            <span class="adv-tree-actions flex items-center" @click.stop>
               <slot name="actions" :node="node" :data="nodeData">
                 <template v-if="action">
-                  <el-icon v-if="actionMode?.includes('add')" @click.stop="emit('on-add', nodeData)">
+                  <el-icon v-if="actionMode?.includes('add')" @click="emit('on-add', nodeData)">
                     <component :is="resolveIcon('ep:plus')" />
                   </el-icon>
-                  <el-icon v-if="actionMode?.includes('edit')" @click.stop="emit('on-edit', nodeData)">
+                  <el-icon v-if="actionMode?.includes('edit')" @click="emit('on-edit', nodeData)">
                     <component :is="resolveIcon('ep:edit')" />
                   </el-icon>
                   <el-icon
                     v-if="actionMode?.includes('remove')"
                     class="action-danger"
-                    @click.stop="emit('on-remove', nodeData)"
+                    @click="emit('on-remove', nodeData)"
                   >
                     <component :is="resolveIcon('ep:delete')" />
                   </el-icon>
