@@ -28,7 +28,7 @@ import static com.ksptool.bio.biz.auth.service.SessionService.session;
 @PrintLog
 @RestController
 @RequestMapping("/collection")
-@Tag(name = "请求集合", description = "请求集合管理")
+@Tag(name = "RDBG-请求集合", description = "请求集合管理")
 @Slf4j
 public class CollectionController {
 

@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @PrintLog
 @RestController
 @RequestMapping("/simpleFilterOperation")
-@Tag(name = "简单过滤器操作")
+@Tag(name = "RDBG-简单过滤器操作", description = "简单过滤器操作管理")
 @Slf4j
 public class SimpleFilterOperationController {
 

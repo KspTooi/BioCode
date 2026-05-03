@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @PrintLog
 @RestController
 @RequestMapping("/userRequestGroup")
-@Tag(name = "UserRequestGroup", description = "请求组中的请求")
+@Tag(name = "RDBG-请求组中的请求", description = "请求组中的请求管理")
 @Slf4j
 public class UserRequestGroupController {
 

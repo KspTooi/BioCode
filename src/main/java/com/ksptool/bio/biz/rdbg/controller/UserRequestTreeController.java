@@ -25,7 +25,7 @@ import java.util.List;
 @PrintLog
 @RestController
 @RequestMapping("/userRequestTree")
-@Tag(name = "用户请求树", description = "用户请求树")
+@Tag(name = "RDBG-用户请求树", description = "用户请求树管理")
 @Slf4j
 public class UserRequestTreeController {
 

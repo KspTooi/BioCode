@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @PrintLog
 @RestController
 @RequestMapping("/userRequestEnv")
-@Tag(name = "UserRequestEnv", description = "用户请求环境")
+@Tag(name = "RDBG-用户请求环境", description = "用户请求环境管理")
 @Slf4j
 public class UserRequestEnvController {
 
