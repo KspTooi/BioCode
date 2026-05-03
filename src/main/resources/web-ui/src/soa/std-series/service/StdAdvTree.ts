@@ -99,9 +99,17 @@ export default {
       return fields.some((field) => String(data[field] ?? "").includes(value));
     };
 
+    let searchTimer: ReturnType<typeof setTimeout> | null = null;
+
     const onFilterInput = (val: string): void => {
-      treeRef.value?.filter(val);
-      emit("on-search", val);
+      if (searchTimer !== null) {
+        clearTimeout(searchTimer);
+      }
+      searchTimer = setTimeout(() => {
+        searchTimer = null;
+        treeRef.value?.filter(val);
+        emit("on-search", val);
+      }, 300);
     };
 
     const onNodeClick = (data: any): void => {
