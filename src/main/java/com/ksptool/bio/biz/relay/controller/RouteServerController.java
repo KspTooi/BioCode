@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @PrintLog
 @RestController
 @RequestMapping("/routeServer")
-@Tag(name = "RouteServer", description = "路由服务器")
+@Tag(name = "RELAY-路由服务器", description = "路由服务器管理")
 @Slf4j
 public class RouteServerController {
 

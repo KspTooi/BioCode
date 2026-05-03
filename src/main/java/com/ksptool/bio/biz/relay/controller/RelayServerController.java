@@ -22,7 +22,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("/relayServer")
-@Tag(name = "relayServer", description = "中继服务器")
+@Tag(name = "RELAY-中继服务器", description = "中继服务器管理")
 public class RelayServerController {
 
 
