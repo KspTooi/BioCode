@@ -2,7 +2,7 @@
   <div class="list-layout">
     <splitpanes class="custom-theme">
       <!-- 左侧菜单树 -->
-      <pane size="25" min-size="15" max-size="45">
+      <pane max-size="55" style="min-width: 375px">
         <div class="left-pane">
           <div class="tree-area">
             <StdAdvTree
@@ -11,7 +11,7 @@
               :init-value="treeCurrent"
               :loading="treeLoading"
               :nr="true"
-              :nr-title="'全部菜单'"
+              :nr-title="'根菜单'"
               :nr-icon="'ep:menu'"
               :nr-value="'-1'"
               ni="icon"
@@ -205,7 +205,6 @@
                 </section>
               </el-form>
             </el-scrollbar>
-
           </div>
 
           <div v-show="!panelVisible" class="panel-empty">

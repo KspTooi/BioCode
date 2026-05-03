@@ -1,3 +1,8 @@
+<!--
+ * @Author: KspTooi
+ * @Date: 2026-04-29 16:36:26
+ * @Description: 高级树组件，这个树组件提供更多丰富的高级功能，例如自定义搜索、刷新、根节点、节点操作等。
+-->
 <template>
   <div v-loading="loading" class="adv-tree-container">
     <div v-if="search || searchRefresh" class="filter-wrapper">
@@ -68,11 +73,7 @@
                   <el-icon v-if="actionMode?.includes('edit')" @click="emit('on-edit', nodeData)">
                     <component :is="resolveIcon('ep:edit')" />
                   </el-icon>
-                  <el-icon
-                    v-if="actionMode?.includes('remove')"
-                    class="action-danger"
-                    @click="emit('on-remove', nodeData)"
-                  >
+                  <el-icon v-if="actionMode?.includes('remove')" class="action-danger" @click="emit('on-remove', nodeData)">
                     <component :is="resolveIcon('ep:delete')" />
                   </el-icon>
                 </template>
