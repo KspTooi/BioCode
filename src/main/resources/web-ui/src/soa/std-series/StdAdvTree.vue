@@ -54,7 +54,9 @@
                   <component :is="resolveIcon(nodeData[ni])" />
                 </el-icon>
               </slot>
-              <span class="node-label">{{ node.label }}</span>
+              <span class="node-label">
+                <slot name="label" :node="node" :data="nodeData">{{ node.label }}</slot>
+              </span>
               <slot name="append" :node="node" :data="nodeData" />
             </span>
             <span class="adv-tree-actions flex items-center" @click.stop>
