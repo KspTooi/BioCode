@@ -56,8 +56,10 @@
 
       <!-- 右侧详情面板 -->
       <pane size="75">
-        <div v-loading="panelLoading" class="right-pane">
-          <template v-if="panelVisible">
+        <div class="right-pane">
+          <el-skeleton v-show="panelLoading" :rows="14" animated class="panel-skeleton" />
+
+          <div v-show="!panelLoading && panelVisible">
             <!-- 顶部装饰线 -->
             <div class="panel-accent-bar" :class="`accent-${panelForm.kind}`" />
 
@@ -116,7 +118,7 @@
                           v-model="panelForm.name"
                           placeholder="请输入菜单名称"
                           clearable
-                          maxlength="32"
+                          maxlength="40"
                           show-word-limit
                         />
                       </el-form-item>
@@ -149,7 +151,7 @@
                     </el-col>
                   </el-row>
                   <el-form-item v-if="panelForm.kind == 1" :label="panelFormLabel + '路径'" prop="path">
-                    <el-input v-model="panelForm.path" placeholder="请输入菜单路径" clearable maxlength="500" show-word-limit>
+                    <el-input v-model="panelForm.path" placeholder="请输入菜单路径" clearable maxlength="512" show-word-limit>
                       <template #append>
                         <el-button @click="openGRCM">选择路由</el-button>
                       </template>
@@ -190,7 +192,7 @@
                       :rows="3"
                       placeholder="请输入备注"
                       clearable
-                      maxlength="500"
+                      maxlength="200"
                       show-word-limit
                     />
                   </el-form-item>
@@ -205,9 +207,9 @@
                 {{ panelMode === "edit" ? "保存" : "创建" }}
               </el-button>
             </div>
-          </template>
+          </div>
 
-          <div v-else class="panel-empty">
+          <div v-show="!panelVisible" class="panel-empty">
             <el-icon class="panel-empty-icon"><Menu /></el-icon>
             <p class="panel-empty-title">暂无选中菜单</p>
             <p class="panel-empty-desc">在左侧选择菜单查看详情，或点击下方按钮快速创建</p>
@@ -456,6 +458,10 @@ const {
   padding-bottom: 12px;
   margin-bottom: 18px;
   border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.panel-skeleton {
+  padding: 24px 28px;
 }
 
 .panel-section-empty {

@@ -5,6 +5,8 @@ import { Result } from "@/commons/model/Result";
 import { ElMessage, ElMessageBox, type FormInstance } from "element-plus";
 import ComMenuService from "@/soa/com-series/service/ComMenuService.ts";
 import { defineStore, storeToRefs } from "pinia";
+import type { GetPermissionDefinitionVo } from "@/views/auth/api/PermissionApi";
+import PermissionApi from "@/views/auth/api/PermissionApi";
 
 //面板模式
 type PanelMode = "add" | "edit" | "add-item";
@@ -14,6 +16,7 @@ const useMenuServiceStore = defineStore("menuManagerTreeStore", {
   state: () => ({
     treeData: [] as GetMenuTreeVo[],
     treeCurrent: "-1" as string,
+    panelPermissionCodes: [] as GetPermissionDefinitionVo[],
     panelVisible: false as boolean,
     panelCurrentRow: null as GetMenuTreeVo | null,
     panelMode: "add" as PanelMode,
@@ -60,17 +63,23 @@ export default {
     const { loadMenus } = ComMenuService.useMenuService();
     const treeStore = useMenuServiceStore();
     const { treeCurrent, treeData } = storeToRefs(treeStore);
-
     const treeLoading = ref(true);
 
+    /**
+     * 加载菜单树
+     */
     const loadTree = async (): Promise<void> => {
       treeLoading.value = true;
 
       try {
         const result = await MenuApi.getMenuTree({});
 
+        //加载权限代码列表
+        const permissionCodes = await PermissionApi.getPermissionDefinition();
+
         if (Result.isSuccess(result)) {
           treeData.value = result.data;
+          treeStore.panelPermissionCodes = permissionCodes;
         }
 
         if (Result.isError(result)) {
@@ -143,15 +152,15 @@ export default {
     const panelRules = {
       name: [
         { required: true, message: "请输入菜单名称", trigger: "blur" },
-        { min: 2, max: 128, message: "菜单名称长度必须在2-128个字符之间", trigger: "blur" },
+        { min: 2, max: 40, message: "菜单名称长度必须在2-40个字符之间", trigger: "blur" },
       ],
       kind: [{ required: true, message: "请选择菜单类型", trigger: "blur" }],
       path: [
         { required: true, message: "请输入菜单路径", trigger: "blur" },
-        { max: 500, message: "菜单路径长度不能超过500个字符", trigger: "blur" },
+        { max: 512, message: "菜单路径长度不能超过512个字符", trigger: "blur" },
       ],
       permissionCode: [{ max: 500, message: "所需权限长度不能超过500个字符", trigger: "blur" }],
-      remark: [{ max: 500, message: "备注长度不能超过500个字符", trigger: "blur" }],
+      remark: [{ max: 200, message: "备注长度不能超过200个字符", trigger: "blur" }],
       seq: [
         { required: true, message: "请输入排序", trigger: "blur" },
         { type: "number", min: 0, max: 655350, message: "排序只能在0-655350之间", trigger: "blur" },
