@@ -142,6 +142,7 @@ defineExpose({ reset, filter, getTreeRef });
   height: 100%;
   background-color: var(--el-bg-color);
   box-sizing: border-box;
+  user-select: none;
 }
 
 /* ── 搜索区域 ── */
