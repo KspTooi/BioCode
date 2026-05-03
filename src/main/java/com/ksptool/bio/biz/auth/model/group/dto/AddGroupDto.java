@@ -52,10 +52,6 @@ public class AddGroupDto implements DtoCustomValidator{
     @Schema(description = "权限ID列表 允许空数组但不能为NULL")
     private List<Long> permissionIds;
 
-    @NotNull(message = "菜单ID列表不能为空")
-    @Schema(description = "菜单ID列表 允许空数组但不能为NULL")
-    private List<Long> menuIds;
-
     /**
      * 验证入参
      *

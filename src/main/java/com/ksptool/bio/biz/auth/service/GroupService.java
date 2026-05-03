@@ -106,16 +106,6 @@ public class GroupService {
             gpRepository.saveAll(gpPos);
         }
 
-        //处理GM关系
-        var mPos = menuRepository.findAllById(dto.getMenuIds());
-        var gmPos = mPos.stream().map(m -> {
-            return new GroupMenuPo(gId, m.getId());
-        }).toList();
-        
-        if (!gmPos.isEmpty()) {
-            gmRepository.saveAll(gmPos);
-        }
-
         //处理GD关系 RS=指定组织时才需要处理 如果RS不是指定组织 则直接清空GD关系
         if (dto.getRowScope() == RowScopes.SPECIFIED_ORG) {
 
@@ -196,9 +186,8 @@ public class GroupService {
         //合并同类项
         assign(dto, g);
 
-        //对比GP + GM + GD关系的差异
+        //对比GP + GD关系的差异
         var gpIdsDiff = new IdsDiff(gpRepository.getPidsByGid(g.getId()), dto.getPermissionIds());
-        var gmIdsDiff = new IdsDiff(gmRepository.getMidsByGid(g.getId()), dto.getMenuIds());
         var gdIdsDiff = new IdsDiff(gdRepository.getDidsByGid(g.getId()), dto.getDeptIds());
 
         //处理GP的新增/删除关系
@@ -209,16 +198,6 @@ public class GroupService {
         
         if(gpIdsDiff.hasRemove()){
             gpRepository.removeByGidAndPids(g.getId(), gpIdsDiff.getRemoveIds());
-        }
-
-        //处理GM的新增/删除关系
-        if(gmIdsDiff.hasAdd()){
-            var gmPos = gmIdsDiff.getAddIds().stream().map(id -> new GroupMenuPo(g.getId(), id)).toList();
-            gmRepository.saveAll(gmPos);
-        }
-        
-        if(gmIdsDiff.hasRemove()){
-            gmRepository.removeByGidAndMids(g.getId(), gmIdsDiff.getRemoveIds());
         }
 
         //处理GD的新增/删除关系 只有RS=指定组织时才需要处理 如果RS不是指定组织 则直接清空GD关系

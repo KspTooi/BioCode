@@ -204,7 +204,7 @@
                 id="group-remark"
                 v-model="modalForm.remark"
                 type="textarea"
-                :rows="2"
+                :rows="4"
                 placeholder="请输入描述"
               />
             </el-form-item>
