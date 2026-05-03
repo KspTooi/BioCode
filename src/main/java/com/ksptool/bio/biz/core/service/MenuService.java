@@ -148,9 +148,7 @@ public class MenuService {
         //搜集菜单中的权限列表
         var permissions = new HashSet<String>();
         for (MenuPo menuPo : list) {
-            if (StringUtils.isNotBlank(menuPo.getPermissionCode())) {
-                permissions.addAll(Str.safeSplit(menuPo.getPermissionCode(), ";"));
-            }
+            permissions.addAll(menuPo.getPermissionCode());
         }
 
         //查找数据库中不存在的权限
@@ -160,12 +158,12 @@ public class MenuService {
 
         // 设置缺失权限标记
         for (GetMenuTreeVo vo : flatVos) {
-            if (StringUtils.isBlank(vo.getPermissionCode())) {
+            if (vo.getPermissionCode() == null || vo.getPermissionCode().isEmpty()) {
                 vo.setMissingPermission(0);
                 continue;
             }
 
-            List<String> perms = Str.safeSplit(vo.getPermissionCode(), ";");
+            List<String> perms = new ArrayList<>(vo.getPermissionCode());
             int missingCount = 0;
             int totalCount = perms.size();
 

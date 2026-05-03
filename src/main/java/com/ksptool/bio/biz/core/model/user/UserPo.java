@@ -3,6 +3,7 @@ package com.ksptool.bio.biz.core.model.user;
 import com.ksptool.assembly.entity.exception.AuthException;
 import com.ksptool.bio.biz.auth.common.aop.RowScopePo;
 import com.ksptool.bio.biz.auth.service.SessionService;
+import com.ksptool.bio.biz.core.common.Switch;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
 import com.ksptool.bio.biz.core.model.attach.AttachPo;
 import jakarta.persistence.*;
@@ -64,7 +65,7 @@ public class UserPo extends RowScopePo{
     @Column(name = "login_count", nullable = false, comment = "登录次数")
     private Integer loginCount;
 
-    @Column(name = "status", columnDefinition = "tinyint", nullable = false, comment = "用户状态 0:正常 1:封禁")
+    @Column(name = "status", columnDefinition = "tinyint", nullable = false, comment = "用户状态 0:封禁 1:正常")
     private Integer status;
 
     @Column(name = "last_login_time", comment = "最后登录时间")
@@ -74,7 +75,7 @@ public class UserPo extends RowScopePo{
     @JoinColumn(name = "avatar_attach_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), comment = "用户头像附件")
     private AttachPo avatarAttach;
 
-    @Column(name = "is_system", columnDefinition = "tinyint", nullable = false, comment = "是否为系统用户 0:否 1:是")
+    @Column(name = "is_system", columnDefinition = "tinyint", nullable = false, comment = "系统内置用户 0:否 1:是")
     private Integer isSystem;
 
     @Column(name = "data_version", nullable = false, comment = "数据版本")
@@ -132,7 +133,7 @@ public class UserPo extends RowScopePo{
      * @return 是否为内置用户
      */
     public boolean isSystem() {
-        return isSystem == 1;
+        return isSystem == Switch.yes();
     }
 
     /**
@@ -146,6 +147,24 @@ public class UserPo extends RowScopePo{
             return deptId;
         }
         return orgId;
+    }
+
+    /**
+     * 判断用户是否被封禁
+     *
+     * @return 是否被封禁
+     */
+    public boolean isDisabled() {
+        return status == Switch.off();
+    }
+
+    /**
+     * 判断用户是否正常
+     *
+     * @return 是否正常
+     */
+    public boolean isEnabled() {
+        return status == Switch.on();
     }
 
 }

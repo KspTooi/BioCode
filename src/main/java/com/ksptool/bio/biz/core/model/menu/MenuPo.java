@@ -1,9 +1,12 @@
 package com.ksptool.bio.biz.core.model.menu;
 
 import com.ksptool.assembly.entity.exception.AuthException;
+import com.ksptool.bio.biz.auth.common.aop.CreatedRootId;
+import com.ksptool.bio.biz.auth.common.aop.RsAuditingEntityListener;
+
 import com.ksptool.bio.biz.auth.service.SessionService;
+import com.ksptool.bio.biz.core.common.jpa.SetStringConv;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
-import com.ksptool.bio.commons.dataprocess.Str;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,16 +19,15 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
-
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "core_menu")
-@EntityListeners(AuditingEntityListener.class)
+@EntityListeners({AuditingEntityListener.class,RsAuditingEntityListener.class})
 @SQLDelete(sql = "UPDATE core_menu SET delete_time = NOW() WHERE id = ?")
 @SQLRestriction("delete_time IS NULL")
 public class MenuPo {
@@ -35,37 +37,36 @@ public class MenuPo {
     @Column(name = "id", nullable = false, comment = "主键ID")
     private Long id;
 
+    @CreatedRootId
     @Column(name = "root_id", nullable = false, comment = "租户ID")
     private Long rootId;
-
-    @Column(name = "dept_id", nullable = false, comment = "部门ID")
-    private Long deptId;
 
     @Column(name = "parent_id", comment = "父级项ID")
     private Long parentId;
 
-    @Column(name = "name", nullable = false, length = 32, comment = "菜单项名")
+    @Column(name = "name", nullable = false, length = 40, comment = "菜单项名")
     private String name;
 
     @Column(name = "kind", nullable = false,columnDefinition = "TINYINT", comment = "菜单项类型 0:目录 1:菜单 2:按钮")
     private Integer kind;
 
-    @Column(name = "path", length = 500, comment = "指向路径")
+    @Column(name = "path", length = 512, comment = "指向路径")
     private String path;
 
-    @Column(name = "icon", nullable = false, length = 80, comment = "菜单图标")
+    @Column(name = "icon", length = 80, comment = "菜单图标")
     private String icon;
 
     @Column(name = "hide", nullable = false,columnDefinition = "TINYINT", comment = "隐藏 0:否 1:是")
     private Integer hide;
 
-    @Column(name = "permission_code", length = 500, comment = "所需权限码(多个逗号)")
-    private String permissionCode;
+    @Convert(converter = SetStringConv.class)
+    @Column(name = "permission_code", columnDefinition = "JSON", comment = "所需权限码Set<String>")
+    private Set<String> permissionCode;
 
     @Column(name = "seq", nullable = false, comment = "排序")
     private Integer seq;
 
-    @Column(name = "remark", comment = "备注")
+    @Column(name = "remark", length = 200, comment = "备注")
     private String remark;
 
     @CreatedDate
@@ -93,9 +94,6 @@ public class MenuPo {
         var session = SessionService.session();
         if (this.rootId == null) {
             this.rootId = session.getRootId();
-        }
-        if (this.deptId == null) {
-            this.deptId = session.getDeptId();
         }
     }
 
@@ -141,29 +139,11 @@ public class MenuPo {
         }
 
         //如果权限为空，则表示所有用户均可访问
-        if (StringUtils.isBlank(this.permissionCode)) {
+        if (this.permissionCode == null || this.permissionCode.isEmpty()) {
             return true;
         }
 
-        //资源所需的权限列表
-        var requireCodes = new ArrayList<String>();
-
-        //解析资源权限
-        if (this.permissionCode.contains(";")) {
-            requireCodes.addAll(Str.safeSplit(this.permissionCode, ";"));
-        }
-        if (!this.permissionCode.contains(";")) {
-            requireCodes.add(this.permissionCode);
-        }
-
-        //检查给定的权限是否在资源所需的权限列表中
-        for (var requireCode : requireCodes) {
-            if (requireCode.equals(permission)) {
-                return true;
-            }
-        }
-
-        return false;
+        return this.permissionCode.contains(permission);
     }
 
 }

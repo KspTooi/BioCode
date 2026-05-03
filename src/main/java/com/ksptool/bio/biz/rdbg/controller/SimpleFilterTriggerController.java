@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @PrintLog
 @RestController
 @RequestMapping("/simpleFilterTrigger")
-@Tag(name = "简单过滤器触发器")
+@Tag(name = "RDBG-简单过滤器触发器", description = "简单过滤器触发器管理")
 @Slf4j
 public class SimpleFilterTriggerController {
 

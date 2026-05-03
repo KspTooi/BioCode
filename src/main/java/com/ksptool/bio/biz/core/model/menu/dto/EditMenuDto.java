@@ -9,6 +9,8 @@ import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.Range;
 
+import java.util.Set;
+
 @Getter
 @Setter
 public class EditMenuDto {
@@ -21,7 +23,7 @@ public class EditMenuDto {
     private Long parentId;
 
     @NotBlank(message = "菜单名称不能为空")
-    @Length(min = 2, max = 128, message = "菜单名称长度必须在2-32个字符之间")
+    @Length(min = 2, max = 40, message = "菜单名称长度必须在2-40个字符之间")
     @Schema(description = "菜单名称")
     private String name;
 
@@ -30,7 +32,7 @@ public class EditMenuDto {
     @Schema(description = "菜单类型 0:目录 1:菜单 2:按钮")
     private Integer kind;
 
-    @Length(max = 500, message = "菜单路径长度不能超过500个字符")
+    @Length(max = 512, message = "菜单路径长度不能超过512个字符")
     @Schema(description = "菜单路径(目录不能填写)")
     private String path;
 
@@ -43,15 +45,14 @@ public class EditMenuDto {
     @Schema(description = "是否隐藏 0:否 1:是")
     private Integer hide;
 
-    @Length(max = 500, message = "所需权限长度不能超过500个字符")
-    @Schema(description = "所需权限(目录不能填写)")
-    private String permissionCode;
+    @Schema(description = "权限码列表")
+    private Set<String> permissionCode;
 
     @Range(min = 0, max = 655350, message = "排序只能在0-655350之间")
     @Schema(description = "排序")
     private Integer seq;
 
-    @Length(max = 500, message = "备注长度不能超过500个字符")
+    @Length(max = 200, message = "备注长度不能超过200个字符")
     @Schema(description = "备注")
     private String remark;
 

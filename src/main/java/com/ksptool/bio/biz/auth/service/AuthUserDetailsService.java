@@ -71,6 +71,11 @@ public class AuthUserDetailsService implements UserDetailsService {
                 throw new RootUnavailableException("用户 [" + username + "] 所属租户已被禁用！");
             }
 
+            //检查用户是否正常
+            if (user.isDisabled()) {
+                throw new DisabledException("用户 [" + username + "] 已被封禁！");
+            }
+
             //获取用户拥有的全部权限码
             var permissionCodes = uRepository.getUserPermissionCodes(user.getId());
 

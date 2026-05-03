@@ -25,8 +25,8 @@
                 </el-form-item>
                 <el-form-item label="状态">
                   <el-select v-model="listForm.status" placeholder="选择状态" clearable style="width: 180px">
-                    <el-option label="正常" :value="0" />
-                    <el-option label="封禁" :value="1" />
+                    <el-option label="正常" :value="1" />
+                    <el-option label="封禁" :value="0" />
                   </el-select>
                 </el-form-item>
               </div>
@@ -100,8 +100,8 @@
               <el-table-column prop="email" label="邮箱" min-width="160" />
               <el-table-column label="状态" min-width="100">
                 <template #default="scope">
-                  <el-tag :type="scope.row.status === 0 ? 'success' : 'danger'" size="small">
-                    {{ scope.row.status === 0 ? "正常" : "封禁" }}
+                  <el-tag :type="scope.row.status === 1 ? 'success' : 'danger'" size="small">
+                    {{ scope.row.status === 1 ? "正常" : "封禁" }}
                   </el-tag>
                 </template>
               </el-table-column>
@@ -205,12 +205,19 @@
             show-word-limit
             :maxlength="128"
             show-password
-            :placeholder="modalMode === 'add' ? '请输入密码' : '不修改密码请留空'"
+            :disabled="modalMode === 'edit' && modalForm.isSystem === 1"
+            :placeholder="
+              modalMode === 'edit' && modalForm.isSystem === 1
+                ? '系统内置用户不允许改密'
+                : modalMode === 'add'
+                  ? '请输入密码'
+                  : '不修改密码请留空'
+            "
           />
-          <div v-if="modalMode === 'edit'" class="form-tip">不修改密码请留空</div>
+          <div v-if="modalMode === 'edit' && modalForm.isSystem !== 1" class="form-tip">不修改密码请留空</div>
         </el-form-item>
         <el-form-item label="昵称" prop="nickname">
-          <el-input show-word-limit :maxlength="50" v-model="modalForm.nickname" placeholder="请输入用户姓名" />
+          <el-input show-word-limit :maxlength="50" v-model="modalForm.nickname" placeholder="请输入用户昵称" />
         </el-form-item>
         <el-form-item label="所属组织机构" prop="orgId">
           <el-tree-select
@@ -225,9 +232,9 @@
         </el-form-item>
         <el-form-item label="性别" prop="gender">
           <el-radio-group v-model="modalForm.gender">
-            <el-radio :label="0">男</el-radio>
-            <el-radio :label="1">女</el-radio>
-            <el-radio :label="2">不愿透露</el-radio>
+            <el-radio :value="0">男</el-radio>
+            <el-radio :value="1">女</el-radio>
+            <el-radio :value="2">不愿透露</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="手机号" prop="phone">
@@ -238,8 +245,8 @@
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="modalForm.status" placeholder="请选择状态">
-            <el-radio :label="0">正常</el-radio>
-            <el-radio :label="1">封禁</el-radio>
+            <el-radio :value="1" :disabled="modalMode === 'edit' && modalForm.isSystem === 1">正常</el-radio>
+            <el-radio :value="0" :disabled="modalMode === 'edit' && modalForm.isSystem === 1">封禁</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item v-if="modalMode === 'edit'" label="系统用户">

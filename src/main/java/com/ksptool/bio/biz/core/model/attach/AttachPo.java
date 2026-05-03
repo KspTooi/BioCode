@@ -3,6 +3,8 @@ package com.ksptool.bio.biz.core.model.attach;
 import com.ksptool.assembly.entity.exception.AuthException;
 import com.ksptool.bio.biz.auth.service.SessionService;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
+import com.ksptool.bio.biz.auth.common.aop.CreatedRootId;
+import com.ksptool.bio.biz.auth.common.aop.RsAuditingEntityListener;
 import com.ksptool.bio.commons.utils.IdWorker;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -19,7 +21,7 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
-@EntityListeners(AuditingEntityListener.class)
+@EntityListeners({AuditingEntityListener.class, RsAuditingEntityListener.class})
 @Table(name = "core_attach")
 public class AttachPo {
 
@@ -28,25 +30,23 @@ public class AttachPo {
     @Column(name = "id", comment = "主键ID")
     private Long id;
 
-    @Column(name = "root_id", nullable = false, comment = "所属企业ID")
+    @CreatedRootId
+    @Column(name = "root_id", nullable = false, comment = "租户ID")
     private Long rootId;
 
-    @Column(name = "dept_id", nullable = false, comment = "所属部门ID")
-    private Long deptId;
-
-    @Column(name = "name", length = 128, nullable = false, comment = "文件名")
+    @Column(name = "name", length = 80, nullable = false, comment = "文件原始名称")
     private String name;
 
-    @Column(name = "kind", length = 64, nullable = false, comment = "文件类型")
+    @Column(name = "kind", length = 32, nullable = false, comment = "文件业务类型")
     private String kind;
 
-    @Column(name = "suffix", length = 128, comment = "文件后缀")
+    @Column(name = "suffix", length = 80, comment = "扩展名")
     private String suffix;
 
-    @Column(name = "path", length = 256, nullable = false, comment = "文件路径")
+    @Column(name = "path", length = 2048, nullable = false, comment = "文件路径")
     private String path;
 
-    @Column(name = "sha256", length = 320, nullable = false, comment = "文件SHA256")
+    @Column(name = "sha256", length = 64, nullable = false, comment = "文件摘要")
     private String sha256;
 
     @Column(name = "total_size", nullable = false, comment = "文件总大小")
@@ -91,15 +91,6 @@ public class AttachPo {
     @PrePersist
     private void onCreate() throws AuthException {
 
-        var session = SessionService.session();
-
-        if (this.rootId == null) {
-            this.rootId = session.getRootId();
-        }
-
-        if (this.deptId == null) {
-            this.deptId = session.getDeptId();
-        }
 
     }
 

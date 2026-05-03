@@ -24,7 +24,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 @RestController
 @RequestMapping("/opSchema")
-@Tag(name = "代码装配-输出方案管理", description = "输出方案管理")
+@Tag(name = "ASSEMBLY-输出方案管理", description = "输出方案管理")
 @Slf4j
 public class OpSchemaController {
 

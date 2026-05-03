@@ -19,8 +19,8 @@
           <el-col :span="8">
             <el-form-item label="用户状态">
               <el-select v-model="queryForm.status" placeholder="请选择用户状态" clearable @clear="loadList">
-                <el-option label="正常" :value="0" />
-                <el-option label="封禁" :value="1" />
+                <el-option label="正常" :value="1" />
+                <el-option label="封禁" :value="0" />
               </el-select>
             </el-form-item>
           </el-col>
@@ -50,7 +50,7 @@
         <el-table-column label="邮箱" prop="email" show-overflow-tooltip />
         <el-table-column label="用户状态" prop="status" width="100" align="center">
           <template #default="scope">
-            <el-tag v-if="scope.row.status === 0" type="success">正常</el-tag>
+            <el-tag v-if="scope.row.status === 1" type="success">正常</el-tag>
             <el-tag v-else type="danger">封禁</el-tag>
           </template>
         </el-table-column>

@@ -8,6 +8,8 @@ import com.ksptool.assembly.entity.web.Result;
 import com.ksptool.bio.biz.document.model.epdoc.*;
 import com.ksptool.bio.biz.document.service.EpDocService;
 import com.ksptool.bio.commons.annotation.PrintLog;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Controller
 @RestController
 @RequestMapping("/epdoc")
+@Tag(name = "EP-文档管理", description = "EP文档管理")
 public class EpDocController {
 
     @Autowired

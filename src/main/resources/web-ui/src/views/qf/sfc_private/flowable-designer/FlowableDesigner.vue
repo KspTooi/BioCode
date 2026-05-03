@@ -97,7 +97,6 @@ import "splitpanes/dist/splitpanes.css";
 import "bpmn-js/dist/assets/diagram-js.css";
 import "bpmn-js/dist/assets/bpmn-font/css/bpmn.css";
 import { useFlowableModeler } from "@/views/qf/sfc_private/flowable-designer/UseFlowableModeler";
-import FlowablePropertyPanel from "@/views/qf/sfc_private/flowable-designer/deprecated/FlowablePropertyPanel.vue";
 import QfdPanel from "@/views/qf/sfc_private/flowable-designer/components/QfdPanel.vue";
 
 const props = withDefaults(

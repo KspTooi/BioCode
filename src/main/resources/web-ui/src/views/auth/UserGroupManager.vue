@@ -54,7 +54,7 @@
         <el-table-column type="selection" width="40" />
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
         <el-table-column prop="name" label="用户组名称" min-width="120" />
-        <el-table-column prop="code" label="用户组标识" min-width="120" />
+        <el-table-column prop="code" label="用户组编码" min-width="120" />
         <el-table-column prop="memberCount" label="成员数量" min-width="100" />
         <el-table-column prop="permissionCount" label="权限数量" min-width="100" />
         <el-table-column prop="rowScope" label="数据权限" min-width="100">
@@ -66,13 +66,6 @@
             <el-tag v-else-if="scope.row.rowScope === 40" type="danger">仅本部门</el-tag>
             <el-tag v-else-if="scope.row.rowScope === 50" type="teal">仅本人</el-tag>
             <el-tag v-else-if="scope.row.rowScope === 60" type="purple">指定组织</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="系统用户组" min-width="80">
-          <template #default="scope">
-            <el-tag :type="scope.row.isSystem ? 'info' : 'success'">
-              {{ scope.row.isSystem ? "是" : "否" }}
-            </el-tag>
           </template>
         </el-table-column>
         <el-table-column label="状态" min-width="80">
@@ -108,7 +101,7 @@
               type="danger"
               size="small"
               :icon="DeleteIcon"
-              :disabled="scope.row.isSystem"
+              :disabled="scope.row.isSystem === 1"
               @click="removeList(scope.row.id)"
             >
               删除
@@ -182,33 +175,26 @@
         <el-col :span="12">
           <div class="p-2.5">
             <div class="section-title text-sm font-bold mb-4 pl-2.5">基础信息</div>
-            <el-form-item label="用户组标识" prop="code" label-for="group-code">
+            <el-form-item label="用户组编码" prop="code" label-for="group-code">
               <el-input
                 id="group-code"
                 show-word-limit
                 :maxlength="32"
                 v-model="modalForm.code"
                 :disabled="modalMode === 'edit' && isSystemGroup"
-                :placeholder="modalMode === 'edit' && isSystemGroup ? '系统用户组不可修改标识' : '请输入组标识'"
+                :placeholder="modalMode === 'edit' && isSystemGroup ? '系统用户组不可修改编码' : '请输入组编码'"
               />
             </el-form-item>
             <el-form-item label="用户组名称" prop="name" label-for="group-name">
-              <el-input
-                id="group-name"
-                show-word-limit
-                :maxlength="80"
-                v-model="modalForm.name"
-                :disabled="modalMode === 'edit' && isSystemGroup"
-                :placeholder="modalMode === 'edit' && isSystemGroup ? '系统用户组不可修改名称' : '请输入组名称'"
-              />
+              <el-input id="group-name" show-word-limit :maxlength="80" v-model="modalForm.name" placeholder="请输入组名称" />
             </el-form-item>
             <el-form-item label="排序号" prop="seq">
               <el-input-number v-model="modalForm.seq" :min="0" :max="655350" class="w-full" />
             </el-form-item>
             <el-form-item label="用户组状态" prop="status" label-for="group-status">
               <el-radio-group id="group-status" v-model="modalForm.status">
-                <el-radio :value="1">启用</el-radio>
-                <el-radio :value="0">禁用</el-radio>
+                <el-radio :value="1" :disabled="modalMode === 'edit' && isSystemGroup">启用</el-radio>
+                <el-radio :value="0" :disabled="modalMode === 'edit' && isSystemGroup">禁用</el-radio>
               </el-radio-group>
             </el-form-item>
             <el-form-item label="用户组描述" prop="remark" label-for="group-remark">
@@ -229,7 +215,7 @@
                 <el-select
                   id="group-rowScope"
                   v-model="modalForm.rowScope"
-                  :disabled="modalMode === 'edit' && modalForm.isSystem === 1"
+                  :disabled="modalMode === 'edit' && isSystemGroup"
                   placeholder="请选择数据权限"
                   class="w-full"
                   style="width: 180px"
@@ -278,7 +264,10 @@
               <div class="h-[380px] overflow-y-auto p-2.5">
                 <el-checkbox-group v-model="selectedPermissionIds">
                   <div v-for="permission in filteredPermissions" :key="permission.id" class="permission-row py-1.5">
-                    <el-checkbox :value="permission.id">
+                    <el-checkbox
+                      :value="permission.id"
+                      :disabled="modalMode === 'edit' && isSystemGroup && permission.code === '*:*:*'"
+                    >
                       <div class="flex flex-col leading-snug ml-2">
                         <div class="text-[13px] perm-name-color">{{ permission.name }}</div>
                         <div class="text-[11px] font-mono perm-code-color">{{ permission.code }}</div>

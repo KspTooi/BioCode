@@ -28,7 +28,7 @@ public class GetUserDetailsVo {
     @Schema(description = "用户邮箱")
     private String email;
 
-    @Schema(description = "用户状态")
+    @Schema(description = "用户状态 0:封禁 1:正常")
     private Integer status;
 
     @Schema(description = "创建时间")
@@ -40,7 +40,7 @@ public class GetUserDetailsVo {
     @Schema(description = "所属组织机构ID")
     private Long orgId;
 
-    @Schema(description = "是否为系统内置用户 0:否 1:是")
+    @Schema(description = "系统内置用户 0:否 1:是")
     private Integer isSystem;
 
     @Schema(description = "用户组列表")

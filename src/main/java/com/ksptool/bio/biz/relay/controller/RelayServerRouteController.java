@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @PrintLog
 @RestController
 @RequestMapping("/relayServerRoute")
-@Tag(name = "中继路由策略", description = "中继路由策略管理")
+@Tag(name = "RELAY-中继路由策略", description = "中继路由策略管理")
 @Slf4j
 public class RelayServerRouteController {
 

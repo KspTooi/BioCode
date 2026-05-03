@@ -25,7 +25,7 @@ import java.time.temporal.ChronoUnit;
 @PrintLog
 @RestController
 @RequestMapping("/request")
-@Tag(name = "中继器请求", description = "中继器请求")
+@Tag(name = "RELAY-中继器请求", description = "中继器请求管理")
 public class RequestController {
 
     @Autowired

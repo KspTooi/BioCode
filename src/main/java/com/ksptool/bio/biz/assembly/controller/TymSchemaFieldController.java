@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/tymSchemaField")
-@Tag(name = "代码装配-类型映射方案字段管理", description = "类型映射方案字段管理")
+@Tag(name = "ASSEMBLY-类型映射方案字段管理", description = "类型映射方案字段管理")
 @Slf4j
 public class TymSchemaFieldController {
 

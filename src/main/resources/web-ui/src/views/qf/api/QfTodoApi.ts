@@ -33,7 +33,7 @@ export interface GetQfTodoDetailsVo {
   id: string; // 主键ID
   nodeName: string; // 当前节点名称 (如: 财务总监审批)
   summary: string; // 摘要(如：张三提交的 5000 元报销)
-  memberId: string; // 办理成员ID (用户ID或用户组标识)
+  memberId: string; // 办理成员ID (用户ID或用户组编码)
   initiatorId: string; // 发起人ID
   routePc: string; // PC端路由名
   routeMobile: string; // 移动端路由名

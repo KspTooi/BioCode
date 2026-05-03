@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @PrintLog
 @RestController
 @RequestMapping("/userRequestLog")
-@Tag(name = "UserRequestLog", description = "用户请求记录")
+@Tag(name = "RDBG-用户请求记录", description = "用户请求记录管理")
 @Slf4j
 public class UserRequestLogController {
 

@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @PrintLog
 @RestController
 @RequestMapping("/auditLogin")
-@Tag(name = "auditLogin", description = "登录审计日志")
+@Tag(name = "AUDIT-登录审计日志", description = "登录审计日志")
 @Slf4j
 public class AuditLoginController {
 

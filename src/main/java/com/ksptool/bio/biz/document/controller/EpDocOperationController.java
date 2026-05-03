@@ -18,10 +18,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @PrintLog
 @Controller
 @RestController
 @RequestMapping("/epdoc")
+@Tag(name = "EP-文档接口管理", description = "文档接口管理")
 public class EpDocOperationController {
 
 

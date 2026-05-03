@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @PrintLog
 @RestController
 @RequestMapping("/routeRule")
-@Tag(name = "RouteRule", description = "路由规则")
+@Tag(name = "RELAY-路由规则", description = "路由规则管理")
 @Slf4j
 public class RouteRuleController {
 

@@ -55,7 +55,7 @@ export default class CoreRouteRegister extends GenricRouteRegister {
         path: "menu-manager",
         name: "menu-manager",
         component: () => import("@/views/core/MenuManager.vue"),
-        meta: { breadcrumb: "菜单管理", keepAlive: true },
+        meta: { breadcrumb: "菜单管理", keepAlive: false },
       }),
       RouteEntryPo.build({
         biz: "core",

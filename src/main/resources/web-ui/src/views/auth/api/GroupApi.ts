@@ -12,13 +12,13 @@ export interface GroupPermissionDefinitionVo {
 }
 
 export interface GetGroupListDto extends PageQuery {
-  keyword?: string; // 模糊匹配 组标识、组名称、组描述
+  keyword?: string; // 模糊匹配 组编码、组名称、组描述
   status?: number; // 组状态：0:禁用 1:启用
 }
 
 export interface GetGroupListVo {
   id: string; // 组ID
-  code: string; // 组标识
+  code: string; // 组编码
   name: string; // 组名称
   memberCount: number; // 成员数量
   permissionCount: number; // 权限节点数量
@@ -31,7 +31,7 @@ export interface GetGroupListVo {
 
 export interface GetGroupDetailsVo {
   id: string; // 组ID
-  code: string; // 组标识
+  code: string; // 组编码
   name: string; // 组名称
   remark: string; // 组描述
   isSystem: number; // 系统内置组 0:否 1:是
@@ -43,7 +43,7 @@ export interface GetGroupDetailsVo {
 }
 
 export interface AddGroupDto {
-  code: string; // 组标识
+  code: string; // 组编码
   name: string; // 组名称
   remark?: string; // 组描述
   status: number; // 组状态：0-禁用，1-启用
@@ -55,7 +55,7 @@ export interface AddGroupDto {
 
 export interface EditGroupDto {
   id: string; // 组ID
-  code: string; // 组标识
+  code: string; // 组编码
   name: string; // 组名称
   remark?: string; // 组描述
   status: number; // 组状态：0-禁用，1-启用

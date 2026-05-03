@@ -13,7 +13,7 @@ export interface UserLoginVo {
   gender: number; // 用户性别
   phone: string; // 用户手机号
   email: string; // 用户邮箱
-  status: number; // 用户状态 0:正常 1:封禁
+  status: number; // 用户状态 0:封禁 1:正常
   lastLoginTime: string; // 最后登录时间 格式:yyyy-MM-dd HH:mm:ss
   avatarAttachId: number; // 用户头像附件ID
   rootId: string; // AUS字段: 租户ID

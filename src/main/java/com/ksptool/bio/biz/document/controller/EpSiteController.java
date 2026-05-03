@@ -28,7 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 @PrintLog
 @RestController
 @RequestMapping("/epSite")
-@Tag(name = "EpSite", description = "站点管理")
+@Tag(name = "EP-站点管理", description = "站点管理")
 @Slf4j
 public class EpSiteController {
 

@@ -8,6 +8,8 @@ import com.ksptool.assembly.entity.web.Result;
 import com.ksptool.bio.biz.relay.model.replayrequest.*;
 import com.ksptool.bio.biz.relay.service.ReplayRequestService;
 import com.ksptool.bio.commons.annotation.PrintLog;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,7 @@ import java.util.Map;
 @Controller
 @RestController
 @RequestMapping("/replayRequest")
+@Tag(name = "RELAY-简单请求重放", description = "简单请求重放管理")
 public class ReplayRequestController {
 
     @Autowired

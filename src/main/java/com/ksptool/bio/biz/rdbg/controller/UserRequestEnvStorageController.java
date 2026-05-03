@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @PrintLog
 @RestController
 @RequestMapping("/userRequestEnvStorage")
-@Tag(name = "UserRequestEnvStorage", description = "环境共享存储")
+@Tag(name = "RDBG-环境共享存储", description = "环境共享存储管理")
 @Slf4j
 public class UserRequestEnvStorageController {
 

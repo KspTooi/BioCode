@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @PrintLog
 @RestController
 @RequestMapping("/collectionHistory")
-@Tag(name = "请求集合历史记录", description = "请求集合历史记录管理")
+@Tag(name = "RDBG-请求集合历史记录", description = "请求集合历史记录管理")
 @Slf4j
 public class CollectionHistoryController {
 

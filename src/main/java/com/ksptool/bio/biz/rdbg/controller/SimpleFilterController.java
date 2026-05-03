@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @PrintLog
 @RestController
 @RequestMapping("/simpleFilter")
-@Tag(name = "简单过滤器")
+@Tag(name = "RDBG-简单过滤器", description = "简单过滤器管理")
 @Slf4j
 public class SimpleFilterController {
 
