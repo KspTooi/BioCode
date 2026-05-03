@@ -2,14 +2,32 @@ import { ref, computed, watch, onMounted, nextTick } from "vue";
 import type { ElTree } from "element-plus";
 
 export interface StdAdvTreeProps {
+  //树的数据源
+  data: Array<any>;
+
   //双向绑定的选中节点 key（对应 nk 字段的值）
   modelValue?: string | number | null;
 
   //初始化选中节点 key（对应 nk 字段的值）
   initValue?: string | number | null;
 
-  //树的数据源
-  data: Array<any>;
+  //双向绑定的Check节点 keys
+  modelValueCheck?: (string | number)[];
+
+  //初始化Check节点 keys
+  initValueCheck?: (string | number)[];
+
+  //是否可以选中节点 总开关
+  check: boolean;
+
+  //是否支持多选
+  checkMultiple?: boolean;
+
+  //子节点是否级联选上级
+  checkCascade?: boolean;
+
+  //是否支持行点击选中节点(和expandOnClick互斥 如果两个都打开 只生效checkOnNodeClick)
+  checkOnNodeClick?: boolean;
 
   //是否显示搜索框
   search?: boolean;
@@ -65,6 +83,7 @@ export interface StdAdvTreeProps {
 
 export interface StdAdvTreeEmits {
   (e: "update:modelValue", key: string | number | null): void;
+  (e: "update:modelValueCheck", keys: (string | number)[]): void;
   (e: "on-select", node: any): void;
   (e: "on-root-select", value: string): void;
   (e: "on-add", node: any): void;
@@ -85,11 +104,31 @@ export default {
     const treeRef = ref<InstanceType<typeof ElTree>>();
     const filterText = ref("");
     const currentSelectedKey = ref<string | number | null>(null);
+    const checkedKeys = ref<(string | number)[]>([]);
 
     const defaultProps = computed(() => ({
       children: props.nc ?? "children",
       label: props.nt ?? "name",
     }));
+
+    const showCheckbox = computed(() => props.check ?? false);
+    const checkStrictly = computed(() => !(props.checkCascade ?? true));
+    const checkOnClickNode = computed(() => props.checkOnNodeClick ?? false);
+
+    const onCheck = (_data: any, checkInfo: { checkedKeys: (string | number)[]; checkedNodes: any[]; halfCheckedKeys: (string | number)[]; halfCheckedNodes: any[] }): void => {
+      let keys = checkInfo.checkedKeys;
+      const isMultiple = props.checkMultiple ?? true;
+
+      if (!isMultiple && keys.length > 1) {
+        const prevKeys = new Set(checkedKeys.value);
+        const added = keys.find((k) => !prevKeys.has(k));
+        keys = added !== undefined ? [added] : [keys[keys.length - 1]];
+        treeRef.value?.setCheckedKeys(keys);
+      }
+
+      checkedKeys.value = keys;
+      emit("update:modelValueCheck", keys);
+    };
 
     const filterNode = (value: string, data: any): boolean => {
       if (!value) {
@@ -127,6 +166,16 @@ export default {
     const isRootSelected = computed(() => currentSelectedKey.value === nrKey.value);
 
     watch(
+      () => props.modelValueCheck,
+      (val) => {
+        if (val !== undefined && val !== null) {
+          checkedKeys.value = [...val];
+          treeRef.value?.setCheckedKeys(val);
+        }
+      }
+    );
+
+    watch(
       () => props.modelValue,
       (val) => {
         currentSelectedKey.value = val ?? null;
@@ -137,10 +186,13 @@ export default {
 
     const reset = (): void => {
       currentSelectedKey.value = null;
+      checkedKeys.value = [];
       filterText.value = "";
       treeRef.value?.filter("");
       treeRef.value?.setCurrentKey(null);
+      treeRef.value?.setCheckedKeys([]);
       emit("update:modelValue", null);
+      emit("update:modelValueCheck", []);
     };
 
     const filter = (val: string): void => {
@@ -152,15 +204,22 @@ export default {
     };
 
     onMounted(async () => {
-      const init = props.initValue ?? props.modelValue ?? null;
-      if (init === null) {
-        return;
-      }
       await nextTick();
-      currentSelectedKey.value = init;
-      const isRoot = init === nrKey.value;
-      treeRef.value?.setCurrentKey(isRoot ? null : init);
-      emit("update:modelValue", init);
+
+      const init = props.initValue ?? props.modelValue ?? null;
+      if (init !== null) {
+        currentSelectedKey.value = init;
+        const isRoot = init === nrKey.value;
+        treeRef.value?.setCurrentKey(isRoot ? null : init);
+        emit("update:modelValue", init);
+      }
+
+      const initCheck = props.initValueCheck ?? props.modelValueCheck ?? null;
+      if (initCheck !== null && initCheck.length > 0) {
+        checkedKeys.value = [...initCheck];
+        treeRef.value?.setCheckedKeys(initCheck);
+        emit("update:modelValueCheck", initCheck);
+      }
     });
 
     const onRootClick = (): void => {
@@ -177,11 +236,16 @@ export default {
       treeRef,
       filterText,
       currentSelectedKey,
+      checkedKeys,
       isRootSelected,
       defaultProps,
+      showCheckbox,
+      checkStrictly,
+      checkOnClickNode,
       filterNode,
       onFilterInput,
       onNodeClick,
+      onCheck,
       onRootClick,
       reset,
       filter,

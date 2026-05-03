@@ -48,8 +48,12 @@
         :node-key="nk ?? 'id'"
         highlight-current
         :default-expand-all="expandOnDefault"
+        :show-checkbox="showCheckbox"
+        :check-strictly="checkStrictly"
+        :check-on-click-node="checkOnClickNode"
         class="custom-tree"
         @node-click="onNodeClick"
+        @check="onCheck"
       >
         <template #default="{ node, data: nodeData }">
           <span class="custom-tree-node flex-1 flex items-center justify-between pr-2 text-[13px]">
@@ -126,9 +130,13 @@ const {
   filterText,
   isRootSelected,
   defaultProps,
+  showCheckbox,
+  checkStrictly,
+  checkOnClickNode,
   filterNode,
   onFilterInput,
   onNodeClick,
+  onCheck,
   onRootClick,
   reset,
   filter,

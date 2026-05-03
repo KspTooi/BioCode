@@ -10,6 +10,7 @@
               :data="treeData"
               :init-value="treeCurrent"
               :loading="treeLoading"
+              :check="false"
               :nr="true"
               :nr-title="'根菜单'"
               :nr-icon="'ep:menu'"

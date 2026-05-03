@@ -17,6 +17,13 @@ export default class AuthRouteRegister extends GenricRouteRegister {
         component: () => import("@/views/auth/UserLogin.vue"),
         meta: { breadcrumb: "用户登录", layout: "blank" },
       }),
+      RouteEntryPo.build({
+        biz: "auth",
+        path: "check-tree-demo",
+        name: "check-tree-demo",
+        component: () => import("@/views/auth/CheckTreeDemo.vue"),
+        meta: { breadcrumb: "树组件复选框演示" },
+      }),
     ];
   }
 
