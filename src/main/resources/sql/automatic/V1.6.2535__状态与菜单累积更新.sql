@@ -50,12 +50,7 @@ SELECT
     `path`,
     `icon`,
     `hide`,
-    -- 处理 permission_code: 将逗号分隔的字符串转换为 JSON 数组
-    -- 使用 JSON_ARRAY() 处理空值，使用 JSON_OVERLAPS 处理转换逻辑（此处采用最通用的字符串转数组逻辑）
-    CASE
-        WHEN `permission_code` IS NULL OR `permission_code` = '' THEN '[]'
-        ELSE CAST(CONCAT('["', REPLACE(`permission_code`, ',', '","'), '"]') AS JSON)
-        END,
+    JSON_ARRAY(),
     `seq`,
     -- 备注字段长度缩减，使用 LEFT 函数防止溢出
     LEFT(`remark`, 200),
