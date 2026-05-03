@@ -1,11 +1,14 @@
 package com.ksptool.bio.biz.core.common;
 
+import lombok.Getter;
+
 import java.util.*;
 
 /**
  * ID列表差异计算器
  * 用于计算已存在的ID列表与输入的ID列表之间的差异
  */
+@Getter
 public class IdsDiff {
 
     private final List<Long> addIds;
@@ -36,24 +39,7 @@ public class IdsDiff {
         }
     }
 
-    /**
-     * 获取需要新增的ID列表（在inputIds中存在，但在existsIds中不存在）
-     *
-     * @return 新增的ID列表
-     */
-    public List<Long> getAddIds() {
-        return addIds;
-    }
-
-    /**
-     * 获取需要删除的ID列表（在existsIds中存在，但在inputIds中不存在）
-     *
-     * @return 删除的ID列表
-     */
-    public List<Long> getRemoveIds() {
-        return removeIds;
-    }
-
+    
     /**
      * 是否存在需要新增的ID
      *
