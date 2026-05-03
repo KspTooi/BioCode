@@ -6,40 +6,42 @@ import { ElMessage, ElMessageBox, type FormInstance } from "element-plus";
 import ComMenuService from "@/soa/com-series/service/ComMenuService.ts";
 import { defineStore, storeToRefs } from "pinia";
 
+//面板模式
 type PanelMode = "add" | "edit" | "add-item";
 
-export default {
-  useMenuTreeStore() {
-    const store = defineStore("menuManagerTreeStore", {
-      state: () => ({
-        treeData: [] as GetMenuTreeVo[],
-        treeCurrent: "-1" as string,
-        panelCurrentRow: null as GetMenuTreeVo | null,
-        panelMode: "add" as PanelMode,
-        panelForm: {
-          id: "",
-          parentId: "",
-          name: "",
-          kind: 0,
-          path: "",
-          icon: "",
-          hide: 0,
-          permissionCode: "",
-          seq: 0,
-          remark: "",
-        } as GetMenuDetailsVo,
-      }),
-      persist: {
-        key: "np_menu_manager_tree",
-        pick: ["treeCurrent", "panelCurrentRow"],
-      },
-    });
-    return store();
+//服务内共享存储(Tree+Panel都用这个存储)
+const useMenuTreeStore = defineStore("menuManagerTreeStore", {
+  state: () => ({
+    treeData: [] as GetMenuTreeVo[],
+    treeCurrent: "-1" as string,
+    panelCurrentRow: null as GetMenuTreeVo | null,
+    panelMode: "add" as PanelMode,
+    panelForm: {
+      id: "",
+      parentId: "",
+      name: "",
+      kind: 0,
+      path: "",
+      icon: "",
+      hide: 0,
+      permissionCode: "",
+      seq: 0,
+      remark: "",
+    } as GetMenuDetailsVo,
+  }),
+  persist: {
+    key: "np_menu_manager_tree",
+    pick: ["treeCurrent", "panelCurrentRow"],
   },
+});
 
+export default {
+  /**
+   * 菜单树功能打包
+   */
   useMenuTree() {
     const { loadMenus } = ComMenuService.useMenuService();
-    const treeStore = this.useMenuTreeStore();
+    const treeStore = useMenuTreeStore();
     const { treeCurrent, treeData } = storeToRefs(treeStore);
 
     const treeLoading = ref(true);
@@ -99,13 +101,15 @@ export default {
     };
   },
 
+  /**
+   * 菜单树面板功能打包
+   */
   useMenuTreePanel(panelFormRef: Ref<FormInstance>, reloadCallback: () => void) {
     const { loadMenus } = ComMenuService.useMenuService();
-    const treeStore = this.useMenuTreeStore();
+    const treeStore = useMenuTreeStore();
     const { treeData } = storeToRefs(treeStore);
     const panelVisible = ref(false);
     const panelLoading = ref(false);
-    const panelCurrentRow = ref<GetMenuTreeVo | null>(null);
 
     const panelFormLabel = computed(() => {
       if (treeStore.panelForm.kind == 0) {
@@ -250,7 +254,7 @@ export default {
      */
     const openPanel = async (mode: PanelMode, currentRow: GetMenuTreeVo | null): Promise<void> => {
       treeStore.panelMode = mode;
-      panelCurrentRow.value = currentRow;
+      treeStore.panelCurrentRow = currentRow;
       resetPanel();
 
       if (mode === "add") {
@@ -354,7 +358,7 @@ export default {
 
     onMounted(() => {
       //检查缓存的模式
-      const store = this.useMenuTreeStore();
+      const store = useMenuTreeStore();
 
       console.log(store.panelMode);
     });
@@ -363,7 +367,7 @@ export default {
       panelVisible,
       panelLoading,
       panelMode: computed(() => treeStore.panelMode),
-      panelCurrentRow,
+      panelCurrentRow: computed(() => treeStore.panelCurrentRow),
       panelForm: computed(() => treeStore.panelForm),
       panelFormLabel,
       panelBreadcrumb,
