@@ -44,7 +44,7 @@ public class GroupPo extends RowScopePo {
     @Column(name = "org_id", comment = "直属组织ID")
     private Long orgId;
 
-    @Column(name = "code", length = 32, nullable = false, comment = "组标识，如：admin、developer等")
+    @Column(name = "code", length = 32, nullable = false, comment = "组编码，如：admin、developer等")
     private String code;
 
     @Column(name = "name", length = 80, nullable = false, comment = "组名称，如：管理员组、开发者组等")

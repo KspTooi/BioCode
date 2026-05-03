@@ -203,7 +203,6 @@ public class GroupService {
 
         GroupPo group = repository.findById(dto.getId()).orElseThrow(() -> new BizException("用户组不存在"));
 
-
         //处理系统内置用户组的更新逻辑
         if(group.isSystem()){
 
@@ -217,8 +216,12 @@ public class GroupService {
                 throw new BizException("内置用户组不允许调整状态！");
             }
 
-        }
+            //内置用户组不可调整编码
+            if(dto.getCode() != null && !dto.getCode().equals(group.getCode())){
+                throw new BizException("内置用户组不允许调整编码！");
+            }
 
+        }
 
 
         //如果修改了标识 则需要检查是否重复

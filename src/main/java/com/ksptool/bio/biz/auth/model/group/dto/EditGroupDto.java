@@ -17,10 +17,10 @@ public class EditGroupDto implements DtoCustomValidator{
     @NotNull(message = "组ID不能为空")
     private Long id;
 
-    @Schema(description = "组标识")
-    @NotBlank(message = "组标识不能为空")
-    @Length(min = 2, max = 32, message = "组标识长度必须在2-32个字符之间")
-    @Pattern(regexp = "^[a-zA-Z][a-zA-Z_]*$", message = "组标识只能包含英文字符和下划线，且必须以字母开头")
+    @Schema(description = "组编码")
+    @NotBlank(message = "组编码不能为空")
+    @Length(min = 2, max = 32, message = "组编码长度必须在2-32个字符之间")
+    @Pattern(regexp = "^[a-zA-Z][a-zA-Z_]*$", message = "组编码只能包含英文字符和下划线，且必须以字母开头")
     private String code;
 
     @Schema(description = "组名称")
