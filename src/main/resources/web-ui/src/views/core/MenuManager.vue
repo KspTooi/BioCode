@@ -1,322 +1,514 @@
 <template>
-  <StdListLayout show-persist-tip :has-tutorial="true">
-    <!-- 文档说明 -->
-    <template #tutorial>
-      <el-alert type="info" :closable="false" class="mb-4">
-        <template #title>
-          <div class="flex items-center gap-2">
-            <el-icon><InfoFilled /></el-icon>
-            <span class="font-bold">权限节点缺失指示器</span>
-          </div>
-        </template>
-        <div class="text-sm leading-relaxed">
-          <div>
-            <span class="text-green-500 font-bold">● 绿色</span>：权限完整，所有权限节点已在系统中定义
-            <span class="ml-4 text-orange-500 font-bold">● 橙色</span>：部分缺失，部分权限节点未在系统中定义
-            <span class="ml-4 text-red-500 font-bold">● 红色</span>：完全缺失，所有权限节点均未在系统中定义
+  <div class="list-layout">
+    <splitpanes class="custom-theme">
+      <!-- 左侧菜单树 -->
+      <pane size="25" min-size="15" max-size="45">
+        <div class="left-pane">
+          <div class="tree-area">
+            <StdAdvTree
+              v-model="current"
+              :data="listData"
+              :loading="listLoading"
+              :nr="true"
+              :nr-title="'全部菜单'"
+              :nr-icon="'ep:menu'"
+              ni="icon"
+              :nk="'id'"
+              :nt="'name'"
+              :nc="'children'"
+              :search="true"
+              :search-placeholder="'请输入菜单名称'"
+              :search-refresh="true"
+              :expand-on-click="true"
+              @on-refresh="loadList"
+              @on-select="openPanel('edit', $event)"
+              @on-add="openPanel('add-item', $event)"
+              @on-edit="openPanel('edit', $event)"
+              @on-remove="removeList($event.id)"
+            >
+              <template #root-actions>
+                <el-button link type="success" size="small" :icon="PlusIcon" @click="openPanel('add', null)">
+                  创建菜单
+                </el-button>
+              </template>
+              <template #append="{ data }">
+                <el-tag v-if="data.kind === 0" size="small" type="info" class="menu-kind-tag">目录</el-tag>
+                <el-tag v-if="data.kind === 1" size="small" type="success" class="menu-kind-tag">菜单</el-tag>
+                <el-tag v-if="data.kind === 2" size="small" class="menu-kind-tag">按钮</el-tag>
+              </template>
+              <template #actions="{ data }">
+                <el-button link type="success" size="small" :icon="PlusIcon" @click="openPanel('add-item', data)">
+                  创建子项
+                </el-button>
+                <el-button link type="danger" size="small" :icon="DeleteIcon" @click="removeList(data.id)">删除</el-button>
+              </template>
+            </StdAdvTree>
           </div>
         </div>
-      </el-alert>
-    </template>
+      </pane>
 
-    <template #query>
-      <el-form :model="listForm">
-        <el-row>
-          <el-col :span="5" :offset="1">
-            <el-form-item label="菜单名称">
-              <el-input v-model="listForm.name" placeholder="请输入菜单名称" clearable />
-            </el-form-item>
-          </el-col>
-          <el-col :span="5" :offset="1">
-            <el-form-item label="所需权限">
-              <el-input v-model="listForm.permissionCode" placeholder="请输入所需权限" clearable />
-            </el-form-item>
-          </el-col>
-          <el-col :span="5" :offset="1">
-            <el-form-item label="菜单类型">
-              <el-select v-model="listForm.kind" placeholder="请选择菜单类型" clearable>
-                <el-option label="目录" value="0" />
-                <el-option label="菜单" value="1" />
-                <el-option label="按钮" value="2" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="3" :offset="3">
-            <el-form-item>
-              <el-button type="primary" :disabled="listLoading" @click="loadList">查询</el-button>
-              <el-button :disabled="listLoading" @click="resetList">重置</el-button>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
-    </template>
+      <!-- 右侧详情面板 -->
+      <pane size="75">
+        <div class="right-pane">
+          <template v-if="panelVisible">
+            <!-- 顶部装饰线 -->
+            <div class="panel-accent-bar" :class="`accent-${panelForm.kind}`" />
 
-    <template #actions>
-      <el-button type="success" @click="openModal('add', null)">创建菜单</el-button>
-      <el-button type="primary" @click="listExpandToggle()"> {{ listExpand ? "收起全部" : "展开全部" }} </el-button>
-    </template>
+            <!-- 顶部标题条 -->
+            <div class="panel-header">
+              <div class="panel-header-left">
+                <div class="panel-header-icon-shell" :class="`icon-${panelForm.kind}`">
+                  <el-icon class="panel-header-icon">
+                    <component :is="resolveIcon(panelForm.icon || 'ep:menu')" />
+                  </el-icon>
+                </div>
+                <div class="panel-header-titles">
+                  <div class="panel-title">
+                    {{
+                      panelMode === "edit"
+                        ? "编辑" + panelFormLabel
+                        : panelMode === "add"
+                          ? "创建" + panelFormLabel
+                          : "创建子项" + panelFormLabel
+                    }}
+                    <span v-if="panelMode === 'edit' && panelForm.name" class="panel-title-name"> · {{ panelForm.name }} </span>
+                  </div>
+                  <div class="panel-breadcrumb">{{ panelBreadcrumb.join(" / ") }}</div>
+                </div>
+              </div>
+              <div v-if="panelMode === 'edit'" class="panel-header-right">
+                <el-tag v-if="panelForm.kind === 0" type="info" size="small">目录</el-tag>
+                <el-tag v-if="panelForm.kind === 1" type="success" size="small">菜单</el-tag>
+                <el-tag v-if="panelForm.kind === 2" size="small">按钮</el-tag>
+                <el-tag :type="panelForm.hide === 1 ? 'danger' : 'success'" size="small">
+                  {{ panelForm.hide === 1 ? "隐藏" : "正常" }}
+                </el-tag>
+              </div>
+            </div>
 
-    <template #table>
-      <el-table
-        ref="listTableRef"
-        v-loading="listLoading"
-        :data="listData"
-        border
-        row-key="id"
-        default-expand-all
-        height="100%"
-      >
-        <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
-        <el-table-column label="菜单名称" prop="name" show-overflow-tooltip width="360">
-          <template #default="scope">
-            <div class="inline-flex items-center gap-2">
-              <Icon v-if="scope.row.icon" :icon="scope.row.icon" :width="16" :height="16" class="align-middle inline" />
-              {{ scope.row.name }}
+            <!-- 表单内容区 -->
+            <el-scrollbar class="panel-body">
+              <el-form
+                ref="panelFormRef"
+                :model="panelForm"
+                :rules="panelRules"
+                label-width="90px"
+                :validate-on-rule-change="false"
+                class="panel-form"
+              >
+                <section class="panel-section">
+                  <div class="panel-section-title">{{ panelMode === "edit" ? "编辑" : "创建" }}{{ panelFormLabel }}</div>
+                  <el-form-item label="父级菜单" prop="parentId">
+                  <el-tree-select
+                    v-model="panelForm.parentId"
+                    :data="menuTreeForSelect"
+                    node-key="id"
+                    :props="{ value: 'id', label: 'name', children: 'children' }"
+                    check-strictly
+                    placeholder="请选择父级菜单"
+                    clearable
+                    default-expand-all
+                  />
+                </el-form-item>
+                <el-row :gutter="20">
+                  <el-col :span="12">
+                    <el-form-item :label="panelFormLabel + '名称'" prop="name">
+                      <el-input
+                        v-model="panelForm.name"
+                        placeholder="请输入菜单名称"
+                        clearable
+                        maxlength="32"
+                        show-word-limit
+                      />
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="12">
+                    <el-form-item label="菜单类型" prop="kind">
+                      <el-select
+                        v-model="panelForm.kind"
+                        placeholder="请选择菜单类型"
+                        clearable
+                        :disabled="panelMode === 'edit'"
+                      >
+                        <el-option
+                          label="目录"
+                          :value="0"
+                          :disabled="panelMode === 'add-item' && panelCurrentRow?.kind == 1"
+                        />
+                        <el-option
+                          label="菜单"
+                          :value="1"
+                          :disabled="panelMode === 'add-item' && panelCurrentRow?.kind == 1"
+                        />
+                        <el-option
+                          label="按钮"
+                          :value="2"
+                          :disabled="panelMode === 'add-item' && panelCurrentRow?.kind == 0"
+                        />
+                      </el-select>
+                    </el-form-item>
+                  </el-col>
+                </el-row>
+                <el-form-item v-if="panelForm.kind == 1" :label="panelFormLabel + '路径'" prop="path">
+                  <el-input v-model="panelForm.path" placeholder="请输入菜单路径" clearable maxlength="500" show-word-limit>
+                    <template #append>
+                      <el-button @click="openGRCM">选择路由</el-button>
+                    </template>
+                  </el-input>
+                </el-form-item>
+                <el-form-item v-if="panelForm.kind == 1 || panelForm.kind == 2" label="所需权限" prop="permissionCode">
+                  <el-input
+                    v-model="panelForm.permissionCode"
+                    placeholder="请输入所需权限"
+                    clearable
+                    maxlength="500"
+                    show-word-limit
+                  />
+                </el-form-item>
+                <el-form-item v-if="panelForm.kind == 0 || panelForm.kind == 1" :label="panelFormLabel + '图标'" prop="icon">
+                  <StdIconPicker v-model="panelForm.icon" />
+                </el-form-item>
+                <div v-if="panelForm.kind == 2" class="panel-section-empty">按钮类型无需配置路径与图标</div>
+                <el-row :gutter="20">
+                  <el-col :span="12">
+                    <el-form-item label="状态" prop="hide">
+                      <el-radio-group v-model="panelForm.hide">
+                        <el-radio :value="0">正常</el-radio>
+                        <el-radio :value="1">隐藏</el-radio>
+                      </el-radio-group>
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="12">
+                    <el-form-item label="排序" prop="seq">
+                      <el-input-number v-model.number="panelForm.seq" :min="0" placeholder="请输入排序" clearable />
+                    </el-form-item>
+                  </el-col>
+                </el-row>
+                <el-form-item label="备注" prop="remark">
+                  <el-input
+                    v-model="panelForm.remark"
+                    type="textarea"
+                    :rows="3"
+                    placeholder="请输入备注"
+                    clearable
+                    maxlength="500"
+                    show-word-limit
+                  />
+                </el-form-item>
+                </section>
+              </el-form>
+            </el-scrollbar>
+
+            <!-- 底部操作条 -->
+            <div class="panel-footer">
+              <el-button @click="closePanel">关闭</el-button>
+              <el-button type="primary" :loading="panelLoading" @click="submitPanel">
+                {{ panelMode === "edit" ? "保存" : "创建" }}
+              </el-button>
             </div>
           </template>
-        </el-table-column>
-        <el-table-column label="类型" prop="kind" width="70">
-          <template #default="scope">
-            <el-tag v-if="scope.row.kind === 0">目录</el-tag>
-            <el-tag v-if="scope.row.kind === 1" type="success">菜单</el-tag>
-            <el-tag v-if="scope.row.kind === 2" type="info">按钮</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="菜单路径" prop="path" show-overflow-tooltip>
-          <template #default="scope">
-            <span v-if="scope.row.kind === 0 || scope.row.kind === 2" class="text-gray-400 text-xs">不适用</span>
-            <span v-else>{{ scope.row.path }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="所需权限" prop="permissionCode" show-overflow-tooltip>
-          <template #default="scope">
-            <span v-if="scope.row.kind === 0" class="text-gray-400 text-xs">不适用</span>
-            <span
-              v-else
-              :class="{
-                'text-red-500': scope.row.missingPermission === 1,
-                'text-orange-500': scope.row.missingPermission === 2,
-                'text-green-500': scope.row.missingPermission === 0,
-              }"
-            >
-              {{ scope.row.permissionCode }}
-            </span>
-          </template>
-        </el-table-column>
-        <el-table-column label="排序" prop="seq" width="100">
-          <template #default="scope">
-            <ComSeqFixer
-              :id="scope.row.id"
-              :seq-field="'seq'"
-              :get-detail-api="getMenuDetail"
-              :edit-api="editMenuSeq"
-              :display-value="scope.row.seq"
-              :on-success="loadList"
-            />
-          </template>
-        </el-table-column>
-        <el-table-column label="状态" prop="hide" width="100">
-          <template #default="scope">
-            <el-tag :type="scope.row.hide === 1 ? 'danger' : 'success'">
-              {{ scope.row.hide === 1 ? "隐藏" : "正常" }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" fixed="right" width="230">
-          <template #default="scope">
-            <div class="inline-flex justify-end items-center gap-2 w-full">
-              <!-- 按钮下无法创建子项 -->
-              <el-button
-                v-if="scope.row.kind !== 2"
-                link
-                type="success"
-                size="small"
-                :icon="PlusIcon"
-                @click="openModal('add-item', scope.row)"
-              >
-                创建子项
-              </el-button>
 
-              <el-button link type="primary" size="small" :icon="EditIcon" @click="openModal('edit', scope.row)">
-                编辑
-              </el-button>
-              <el-button
-                link
-                type="danger"
-                size="small"
-                :icon="DeleteIcon"
-                :disabled="scope.row.children && scope.row.children.length > 0"
-                @click="removeList(scope.row.id)"
-              >
-                删除
-              </el-button>
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
-    </template>
-  </StdListLayout>
+          <div v-else class="panel-empty">
+            <el-icon class="panel-empty-icon"><Menu /></el-icon>
+            <p class="panel-empty-title">暂无选中菜单</p>
+            <p class="panel-empty-desc">在左侧选择菜单查看详情，或点击根节点的 + 创建菜单</p>
+          </div>
+        </div>
+      </pane>
+    </splitpanes>
 
-  <!-- 选择路由模态框 -->
-  <GenricRouteChooseModal ref="grcmRef" v-model="modalForm.path" v-model:search-keyword="grcmQuery" />
-
-  <!-- 菜单编辑模态框 -->
-  <el-dialog
-    v-model="modalVisible"
-    :title="modalMode === 'edit' ? '编辑' + modalFormLabel : modalMode === 'add' ? '创建' + modalFormLabel : '创建子项' + modalFormLabel"
-    width="550px"
-    :close-on-click-modal="false"
-    @close="
-      resetModal(true);
-      loadList();
-    "
-  >
-    <el-form
-      v-if="modalVisible"
-      ref="modalFormRef"
-      :model="modalForm"
-      :rules="modalRules"
-      label-width="80px"
-      :validate-on-rule-change="false"
-    >
-      <el-form-item label="父级菜单" prop="parentId">
-        <el-tree-select
-          v-model="modalForm.parentId"
-          :data="menuTreeForSelect"
-          node-key="id"
-          :props="{ value: 'id', label: 'name', children: 'children' }"
-          check-strictly
-          placeholder="请选择父级菜单"
-          clearable
-          default-expand-all
-        />
-      </el-form-item>
-      <el-form-item label="菜单类型" prop="kind">
-        <el-select v-model="modalForm.kind" placeholder="请选择菜单类型" clearable :disabled="modalMode === 'edit'">
-          <el-option label="目录" :value="0" :disabled="modalMode === 'add-item' && modalCurrentRow?.kind == 1" />
-          <el-option label="菜单" :value="1" :disabled="modalMode === 'add-item' && modalCurrentRow?.kind == 1" />
-          <el-option label="按钮" :value="2" :disabled="modalMode === 'add-item' && modalCurrentRow?.kind == 0" />
-        </el-select>
-      </el-form-item>
-      <el-form-item :label="modalFormLabel + '名称'" prop="name">
-        <el-input v-model="modalForm.name" placeholder="请输入菜单名称" clearable maxlength="32" show-word-limit />
-      </el-form-item>
-      <el-form-item v-if="modalForm.kind == 1" :label="modalFormLabel + '路径'" prop="path">
-        <el-input v-model="modalForm.path" placeholder="请输入菜单路径" clearable maxlength="500" show-word-limit>
-          <template #append>
-            <el-button @click="openGRCM">选择路由</el-button>
-          </template>
-        </el-input>
-      </el-form-item>
-      <el-form-item v-if="modalForm.kind == 1 || modalForm.kind == 2" label="所需权限" prop="permissionCode">
-        <el-input v-model="modalForm.permissionCode" placeholder="请输入所需权限" clearable maxlength="500" show-word-limit />
-      </el-form-item>
-      <el-form-item v-if="modalForm.kind == 0 || modalForm.kind == 1" :label="modalFormLabel + '图标'" prop="icon">
-        <StdIconPicker v-model="modalForm.icon" />
-      </el-form-item>
-      <el-form-item label="状态" prop="hide">
-        <el-radio-group v-model="modalForm.hide">
-          <el-radio :value="0">正常</el-radio>
-          <el-radio :value="1">隐藏</el-radio>
-        </el-radio-group>
-      </el-form-item>
-      <el-form-item label="排序" prop="seq">
-        <el-input-number v-model.number="modalForm.seq" :min="0" placeholder="请输入排序" clearable />
-      </el-form-item>
-      <el-form-item label="备注" prop="remark">
-        <el-input v-model="modalForm.remark" placeholder="请输入备注" clearable maxlength="500" show-word-limit />
-      </el-form-item>
-    </el-form>
-    <template #footer>
-      <div class="dialog-footer">
-        <el-button @click="modalVisible = false">关闭</el-button>
-        <el-button type="primary" :loading="modalLoading" @click="submitModal">
-          {{ modalMode === "edit" ? "保存" : "创建" }}
-        </el-button>
-      </div>
-    </template>
-  </el-dialog>
+    <!-- 选择路由模态框 -->
+    <GenricRouteChooseModal ref="grcmRef" v-model="panelForm.path" v-model:search-keyword="grcmQuery" />
+  </div>
 </template>
 
 <script setup lang="ts">
-import type { FormInstance, TableInstance } from "element-plus";
-import { ref } from "vue";
-import { Delete as DeleteIcon, Plus as PlusIcon, InfoFilled, Edit as EditIcon } from "@element-plus/icons-vue";
+import type { FormInstance } from "element-plus";
+import { markRaw, ref } from "vue";
+import { Delete, Plus, Menu } from "@element-plus/icons-vue";
+import { Splitpanes, Pane } from "splitpanes";
+import "splitpanes/dist/splitpanes.css";
 import StdIconPicker from "@/soa/std-series/StdIconPicker.vue";
-import { Icon } from "@iconify/vue";
-import type { GetMenuDetailsVo } from "@/views/core/api/MenuApi.ts";
 import MenuManagerService from "@/views/core/service/MenuManagerService.ts";
 import GenricRouteChooseModal from "@/soa/genric-route/GenricRouteChooseModal.vue";
-import ComSeqFixer from "@/soa/com-series/ComSeqFixer.vue";
-import MenuApi from "@/views/core/api/MenuApi.ts";
-import { Result } from "@/commons/model/Result";
-import StdListLayout from "@/soa/std-series/StdListLayout.vue";
-import ComMenuService from "@/soa/com-series/service/ComMenuService.ts";
+import StdAdvTree from "@/soa/std-series/StdAdvTree.vue";
+import ComIconService from "@/soa/com-series/service/ComIconService";
+
+const DeleteIcon = markRaw(Delete);
+const PlusIcon = markRaw(Plus);
+
+const { resolveIcon } = ComIconService.useIconService();
+
+const current = ref<string>(null);
 
 const grcmRef = ref<InstanceType<typeof GenricRouteChooseModal>>();
-
-//路由选择模态框查询参数
 const grcmQuery = ref<string>("");
-
 const openGRCM = (): void => {
   grcmRef.value?.openModal();
 };
 
-const listTableRef = ref<TableInstance>();
-const modalFormRef = ref<FormInstance>();
+const panelFormRef = ref<FormInstance>();
 
-/**
- * 菜单列表打包
- */
-const {
-  listForm,
-  listExpand,
-  listData,
-  listLoading,
-  fullMenuTree,
-  loadList,
-  resetList,
-  removeList,
-  loadFullMenuTree,
-  listExpandToggle,
-} = MenuManagerService.useMenuList(listTableRef);
+const { listData, listLoading, loadList, removeList } = MenuManagerService.useMenuList();
 
-/**
- * 菜单模态框打包
- */
 const {
-  modalVisible,
-  modalLoading,
-  modalMode,
-  modalCurrentRow,
-  modalForm,
-  modalFormLabel,
-  modalRules,
+  panelVisible,
+  panelLoading,
+  panelMode,
+  panelCurrentRow,
+  panelForm,
+  panelFormLabel,
+  panelBreadcrumb,
+  panelRules,
   menuTreeForSelect,
-  openModal,
-  resetModal,
-  submitModal,
-} = MenuManagerService.useMenuModal(modalFormRef, loadList, fullMenuTree, loadFullMenuTree);
-
-//先加载菜单服务
-const { loadMenus } = ComMenuService.useMenuService();
-
-const getMenuDetail = async (id: string): Promise<GetMenuDetailsVo> => {
-  const result = await MenuApi.getMenuDetails({ id });
-  if (!Result.isSuccess(result)) {
-    throw new Error(result.message);
-  }
-  return result.data;
-};
-
-const editMenuSeq = async (id: string, dto: any): Promise<void> => {
-  const result = await MenuApi.editMenu(dto);
-  if (!Result.isSuccess(result)) {
-    throw new Error(result.message);
-  }
-  //通知左侧菜单重新加载
-  loadMenus();
-};
+  openPanel,
+  closePanel,
+  submitPanel,
+} = MenuManagerService.useMenuPanel(panelFormRef, loadList);
 </script>
 
-<style scoped></style>
+<style scoped>
+.list-layout {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--el-bg-color);
+}
+
+/* splitpanes 主题 */
+:deep(.splitpanes.custom-theme) {
+  border: none;
+}
+
+:deep(.splitpanes.custom-theme .splitpanes__pane) {
+  background-color: transparent;
+}
+
+:deep(.splitpanes.custom-theme .splitpanes__splitter) {
+  background-color: var(--el-border-color-extra-light);
+  width: 1px;
+  border: none;
+  cursor: col-resize;
+  position: relative;
+  transition: background-color 0.2s;
+}
+
+:deep(.splitpanes.custom-theme .splitpanes__splitter:hover) {
+  background-color: var(--el-color-primary);
+  width: 3px;
+}
+
+:deep(.splitpanes.custom-theme .splitpanes__splitter:after) {
+  content: "";
+  position: absolute;
+  left: -5px;
+  right: -5px;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+}
+
+:deep(.splitpanes__pane) {
+  transition: none !important;
+}
+
+/* 左侧面板 */
+.left-pane {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.tree-area {
+  flex: 1;
+  min-height: 0;
+}
+
+/* ---- 右侧面板 ---- */
+.right-pane {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  background: var(--el-bg-color);
+  position: relative;
+}
+
+/* ---- 顶部色条（按菜单类型着色） ---- */
+.panel-accent-bar {
+  flex-shrink: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--el-color-primary), var(--el-color-primary-light-5), transparent);
+  opacity: 0.85;
+}
+.panel-accent-bar.accent-0 {
+  background: linear-gradient(90deg, var(--el-color-info), var(--el-color-info-light-5), transparent);
+}
+.panel-accent-bar.accent-1 {
+  background: linear-gradient(90deg, var(--el-color-success), var(--el-color-success-light-5), transparent);
+}
+
+/* ---- 顶部标题条 ---- */
+.panel-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px 14px;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+  background: linear-gradient(180deg, var(--el-fill-color-lighter) 0%, var(--el-bg-color) 100%);
+}
+
+.panel-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.panel-header-icon-shell {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  background: var(--el-color-primary-light-9);
+}
+.panel-header-icon-shell.icon-0 { background: var(--el-color-info-light-9); }
+.panel-header-icon-shell.icon-1 { background: var(--el-color-success-light-9); }
+.panel-header-icon-shell.icon-2 { background: var(--el-color-primary-light-9); }
+
+.panel-header-icon {
+  font-size: 22px;
+  color: var(--el-color-primary);
+}
+.panel-header-icon-shell.icon-0 .panel-header-icon { color: var(--el-color-info); }
+.panel-header-icon-shell.icon-1 .panel-header-icon { color: var(--el-color-success); }
+
+.panel-header-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.panel-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.panel-title-name {
+  font-weight: 400;
+  color: var(--el-text-color-secondary);
+}
+
+.panel-breadcrumb {
+  font-size: 12px;
+  color: var(--el-text-color-placeholder);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.panel-header-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-left: 16px;
+}
+
+/* ---- 内容区 ---- */
+.panel-body {
+  flex: 1;
+  min-height: 0;
+}
+
+.panel-form {
+  padding: 20px 28px 8px;
+}
+
+.panel-section {
+  margin-bottom: 0;
+}
+
+.panel-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+  padding-bottom: 12px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.panel-section-empty {
+  font-size: 12px;
+  color: var(--el-text-color-placeholder);
+  padding: 4px 0 8px;
+}
+
+/* ---- 底部操作条 ---- */
+.panel-footer {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 24px;
+  border-top: 1px solid var(--el-border-color-light);
+  background: linear-gradient(0deg, var(--el-fill-color-lighter) 0%, var(--el-bg-color) 40%);
+}
+
+/* ---- 空状态 ---- */
+.panel-empty {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--el-text-color-placeholder);
+  gap: 10px;
+  background: radial-gradient(circle at 50% 35%, var(--el-color-primary-light-9) 0%, transparent 60%),
+              var(--el-bg-color);
+}
+
+.panel-empty-icon {
+  font-size: 56px;
+  opacity: 0.15;
+  color: var(--el-color-primary);
+}
+
+.panel-empty-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--el-text-color-secondary);
+  margin: 0;
+}
+
+.panel-empty-desc {
+  font-size: 13px;
+  color: var(--el-text-color-placeholder);
+  margin: 0;
+}
+
+/* 菜单类型标签 */
+.menu-kind-tag {
+  flex-shrink: 0;
+  margin-left: 6px;
+  font-size: 11px;
+  padding: 0 4px;
+  height: 18px;
+  line-height: 18px;
+  border-radius: 3px;
+  opacity: 0.85;
+}
+</style>

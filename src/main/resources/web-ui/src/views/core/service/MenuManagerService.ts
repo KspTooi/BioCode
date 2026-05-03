@@ -1,41 +1,25 @@
 import { computed, onMounted, reactive, ref, watch, type Ref } from "vue";
-import type { GetMenuDetailsVo, GetMenuTreeDto, GetMenuTreeVo } from "@/views/core/api/MenuApi.ts";
+import type { AddMenuDto, EditMenuDto, GetMenuDetailsVo, GetMenuTreeVo } from "@/views/core/api/MenuApi.ts";
 import MenuApi from "@/views/core/api/MenuApi.ts";
 import { Result } from "@/commons/model/Result";
-import { ElMessage, ElMessageBox, type FormInstance, type TableInstance } from "element-plus";
-import QueryPersistService from "@/commons/service/QueryPersistService.ts";
+import { ElMessage, ElMessageBox, type FormInstance } from "element-plus";
 import ComMenuService from "@/soa/com-series/service/ComMenuService.ts";
 
+type PanelMode = "add" | "edit" | "add-item";
+
 export default {
-  /**
-   * 菜单列表打包
-   * @param listTableRef 列表表格引用
-   */
-  useMenuList(listTableRef: Ref<TableInstance>) {
-    //先加载菜单服务
+  useMenuList() {
     const { loadMenus } = ComMenuService.useMenuService();
 
-    const listForm = ref<GetMenuTreeDto>({
-      name: "",
-      kind: null,
-      permissionCode: "",
-    });
-
-    const listExpand = ref(true);
     const listData = ref<GetMenuTreeVo[]>([]);
     const listLoading = ref(true);
-    const fullMenuTree = ref<GetMenuTreeVo[]>([]);
 
-    /**
-     * 加载菜单列表
-     */
     const loadList = async (): Promise<void> => {
       listLoading.value = true;
-      const result = await MenuApi.getMenuTree(listForm.value);
+      const result = await MenuApi.getMenuTree({});
 
       if (Result.isSuccess(result)) {
         listData.value = result.data;
-        QueryPersistService.persistQuery("menu-manager", listForm.value);
       }
 
       if (Result.isError(result)) {
@@ -45,20 +29,6 @@ export default {
       listLoading.value = false;
     };
 
-    /**
-     * 重置查询条件
-     */
-    const resetList = async (): Promise<void> => {
-      listForm.value.name = "";
-      listForm.value.kind = null;
-      listForm.value.permissionCode = "";
-      QueryPersistService.clearQuery("menu-manager");
-      await loadList();
-    };
-
-    /**
-     * 删除菜单
-     */
     const removeList = async (id: string): Promise<void> => {
       try {
         await ElMessageBox.confirm("确定删除该菜单吗？", "提示", {
@@ -73,8 +43,6 @@ export default {
       try {
         await MenuApi.removeMenu({ id });
         await loadList();
-
-        //通知左侧菜单重新加载
         loadMenus();
       } catch (error: any) {
         ElMessage.error(error.message);
@@ -82,85 +50,28 @@ export default {
       }
     };
 
-    /**
-     * 展开/收起全部
-     */
-    const listExpandToggle = (): void => {
-      if (listExpand.value) {
-        listExpand.value = false;
-        listExpandToggleInner(listData.value, false);
-        return;
-      }
-      listExpandToggleInner(listData.value, true);
-      listExpand.value = true;
-    };
-
-    /**
-     * 加载不带条件的完整菜单树用于父级选择
-     */
-    const loadFullMenuTree = async (): Promise<void> => {
-      const result = await MenuApi.getMenuTree({});
-      if (Result.isSuccess(result)) {
-        fullMenuTree.value = result.data;
-      }
-    };
-
-    /**
-     * 递归展开/收起子级
-     * @param data 菜单数据
-     * @param expand 是否展开
-     */
-    const listExpandToggleInner = (data: GetMenuTreeVo[], expand: boolean): void => {
-      for (const item of data) {
-        listTableRef.value?.toggleRowExpansion(item, expand);
-        if (item.children != undefined && item.children.length > 0) {
-          listExpandToggleInner(item.children, expand);
-        }
-      }
-    };
-
-    //初始化
     onMounted(async () => {
-      //加载查询条件
-      QueryPersistService.loadQuery("menu-manager", listForm.value);
       await loadList();
     });
 
     return {
-      listForm,
-      listExpand,
       listData,
       listLoading,
-      fullMenuTree,
       loadList,
-      resetList,
       removeList,
-      loadFullMenuTree,
-      listExpandToggle,
     };
   },
 
-  /**
-   * 菜单模态框打包
-   * @param modalFormRef 模态框表单引用
-   * @param loadList 列表加载函数
-   * @param fullMenuTree 完整菜单树数据
-   * @param loadFullMenuTree 加载完整菜单树函数
-   */
-  useMenuModal(
-    modalFormRef: Ref<FormInstance>,
-    loadList: () => void,
-    fullMenuTree: Ref<GetMenuTreeVo[]>,
-    loadFullMenuTree: () => Promise<void>
-  ) {
-    //先加载菜单服务
+  useMenuPanel(panelFormRef: Ref<FormInstance>, reloadCallback: () => void) {
     const { loadMenus } = ComMenuService.useMenuService();
 
-    const modalVisible = ref(false);
-    const modalLoading = ref(false);
-    const modalMode = ref<"add" | "edit" | "add-item">("add"); //add:添加,edit:编辑,add-item:新增子项
-    const modalCurrentRow = ref<GetMenuTreeVo | null>(null);
-    const modalForm = reactive<GetMenuDetailsVo>({
+    const panelVisible = ref(false);
+    const panelLoading = ref(false);
+    const panelMode = ref<PanelMode>("add");
+    const panelCurrentRow = ref<GetMenuTreeVo | null>(null);
+    const fullMenuTree = ref<GetMenuTreeVo[]>([]);
+
+    const panelForm = reactive<GetMenuDetailsVo>({
       id: "",
       parentId: "",
       name: "",
@@ -172,20 +83,21 @@ export default {
       seq: 0,
       remark: "",
     });
-    const modalFormLabel = computed(() => {
-      if (modalForm.kind == 0) {
+
+    const panelFormLabel = computed(() => {
+      if (panelForm.kind == 0) {
         return "目录";
       }
-      if (modalForm.kind == 1) {
+      if (panelForm.kind == 1) {
         return "菜单";
       }
-      if (modalForm.kind == 2) {
+      if (panelForm.kind == 2) {
         return "按钮";
       }
       return "";
     });
 
-    const modalRules = {
+    const panelRules = {
       name: [
         { required: true, message: "请输入菜单名称", trigger: "blur" },
         { min: 2, max: 128, message: "菜单名称长度必须在2-128个字符之间", trigger: "blur" },
@@ -208,165 +120,41 @@ export default {
       hide: [{ required: true, message: "请选择是否隐藏", trigger: "blur" }],
     };
 
-    /**
-     * 打开模态框
-     * @param mode 模式
-     * @param currentRow 当前行
-     */
-    const openModal = async (mode: "add" | "edit" | "add-item", currentRow: GetMenuTreeVo | null): Promise<void> => {
-      // 打开模态框时加载完整菜单树用于选择父级
-      await loadFullMenuTree();
-
-      modalMode.value = mode;
-      modalCurrentRow.value = currentRow;
-      resetModal();
-
-      if (mode === "add") {
-        modalForm.parentId = "";
-      }
-
-      if (mode === "add-item" && currentRow) {
-        modalForm.parentId = currentRow.id;
-
-        //当前选项是菜单 则首选按钮
-        if (modalCurrentRow.value?.kind == 1) {
-          modalForm.kind = 2;
+    // kind 变为目录时清空菜单路径
+    watch(
+      () => panelForm.kind,
+      (newVal: number | null | undefined) => {
+        if (newVal == 0) {
+          panelForm.path = "";
         }
-      }
+      },
+      { immediate: true }
+    );
 
-      //如果是编辑模式则需要加载详情数据
-      if (mode === "edit" && currentRow) {
-        const ret = await MenuApi.getMenuDetails({ id: currentRow.id });
-
-        if (Result.isSuccess(ret)) {
-          modalForm.id = ret.data.id;
-          const parentId = ret.data.parentId;
-          modalForm.parentId = "";
-          if (parentId != null) {
-            modalForm.parentId = parentId;
-          }
-          modalForm.name = ret.data.name;
-          modalForm.kind = ret.data.kind;
-          modalForm.path = ret.data.path;
-          modalForm.icon = ret.data.icon;
-          modalForm.hide = ret.data.hide;
-          modalForm.permissionCode = ret.data.permissionCode;
-          modalForm.seq = ret.data.seq;
-          modalForm.remark = ret.data.remark;
-        }
-
-        if (Result.isError(ret)) {
-          ElMessage.error(ret.message);
-          return;
-        }
-      }
-
-      modalVisible.value = true;
-    };
-
-    /**
-     * 重置模态框表单
-     * @param force 硬重置，不保留父级ID、菜单类型
-     */
-    const resetModal = (force: boolean = false): void => {
-      modalForm.id = "";
-      modalForm.name = "";
-      modalForm.path = "";
-      modalForm.icon = "";
-      modalForm.hide = 0;
-      modalForm.permissionCode = "";
-      modalForm.seq = 0;
-      modalForm.remark = "";
-
-      if (force) {
-        modalForm.parentId = "";
-        modalForm.kind = 0;
-      }
-    };
-
-    /**
-     * 提交模态框表单
-     */
-    const submitModal = async (): Promise<void> => {
-      //先校验表单
-      try {
-        await modalFormRef?.value?.validate();
-      } catch {
-        return;
-      }
-
-      modalLoading.value = true;
-
-      //提交表单
-      try {
-        if (modalMode.value === "add" || modalMode.value === "add-item") {
-          await MenuApi.addMenu(modalForm);
-          ElMessage.success("操作成功");
-          const parentId = modalForm.parentId;
-          modalForm.parentId = parentId;
-          resetModal();
-          modalVisible.value = false;
-        }
-
-        if (modalMode.value === "edit") {
-          await MenuApi.editMenu(modalForm);
-          ElMessage.success("操作成功");
-          modalVisible.value = false;
-        }
-      } catch (error: any) {
-        ElMessage.error(error.message);
-        return;
-      } finally {
-        modalLoading.value = false;
-        await loadList();
-      }
-
-      //通知左侧菜单重新加载
-      loadMenus();
-    };
-
-    /**
-     * 计算菜单树用于父级选择
-     */
+    // 父级选择树：过滤掉按钮，并根据当前菜单类型禁用不合法的父级
     const menuTreeForSelect = computed(() => {
-      const currentMenu = modalForm;
-      const isEditMode = modalMode.value === "edit";
+      const isEditMode = panelMode.value === "edit";
 
       const filter = (menuTree: GetMenuTreeVo[]): GetMenuTreeVo[] => {
         return menuTree
-          .filter((item) => item.kind !== 2) // 按钮不能作为父级
+          .filter((item) => item.kind !== 2)
           .map((item) => {
             let disabled = false;
-
-            // 编辑时，节点自身不能作为父级
-            if (isEditMode && item.id === currentMenu.id) {
+            if (isEditMode && item.id === panelForm.id) {
               disabled = true;
             }
-
-            // 根据当前操作的菜单类型，判断父级是否可选
-            // 0-目录 1-菜单 2-按钮
-
-            // 当前是目录，父级只能是目录或根节点
-            if (currentMenu.kind === 0) {
-              if (item.kind !== 0) {
-                disabled = true;
-              }
+            // 目录：父级只能是目录
+            if (panelForm.kind === 0 && item.kind !== 0) {
+              disabled = true;
             }
-
-            // 当前是菜单，父级只能是目录（菜单下不能放菜单）
-            if (currentMenu.kind === 1) {
-              if (item.kind !== 0) {
-                disabled = true;
-              }
+            // 菜单：父级只能是目录
+            if (panelForm.kind === 1 && item.kind !== 0) {
+              disabled = true;
             }
-
-            // 当前是按钮，父级只能是菜单
-            if (currentMenu.kind === 2) {
-              if (item.kind !== 1) {
-                disabled = true;
-              }
+            // 按钮：父级只能是菜单
+            if (panelForm.kind === 2 && item.kind !== 1) {
+              disabled = true;
             }
-
             return {
               id: item.id,
               parentId: item.parentId,
@@ -384,47 +172,180 @@ export default {
           });
       };
 
-      let rootDisabled = false;
-      // 菜单和按钮不能直接挂在根节点下，目录可以挂在根节点下
-      if (currentMenu.kind === 1 || currentMenu.kind === 2) {
-        rootDisabled = true;
-      }
-
-      return [
-        {
-          id: "",
-          name: "根节点",
-          disabled: rootDisabled,
-          children: filter(fullMenuTree.value),
-        },
-      ];
+      // 菜单和按钮不能直接挂在根节点下
+      const rootDisabled = panelForm.kind === 1 || panelForm.kind === 2;
+      return [{ id: "", name: "根节点", disabled: rootDisabled, children: filter(fullMenuTree.value) }];
     });
 
-    /**
-     * 监听菜单类型变化 用于模态框改变类型时清空菜单路径
-     */
-    watch(
-      () => modalForm.kind,
-      (newVal: number | null | undefined) => {
-        if (newVal == 0) {
-          modalForm.path = "";
+    const panelBreadcrumb = computed<string[]>(() => {
+      const root = ["全部菜单"];
+      if (!panelForm.parentId) {
+        return root;
+      }
+      const findPath = (nodes: GetMenuTreeVo[], targetId: string, acc: string[]): string[] | null => {
+        for (const node of nodes) {
+          const next = [...acc, node.name ?? ""];
+          if (node.id === targetId) {
+            return next;
+          }
+          if (node.children && node.children.length > 0) {
+            const found = findPath(node.children, targetId, next);
+            if (found) {
+              return found;
+            }
+          }
         }
-      },
-      { immediate: true }
-    );
+        return null;
+      };
+      const ancestors = findPath(fullMenuTree.value, panelForm.parentId, []);
+      if (ancestors) {
+        return [...root, ...ancestors];
+      }
+      return root;
+    });
+
+    const loadFullMenuTree = async (): Promise<void> => {
+      const result = await MenuApi.getMenuTree({});
+      if (Result.isSuccess(result)) {
+        fullMenuTree.value = result.data;
+      }
+    };
+
+    const resetPanel = (full: boolean = false): void => {
+      panelForm.id = "";
+      panelForm.name = "";
+      panelForm.path = "";
+      panelForm.icon = "";
+      panelForm.hide = 0;
+      panelForm.permissionCode = "";
+      panelForm.seq = 0;
+      panelForm.remark = "";
+      if (!full) {
+        return;
+      }
+      panelForm.parentId = "";
+      panelForm.kind = 0;
+    };
+
+    const openPanel = async (mode: PanelMode, currentRow: GetMenuTreeVo | null): Promise<void> => {
+      await loadFullMenuTree();
+      panelMode.value = mode;
+      panelCurrentRow.value = currentRow;
+      resetPanel();
+
+      if (mode === "add") {
+        panelForm.parentId = "";
+      }
+
+      if (mode === "add-item" && currentRow) {
+        panelForm.parentId = currentRow.id;
+        // 父节点是菜单时，子项默认选按钮
+        if (currentRow.kind == 1) {
+          panelForm.kind = 2;
+        }
+      }
+
+      if (mode === "edit" && currentRow) {
+        const ret = await MenuApi.getMenuDetails({ id: currentRow.id });
+        if (Result.isError(ret)) {
+          ElMessage.error(ret.message);
+          return;
+        }
+        panelForm.id = ret.data.id;
+        panelForm.parentId = ret.data.parentId ?? "";
+        panelForm.name = ret.data.name;
+        panelForm.kind = ret.data.kind;
+        panelForm.path = ret.data.path;
+        panelForm.icon = ret.data.icon;
+        panelForm.hide = ret.data.hide;
+        panelForm.permissionCode = ret.data.permissionCode;
+        panelForm.seq = ret.data.seq;
+        panelForm.remark = ret.data.remark;
+      }
+
+      panelVisible.value = true;
+    };
+
+    const closePanel = (): void => {
+      panelVisible.value = false;
+      resetPanel(true);
+      reloadCallback();
+    };
+
+    const submitPanel = async (): Promise<void> => {
+      try {
+        await panelFormRef?.value?.validate();
+      } catch {
+        return;
+      }
+
+      panelLoading.value = true;
+
+      try {
+        if (panelMode.value === "add" || panelMode.value === "add-item") {
+          const addDto: AddMenuDto = {
+            parentId: panelForm.parentId,
+            name: panelForm.name,
+            kind: panelForm.kind,
+            path: panelForm.path,
+            icon: panelForm.icon,
+            hide: panelForm.hide,
+            permissionCode: panelForm.permissionCode,
+            seq: panelForm.seq,
+            remark: panelForm.remark,
+          };
+          const ret = await MenuApi.addMenu(addDto);
+          if (Result.isError(ret)) {
+            ElMessage.error(ret.message);
+            return;
+          }
+          ElMessage.success("操作成功");
+          panelVisible.value = false;
+        }
+
+        if (panelMode.value === "edit") {
+          const editDto: EditMenuDto = {
+            id: panelForm.id,
+            parentId: panelForm.parentId,
+            name: panelForm.name,
+            kind: panelForm.kind,
+            path: panelForm.path,
+            icon: panelForm.icon,
+            hide: panelForm.hide,
+            permissionCode: panelForm.permissionCode,
+            seq: panelForm.seq,
+            remark: panelForm.remark,
+          };
+          const ret = await MenuApi.editMenu(editDto);
+          if (Result.isError(ret)) {
+            ElMessage.error(ret.message);
+            return;
+          }
+          ElMessage.success("操作成功");
+          panelVisible.value = false;
+        }
+      } finally {
+        panelLoading.value = false;
+        reloadCallback();
+      }
+
+      loadMenus();
+    };
 
     return {
-      modalVisible,
-      modalLoading,
-      modalMode,
-      modalCurrentRow,
-      modalForm,
-      modalFormLabel,
-      modalRules,
+      panelVisible,
+      panelLoading,
+      panelMode,
+      panelCurrentRow,
+      panelForm,
+      panelFormLabel,
+      panelBreadcrumb,
+      panelRules,
       menuTreeForSelect,
-      openModal,
-      resetModal,
-      submitModal,
+      openPanel,
+      resetPanel,
+      closePanel,
+      submitPanel,
     };
   },
 };
