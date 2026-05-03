@@ -351,6 +351,12 @@ export default {
       resetPanel(true);
       reloadCallback();
 
+      //如果当前是在新增子项模式下，且左侧树还选了东西 直接回退进详情
+      if (treeStore.panelMode === "add-item" && treeStore.treeCurrent !== "-1") {
+        openPanel("edit", treeStore.panelCurrentRow);
+        return;
+      }
+
       //清除左侧树的选中状态
       treeStore.resetSelected();
     };
