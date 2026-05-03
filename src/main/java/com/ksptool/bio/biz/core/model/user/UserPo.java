@@ -149,4 +149,22 @@ public class UserPo extends RowScopePo{
         return orgId;
     }
 
+    /**
+     * 判断用户是否被封禁
+     *
+     * @return 是否被封禁
+     */
+    public boolean isDisabled() {
+        return status == Switch.off();
+    }
+
+    /**
+     * 判断用户是否正常
+     *
+     * @return 是否正常
+     */
+    public boolean isEnabled() {
+        return status == Switch.on();
+    }
+
 }
