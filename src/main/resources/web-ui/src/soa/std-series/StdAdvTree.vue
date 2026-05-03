@@ -96,6 +96,7 @@ const { resolveIcon } = ComIconService.useIconService();
 
 const props = withDefaults(defineProps<StdAdvTreeProps>(), {
   modelValue: null,
+  initValue: undefined,
   data: () => [],
   search: false,
   searchPlaceholder: "搜索",

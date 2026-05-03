@@ -1,9 +1,12 @@
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, onMounted, nextTick } from "vue";
 import type { ElTree } from "element-plus";
 
 export interface StdAdvTreeProps {
   //双向绑定的选中节点 key（对应 nk 字段的值）
   modelValue?: string | number | null;
+
+  //初始化选中节点 key（对应 nk 字段的值）
+  initValue?: string | number | null;
 
   //树的数据源
   data: Array<any>;
@@ -136,6 +139,18 @@ export default {
     const getTreeRef = (): InstanceType<typeof ElTree> | undefined => {
       return treeRef.value;
     };
+
+    onMounted(async () => {
+      const init = props.initValue ?? props.modelValue ?? null;
+      if (init === null) {
+        return;
+      }
+      await nextTick();
+      currentSelectedKey.value = init;
+      const isRoot = init === nrKey.value;
+      treeRef.value?.setCurrentKey(isRoot ? null : init);
+      emit("update:modelValue", init);
+    });
 
     const onRootClick = (): void => {
       currentSelectedKey.value = nrKey.value;
