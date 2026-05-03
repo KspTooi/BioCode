@@ -98,7 +98,6 @@ export default {
     const treeStore = this.useMenuTreeStore();
     const panelVisible = ref(false);
     const panelLoading = ref(false);
-    const panelMode = ref<PanelMode>("add");
     const panelCurrentRow = ref<GetMenuTreeVo | null>(null);
     const fullMenuTree = ref<GetMenuTreeVo[]>([]);
 
@@ -151,7 +150,7 @@ export default {
 
     // 父级选择树：过滤掉按钮，并根据当前菜单类型禁用不合法的父级
     const panelParentMenuTree = computed(() => {
-      const isEditMode = panelMode.value === "edit";
+      const isEditMode = treeStore.panelMode === "edit";
 
       const filter = (menuTree: GetMenuTreeVo[]): GetMenuTreeVo[] => {
         return menuTree
@@ -247,7 +246,7 @@ export default {
 
     const openPanel = async (mode: PanelMode, currentRow: GetMenuTreeVo | null): Promise<void> => {
       await loadFullMenuTree();
-      panelMode.value = mode;
+      treeStore.panelMode = mode;
       panelCurrentRow.value = currentRow;
       resetPanel();
 
@@ -300,7 +299,7 @@ export default {
       panelLoading.value = true;
 
       try {
-        if (panelMode.value === "add" || panelMode.value === "add-item") {
+        if (treeStore.panelMode === "add" || treeStore.panelMode === "add-item") {
           const addDto: AddMenuDto = {
             parentId: treeStore.panelForm.parentId,
             name: treeStore.panelForm.name,
@@ -321,7 +320,7 @@ export default {
           panelVisible.value = false;
         }
 
-        if (panelMode.value === "edit") {
+        if (treeStore.panelMode === "edit") {
           const editDto: EditMenuDto = {
             id: treeStore.panelForm.id,
             parentId: treeStore.panelForm.parentId,
@@ -350,12 +349,19 @@ export default {
       loadMenus();
     };
 
+    onMounted(() => {
+      //检查缓存的模式
+      const store = this.useMenuTreeStore();
+
+      console.log(store.panelMode);
+    });
+
     return {
       panelVisible,
       panelLoading,
-      panelMode,
+      panelMode: computed(() => treeStore.panelMode),
       panelCurrentRow,
-      panelForm: treeStore.panelForm,
+      panelForm: computed(() => treeStore.panelForm),
       panelFormLabel,
       panelBreadcrumb,
       panelRules,
