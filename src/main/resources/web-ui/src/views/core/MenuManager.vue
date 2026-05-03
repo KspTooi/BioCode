@@ -6,9 +6,9 @@
         <div class="left-pane">
           <div class="tree-area">
             <StdAdvTree
-              v-model="current"
-              :data="listData"
-              :loading="listLoading"
+              v-model="currentKey"
+              :data="treeData"
+              :loading="treeLoading"
               :nr="true"
               :nr-title="'全部菜单'"
               :nr-icon="'ep:menu'"
@@ -21,11 +21,11 @@
               :search-placeholder="'请输入菜单名称'"
               :search-refresh="true"
               :expand-on-click="true"
-              @on-refresh="loadList"
+              @on-refresh="loadTree"
               @on-select="openPanel('edit', $event)"
               @on-add="openPanel('add-item', $event)"
               @on-edit="openPanel('edit', $event)"
-              @on-remove="removeList($event.id)"
+              @on-remove="removeNode($event.id)"
               @on-root-select="closePanel()"
             >
               <template #root-actions>
@@ -42,7 +42,7 @@
                 <el-button link type="success" size="small" :icon="PlusIcon" @click="openPanel('add-item', data)">
                   创建子项
                 </el-button>
-                <el-button link type="danger" size="small" :icon="DeleteIcon" @click="removeList(data.id)">删除</el-button>
+                <el-button link type="danger" size="small" :icon="DeleteIcon" @click="removeNode(data.id)">删除</el-button>
               </template>
             </StdAdvTree>
           </div>
@@ -242,8 +242,6 @@ const PlusIcon = markRaw(Plus);
 
 const { resolveIcon } = ComIconService.useIconService();
 
-const current = ref<string>(null);
-
 const grcmRef = ref<InstanceType<typeof GenricRouteChooseModal>>();
 const grcmQuery = ref<string>("");
 const openGRCM = (): void => {
@@ -252,7 +250,7 @@ const openGRCM = (): void => {
 
 const panelFormRef = ref<FormInstance>();
 
-const { listData, listLoading, loadList, removeList } = MenuManagerService.useMenuList();
+const { treeData, treeLoading, currentKey, loadTree, removeNode } = MenuManagerService.useMenuTree();
 
 const {
   panelVisible,
@@ -267,7 +265,7 @@ const {
   openPanel,
   closePanel,
   submitPanel,
-} = MenuManagerService.useMenuPanel(panelFormRef, loadList);
+} = MenuManagerService.useMenuTreePanel(panelFormRef, loadTree);
 </script>
 
 <style scoped>

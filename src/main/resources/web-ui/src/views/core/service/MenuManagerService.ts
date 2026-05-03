@@ -8,28 +8,29 @@ import ComMenuService from "@/soa/com-series/service/ComMenuService.ts";
 type PanelMode = "add" | "edit" | "add-item";
 
 export default {
-  useMenuList() {
+  useMenuTree() {
     const { loadMenus } = ComMenuService.useMenuService();
 
-    const listData = ref<GetMenuTreeVo[]>([]);
-    const listLoading = ref(true);
+    const treeData = ref<GetMenuTreeVo[]>([]);
+    const treeLoading = ref(true);
+    const currentKey = ref<string>("-1");
 
-    const loadList = async (): Promise<void> => {
-      listLoading.value = true;
+    const loadTree = async (): Promise<void> => {
+      treeLoading.value = true;
       const result = await MenuApi.getMenuTree({});
 
       if (Result.isSuccess(result)) {
-        listData.value = result.data;
+        treeData.value = result.data;
       }
 
       if (Result.isError(result)) {
         ElMessage.error(result.message);
       }
 
-      listLoading.value = false;
+      treeLoading.value = false;
     };
 
-    const removeList = async (id: string): Promise<void> => {
+    const removeNode = async (id: string): Promise<void> => {
       try {
         await ElMessageBox.confirm("确定删除该菜单吗？", "提示", {
           confirmButtonText: "确定",
@@ -42,7 +43,7 @@ export default {
 
       try {
         await MenuApi.removeMenu({ id });
-        await loadList();
+        await loadTree();
         loadMenus();
       } catch (error: any) {
         ElMessage.error(error.message);
@@ -51,18 +52,19 @@ export default {
     };
 
     onMounted(async () => {
-      await loadList();
+      await loadTree();
     });
 
     return {
-      listData,
-      listLoading,
-      loadList,
-      removeList,
+      treeData,
+      treeLoading,
+      currentKey,
+      loadTree,
+      removeNode,
     };
   },
 
-  useMenuPanel(panelFormRef: Ref<FormInstance>, reloadCallback: () => void) {
+  useMenuTreePanel(panelFormRef: Ref<FormInstance>, reloadCallback: () => void) {
     const { loadMenus } = ComMenuService.useMenuService();
 
     const panelVisible = ref(false);
