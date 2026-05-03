@@ -346,6 +346,9 @@ export default {
       treeStore.panelVisible = false;
       resetPanel(true);
       reloadCallback();
+
+      //清除左侧树的选中状态
+      treeStore.resetSelected();
     };
 
     const submitPanel = async (): Promise<void> => {
