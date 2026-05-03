@@ -70,8 +70,8 @@ public class AddGroupDto implements DtoCustomValidator{
             return "RS数据权限等级不正确";
         }
 
-        //当数据权限为5(指定部门)时，部门ID列表不能为空
-        if (this.rowScope == 5) {
+        //当数据权限为60(指定组织)时，部门ID列表不能为空
+        if (this.rowScope == 60) {
             if (this.deptIds.isEmpty()) {
                 return "部门ID列表不能为空";
             }

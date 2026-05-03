@@ -43,7 +43,7 @@ public class EditGroupDto implements DtoCustomValidator{
     @Min(value = 0, message = "排序号必须大于等于0")
     private Integer seq;
 
-    @Schema(description = "数据权限 0:全部 10:本公司/租户及以下 20:本部门及以下 30:本部门 40:仅本人 50:指定部门 60:指定部门及以下")
+    @Schema(description = "数据范围 0:全部 10:本公司+下级公司 20:仅本公司 30:本部门+下级部门 40:仅本部门 50:仅本人 60:指定组织")
     @NotNull(message = "数据权限不能为空")
     @Min(value = 0, message = "数据权限不正确")
     @Max(value = 60, message = "数据权限不正确")

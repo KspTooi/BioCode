@@ -1,10 +1,6 @@
 package com.ksptool.bio.biz.core.common;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * ID列表差异计算器
@@ -63,7 +59,7 @@ public class IdsDiff {
      *
      * @return 是否存在需要新增的ID
      */
-    public boolean hasAdd(){
+    public boolean hasAdd() {
         return !addIds.isEmpty();
     }
 
@@ -72,7 +68,7 @@ public class IdsDiff {
      *
      * @return 是否存在需要删除的ID
      */
-    public boolean hasRemove(){
+    public boolean hasRemove() {
         return !removeIds.isEmpty();
     }
 

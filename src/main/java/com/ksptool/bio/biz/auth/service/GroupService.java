@@ -12,6 +12,7 @@ import com.ksptool.bio.biz.auth.model.group.dto.*;
 import com.ksptool.bio.biz.auth.model.group.vo.*;
 import com.ksptool.bio.biz.auth.model.permission.PermissionPo;
 import com.ksptool.bio.biz.auth.repository.*;
+import com.ksptool.bio.biz.core.common.IdsDiff;
 import com.ksptool.bio.biz.core.common.SuperEntities;
 import com.ksptool.bio.biz.core.common.Switch;
 import com.ksptool.bio.biz.core.model.org.OrgPo;
@@ -31,6 +32,7 @@ import java.util.*;
 
 import static com.ksptool.bio.biz.core.common.TupleMapper.tupleAs;
 import static com.ksptool.entities.Entities.as;
+import static com.ksptool.entities.Entities.assign;
 
 
 @Slf4j
@@ -82,7 +84,7 @@ public class GroupService {
     public void addGroup(AddGroupDto dto) throws BizException {
 
         if (repository.countByCodeExcludeId(dto.getCode(), null) > 0) {
-            throw new BizException("用户组标识已存在");
+            throw new BizException("用户组编码 [" + dto.getCode() + "] 已被其他用户组占用,请更换编码后重试!");
         }
 
         //直接合并同类项
@@ -113,8 +115,8 @@ public class GroupService {
             gmRepository.saveAll(gmPos);
         }
 
-        //处理GD关系
-        if (dto.getRowScope() == 5) {
+        //处理GD关系 RS=60(指定组织)时才需要处理 如果RS不是60 则直接清空GD关系
+        if (dto.getRowScope() == 60) {
 
             var dPos = orgRepository.findAllById(dto.getDeptIds());
             var gdPos = dPos.stream().map(d -> {
@@ -124,13 +126,11 @@ public class GroupService {
             //这些所有的组织都必须属于同一个租户
             if(!dPos.isEmpty()){
 
-                var dRid = dPos.get(0).getRootId();
+                var hSet = new HashSet<Long>();
+                hSet.addAll(dPos.stream().map(d -> d.getRootId()).toList());
 
-                for(var d : dPos){
-                    if(d.getRootId() != dRid){
-                        throw new BizException("部门[" + d.getName() + "]不属于同一租户!");
-                    }
-                    gdPos.add(new GroupDeptPo(gId, d.getId()));
+                if(hSet.size() > 1){
+                    throw new BizException("选择的多个组织机构不属于同一个租户!");
                 }
 
             }
@@ -139,7 +139,7 @@ public class GroupService {
             if (!gdPos.isEmpty()) {
                 gdRepository.saveAll(gdPos);
             }
-            
+
         }
 
 
@@ -154,23 +154,23 @@ public class GroupService {
     @Transactional(rollbackFor = Exception.class)
     public void editGroup(EditGroupDto dto) throws BizException {
 
-        GroupPo group = repository.findById(dto.getId()).orElseThrow(() -> new BizException("用户组不存在"));
+        GroupPo g = repository.findById(dto.getId()).orElseThrow(() -> new BizException("用户组不存在"));
 
         //处理系统内置用户组的更新逻辑
-        if(group.isSystem()){
+        if(g.isSystem()){
 
             //内置用户组不可调整RS数据权限
-            if(dto.getRowScope() != null && dto.getRowScope() != group.getRowScope()){
+            if(dto.getRowScope() != null && dto.getRowScope() != g.getRowScope()){
                 throw new BizException("内置用户组不允许调整RS数据权限！");
             }
 
             //内置用户组不可调整状态
-            if(dto.getStatus() != null && dto.getStatus() != group.getStatus()){
+            if(dto.getStatus() != null && dto.getStatus() != g.getStatus()){
                 throw new BizException("内置用户组不允许调整状态！");
             }
 
             //内置用户组不可调整编码
-            if(dto.getCode() != null && !dto.getCode().equals(group.getCode())){
+            if(dto.getCode() != null && !dto.getCode().equals(g.getCode())){
                 throw new BizException("内置用户组不允许调整编码！");
             }
 
@@ -188,75 +188,66 @@ public class GroupService {
 
         }
 
-
-        //如果修改了标识 则需要检查是否重复
-        if (!group.getCode().equals(dto.getCode())) {
-            if (repository.countByCodeExcludeId(dto.getCode(), group.getId()) > 0) {
-                throw new BizException("用户组标识重复");
-            }
+        if (repository.countByCodeExcludeId(dto.getCode(), g.getId()) > 0) {
+            throw new BizException("用户组编码 [" + dto.getCode() + "] 已被其他用户组占用,请更换编码后重试!");
         }
 
-        group.setCode(dto.getCode());
-        group.setName(dto.getName());
-        group.setRemark(dto.getRemark());
-        group.setStatus(dto.getStatus());
-        group.setSeq(dto.getSeq());
-        group.setRowScope(dto.getRowScope());
+        //合并同类项
+        assign(dto, g);
 
-        //处理权限关系 先清除该用户组下挂载的权限关系
-        gpRepository.clearPermissionByGroupId(group.getId());
-        var permissionPos = pRepository.findAllById(dto.getPermissionIds());
-        var gpPos = new ArrayList<GroupPermissionPo>();
+        //对比GP + GM + GD关系的差异
+        var gpIdsDiff = new IdsDiff(gpRepository.getPidsByGid(g.getId()), dto.getPermissionIds());
+        var gmIdsDiff = new IdsDiff(gmRepository.getMidsByGid(g.getId()), dto.getMenuIds());
+        var gdIdsDiff = new IdsDiff(gdRepository.getDidsByGid(g.getId()), dto.getDeptIds());
 
-        for (var permission : permissionPos) {
-            var gpPo = new GroupPermissionPo();
-            gpPo.setGroupId(group.getId());
-            gpPo.setPermissionId(permission.getId());
-            gpPos.add(gpPo);
-        }
-
-        //保存用户组
-        repository.save(group);
-
-        //保存用户组关联权限码关系
-        if (!gpPos.isEmpty()) {
+        //处理GP的新增/删除关系
+        if(gpIdsDiff.hasAdd()){
+            var gpPos = gpIdsDiff.getAddIds().stream().map(id -> new GroupPermissionPo(g.getId(), id)).toList();
             gpRepository.saveAll(gpPos);
         }
+        
+        if(gpIdsDiff.hasRemove()){
+            gpRepository.removeByGidAndPids(g.getId(), gpIdsDiff.getRemoveIds());
+        }
 
-        //处理部门关系 先清除该用户组下挂载的部门关系
-        gdRepository.clearGroupDeptByGroupId(group.getId());
+        //处理GM的新增/删除关系
+        if(gmIdsDiff.hasAdd()){
+            var gmPos = gmIdsDiff.getAddIds().stream().map(id -> new GroupMenuPo(g.getId(), id)).toList();
+            gmRepository.saveAll(gmPos);
+        }
+        
+        if(gmIdsDiff.hasRemove()){
+            gmRepository.removeByGidAndMids(g.getId(), gmIdsDiff.getRemoveIds());
+        }
 
-        //如果数据权限为5(指定部门)时，则需要处理部门关系
-        if (dto.getRowScope() == 5) {
+        //处理GD的新增/删除关系 只有RS=60(指定组织)时才需要处理 如果RS不是60 则直接清空GD关系
+        if(g.getRowScope() != 60){
+            gdRepository.removeByGid(g.getId());
+        }
 
-            var deptPos = orgRepository.getDeptsByIds(dto.getDeptIds());
-            var gdPos = new ArrayList<GroupDeptPo>();
-            var rootId = 0L;
+        if(g.getRowScope() == 60){
 
-            if (deptPos.size() != dto.getDeptIds().size()) {
-                throw new BizException("至少有一个部门不存在!");
-            }
+            if(gdIdsDiff.hasAdd()){
+                
+                var dPos = orgRepository.findAllById(gdIdsDiff.getAddIds());
+                var gdPos = dPos.stream().map(d -> new GroupDeptPo(g.getId(), d.getId())).toList();
 
-            //获取第一个部门的租户ID
-            rootId = deptPos.getFirst().getRootId();
+                var hSet = new HashSet<Long>();
+                hSet.addAll(dPos.stream().map(d -> d.getRootId()).toList());
 
-            //组装GD关系
-            for (var dept : deptPos) {
+                //还要把这个G之前的GD也拉出来以防止之前的GD的RootId和新的GD的RootId不一致
+                var oldDPos = orgRepository.findAllById(gdRepository.getDeptIdsByGroupId(g.getId()));
+                hSet.addAll(oldDPos.stream().map(d -> d.getRootId()).toList());
 
-                if (dept.getRootId() != rootId) {
-                    throw new BizException("部门[" + dept.getName() + "]不属于同一租户!");
+                if(hSet.size() > 1){
+                    throw new BizException("选择的多个组织机构不属于同一个租户!");
                 }
 
-                //组装GD关系
-                var gdPo = new GroupDeptPo();
-                gdPo.setGroupId(group.getId());
-                gdPo.setDeptId(dept.getId());
-                gdPos.add(gdPo);
-            }
-
-            //保存GD关系
-            if (!gdPos.isEmpty()) {
                 gdRepository.saveAll(gdPos);
+            }
+            
+            if(gdIdsDiff.hasRemove()){
+                gdRepository.removeByGidAndDids(g.getId(), gdIdsDiff.getRemoveIds());
             }
 
         }
@@ -298,8 +289,8 @@ public class GroupService {
 
         vo.setPermissions(defVos);
 
-        //如果数据权限为5(指定部门)时，则需要获取部门列表
-        if (po.getRowScope() == 5) {
+        //如果数据权限为 60(指定组织)时，则需要获取组织列表
+        if (po.getRowScope() == 60) {
             var deptIds = gdRepository.getDeptIdsByGroupId(id);
             vo.setDeptIds(deptIds);
         }
