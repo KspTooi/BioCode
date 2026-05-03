@@ -1,4 +1,4 @@
-import { computed, onMounted, reactive, ref, watch, type Ref } from "vue";
+import { computed, onMounted, ref, watch, type Ref } from "vue";
 import type { AddMenuDto, EditMenuDto, GetMenuDetailsVo, GetMenuTreeVo } from "@/views/core/api/MenuApi.ts";
 import MenuApi from "@/views/core/api/MenuApi.ts";
 import { Result } from "@/commons/model/Result";
@@ -12,6 +12,7 @@ export default {
   useMenuTreeStore() {
     const store = defineStore("menuManagerTreeStore", {
       state: () => ({
+        treeData: [] as GetMenuTreeVo[],
         treeCurrent: "-1" as string,
         panelCurrentRow: null as GetMenuTreeVo | null,
         panelMode: "add" as PanelMode,
@@ -39,24 +40,29 @@ export default {
   useMenuTree() {
     const { loadMenus } = ComMenuService.useMenuService();
     const treeStore = this.useMenuTreeStore();
-    const { treeCurrent } = storeToRefs(treeStore);
+    const { treeCurrent, treeData } = storeToRefs(treeStore);
 
-    const treeData = ref<GetMenuTreeVo[]>([]);
     const treeLoading = ref(true);
 
     const loadTree = async (): Promise<void> => {
       treeLoading.value = true;
-      const result = await MenuApi.getMenuTree({});
 
-      if (Result.isSuccess(result)) {
-        treeData.value = result.data;
+      try {
+        const result = await MenuApi.getMenuTree({});
+
+        if (Result.isSuccess(result)) {
+          treeData.value = result.data;
+        }
+
+        if (Result.isError(result)) {
+          ElMessage.error(result.message);
+        }
+      } catch (error: any) {
+        ElMessage.error(error.message);
+        return;
+      } finally {
+        treeLoading.value = false;
       }
-
-      if (Result.isError(result)) {
-        ElMessage.error(result.message);
-      }
-
-      treeLoading.value = false;
     };
 
     const removeNode = async (id: string): Promise<void> => {
@@ -96,10 +102,10 @@ export default {
   useMenuTreePanel(panelFormRef: Ref<FormInstance>, reloadCallback: () => void) {
     const { loadMenus } = ComMenuService.useMenuService();
     const treeStore = this.useMenuTreeStore();
+    const { treeData } = storeToRefs(treeStore);
     const panelVisible = ref(false);
     const panelLoading = ref(false);
     const panelCurrentRow = ref<GetMenuTreeVo | null>(null);
-    const fullMenuTree = ref<GetMenuTreeVo[]>([]);
 
     const panelFormLabel = computed(() => {
       if (treeStore.panelForm.kind == 0) {
@@ -131,7 +137,7 @@ export default {
         { type: "number", min: 0, max: 655350, message: "排序只能在0-655350之间", trigger: "blur" },
       ],
       icon: [
-        { required: true, message: "请选择菜单图标", trigger: "change" },
+        { required: true, message: "请选择菜单图标", trigger: "blur" },
         { max: 80, message: "菜单图标长度不能超过80个字符", trigger: "blur" },
       ],
       hide: [{ required: true, message: "请选择是否隐藏", trigger: "blur" }],
@@ -191,7 +197,7 @@ export default {
 
       // 菜单和按钮不能直接挂在根节点下
       const rootDisabled = treeStore.panelForm.kind === 1 || treeStore.panelForm.kind === 2;
-      return [{ id: "", name: "根节点", disabled: rootDisabled, children: filter(fullMenuTree.value) }];
+      return [{ id: "", name: "根节点", disabled: rootDisabled, children: filter(treeData.value) }];
     });
 
     const panelBreadcrumb = computed<string[]>(() => {
@@ -214,19 +220,12 @@ export default {
         }
         return null;
       };
-      const ancestors = findPath(fullMenuTree.value, treeStore.panelForm.parentId, []);
+      const ancestors = findPath(treeData.value, treeStore.panelForm.parentId, []);
       if (ancestors) {
         return [...root, ...ancestors];
       }
       return root;
     });
-
-    const loadFullMenuTree = async (): Promise<void> => {
-      const result = await MenuApi.getMenuTree({});
-      if (Result.isSuccess(result)) {
-        fullMenuTree.value = result.data;
-      }
-    };
 
     const resetPanel = (full: boolean = false): void => {
       treeStore.panelForm.id = "";
@@ -244,8 +243,12 @@ export default {
       treeStore.panelForm.kind = 0;
     };
 
+    /**
+     * 打开面板
+     * @param mode 模式
+     * @param currentRow 当前行
+     */
     const openPanel = async (mode: PanelMode, currentRow: GetMenuTreeVo | null): Promise<void> => {
-      await loadFullMenuTree();
       treeStore.panelMode = mode;
       panelCurrentRow.value = currentRow;
       resetPanel();

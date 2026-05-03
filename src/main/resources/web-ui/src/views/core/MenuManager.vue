@@ -41,7 +41,7 @@
               </template>
               <template #actions="{ data }">
                 <el-button link type="success" size="small" :icon="PlusIcon" @click="openPanel('add-item', data)">
-                  创建子项
+                  创建
                 </el-button>
                 <el-button link type="danger" size="small" :icon="DeleteIcon" @click="removeNode(data.id)">删除</el-button>
               </template>
@@ -52,7 +52,7 @@
 
       <!-- 右侧详情面板 -->
       <pane size="75">
-        <div class="right-pane">
+        <div v-loading="panelLoading" class="right-pane">
           <template v-if="panelVisible">
             <!-- 顶部装饰线 -->
             <div class="panel-accent-bar" :class="`accent-${panelForm.kind}`" />
