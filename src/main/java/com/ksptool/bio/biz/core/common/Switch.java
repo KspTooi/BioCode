@@ -22,5 +22,13 @@ public class Switch {
     public static int no(){
         return OFF;
     }
+    public static int active(){
+        return ON;
+    }
+    public static int inactive(){
+        return OFF;
+    }
+
+
 
 }

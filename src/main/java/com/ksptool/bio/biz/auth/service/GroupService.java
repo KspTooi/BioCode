@@ -11,6 +11,7 @@ import com.ksptool.bio.biz.auth.model.group.dto.*;
 import com.ksptool.bio.biz.auth.model.group.vo.*;
 import com.ksptool.bio.biz.auth.model.permission.PermissionPo;
 import com.ksptool.bio.biz.auth.repository.*;
+import com.ksptool.bio.biz.core.common.Switch;
 import com.ksptool.bio.biz.core.model.org.OrgPo;
 import com.ksptool.bio.biz.core.repository.MenuRepository;
 import com.ksptool.bio.biz.core.repository.OrgRepository;
@@ -130,7 +131,7 @@ public class GroupService {
         group.setStatus(dto.getStatus());
         group.setSeq(dto.getSeq());
         group.setRowScope(dto.getRowScope());
-        group.setIsSystem(0);
+        group.setIsSystem(Switch.no());
 
         //保存用户组
         GroupPo save = repository.save(group);
@@ -237,7 +238,6 @@ public class GroupService {
         group.setStatus(dto.getStatus());
         group.setSeq(dto.getSeq());
         group.setRowScope(dto.getRowScope());
-        group.setIsSystem(0);
 
         //处理权限关系 先清除该用户组下挂载的权限关系
         gpRepository.clearPermissionByGroupId(group.getId());

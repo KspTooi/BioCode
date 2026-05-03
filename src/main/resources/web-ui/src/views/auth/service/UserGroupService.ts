@@ -156,11 +156,11 @@ export default {
     // 表单校验规则
     const modalRules = {
       code: [
-        { required: true, message: "请输入组标识", trigger: "blur" },
-        { min: 2, max: 32, message: "组标识长度必须在2-32个字符之间", trigger: "blur" },
+        { required: true, message: "请输入组编码", trigger: "blur" },
+        { min: 2, max: 32, message: "组编码长度必须在2-32个字符之间", trigger: "blur" },
         {
           pattern: /^[a-zA-Z][a-zA-Z_]*$/,
-          message: "组标识只能包含英文字符和下划线，且必须以字母开头",
+          message: "组编码只能包含英文字符和下划线，且必须以字母开头",
           trigger: "blur",
         },
       ],
