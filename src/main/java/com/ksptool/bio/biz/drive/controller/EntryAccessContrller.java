@@ -30,7 +30,7 @@ import java.util.Arrays;
 @PrintLog
 @RestController
 @RequestMapping("/drive/object/access")
-@Tag(name = "团队云盘-对象访问接口", description = "团队云盘对象访问接口")
+@Tag(name = "DRIVE-云盘对象访问接口", description = "云盘对象访问接口")
 @Slf4j
 public class EntryAccessContrller {
 
