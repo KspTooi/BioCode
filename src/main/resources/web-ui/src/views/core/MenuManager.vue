@@ -85,6 +85,12 @@
                   <div class="panel-breadcrumb">{{ panelBreadcrumb.join(" / ") }}</div>
                 </div>
               </div>
+              <div class="panel-header-right">
+                <el-button @click="closePanel">关闭</el-button>
+                <el-button type="primary" :loading="panelLoading" @click="submitPanel">
+                  {{ panelMode === "edit" ? "保存" : "创建" }}
+                </el-button>
+              </div>
             </div>
 
             <!-- 表单内容区 -->
@@ -200,13 +206,6 @@
               </el-form>
             </el-scrollbar>
 
-            <!-- 底部操作条 -->
-            <div class="panel-footer">
-              <el-button @click="closePanel">关闭</el-button>
-              <el-button type="primary" :loading="panelLoading" @click="submitPanel">
-                {{ panelMode === "edit" ? "保存" : "创建" }}
-              </el-button>
-            </div>
           </div>
 
           <div v-show="!panelVisible" class="panel-empty">
@@ -468,18 +467,6 @@ const {
   font-size: 12px;
   color: var(--el-text-color-placeholder);
   padding: 4px 0 8px;
-}
-
-/* ---- 底部操作条 ---- */
-.panel-footer {
-  flex-shrink: 0;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 10px;
-  padding: 14px 24px;
-  border-top: 1px solid var(--el-border-color-light);
-  background: linear-gradient(0deg, var(--el-fill-color-lighter) 0%, var(--el-bg-color) 40%);
 }
 
 /* ---- 空状态 ---- */
