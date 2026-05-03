@@ -5,6 +5,7 @@ import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.bio.biz.auth.model.GroupDeptPo;
+import com.ksptool.bio.biz.auth.model.GroupMenuPo;
 import com.ksptool.bio.biz.auth.model.GroupPermissionPo;
 import com.ksptool.bio.biz.auth.model.group.GroupPo;
 import com.ksptool.bio.biz.auth.model.group.dto.*;
@@ -17,6 +18,7 @@ import com.ksptool.bio.biz.core.model.org.OrgPo;
 import com.ksptool.bio.biz.core.repository.MenuRepository;
 import com.ksptool.bio.biz.core.repository.OrgRepository;
 import com.ksptool.bio.commons.dataprocess.Str;
+
 import jakarta.persistence.Tuple;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -51,11 +53,13 @@ public class GroupService {
     private GroupDeptRepository gdRepository;
 
     @Autowired
+    private GroupMenuRepository gmRepository;
+
+    @Autowired
     private OrgRepository orgRepository;
 
     @Autowired
     private MenuRepository menuRepository;
-
 
     /**
      * 获取用户组列表
@@ -66,50 +70,6 @@ public class GroupService {
     public PageResult<GetGroupListVo> getGroupList(GetGroupListDto dto) {
         Page<Tuple> page = repository.getGroupList(dto, dto.pageRequest());
         return PageResult.success(tupleAs(page.getContent(), GetGroupListVo.class), page.getTotalElements());
-    }
-
-    /**
-     * 获取用户组详情
-     *
-     * @param id 用户组ID
-     * @return 用户组详情
-     * @throws BizException 用户组不存在
-     */
-    public GetGroupDetailsVo getGroupDetails(long id) throws BizException {
-
-        GroupPo po = repository.findById(id).orElseThrow(() -> new BizException("用户组不存在"));
-
-        //获取系统中的全部权限列表
-        List<PermissionPo> allPermPos = pRepository.findAll();
-
-        //获取该用户组拥有的权限IDS
-        var groupPermIds = gpRepository.getPermissionIdsByGroupId(id);
-
-        GetGroupDetailsVo vo = as(po, GetGroupDetailsVo.class);
-        List<GroupPermissionDefinitionVo> defVos = new ArrayList<>();
-
-        for (var permission : allPermPos) {
-
-            var defVo = as(permission, GroupPermissionDefinitionVo.class);
-            defVo.setHas(1);
-
-            //如果该用户组拥有该权限 则设置为0
-            if (groupPermIds.contains(permission.getId())) {
-                defVo.setHas(0);
-            }
-
-            defVos.add(defVo);
-        }
-
-        vo.setPermissions(defVos);
-
-        //如果数据权限为5(指定部门)时，则需要获取部门列表
-        if (po.getRowScope() == 5) {
-            var deptIds = gdRepository.getDeptIdsByGroupId(id);
-            vo.setDeptIds(deptIds);
-        }
-
-        return vo;
     }
 
     /**
@@ -125,70 +85,61 @@ public class GroupService {
             throw new BizException("用户组标识已存在");
         }
 
-        GroupPo group = new GroupPo();
-        group.setCode(dto.getCode());
-        group.setName(dto.getName());
-        group.setRemark(dto.getRemark());
-        group.setStatus(dto.getStatus());
-        group.setSeq(dto.getSeq());
-        group.setRowScope(dto.getRowScope());
-        group.setIsSystem(Switch.no());
+        //直接合并同类项
+        var g = as(dto, GroupPo.class);
+        g.setIsSystem(Switch.no());
 
         //保存用户组
-        GroupPo save = repository.save(group);
+        g = repository.save(g);
+        var gId = g.getId();
 
-        //处理权限关系
-        var permissionPos = pRepository.findAllById(dto.getPermissionIds());
-        var gpPos = new ArrayList<GroupPermissionPo>();
+        //处理GP关系
+        var pPos = pRepository.findAllById(dto.getPermissionIds());
+        var gpPos = pPos.stream().map(p -> {
+            return new GroupPermissionPo(gId, p.getId());
+        }).toList();
 
-        for (var permission : permissionPos) {
-            var gpPo = new GroupPermissionPo();
-            gpPo.setGroupId(save.getId());
-            gpPo.setPermissionId(permission.getId());
-            gpPos.add(gpPo);
-        }
-
-        //保存用户组关联权限码关系
         if (!gpPos.isEmpty()) {
             gpRepository.saveAll(gpPos);
         }
 
-        //处理部门关系 先清除该用户组下挂载的部门关系
-        gdRepository.clearGroupDeptByGroupId(save.getId());
+        //处理GM关系
+        var mPos = menuRepository.findAllById(dto.getMenuIds());
+        var gmPos = mPos.stream().map(m -> {
+            return new GroupMenuPo(gId, m.getId());
+        }).toList();
+        
+        if (!gmPos.isEmpty()) {
+            gmRepository.saveAll(gmPos);
+        }
 
-        //如果数据权限为5(指定部门)时，则需要处理部门关系
+        //处理GD关系
         if (dto.getRowScope() == 5) {
 
-            var deptPos = orgRepository.getDeptsByIds(dto.getDeptIds());
-            var gdPos = new ArrayList<GroupDeptPo>();
-            var rootId = 0L;
+            var dPos = orgRepository.findAllById(dto.getDeptIds());
+            var gdPos = dPos.stream().map(d -> {
+                return new GroupDeptPo(gId, d.getId());
+            }).toList();
 
-            if (deptPos.size() != dto.getDeptIds().size()) {
-                throw new BizException("至少有一个部门不存在!");
-            }
+            //这些所有的组织都必须属于同一个租户
+            if(!dPos.isEmpty()){
 
-            //获取第一个部门的租户ID
-            rootId = deptPos.get(0).getRootId();
+                var dRid = dPos.get(0).getRootId();
 
-            //组装GD关系
-            for (var dept : deptPos) {
-
-                if (dept.getRootId() != rootId) {
-                    throw new BizException("部门[" + dept.getName() + "]不属于同一租户!");
+                for(var d : dPos){
+                    if(d.getRootId() != dRid){
+                        throw new BizException("部门[" + d.getName() + "]不属于同一租户!");
+                    }
+                    gdPos.add(new GroupDeptPo(gId, d.getId()));
                 }
 
-                //组装GD关系
-                var gdPo = new GroupDeptPo();
-                gdPo.setGroupId(save.getId());
-                gdPo.setDeptId(dept.getId());
-                gdPos.add(gdPo);
             }
 
             //保存GD关系
             if (!gdPos.isEmpty()) {
                 gdRepository.saveAll(gdPos);
             }
-
+            
         }
 
 
@@ -310,6 +261,112 @@ public class GroupService {
 
         }
 
+    }
+
+    /**
+     * 获取用户组详情
+     *
+     * @param id 用户组ID
+     * @return 用户组详情
+     * @throws BizException 用户组不存在
+     */
+    public GetGroupDetailsVo getGroupDetails(long id) throws BizException {
+
+        GroupPo po = repository.findById(id).orElseThrow(() -> new BizException("用户组不存在"));
+
+        //获取系统中的全部权限列表
+        List<PermissionPo> allPermPos = pRepository.findAll();
+
+        //获取该用户组拥有的权限IDS
+        var groupPermIds = gpRepository.getPermissionIdsByGroupId(id);
+
+        GetGroupDetailsVo vo = as(po, GetGroupDetailsVo.class);
+        List<GroupPermissionDefinitionVo> defVos = new ArrayList<>();
+
+        for (var permission : allPermPos) {
+
+            var defVo = as(permission, GroupPermissionDefinitionVo.class);
+            defVo.setHas(1);
+
+            //如果该用户组拥有该权限 则设置为0
+            if (groupPermIds.contains(permission.getId())) {
+                defVo.setHas(0);
+            }
+
+            defVos.add(defVo);
+        }
+
+        vo.setPermissions(defVos);
+
+        //如果数据权限为5(指定部门)时，则需要获取部门列表
+        if (po.getRowScope() == 5) {
+            var deptIds = gdRepository.getDeptIdsByGroupId(id);
+            vo.setDeptIds(deptIds);
+        }
+
+        return vo;
+    }
+
+    /**
+     * 移除用户组
+     *
+     * @param dto 移除用户组参数
+     * @throws BizException 用户组不存在
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void removeGroup(CommonIdDto dto) throws BizException {
+
+        var ids = dto.toIds();
+
+        if (ids == null || ids.isEmpty()) {
+            throw new BizException("用户组ID不能为空");
+        }
+
+        //查询存在的用户组记录
+        var groups = repository.getGroupsByIds(ids);
+
+        if (groups == null || groups.isEmpty()) {
+            throw new BizException("一个或多个用户组不存在");
+        }
+
+        var safeRemoveIds = new ArrayList<Long>();
+        String errorMessage = null;
+
+        for (GroupPo group : groups) {
+
+            //系统用户组无法删除
+            if (group.getIsSystem() != null && group.getIsSystem() == 1) {
+                errorMessage = "系统用户组无法删除";
+                continue;
+            }
+
+            //用户组下面还有用户也不能删除
+            var userCount = ugRepository.countUserByGroupId(group.getId());
+
+            if (userCount > 0) {
+                errorMessage = String.format("该用户组下有 %d 个用户，请先取消所有关联关系后再尝试移除", userCount);
+                continue;
+            }
+
+            safeRemoveIds.add(group.getId());
+        }
+
+        //如果当前是单个删除模式且有错误 直接抛出异常
+        if (!dto.isBatch() && errorMessage != null) {
+            throw new BizException(errorMessage);
+        }
+
+        //当前是批量删除模式且没有任何一个用户组可以删除 则抛出异常
+        if (dto.isBatch() && safeRemoveIds.isEmpty()) {
+            throw new BizException("没有可以安全删除的用户组,请检查用户组状态或关联关系");
+        }
+
+        //删除该组下挂载的权限关系
+        gpRepository.clearPermissionByGroupIds(safeRemoveIds);
+
+
+        //执行静默删除
+        repository.deleteAllById(safeRemoveIds);
     }
 
 
@@ -724,67 +781,6 @@ public class GroupService {
         return vo;
     }
 
-    /**
-     * 移除用户组
-     *
-     * @param dto 移除用户组参数
-     * @throws BizException 用户组不存在
-     */
-    @Transactional(rollbackFor = Exception.class)
-    public void removeGroup(CommonIdDto dto) throws BizException {
-
-        var ids = dto.toIds();
-
-        if (ids == null || ids.isEmpty()) {
-            throw new BizException("用户组ID不能为空");
-        }
-
-        //查询存在的用户组记录
-        var groups = repository.getGroupsByIds(ids);
-
-        if (groups == null || groups.isEmpty()) {
-            throw new BizException("一个或多个用户组不存在");
-        }
-
-        var safeRemoveIds = new ArrayList<Long>();
-        String errorMessage = null;
-
-        for (GroupPo group : groups) {
-
-            //系统用户组无法删除
-            if (group.getIsSystem() != null && group.getIsSystem() == 1) {
-                errorMessage = "系统用户组无法删除";
-                continue;
-            }
-
-            //用户组下面还有用户也不能删除
-            var userCount = ugRepository.countUserByGroupId(group.getId());
-
-            if (userCount > 0) {
-                errorMessage = String.format("该用户组下有 %d 个用户，请先取消所有关联关系后再尝试移除", userCount);
-                continue;
-            }
-
-            safeRemoveIds.add(group.getId());
-        }
-
-        //如果当前是单个删除模式且有错误 直接抛出异常
-        if (!dto.isBatch() && errorMessage != null) {
-            throw new BizException(errorMessage);
-        }
-
-        //当前是批量删除模式且没有任何一个用户组可以删除 则抛出异常
-        if (dto.isBatch() && safeRemoveIds.isEmpty()) {
-            throw new BizException("没有可以安全删除的用户组,请检查用户组状态或关联关系");
-        }
-
-        //删除该组下挂载的权限关系
-        gpRepository.clearPermissionByGroupIds(safeRemoveIds);
-
-
-        //执行静默删除
-        repository.deleteAllById(safeRemoveIds);
-    }
 
 
 }

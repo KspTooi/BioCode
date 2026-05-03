@@ -53,13 +53,7 @@ public class GroupController {
         return service.getGroupList(dto);
     }
 
-    @PreAuthorize("@auth.hasCode('auth:group:view')")
-    @Operation(summary = "获取组详情")
-    @PostMapping("getGroupDetails")
-    public Result<GetGroupDetailsVo> getGroupDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {
-        return Result.success(service.getGroupDetails(dto.getId()));
-    }
-
+    
     @PreAuthorize("@auth.hasCode('auth:group:add')")
     @Operation(summary = "新增组")
     @PostMapping("addGroup")
@@ -84,6 +78,28 @@ public class GroupController {
         return Result.success("修改成功");
     }
 
+    @PreAuthorize("@auth.hasCode('auth:group:view')")
+    @Operation(summary = "获取组详情")
+    @PostMapping("getGroupDetails")
+    public Result<GetGroupDetailsVo> getGroupDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {
+        return Result.success(service.getGroupDetails(dto.getId()));
+    }
+
+    @PreAuthorize("@auth.hasCode('auth:group:remove')")
+    @Operation(summary = "删除组")
+    @PostMapping("removeGroup")
+    @CacheEvict(cacheNames = {"userSession", "userProfile", "menuTree"}, allEntries = true)
+    public Result<String> removeGroup(@RequestBody @Valid CommonIdDto dto) throws Exception {
+        service.removeGroup(dto);
+        menuService.clearUserMenuTreeCache();
+
+        //给拥有该组的用户加版本
+        userService.increaseDvByGroupId(dto.getId());
+
+        //清菜单缓存
+        menuService.clearUserMenuTreeCache();
+        return Result.success("删除成功");
+    }
 
     @PreAuthorize("@auth.hasCode('auth:group:edit')")
     @Operation(summary = "获取组权限菜单视图")
@@ -121,19 +137,5 @@ public class GroupController {
         return Result.success(service.simulateRs(dto));
     }
 
-    @PreAuthorize("@auth.hasCode('auth:group:remove')")
-    @Operation(summary = "删除组")
-    @PostMapping("removeGroup")
-    @CacheEvict(cacheNames = {"userSession", "userProfile", "menuTree"}, allEntries = true)
-    public Result<String> removeGroup(@RequestBody @Valid CommonIdDto dto) throws Exception {
-        service.removeGroup(dto);
-        menuService.clearUserMenuTreeCache();
 
-        //给拥有该组的用户加版本
-        userService.increaseDvByGroupId(dto.getId());
-
-        //清菜单缓存
-        menuService.clearUserMenuTreeCache();
-        return Result.success("删除成功");
-    }
 }

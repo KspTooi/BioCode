@@ -37,6 +37,6 @@ public class GetGroupDetailsVo {
     @Schema(description = "部门ID列表")
     private List<Long> deptIds;
 
-    @Schema(description = "权限节点列表")
+    @Schema(description = "权限码列表")
     private List<GroupPermissionDefinitionVo> permissions;
 }

@@ -9,6 +9,8 @@ import java.io.Serializable;
 @IdClass(GroupMenuPo.Pk.class)
 @Entity
 @Table(name = "auth_group_menu")
+@AllArgsConstructor
+@NoArgsConstructor
 public class GroupMenuPo implements Serializable {
 
     @Id
