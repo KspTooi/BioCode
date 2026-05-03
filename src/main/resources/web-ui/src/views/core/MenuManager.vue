@@ -12,6 +12,7 @@
               :nr="true"
               :nr-title="'全部菜单'"
               :nr-icon="'ep:menu'"
+              :nr-value="'-1'"
               ni="icon"
               :nk="'id'"
               :nt="'name'"
@@ -25,6 +26,7 @@
               @on-add="openPanel('add-item', $event)"
               @on-edit="openPanel('edit', $event)"
               @on-remove="removeList($event.id)"
+              @on-root-select="closePanel()"
             >
               <template #root-actions>
                 <el-button link type="success" size="small" :icon="PlusIcon" @click="openPanel('add', null)">
@@ -99,102 +101,102 @@
                 <section class="panel-section">
                   <div class="panel-section-title">{{ panelMode === "edit" ? "编辑" : "创建" }}{{ panelFormLabel }}</div>
                   <el-form-item label="父级菜单" prop="parentId">
-                  <el-tree-select
-                    v-model="panelForm.parentId"
-                    :data="menuTreeForSelect"
-                    node-key="id"
-                    :props="{ value: 'id', label: 'name', children: 'children' }"
-                    check-strictly
-                    placeholder="请选择父级菜单"
-                    clearable
-                    default-expand-all
-                  />
-                </el-form-item>
-                <el-row :gutter="20">
-                  <el-col :span="12">
-                    <el-form-item :label="panelFormLabel + '名称'" prop="name">
-                      <el-input
-                        v-model="panelForm.name"
-                        placeholder="请输入菜单名称"
-                        clearable
-                        maxlength="32"
-                        show-word-limit
-                      />
-                    </el-form-item>
-                  </el-col>
-                  <el-col :span="12">
-                    <el-form-item label="菜单类型" prop="kind">
-                      <el-select
-                        v-model="panelForm.kind"
-                        placeholder="请选择菜单类型"
-                        clearable
-                        :disabled="panelMode === 'edit'"
-                      >
-                        <el-option
-                          label="目录"
-                          :value="0"
-                          :disabled="panelMode === 'add-item' && panelCurrentRow?.kind == 1"
+                    <el-tree-select
+                      v-model="panelForm.parentId"
+                      :data="menuTreeForSelect"
+                      node-key="id"
+                      :props="{ value: 'id', label: 'name', children: 'children' }"
+                      check-strictly
+                      placeholder="请选择父级菜单"
+                      clearable
+                      default-expand-all
+                    />
+                  </el-form-item>
+                  <el-row :gutter="20">
+                    <el-col :span="12">
+                      <el-form-item :label="panelFormLabel + '名称'" prop="name">
+                        <el-input
+                          v-model="panelForm.name"
+                          placeholder="请输入菜单名称"
+                          clearable
+                          maxlength="32"
+                          show-word-limit
                         />
-                        <el-option
-                          label="菜单"
-                          :value="1"
-                          :disabled="panelMode === 'add-item' && panelCurrentRow?.kind == 1"
-                        />
-                        <el-option
-                          label="按钮"
-                          :value="2"
-                          :disabled="panelMode === 'add-item' && panelCurrentRow?.kind == 0"
-                        />
-                      </el-select>
-                    </el-form-item>
-                  </el-col>
-                </el-row>
-                <el-form-item v-if="panelForm.kind == 1" :label="panelFormLabel + '路径'" prop="path">
-                  <el-input v-model="panelForm.path" placeholder="请输入菜单路径" clearable maxlength="500" show-word-limit>
-                    <template #append>
-                      <el-button @click="openGRCM">选择路由</el-button>
-                    </template>
-                  </el-input>
-                </el-form-item>
-                <el-form-item v-if="panelForm.kind == 1 || panelForm.kind == 2" label="所需权限" prop="permissionCode">
-                  <el-input
-                    v-model="panelForm.permissionCode"
-                    placeholder="请输入所需权限"
-                    clearable
-                    maxlength="500"
-                    show-word-limit
-                  />
-                </el-form-item>
-                <el-form-item v-if="panelForm.kind == 0 || panelForm.kind == 1" :label="panelFormLabel + '图标'" prop="icon">
-                  <StdIconPicker v-model="panelForm.icon" />
-                </el-form-item>
-                <div v-if="panelForm.kind == 2" class="panel-section-empty">按钮类型无需配置路径与图标</div>
-                <el-row :gutter="20">
-                  <el-col :span="12">
-                    <el-form-item label="状态" prop="hide">
-                      <el-radio-group v-model="panelForm.hide">
-                        <el-radio :value="0">正常</el-radio>
-                        <el-radio :value="1">隐藏</el-radio>
-                      </el-radio-group>
-                    </el-form-item>
-                  </el-col>
-                  <el-col :span="12">
-                    <el-form-item label="排序" prop="seq">
-                      <el-input-number v-model.number="panelForm.seq" :min="0" placeholder="请输入排序" clearable />
-                    </el-form-item>
-                  </el-col>
-                </el-row>
-                <el-form-item label="备注" prop="remark">
-                  <el-input
-                    v-model="panelForm.remark"
-                    type="textarea"
-                    :rows="3"
-                    placeholder="请输入备注"
-                    clearable
-                    maxlength="500"
-                    show-word-limit
-                  />
-                </el-form-item>
+                      </el-form-item>
+                    </el-col>
+                    <el-col :span="12">
+                      <el-form-item label="菜单类型" prop="kind">
+                        <el-select
+                          v-model="panelForm.kind"
+                          placeholder="请选择菜单类型"
+                          clearable
+                          :disabled="panelMode === 'edit'"
+                        >
+                          <el-option
+                            label="目录"
+                            :value="0"
+                            :disabled="panelMode === 'add-item' && panelCurrentRow?.kind == 1"
+                          />
+                          <el-option
+                            label="菜单"
+                            :value="1"
+                            :disabled="panelMode === 'add-item' && panelCurrentRow?.kind == 1"
+                          />
+                          <el-option
+                            label="按钮"
+                            :value="2"
+                            :disabled="panelMode === 'add-item' && panelCurrentRow?.kind == 0"
+                          />
+                        </el-select>
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+                  <el-form-item v-if="panelForm.kind == 1" :label="panelFormLabel + '路径'" prop="path">
+                    <el-input v-model="panelForm.path" placeholder="请输入菜单路径" clearable maxlength="500" show-word-limit>
+                      <template #append>
+                        <el-button @click="openGRCM">选择路由</el-button>
+                      </template>
+                    </el-input>
+                  </el-form-item>
+                  <el-form-item v-if="panelForm.kind == 1 || panelForm.kind == 2" label="所需权限" prop="permissionCode">
+                    <el-input
+                      v-model="panelForm.permissionCode"
+                      placeholder="请输入所需权限"
+                      clearable
+                      maxlength="500"
+                      show-word-limit
+                    />
+                  </el-form-item>
+                  <el-form-item v-if="panelForm.kind == 0 || panelForm.kind == 1" :label="panelFormLabel + '图标'" prop="icon">
+                    <StdIconPicker v-model="panelForm.icon" />
+                  </el-form-item>
+                  <div v-if="panelForm.kind == 2" class="panel-section-empty">按钮类型无需配置路径与图标</div>
+                  <el-row :gutter="20">
+                    <el-col :span="12">
+                      <el-form-item label="状态" prop="hide">
+                        <el-radio-group v-model="panelForm.hide">
+                          <el-radio :value="0">正常</el-radio>
+                          <el-radio :value="1">隐藏</el-radio>
+                        </el-radio-group>
+                      </el-form-item>
+                    </el-col>
+                    <el-col :span="12">
+                      <el-form-item label="排序" prop="seq">
+                        <el-input-number v-model.number="panelForm.seq" :min="0" placeholder="请输入排序" clearable />
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+                  <el-form-item label="备注" prop="remark">
+                    <el-input
+                      v-model="panelForm.remark"
+                      type="textarea"
+                      :rows="3"
+                      placeholder="请输入备注"
+                      clearable
+                      maxlength="500"
+                      show-word-limit
+                    />
+                  </el-form-item>
                 </section>
               </el-form>
             </el-scrollbar>
@@ -211,7 +213,8 @@
           <div v-else class="panel-empty">
             <el-icon class="panel-empty-icon"><Menu /></el-icon>
             <p class="panel-empty-title">暂无选中菜单</p>
-            <p class="panel-empty-desc">在左侧选择菜单查看详情，或点击根节点的 + 创建菜单</p>
+            <p class="panel-empty-desc">在左侧选择菜单查看详情，或点击下方按钮快速创建</p>
+            <el-button type="primary" :icon="PlusIcon" @click="openPanel('add', null)">创建菜单</el-button>
           </div>
         </div>
       </pane>
@@ -379,16 +382,26 @@ const {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
   background: var(--el-color-primary-light-9);
 }
-.panel-header-icon-shell.icon-0 { background: var(--el-color-info-light-9); }
-.panel-header-icon-shell.icon-1 { background: var(--el-color-success-light-9); }
-.panel-header-icon-shell.icon-2 { background: var(--el-color-primary-light-9); }
+.panel-header-icon-shell.icon-0 {
+  background: var(--el-color-info-light-9);
+}
+.panel-header-icon-shell.icon-1 {
+  background: var(--el-color-success-light-9);
+}
+.panel-header-icon-shell.icon-2 {
+  background: var(--el-color-primary-light-9);
+}
 
 .panel-header-icon {
   font-size: 22px;
   color: var(--el-color-primary);
 }
-.panel-header-icon-shell.icon-0 .panel-header-icon { color: var(--el-color-info); }
-.panel-header-icon-shell.icon-1 .panel-header-icon { color: var(--el-color-success); }
+.panel-header-icon-shell.icon-0 .panel-header-icon {
+  color: var(--el-color-info);
+}
+.panel-header-icon-shell.icon-1 .panel-header-icon {
+  color: var(--el-color-success);
+}
 
 .panel-header-titles {
   display: flex;
@@ -477,8 +490,7 @@ const {
   justify-content: center;
   color: var(--el-text-color-placeholder);
   gap: 10px;
-  background: radial-gradient(circle at 50% 35%, var(--el-color-primary-light-9) 0%, transparent 60%),
-              var(--el-bg-color);
+  background: radial-gradient(circle at 50% 35%, var(--el-color-primary-light-9) 0%, transparent 60%), var(--el-bg-color);
 }
 
 .panel-empty-icon {
