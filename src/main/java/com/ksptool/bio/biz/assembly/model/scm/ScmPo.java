@@ -1,7 +1,7 @@
 package com.ksptool.bio.biz.assembly.model.scm;
 
 import com.ksptool.assembly.entity.exception.AuthException;
-import com.ksptool.bio.biz.auth.common.aop.RowScopePo;
+import com.ksptool.bio.biz.auth.common.aop.RowScopeUserOnlyPo;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
         @Index(name = "uk_scm_name", columnList = "name", unique = true)
 })
 @EntityListeners(AuditingEntityListener.class)
-public class ScmPo extends RowScopePo {
+public class ScmPo extends RowScopeUserOnlyPo {
 
     @Id
     @SnowflakeIdGenerated
