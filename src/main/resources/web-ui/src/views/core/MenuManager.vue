@@ -29,6 +29,10 @@
               @on-remove="removeNode($event.id)"
               @on-root-select="closePanel()"
             >
+              <template #label="{ data: nodeData }">
+                <span v-show="nodeData.hide == 0">{{ nodeData.name }}</span>
+                <span v-show="nodeData.hide == 1" class="line-through">{{ nodeData.name }}</span>
+              </template>
               <template #root-actions>
                 <el-button link type="success" size="small" :icon="PlusIcon" @click="openPanel('add', null)">
                   创建菜单

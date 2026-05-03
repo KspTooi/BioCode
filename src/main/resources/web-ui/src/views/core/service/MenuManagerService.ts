@@ -10,7 +10,7 @@ import { defineStore, storeToRefs } from "pinia";
 type PanelMode = "add" | "edit" | "add-item";
 
 //服务内共享存储(Tree+Panel都用这个存储)
-const useMenuTreeStore = defineStore("menuManagerTreeStore", {
+const useMenuServiceStore = defineStore("menuManagerTreeStore", {
   state: () => ({
     treeData: [] as GetMenuTreeVo[],
     treeCurrent: "-1" as string,
@@ -58,7 +58,7 @@ export default {
    */
   useMenuTree() {
     const { loadMenus } = ComMenuService.useMenuService();
-    const treeStore = useMenuTreeStore();
+    const treeStore = useMenuServiceStore();
     const { treeCurrent, treeData } = storeToRefs(treeStore);
 
     const treeLoading = ref(true);
@@ -123,7 +123,7 @@ export default {
    */
   useMenuTreePanel(panelFormRef: Ref<FormInstance>, reloadCallback: () => void) {
     const { loadMenus } = ComMenuService.useMenuService();
-    const treeStore = useMenuTreeStore();
+    const treeStore = useMenuServiceStore();
     const { treeData } = storeToRefs(treeStore);
     const panelLoading = ref(false);
 
@@ -401,7 +401,7 @@ export default {
 
     onMounted(() => {
       //检查缓存的模式
-      const store = useMenuTreeStore();
+      const store = useMenuServiceStore();
 
       console.log(store.panelMode);
     });
