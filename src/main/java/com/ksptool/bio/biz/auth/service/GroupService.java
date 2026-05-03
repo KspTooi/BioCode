@@ -76,9 +76,9 @@ public class GroupService {
     }
 
     /**
-     * 添加用户组
+     * 新增用户组
      *
-     * @param dto 添加用户组参数
+     * @param dto 新增用户组参数
      * @throws BizException 用户组标识已存在
      */
     @Transactional(rollbackFor = Exception.class)
@@ -296,6 +296,8 @@ public class GroupService {
             vo.setDeptIds(deptIds);
         }
 
+        //获取该组拥有的GM
+        vo.setMenuIds(gmRepository.getMidsByGid(id));
         return vo;
     }
 
@@ -359,6 +361,31 @@ public class GroupService {
 
         //执行静默删除
         repository.deleteAllById(safeRemoveIds);
+    }
+
+    /**
+     * 更新组菜单
+     *
+     * @param dto 更新组菜单参数
+     * @throws BizException 用户组不存在
+     */
+    public void updateGroupGm(UpdateGroupGmDto dto) throws BizException {
+
+        var g = repository.findById(dto.getGroupId()).orElseThrow(() -> new BizException("用户组不存在"));
+        
+        //对比GM关系的差异
+        var gmIdsDiff = new IdsDiff(gmRepository.getMidsByGid(g.getId()), dto.getMenuIds());
+
+        //处理GM的新增/删除关系
+        if(gmIdsDiff.hasAdd()){
+            var gmPos = gmIdsDiff.getAddIds().stream().map(id -> new GroupMenuPo(g.getId(), id)).toList();
+            gmRepository.saveAll(gmPos);
+        }
+        
+        if(gmIdsDiff.hasRemove()){
+            gmRepository.removeByGidAndMids(g.getId(), gmIdsDiff.getRemoveIds());
+        }
+
     }
 
 

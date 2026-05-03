@@ -47,7 +47,7 @@ public class GroupController {
 
 
     @PreAuthorize("@auth.hasCode('auth:group:view')")
-    @Operation(summary = "获取组列表")
+    @Operation(summary = "获取用户组列表")
     @PostMapping("getGroupList")
     public PageResult<GetGroupListVo> getGroupList(@RequestBody @Valid GetGroupListDto dto) {
         return service.getGroupList(dto);
@@ -55,7 +55,7 @@ public class GroupController {
 
     
     @PreAuthorize("@auth.hasCode('auth:group:add')")
-    @Operation(summary = "新增组")
+    @Operation(summary = "新增用户组")
     @PostMapping("addGroup")
     public Result<String> addGroup(@RequestBody @Valid AddGroupDto dto) throws Exception {
         service.addGroup(dto);
@@ -63,7 +63,7 @@ public class GroupController {
     }
 
     @PreAuthorize("@auth.hasCode('auth:group:edit')")
-    @Operation(summary = "编辑组")
+    @Operation(summary = "编辑用户组")
     @PostMapping("editGroup")
     @CacheEvict(cacheNames = {"userSession", "userProfile", "menuTree"}, allEntries = true)
     public Result<String> editGroup(@RequestBody @Valid EditGroupDto dto) throws Exception {
@@ -79,14 +79,14 @@ public class GroupController {
     }
 
     @PreAuthorize("@auth.hasCode('auth:group:view')")
-    @Operation(summary = "获取组详情")
+    @Operation(summary = "获取用户组详情")
     @PostMapping("getGroupDetails")
     public Result<GetGroupDetailsVo> getGroupDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {
         return Result.success(service.getGroupDetails(dto.getId()));
     }
 
     @PreAuthorize("@auth.hasCode('auth:group:remove')")
-    @Operation(summary = "删除组")
+    @Operation(summary = "移除用户组")
     @PostMapping("removeGroup")
     @CacheEvict(cacheNames = {"userSession", "userProfile", "menuTree"}, allEntries = true)
     public Result<String> removeGroup(@RequestBody @Valid CommonIdDto dto) throws Exception {
@@ -99,6 +99,14 @@ public class GroupController {
         //清菜单缓存
         menuService.clearUserMenuTreeCache();
         return Result.success("删除成功");
+    }
+    
+    @PreAuthorize("@auth.hasCode('auth:group:edit')")
+    @Operation(summary = "更新组菜单")
+    @PostMapping("updateGroupGm")
+    public Result<String> updateGroupGm(@RequestBody @Valid UpdateGroupGmDto dto) throws Exception {
+        service.updateGroupGm(dto);
+        return Result.success("更新组菜单成功");
     }
 
     @PreAuthorize("@auth.hasCode('auth:group:edit')")
