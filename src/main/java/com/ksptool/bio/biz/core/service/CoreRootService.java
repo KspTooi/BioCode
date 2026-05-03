@@ -3,6 +3,7 @@ package com.ksptool.bio.biz.core.service;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
+import com.ksptool.bio.biz.auth.common.RowScopes;
 import com.ksptool.bio.biz.auth.model.GroupPermissionPo;
 import com.ksptool.bio.biz.auth.model.UserGroupPo;
 import com.ksptool.bio.biz.auth.model.group.GroupPo;
@@ -137,7 +138,7 @@ public class CoreRootService {
         g.setRemark("自动创建的角色，该角色拥有本租户下的的全部权限。");
         g.setStatus(1);
         g.setSeq(0);
-        g.setRowScope(1);
+        g.setRowScope(RowScopes.ALL);
         g.setIsSystem(1);
         groupRepository.save(g);
 

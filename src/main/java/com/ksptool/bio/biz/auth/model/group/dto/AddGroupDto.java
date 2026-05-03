@@ -1,5 +1,6 @@
 package com.ksptool.bio.biz.auth.model.group.dto;
 
+import com.ksptool.bio.biz.auth.common.RowScopes;
 import com.ksptool.bio.biz.core.common.aop.DtoCustomValidator;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
@@ -41,9 +42,7 @@ public class AddGroupDto implements DtoCustomValidator{
 
     @Schema(description = "RS数据权限等级 0:全集团 10:本公司+下级公司 20:仅本公司 30:本部门+下级部门 40:仅本部门 50:仅本人 60:指定组织")
     @NotNull(message = "数据权限不能为空")
-    @Min(value = 0, message = "RS数据权限等级不正确")
-    @Max(value = 60, message = "RS数据权限等级不正确")
-    private Integer rowScope;
+    private RowScopes rowScope;
 
     @NotNull(message = "部门ID列表不能为空")
     @Schema(description = "部门ID列表 允许空数组但不能为NULL")
@@ -65,13 +64,8 @@ public class AddGroupDto implements DtoCustomValidator{
     @Override
     public String validate() {
 
-        //数据权限只能是0、10、20、30、40、50、60
-        if (this.rowScope != 0 && this.rowScope != 10 && this.rowScope != 20 && this.rowScope != 30 && this.rowScope != 40 && this.rowScope != 50 && this.rowScope != 60) {
-            return "RS数据权限等级不正确";
-        }
-
-        //当数据权限为60(指定组织)时，部门ID列表不能为空
-        if (this.rowScope == 60) {
+        //当数据权限为指定组织时，部门ID列表不能为空
+        if (this.rowScope == RowScopes.SPECIFIED_ORG) {
             if (this.deptIds.isEmpty()) {
                 return "部门ID列表不能为空";
             }

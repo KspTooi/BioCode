@@ -177,7 +177,7 @@ export default {
       deptIds: [
         {
           validator: (rule: any, value: any, callback: any) => {
-            if (modalForm.rowScope === 5) {
+            if (modalForm.rowScope === 60) {
               if (!value || value.length === 0) {
                 callback(new Error("请选择至少一个部门"));
                 return;
@@ -319,7 +319,7 @@ export default {
             status: modalForm.status,
             seq: modalForm.seq,
             rowScope: modalForm.rowScope,
-            deptIds: modalForm.rowScope === 5 ? modalForm.deptIds : [],
+            deptIds: modalForm.rowScope === 60 ? modalForm.deptIds : [],
             permissionIds: selectedPermissionIds.value,
           };
           const result = await AdminGroupApi.addGroup(addDto);
@@ -343,7 +343,7 @@ export default {
             status: modalForm.status,
             seq: modalForm.seq,
             rowScope: modalForm.rowScope,
-            deptIds: modalForm.rowScope === 5 ? modalForm.deptIds : [],
+            deptIds: modalForm.rowScope === 60 ? modalForm.deptIds : [],
             permissionIds: selectedPermissionIds.value,
           };
           const result = await AdminGroupApi.editGroup(editDto);
@@ -383,7 +383,7 @@ export default {
       () => modalForm.rowScope,
       (newVal): void => {
         // 如果不是指定部门，清空部门选择
-        if (newVal !== 5) {
+        if (newVal !== 60) {
           modalForm.deptIds = [];
         }
         // 触发验证

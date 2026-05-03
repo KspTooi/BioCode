@@ -4,6 +4,7 @@ package com.ksptool.bio.biz.auth.service;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
+import com.ksptool.bio.biz.auth.common.RowScopes;
 import com.ksptool.bio.biz.auth.model.GroupDeptPo;
 import com.ksptool.bio.biz.auth.model.GroupMenuPo;
 import com.ksptool.bio.biz.auth.model.GroupPermissionPo;
@@ -115,8 +116,8 @@ public class GroupService {
             gmRepository.saveAll(gmPos);
         }
 
-        //处理GD关系 RS=60(指定组织)时才需要处理 如果RS不是60 则直接清空GD关系
-        if (dto.getRowScope() == 60) {
+        //处理GD关系 RS=指定组织时才需要处理 如果RS不是指定组织 则直接清空GD关系
+        if (dto.getRowScope() == RowScopes.SPECIFIED_ORG) {
 
             var dPos = orgRepository.findAllById(dto.getDeptIds());
             var gdPos = dPos.stream().map(d -> {
@@ -220,12 +221,12 @@ public class GroupService {
             gmRepository.removeByGidAndMids(g.getId(), gmIdsDiff.getRemoveIds());
         }
 
-        //处理GD的新增/删除关系 只有RS=60(指定组织)时才需要处理 如果RS不是60 则直接清空GD关系
-        if(g.getRowScope() != 60){
+        //处理GD的新增/删除关系 只有RS=指定组织时才需要处理 如果RS不是指定组织 则直接清空GD关系
+        if(g.getRowScope() != RowScopes.SPECIFIED_ORG){
             gdRepository.removeByGid(g.getId());
         }
 
-        if(g.getRowScope() == 60){
+        if(g.getRowScope() == RowScopes.SPECIFIED_ORG){
 
             if(gdIdsDiff.hasAdd()){
                 
@@ -289,8 +290,8 @@ public class GroupService {
 
         vo.setPermissions(defVos);
 
-        //如果数据权限为 60(指定组织)时，则需要获取组织列表
-        if (po.getRowScope() == 60) {
+        //如果数据权限为指定组织时，则需要获取组织列表
+        if (po.getRowScope() == RowScopes.SPECIFIED_ORG) {
             var deptIds = gdRepository.getDeptIdsByGroupId(id);
             vo.setDeptIds(deptIds);
         }
@@ -642,18 +643,20 @@ public class GroupService {
      */
     public SimulateRsVo simulateRs(SimulateRsDto dto) throws Exception {
 
-        int rsLevel = dto.getRsLevel();
+        RowScopes rsLevel = dto.getRsLevel();
 
-        //校验RS等级 不支持60(指定组织,依赖组配置无法单点模拟)
-        if (rsLevel == 60) {
+        //校验RS等级 不支持指定组织(依赖组配置无法单点模拟)
+        if (rsLevel == RowScopes.SPECIFIED_ORG) {
             throw new BizException("模拟器不支持 RS=60(指定组织)");
         }
 
         //校验RS等级合法值
-        boolean validLevel = rsLevel == 0 || rsLevel == 10 || rsLevel == 20
-                || rsLevel == 30 || rsLevel == 40 || rsLevel == 50 || rsLevel == 100;
+        boolean validLevel = rsLevel == RowScopes.ALL || rsLevel == RowScopes.COMPANY_AND_SUBS
+                || rsLevel == RowScopes.COMPANY_ONLY || rsLevel == RowScopes.DEPT_AND_SUBS
+                || rsLevel == RowScopes.DEPT_ONLY || rsLevel == RowScopes.SELF_ONLY
+                || rsLevel == RowScopes.DENY_ALL;
         if (!validLevel) {
-            throw new BizException("非法的RS等级: " + rsLevel);
+            throw new BizException("非法的RS等级: " + rsLevel.getCode());
         }
 
         //获取当前登录用户的租户ID,用于隔离校验
@@ -690,29 +693,29 @@ public class GroupService {
         vo.setNodeKind(node.getKind());
         vo.setAllMode(false);
 
-        //rsLevel=0 全集团 SQL层直接放行租户全量,前端高亮全部节点
-        if (rsLevel == 0) {
+        //rsLevel=全集团 SQL层直接放行租户全量,前端高亮全部节点
+        if (rsLevel == RowScopes.ALL) {
             vo.setAllMode(true);
             vo.setVisibleOrgIds(new ArrayList<>());
             return vo;
         }
 
-        //rsLevel=100 拒绝所有 orgIds永远不会匹配到任何ID
-        if (rsLevel == 100) {
+        //rsLevel=拒绝所有 orgIds永远不会匹配到任何ID
+        if (rsLevel == RowScopes.DENY_ALL) {
             vo.setVisibleOrgIds(new ArrayList<>());
             return vo;
         }
 
-        //rsLevel=50 仅本人 SQL层用creator_id过滤,组织树层面无命中节点
-        if (rsLevel == 50) {
+        //rsLevel=仅本人 SQL层用creator_id过滤,组织树层面无命中节点
+        if (rsLevel == RowScopes.SELF_ONLY) {
             vo.setVisibleOrgIds(new ArrayList<>());
             return vo;
         }
 
         var visibleIds = new HashSet<Long>();
 
-        //rsLevel=10 本公司+下级公司 需要虚拟orgId
-        if (rsLevel == 10) {
+        //rsLevel=本公司+下级公司 需要虚拟orgId
+        if (rsLevel == RowScopes.COMPANY_AND_SUBS) {
             if (virtualOrgId == null) {
                 vo.setVisibleOrgIds(new ArrayList<>());
                 return vo;
@@ -726,8 +729,8 @@ public class GroupService {
             return vo;
         }
 
-        //rsLevel=20 仅本公司(本公司直属部门,排除子公司及其下部门) 需要虚拟orgId
-        if (rsLevel == 20) {
+        //rsLevel=仅本公司(本公司直属部门,排除子公司及其下部门) 需要虚拟orgId
+        if (rsLevel == RowScopes.COMPANY_ONLY) {
             if (virtualOrgId == null) {
                 vo.setVisibleOrgIds(new ArrayList<>());
                 return vo;
@@ -741,8 +744,8 @@ public class GroupService {
             return vo;
         }
 
-        //rsLevel=30 本部门+下级部门 需要虚拟deptId
-        if (rsLevel == 30) {
+        //rsLevel=本部门+下级部门 需要虚拟deptId
+        if (rsLevel == RowScopes.DEPT_AND_SUBS) {
             if (virtualDeptId == null) {
                 vo.setVisibleOrgIds(new ArrayList<>());
                 return vo;
@@ -756,8 +759,8 @@ public class GroupService {
             return vo;
         }
 
-        //rsLevel=40 仅本部门 需要虚拟deptId
-        if (rsLevel == 40) {
+        //rsLevel=仅本部门 需要虚拟deptId
+        if (rsLevel == RowScopes.DEPT_ONLY) {
             if (virtualDeptId == null) {
                 vo.setVisibleOrgIds(new ArrayList<>());
                 return vo;

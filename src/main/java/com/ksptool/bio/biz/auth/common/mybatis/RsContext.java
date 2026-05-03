@@ -1,5 +1,6 @@
 package com.ksptool.bio.biz.auth.common.mybatis;
 
+import com.ksptool.bio.biz.auth.common.RowScopes;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,7 +17,7 @@ import java.util.List;
 @Setter
 public class RsContext {
 
-    private Integer rsMax;
+    private RowScopes rsMax;
     private Long userId;
     private Long rootId;
     private List<Long> orgIds;
@@ -29,7 +30,7 @@ public class RsContext {
      * @param rootId 所属企业(租户)ID
      * @param orgIds 允许访问的组织IDS(可公司、可部门等组织树节点)
      */
-    public RsContext(Integer rsMax, Long userId, Long rootId, List<Long> orgIds) {
+    public RsContext(RowScopes rsMax, Long userId, Long rootId, List<Long> orgIds) {
         this.rsMax = rsMax;
         this.userId = userId;
         this.rootId = rootId;

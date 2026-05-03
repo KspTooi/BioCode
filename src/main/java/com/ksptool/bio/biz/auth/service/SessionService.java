@@ -3,6 +3,7 @@ package com.ksptool.bio.biz.auth.service;
 import com.ksptool.assembly.entity.exception.AuthException;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.PageResult;
+import com.ksptool.bio.biz.auth.common.RowScopes;
 import com.ksptool.bio.biz.auth.model.auth.AuthUserSession;
 import com.ksptool.bio.biz.auth.model.session.UserSessionPo;
 import com.ksptool.bio.biz.auth.model.session.dto.GetSessionListDto;
@@ -145,14 +146,14 @@ public class SessionService {
         vo.setExpiresAt(session.getExpiresAt());
         vo.setPermissions(session.getPermissionCodes());
 
-        //RS 0:全部 1:本公司/租户及以下 2:本部门及以下 3:本部门 4:仅本人 5:指定部门
+        //RS 0:全集团 10:本公司+下级公司 20:仅本公司 30:本部门+下级部门 40:仅本部门 50:仅本人 60:指定组织
         var maxRs = session.getRsMax();
         var rsAllowDepts = session.getRsAllowOrgIds();
         var rsAllowDeptNames = new ArrayList<String>();
 
 
-        //处理RS权限列表
-        if (maxRs == 2 || maxRs == 3 || maxRs == 5) {
+        //处理RS权限列表 仅本部门+下级部门、仅本部门、指定组织时需要显示组织名称
+        if (maxRs == RowScopes.DEPT_AND_SUBS || maxRs == RowScopes.DEPT_ONLY || maxRs == RowScopes.SPECIFIED_ORG) {
 
             var depts = orgRepository.getDeptsByIds(new ArrayList<>(rsAllowDepts));
 

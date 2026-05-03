@@ -1,5 +1,7 @@
 package com.ksptool.bio.biz.auth.common.mybatis;
 
+import com.ksptool.bio.biz.auth.common.RowScopes;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,7 +46,7 @@ public class RsBuilder {
             return "";
         }
 
-        Integer rsMax = context.getRsMax();
+        RowScopes rsMax = context.getRsMax();
 
         //rsMax 为 null 表示权限配置异常，拒绝所有数据
         if (rsMax == null) {
@@ -66,18 +68,20 @@ public class RsBuilder {
         //租户隔离硬底线: 所有分支都强制叠加 root_id = ...
         String tenantClause = " AND " + prefix + "root_id = " + rootId + " ";
 
-        //rsMax = 0 本租户全部数据，仅按租户过滤
-        if (rsMax == 0) {
+        //rsMax = ALL 本租户全部数据，仅按租户过滤
+        if (rsMax == RowScopes.ALL) {
             return tenantClause;
         }
 
-        //rsMax = 50 仅本人，租户 + creator_id 过滤
-        if (rsMax == 50) {
+        //rsMax = SELF_ONLY 仅本人，租户 + creator_id 过滤
+        if (rsMax == RowScopes.SELF_ONLY) {
             return tenantClause + " AND " + prefix + "creator_id = " + context.getUserId() + " ";
         }
 
-        //rsMax = 10/20/30/40/60 均按租户 + org_id IN(...) 过滤
-        if (rsMax == 10 || rsMax == 20 || rsMax == 30 || rsMax == 40 || rsMax == 60) {
+        //rsMax = COMPANY_AND_SUBS / COMPANY_ONLY / DEPT_AND_SUBS / DEPT_ONLY / SPECIFIED_ORG 均按租户 + org_id IN(...) 过滤
+        if (rsMax == RowScopes.COMPANY_AND_SUBS || rsMax == RowScopes.COMPANY_ONLY
+                || rsMax == RowScopes.DEPT_AND_SUBS || rsMax == RowScopes.DEPT_ONLY
+                || rsMax == RowScopes.SPECIFIED_ORG) {
             List<Long> orgIds = context.getOrgIds();
 
             //允许的组织列表为空，拒绝所有数据
@@ -91,7 +95,7 @@ public class RsBuilder {
             return tenantClause + " AND " + prefix + "org_id IN (" + ids + ") ";
         }
 
-        //未知的 rsMax 值(包括 100 用户未配置任何数据权限组)，拒绝所有数据
+        //未知的 rsMax 值(包括 DENY_ALL 用户未配置任何数据权限组)，拒绝所有数据
         return " AND 1 = 0 ";
     }
 

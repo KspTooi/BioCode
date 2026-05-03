@@ -1,6 +1,7 @@
 package com.ksptool.bio.biz.auth.model.group;
 
 import com.ksptool.assembly.entity.exception.AuthException;
+import com.ksptool.bio.biz.auth.common.RowScopes;
 import com.ksptool.bio.biz.auth.common.aop.CreatedDirectOrgId;
 import com.ksptool.bio.biz.auth.common.aop.CreatedRootId;
 import com.ksptool.bio.biz.auth.common.aop.RowScopePo;
@@ -60,7 +61,7 @@ public class GroupPo extends RowScopePo {
     private Integer seq;
 
     @Column(name = "row_scope", columnDefinition = "TINYINT", nullable = false, comment = "数据范围 0:全部 10:本公司+下级公司 20:仅本公司 30:本部门+下级部门 40:仅本部门 50:仅本人 60:指定组织")
-    private Integer rowScope;
+    private RowScopes rowScope;
 
     @Column(name = "is_system", columnDefinition = "TINYINT", nullable = false, comment = "系统内置组 0:否 1:是")
     private Integer isSystem;
@@ -99,7 +100,7 @@ public class GroupPo extends RowScopePo {
         }
 
         if (this.rowScope == null) {
-            this.rowScope = 0; // 默认数据范围：全部
+            this.rowScope = RowScopes.ALL; // 默认数据范围：全部
         }
     }
 
