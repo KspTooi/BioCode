@@ -53,11 +53,11 @@
       >
         <el-table-column type="selection" width="40" />
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
-        <el-table-column prop="name" label="用户组名称" min-width="120" />
-        <el-table-column prop="code" label="用户组编码" min-width="120" />
+        <el-table-column prop="name" label="用户组名称" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="code" label="用户组编码" min-width="120" show-overflow-tooltip />
         <el-table-column prop="memberCount" label="成员数量" min-width="100" />
         <el-table-column prop="permissionCount" label="权限数量" min-width="100" />
-        <el-table-column prop="rowScope" label="数据权限" min-width="100">
+        <el-table-column prop="rowScope" label="数据权限" min-width="100" show-overflow-tooltip>
           <template #default="scope">
             <el-tag v-if="scope.row.rowScope === 0" type="primary">全集团</el-tag>
             <el-tag v-else-if="scope.row.rowScope === 10" type="success">本公司+下级公司</el-tag>
@@ -88,7 +88,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" min-width="180" />
-        <el-table-column label="操作" fixed="right" min-width="180">
+        <el-table-column label="操作" fixed="right" min-width="300">
           <template #default="scope">
             <el-button link type="primary" size="small" :icon="EditIcon" @click="openModal('edit', scope.row)">
               编辑
@@ -96,9 +96,7 @@
             <el-button link type="primary" size="small" :icon="EditIcon" @click="openMenuModal(scope.row)">
               管理菜单
             </el-button>
-            <el-button link type="primary" size="small" :icon="EditIcon" @click="openGpModal(scope.row)">
-              管理GP
-            </el-button>
+            <el-button link type="primary" size="small" :icon="EditIcon" @click="openGpModal(scope.row)"> 管理GP </el-button>
             <el-button
               link
               type="danger"
@@ -138,19 +136,9 @@
     </template>
   </StdListLayout>
 
-  <GroupMenuModal
-    :visible="menuModalVisible"
-    :data="menuModalRow"
-    @close="menuModalVisible = false"
-    @success="loadList"
-  />
+  <GroupMenuModal :visible="menuModalVisible" :data="menuModalRow" @close="menuModalVisible = false" @success="loadList" />
 
-  <GroupGpModal
-    :visible="gpModalVisible"
-    :data="gpModalRow"
-    @close="gpModalVisible = false"
-    @success="loadList"
-  />
+  <GroupGpModal :visible="gpModalVisible" :data="gpModalRow" @close="gpModalVisible = false" @success="loadList" />
 
   <CoreOrgDeptSelectModal
     v-model="deptSelectModalVisible"
@@ -367,5 +355,4 @@ const editGroupSeq = async (id: string, dto: any): Promise<void> => {
   color: var(--el-text-color-primary);
   border-left: 4px solid var(--el-color-primary);
 }
-
 </style>
