@@ -16,21 +16,22 @@ export interface GpPermissionItem {
   name: string;
 }
 
+import { SA_CODE } from "@/views/auth/service/UserAuthService.ts";
+
 export default {
   useGroupGpModal(props: GroupGpModalProps, emit: (e: "close" | "success") => void) {
     const modalLoading = ref(false);
     const modalPermissionList = ref<GpPermissionItem[]>([]);
     const modalSearch = ref("");
     const modalSelectedIds = ref<string[]>([]);
+    const isSystemGroup = ref(false);
 
     const modalFilteredPermissions = computed(() => {
       const s = modalSearch.value.toLowerCase().trim();
       if (!s) {
         return modalPermissionList.value;
       }
-      return modalPermissionList.value.filter(
-        (p) => p.name.toLowerCase().includes(s) || p.code.toLowerCase().includes(s),
-      );
+      return modalPermissionList.value.filter((p) => p.name.toLowerCase().includes(s) || p.code.toLowerCase().includes(s));
     });
 
     const modalSelectedCount = computed(() => modalSelectedIds.value.length);
@@ -44,6 +45,8 @@ export default {
       }
       modalLoading.value = true;
       try {
+        isSystemGroup.value = props.data.isSystem === 1;
+
         const [definitionResult, detailsResult] = await Promise.all([
           PermissionApi.getPermissionDefinition(),
           GroupApi.getGroupDetails({ id: props.data.id }),
@@ -82,6 +85,16 @@ export default {
       if (!props.data?.id) {
         return;
       }
+
+      // 系统内置组不允许去除SA权限
+      if (isSystemGroup.value) {
+        const saPermission = modalPermissionList.value.find((p) => p.code === SA_CODE);
+        if (saPermission && !modalSelectedIds.value.includes(saPermission.id)) {
+          ElMessage.error("系统内置组不允许去除超级操作权限(SA)");
+          return;
+        }
+      }
+
       modalLoading.value = true;
       try {
         const result = await GroupApi.updateGroupGp({
@@ -109,6 +122,7 @@ export default {
       modalPermissionList.value = [];
       modalSelectedIds.value = [];
       modalSearch.value = "";
+      isSystemGroup.value = false;
       modalLoading.value = false;
     };
 
@@ -130,6 +144,7 @@ export default {
       modalSelectedIds,
       modalFilteredPermissions,
       modalSelectedCount,
+      isSystemGroup,
       selectAll,
       deselectAll,
       submitModal,

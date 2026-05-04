@@ -31,7 +31,7 @@
       <div class="permission-body">
         <el-checkbox-group v-model="svc.modalSelectedIds.value">
           <div v-for="perm in svc.modalFilteredPermissions.value" :key="perm.id" class="perm-row">
-            <el-checkbox :value="perm.id">
+            <el-checkbox :value="perm.id" :disabled="svc.isSystemGroup.value && perm.code === '*:*:*'">
               <div class="perm-info">
                 <div class="perm-name">{{ perm.name }}</div>
                 <div class="perm-code">{{ perm.code }}</div>

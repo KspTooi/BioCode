@@ -3,6 +3,12 @@ import type { Directive, DirectiveBinding } from "vue";
 import type { UserLoginDto, UserLoginVo } from "@/views/auth/api/AuthApi";
 import AuthApi from "@/views/auth/api/AuthApi";
 
+//超级操作权限码
+export const SA_CODE = "*:*:*";
+
+//超级数据权限码
+export const SR_CODE = "*:*:*:*";
+
 const AuthStore = defineStore("AuthStore", {
   state: () => {
     const userInfo = localStorage.getItem("userInfo");
