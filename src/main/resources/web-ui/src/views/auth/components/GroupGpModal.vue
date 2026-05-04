@@ -12,6 +12,11 @@
       <span>修改此用户组的权限绑定将立即对所有已登录的组内用户生效</span>
     </div>
 
+    <div class="info-bar">
+      <el-icon class="info-icon"><InfoFilled /></el-icon>
+      <span>用户的实际权限 = GM 派生权限（菜单绑定） + GP 直接权限（本页操作）。GP 用于对特定权限码做例外增删，常规授权请走 GM。</span>
+    </div>
+
     <div class="permission-wrapper" v-loading="svc.modalLoading.value">
       <div class="permission-header">
         <el-input v-model="svc.modalSearch.value" placeholder="搜索权限码/名称" clearable size="small">
@@ -44,14 +49,14 @@
     </div>
 
     <template #footer>
-      <el-button type="primary" :loading="svc.modalLoading.value" @click="svc.submitModal">保存</el-button>
       <el-button @click="onClose">关闭</el-button>
+      <el-button type="primary" :loading="svc.modalLoading.value" @click="svc.submitModal">保存</el-button>
     </template>
   </el-dialog>
 </template>
 
 <script setup lang="ts">
-import { Search, WarningFilled } from "@element-plus/icons-vue";
+import { InfoFilled, Search, WarningFilled } from "@element-plus/icons-vue";
 import GroupGpModalService, { type GroupGpModalProps } from "@/views/auth/components/service/GroupGpModalService.ts";
 
 const props = defineProps<GroupGpModalProps>();
@@ -85,6 +90,24 @@ const onClose = (): void => {
   font-size: 14px;
   flex-shrink: 0;
   color: var(--el-color-warning);
+}
+
+.info-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  background: var(--el-color-info-light-9);
+  border-radius: 4px;
+  padding: 7px 10px;
+  margin-bottom: 12px;
+}
+
+.info-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+  color: var(--el-color-info);
 }
 
 .permission-wrapper {
