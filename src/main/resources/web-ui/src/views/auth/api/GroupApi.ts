@@ -13,8 +13,9 @@ export interface GetGroupListVo {
   id: string; // 组ID
   code: string; // 组编码
   name: string; // 组名称
-  memberCount: number; // 成员数量
-  permissionCount: number; // 权限节点数量
+  guCount: number; // 成员数量(GU)
+  gmCount: number; // 菜单数量(GM)
+  gpCount: number; // 权限数量(GP)
   rowScope: number; // RS数据权限等级 0:全集团 10:本公司+下级公司 20:仅本公司 30:本部门+下级部门 40:仅本部门 50:仅本人 60:指定组织
   isSystem: number; // 系统内置组 0:否 1:是
   status: number; // 组状态：0-禁用，1-启用

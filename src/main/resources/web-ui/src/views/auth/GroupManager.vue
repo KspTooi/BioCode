@@ -55,8 +55,12 @@
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
         <el-table-column prop="name" label="用户组名称" min-width="120" show-overflow-tooltip />
         <el-table-column prop="code" label="用户组编码" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="memberCount" label="成员数量" min-width="100" />
-        <el-table-column prop="permissionCount" label="权限数量" min-width="100" />
+        <el-table-column label="成员与菜单总数" min-width="140">
+          <template #default="scope">
+            <span>{{ scope.row.guCount }} / {{ scope.row.gmCount }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column v-has-super prop="gpCount" label="权限总数" min-width="100" />
         <el-table-column prop="rowScope" label="数据权限" min-width="100" show-overflow-tooltip>
           <template #default="scope">
             <el-tag v-if="scope.row.rowScope === 0" type="primary">全集团</el-tag>
@@ -75,7 +79,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="排序" prop="seq" width="120">
+        <el-table-column label="排序" prop="seq" width="80">
           <template #default="scope">
             <ComSeqFixer
               :id="scope.row.id"
@@ -96,7 +100,9 @@
             <el-button link type="primary" size="small" :icon="EditIcon" @click="openMenuModal(scope.row)">
               管理菜单
             </el-button>
-            <el-button link type="primary" size="small" :icon="EditIcon" @click="openGpModal(scope.row)"> 管理GP </el-button>
+            <el-button v-has-super link type="primary" size="small" :icon="EditIcon" @click="openGpModal(scope.row)">
+              管理GP
+            </el-button>
             <el-button
               link
               type="danger"
@@ -266,6 +272,9 @@ import ComSeqFixer from "@/soa/com-series/ComSeqFixer.vue";
 import RsSimulationModal from "@/views/auth/components/RsSimulationModal.vue";
 import GroupMenuModal from "@/views/auth/components/GroupMenuModal.vue";
 import GroupGpModal from "@/views/auth/components/GroupGpModal.vue";
+import UserAuthService from "@/views/auth/service/UserAuthService.ts";
+
+const { vHasSuper } = UserAuthService.usePreAuthorize();
 
 const EditIcon = markRaw(Edit);
 const DeleteIcon = markRaw(Delete);
