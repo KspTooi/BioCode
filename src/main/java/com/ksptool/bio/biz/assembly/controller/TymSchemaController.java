@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,6 +37,7 @@ public class TymSchemaController {
         return tymSchemaService.getTymSchemaList(dto);
     }
 
+    @PreAuthorize("@auth.hasCode('assembly:tymSchema:add')")
     @Operation(summary = "新增类型映射方案")
     @PostMapping("/addTymSchema")
     public Result<String> addTymSchema(@RequestBody @Valid AddTymSchemaDto dto) throws Exception {
@@ -43,6 +45,7 @@ public class TymSchemaController {
         return Result.success("新增成功");
     }
 
+    @PreAuthorize("@auth.hasCode('assembly:tymSchema:edit')")
     @Operation(summary = "编辑类型映射方案")
     @PostMapping("/editTymSchema")
     public Result<String> editTymSchema(@RequestBody @Valid EditTymSchemaDto dto) throws Exception {
@@ -50,6 +53,7 @@ public class TymSchemaController {
         return Result.success("修改成功");
     }
 
+    @PreAuthorize("@auth.hasCode('assembly:tymSchema:view')")
     @Operation(summary = "查询类型映射方案详情")
     @PostMapping("/getTymSchemaDetails")
     public Result<GetTymSchemaDetailsVo> getTymSchemaDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {
@@ -60,6 +64,7 @@ public class TymSchemaController {
         return Result.success(details);
     }
 
+    @PreAuthorize("@auth.hasCode('assembly:tymSchema:remove')")
     @Operation(summary = "删除类型映射方案")
     @PostMapping("/removeTymSchema")
     public Result<String> removeTymSchema(@RequestBody @Valid CommonIdDto dto) throws Exception {

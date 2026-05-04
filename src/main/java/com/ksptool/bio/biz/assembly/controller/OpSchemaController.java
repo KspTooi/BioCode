@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -43,6 +44,7 @@ public class OpSchemaController {
         return opSchemaService.getOpSchemaList(dto);
     }
 
+    @PreAuthorize("@auth.hasCode('assembly:opSchema:add')")
     @Operation(summary = "新增输出方案")
     @PostMapping("/addOpSchema")
     public Result<String> addOpSchema(@RequestBody @Valid AddOpSchemaDto dto) throws Exception {
@@ -50,6 +52,7 @@ public class OpSchemaController {
         return Result.success(message, null);
     }
 
+    @PreAuthorize("@auth.hasCode('assembly:opSchema:edit')")
     @Operation(summary = "编辑输出方案")
     @PostMapping("/editOpSchema")
     public Result<String> editOpSchema(@RequestBody @Valid EditOpSchemaDto dto) throws Exception {
@@ -57,6 +60,7 @@ public class OpSchemaController {
         return Result.success(message, null);
     }
 
+    @PreAuthorize("@auth.hasCode('assembly:opSchema:view')")
     @Operation(summary = "查询输出方案详情")
     @PostMapping("/getOpSchemaDetails")
     public Result<GetOpSchemaDetailsVo> getOpSchemaDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {
@@ -67,6 +71,7 @@ public class OpSchemaController {
         return Result.success(details);
     }
 
+    @PreAuthorize("@auth.hasCode('assembly:opSchema:remove')")
     @Operation(summary = "删除输出方案")
     @PostMapping("/removeOpSchema")
     public Result<String> removeOpSchema(@RequestBody @Valid CommonIdDto dto) throws Exception {
@@ -111,6 +116,7 @@ public class OpSchemaController {
         return Result.success(opSchemaService.previewQbeModel(dto.getId()));
     }
 
+    @PreAuthorize("@auth.hasCode('assembly:opSchema:execute')")
     @Operation(summary = "执行输出方案")
     @PostMapping("/executeOpSchema")
     public Result<String> executeOpSchema(@RequestBody @Valid ExecuteOpSchemaDto dto) throws Exception {
@@ -127,6 +133,7 @@ public class OpSchemaController {
         }
     }
 
+    @PreAuthorize("@auth.hasCode('assembly:opSchema:copy')")
     @Operation(summary = "复制输出方案")
     @PostMapping("/copyOpSchema")
     public Result<String> copyOpSchema(@RequestBody @Valid CommonIdDto dto) throws Exception {
