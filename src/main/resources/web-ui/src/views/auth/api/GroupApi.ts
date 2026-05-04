@@ -40,6 +40,7 @@ export interface GetGroupDetailsVo {
   rowScope: number; // RS数据权限等级 0:全集团 10:本公司+下级公司 20:仅本公司 30:本部门+下级部门 40:仅本部门 50:仅本人 60:指定组织
   deptIds?: string[]; // 部门ID列表
   permissions: GroupPermissionDefinitionVo[]; // 权限节点列表
+  permissionIds?: string[]; // 权限ID列表
   menuIds?: string[]; // 菜单ID列表
 }
 
@@ -69,6 +70,11 @@ export interface EditGroupDto {
 export interface UpdateGroupGmDto {
   groupId: string; // 组ID
   menuIds?: string[]; // 菜单ID列表
+}
+
+export interface UpdateGroupGpDto {
+  groupId: string; // 组ID
+  permissionIds?: string[]; // 权限ID列表
 }
 
 export interface SimulateRsDto {
@@ -133,6 +139,13 @@ export default {
    */
   updateGroupGm: async (dto: UpdateGroupGmDto): Promise<Result<string>> => {
     return await Http.postEntity<Result<string>>("/group/updateGroupGm", dto);
+  },
+
+  /**
+   * 更新组权限(GP)
+   */
+  updateGroupGp: async (dto: UpdateGroupGpDto): Promise<Result<string>> => {
+    return await Http.postEntity<Result<string>>("/group/updateGroupGp", dto);
   },
 
   /**
