@@ -96,6 +96,9 @@
             <el-button link type="primary" size="small" :icon="EditIcon" @click="openMenuModal(scope.row)">
               管理菜单
             </el-button>
+            <el-button link type="primary" size="small" :icon="EditIcon" @click="openGpModal(scope.row)">
+              管理GP
+            </el-button>
             <el-button
               link
               type="danger"
@@ -139,6 +142,13 @@
     :visible="menuModalVisible"
     :data="menuModalRow"
     @close="menuModalVisible = false"
+    @success="loadList"
+  />
+
+  <GroupGpModal
+    :visible="gpModalVisible"
+    :data="gpModalRow"
+    @close="gpModalVisible = false"
     @success="loadList"
   />
 
@@ -307,6 +317,7 @@ import StdListLayout from "@/soa/std-series/StdListLayout.vue";
 import ComSeqFixer from "@/soa/com-series/ComSeqFixer.vue";
 import RsSimulationModal from "@/views/auth/components/RsSimulationModal.vue";
 import GroupMenuModal from "@/views/auth/components/GroupMenuModal.vue";
+import GroupGpModal from "@/views/auth/components/GroupGpModal.vue";
 
 const EditIcon = markRaw(Edit);
 const DeleteIcon = markRaw(Delete);
@@ -359,6 +370,14 @@ const menuModalRow = ref<GetGroupListVo | null>(null);
 const openMenuModal = (row: GetGroupListVo): void => {
   menuModalRow.value = row;
   menuModalVisible.value = true;
+};
+
+const gpModalVisible = ref(false);
+const gpModalRow = ref<GetGroupListVo | null>(null);
+
+const openGpModal = (row: GetGroupListVo): void => {
+  gpModalRow.value = row;
+  gpModalVisible.value = true;
 };
 
 const rsSimulationModalVisible = ref(false);

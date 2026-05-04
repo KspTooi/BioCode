@@ -1,7 +1,7 @@
 <template>
   <el-dialog
     :model-value="props.visible"
-    :title="'管理权限 - ' + (props.data?.name ?? '')"
+    :title="'高级权限操作(GP) - ' + (props.data?.name ?? '')"
     width="640px"
     :close-on-click-modal="false"
     destroy-on-close
