@@ -27,7 +27,10 @@ import java.util.HashSet;
 
 import static com.ksptool.entities.Entities.assign;
 
-
+/**
+ * @author KspTool
+ * @since 1.5.23(W).109
+ */
 @Slf4j
 @Service
 public class AuthUserDetailsService implements UserDetailsService {
@@ -93,7 +96,7 @@ public class AuthUserDetailsService implements UserDetailsService {
             var permissionCodes = pRepository.getCodesByUserId(user.getId());
 
             //获取用户拥有的全部用户组
-            var groups = gRepository.getGroupsByUserIdAndStatus(user.getId(),Switch.on());
+            var groups = gRepository.getGroupsByUserIdAndStatus(user.getId(), Switch.on());
 
             //通过菜单衍生的权限码
             var menusCodes = new HashSet<String>();

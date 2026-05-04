@@ -37,6 +37,8 @@ import java.util.List;
  * 数据隔离模式 (由 @RowScope.mode 决定):
  * - FULL      : 启用完整 RS 7级数据权限过滤(默认),按用户真实 rsMax 注入
  * - ROOT_ONLY : 仅租户隔离,强制将 rsMax 覆盖为 0 ,忽略用户的 7级 RS 等级
+ *
+ * @since 1.6.21(U).90
  */
 @Aspect
 @Component

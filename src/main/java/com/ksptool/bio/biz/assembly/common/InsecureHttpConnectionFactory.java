@@ -14,6 +14,10 @@ import java.net.Proxy;
 import java.net.URL;
 import java.security.cert.X509Certificate;
 
+/**
+ * @author KspTooi
+ * @since 1.6.19(S).32
+ */
 public class InsecureHttpConnectionFactory extends JDKHttpConnectionFactory {
 
     @Override

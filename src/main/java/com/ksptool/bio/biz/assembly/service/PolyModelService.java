@@ -5,7 +5,6 @@ import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.bio.biz.assembly.common.quickbuildengine.QbeField;
 import com.ksptool.bio.biz.assembly.common.quickbuildengine.QbeModel;
-import com.ksptool.bio.biz.assembly.common.quickbuildengine.StdName;
 import com.ksptool.bio.biz.assembly.model.opschema.OpSchemaPo;
 import com.ksptool.bio.biz.assembly.model.polymodel.PolyModelPo;
 import com.ksptool.bio.biz.assembly.model.polymodel.dto.AddPolyModelDto;
@@ -26,6 +25,10 @@ import java.util.Set;
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
 
+/**
+ * @author KspTooi
+ * @since 1.6.19(S).32
+ */
 @Service
 public class PolyModelService {
 
@@ -228,7 +231,7 @@ public class PolyModelService {
         //组装为QBE模型
         var qbeModel = new QbeModel(opSchemaPo.getTableName(), opSchemaPo.getModelName());
         qbeModel.setBizDomain(opSchemaPo.getBizDomain());
-        
+
         var qbeFields = new ArrayList<QbeField>();
 
         //通过聚合模型生成QBE字段

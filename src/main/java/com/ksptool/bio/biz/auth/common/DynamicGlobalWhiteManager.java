@@ -27,6 +27,9 @@ import java.util.stream.Collectors;
  * 动态全局白名单管理器
  * 运作原理
  * 请求进入 --> 身份认证(由USAF重建安全上下文) --> DGWM检查(不在白名单里面且没有安全上下文的请求全部拒绝) --> 放行
+ *
+ * @author KspTool
+ * @since 1.6.14(N)1
  */
 @Slf4j
 @Component

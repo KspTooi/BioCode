@@ -37,6 +37,10 @@ import java.util.stream.Collectors;
 import static com.ksptool.bio.biz.core.common.TupleMapper.tupleAs;
 import static com.ksptool.entities.Entities.assign;
 
+/**
+ * @author KspTool
+ * @since 1.1.1(A).80
+ */
 @Slf4j
 @Service
 public class SessionService {

@@ -19,6 +19,7 @@ import org.hibernate.annotations.Filter;
  * @author KspTool
  * @see RowScopePo
  * @see RowScope.Mode#USER_ONLY
+ * @since 1.6.23(W).54
  */
 @MappedSuperclass
 @Filter(

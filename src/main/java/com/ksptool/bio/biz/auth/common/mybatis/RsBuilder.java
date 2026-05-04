@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
  * 3.在Mapper.xml中使用 ${rsSql} 来使用数据权限SQL 加在Where后面
  *
  * @author KspTool
+ * @since 1.6.21(U).90
  */
 public class RsBuilder {
 

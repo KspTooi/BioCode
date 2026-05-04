@@ -23,6 +23,9 @@ import java.util.regex.Pattern;
  * core:user:*          匹配 core:user 下的所有操作
  * core:*:view          匹配 core 域下所有模块的 view 操作
  * *:*:*                匹配所有权限
+ *
+ * @author KspTool
+ * @since 1.6.21(U).90
  */
 @Getter
 public class PermissionCode {
@@ -49,14 +52,6 @@ public class PermissionCode {
     private String operation;
 
 
-    public static PermissionCode of(String domain, String module, String operation) {
-        return new PermissionCode(domain, module, operation);
-    }
-
-    public static PermissionCode of(String code) {
-        return new PermissionCode(code);
-    }
-
     /**
      * 通过三段构造权限码，自动校验每一段的合法性
      *
@@ -77,6 +72,29 @@ public class PermissionCode {
         resolve(code);
     }
 
+    public static PermissionCode of(String domain, String module, String operation) {
+        return new PermissionCode(domain, module, operation);
+    }
+
+    public static PermissionCode of(String code) {
+        return new PermissionCode(code);
+    }
+
+    /**
+     * 判断权限码是否匹配
+     *
+     * @param pattern 权限码模式，格式：域:模块:操作
+     * @param value   权限码值
+     * @return 是否匹配
+     */
+    public static boolean matches(String pattern, String value) {
+
+        if (pattern == null || value == null) {
+            return false;
+        }
+
+        return new PermissionCode(pattern).matches(new PermissionCode(value));
+    }
 
     /**
      * 解析并严格校验权限码
@@ -185,21 +203,6 @@ public class PermissionCode {
     @Override
     public String toString() {
         return code;
-    }
-
-    /**
-     * 判断权限码是否匹配
-     * @param pattern 权限码模式，格式：域:模块:操作
-     * @param value 权限码值
-     * @return 是否匹配
-     */
-    public static boolean matches(String pattern, String value) {
-
-        if (pattern == null || value == null) {
-            return false;
-        }
-        
-        return new PermissionCode(pattern).matches(new PermissionCode(value));
     }
 
 }

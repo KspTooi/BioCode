@@ -34,6 +34,7 @@ import org.hibernate.annotations.ParamDef;
  *
  * @author KspTool
  * @apiNote 在子类中需要显式声明 rootId、orgId 和 creatorId 字段，否则在查询时会报错
+ * @since 1.6.21(U).90
  */
 @MappedSuperclass
 @FilterDef(name = "rsFilter", parameters = {

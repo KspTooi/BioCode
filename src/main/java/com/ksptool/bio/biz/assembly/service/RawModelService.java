@@ -20,35 +20,34 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
 
-
+/**
+ * @author KspTooi
+ * @since 1.6.19(S).32
+ */
 @Service
 public class RawModelService {
 
     //没有长度的原始数据类型(只针对mysql数据库 长度为NULL)
     private static final List<String> NO_LENGTH_DATA_TYPES = Arrays.asList(
-        // 整数类型
-        "TINYINT", "SMALLINT", "MEDIUMINT", "INT", "INTEGER", "BIGINT",
-        // 浮点/精确数值类型
-        "FLOAT", "DOUBLE", "REAL", "DECIMAL", "NUMERIC",
-        // 日期/时间类型
-        "DATE", "DATETIME", "TIMESTAMP", "TIME", "YEAR",
-        // 大文本/大二进制类型
-        "TINYTEXT", "TEXT", "MEDIUMTEXT", "LONGTEXT",
-        "TINYBLOB", "BLOB", "MEDIUMBLOB", "LONGBLOB",
-        // JSON / 空间类型
-        "JSON", "GEOMETRY", "POINT", "LINESTRING", "POLYGON",
-        "MULTIPOINT", "MULTILINESTRING", "MULTIPOLYGON", "GEOMETRYCOLLECTION",
-        // 布尔
-        "BOOLEAN", "BOOL"
+            // 整数类型
+            "TINYINT", "SMALLINT", "MEDIUMINT", "INT", "INTEGER", "BIGINT",
+            // 浮点/精确数值类型
+            "FLOAT", "DOUBLE", "REAL", "DECIMAL", "NUMERIC",
+            // 日期/时间类型
+            "DATE", "DATETIME", "TIMESTAMP", "TIME", "YEAR",
+            // 大文本/大二进制类型
+            "TINYTEXT", "TEXT", "MEDIUMTEXT", "LONGTEXT",
+            "TINYBLOB", "BLOB", "MEDIUMBLOB", "LONGBLOB",
+            // JSON / 空间类型
+            "JSON", "GEOMETRY", "POINT", "LINESTRING", "POLYGON",
+            "MULTIPOINT", "MULTILINESTRING", "MULTIPOLYGON", "GEOMETRYCOLLECTION",
+            // 布尔
+            "BOOLEAN", "BOOL"
     );
 
     @Autowired

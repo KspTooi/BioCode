@@ -10,8 +10,9 @@ import com.ksptool.bio.biz.auth.model.GroupMenuPo;
 import com.ksptool.bio.biz.auth.model.GroupPermissionPo;
 import com.ksptool.bio.biz.auth.model.group.GroupPo;
 import com.ksptool.bio.biz.auth.model.group.dto.*;
-import com.ksptool.bio.biz.auth.model.group.vo.*;
-import com.ksptool.bio.biz.auth.model.permission.PermissionPo;
+import com.ksptool.bio.biz.auth.model.group.vo.GetGroupDetailsVo;
+import com.ksptool.bio.biz.auth.model.group.vo.GetGroupListVo;
+import com.ksptool.bio.biz.auth.model.group.vo.SimulateRsVo;
 import com.ksptool.bio.biz.auth.repository.*;
 import com.ksptool.bio.biz.core.common.IdsDiff;
 import com.ksptool.bio.biz.core.common.SuperEntities;
@@ -26,13 +27,18 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Objects;
 
 import static com.ksptool.bio.biz.core.common.TupleMapper.tupleAs;
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
 
-
+/**
+ * @author KspTool
+ * @since 1.1.1(A).80
+ */
 @Slf4j
 @Service
 public class GroupService {
@@ -321,7 +327,6 @@ public class GroupService {
     }
 
 
-
     /**
      * 更新组权限(GP)
      *
@@ -333,11 +338,11 @@ public class GroupService {
         var g = repository.findById(dto.getGroupId()).orElseThrow(() -> new BizException("用户组不存在"));
 
         //系统组不能把SA权限去除
-        if(g.isSystem()){
+        if (g.isSystem()) {
 
             var sa = pRepository.getByCode(SuperEntities.PERMISSION.getCode());
 
-            if(!dto.getPermissionIds().contains(sa.getId())){
+            if (!dto.getPermissionIds().contains(sa.getId())) {
                 throw new BizException("系统内置组不允许去除超级操作权限(SA)");
             }
 

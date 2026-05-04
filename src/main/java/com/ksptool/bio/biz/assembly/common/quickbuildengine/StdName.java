@@ -18,6 +18,9 @@ import org.apache.commons.lang3.StringUtils;
  * - {@link #ofCamelCase(String)} - 从小驼峰命名转换
  * - {@link #ofLowerCase(String)} - 从全小写转换
  * - {@link #ofUpperCase(String)} - 从全大写转换
+ *
+ * @author KspTooi
+ * @since 1.6.19(S).32
  */
 @Getter
 public class StdName {

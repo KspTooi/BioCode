@@ -8,6 +8,10 @@ import lombok.Setter;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @author KspTooi
+ * @since 1.6.19(S).32
+ */
 @Getter
 @Setter
 public class QbeBlueprint {

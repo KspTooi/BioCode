@@ -9,7 +9,7 @@ import jakarta.persistence.Converter;
  * 用于JPA的转换器，它能够将 RowScopes 枚举类型转换为数据库中的整数类型，以及将数据库中的整数类型转换为 RowScopes 枚举类型
  *
  * @author KspTool
- * @since 2026-04-29
+ * @since 1.6.23(W).54
  */
 @Converter(autoApply = true)
 public class RowScopesConv implements AttributeConverter<RowScopes, Integer> {

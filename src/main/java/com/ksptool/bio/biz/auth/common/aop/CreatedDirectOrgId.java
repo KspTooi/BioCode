@@ -9,7 +9,7 @@ import java.lang.annotation.*;
  * 直属组织ID: 当前用户直属组织ID(只能是公司,如果用户在集团企业下 直属就是集团，如果用户在集团的某个子公司下 直属就是子公司)
  *
  * @author KspTool
- * @since 2026-04-29
+ * @since 1.6.21(U).90
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)

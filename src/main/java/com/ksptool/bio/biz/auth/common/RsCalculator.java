@@ -76,7 +76,7 @@ import java.util.List;
  * 综上所述本项目：标版选择2ID方案，扩展版选择3ID或4ID方案(由业务表自由扩展)
  *
  * @author KspTool
- * @since 2026-04-28
+ * @since 1.6.20(T).25
  */
 public class RsCalculator {
 

@@ -7,6 +7,10 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @author KspTooi
+ * @since 1.6.19(S).32
+ */
 @Getter
 @Setter
 public class QbeField {
@@ -56,13 +60,13 @@ public class QbeField {
      * @param fieldName 字段名称: 例如user_id
      * @param fieldType 字段类型: 例如VARCHAR
      */
-    public QbeField(String fieldName,String fieldType){
+    public QbeField(String fieldName, String fieldType) {
 
-        if(StringUtils.isBlank(fieldName)){
+        if (StringUtils.isBlank(fieldName)) {
             throw new IllegalArgumentException("字段名称不能为空!");
         }
 
-        if(StringUtils.isBlank(fieldType)){
+        if (StringUtils.isBlank(fieldType)) {
             throw new IllegalArgumentException("字段类型不能为空!");
         }
 

@@ -11,7 +11,7 @@ import java.util.stream.Stream;
  * 用于表示数据权限RS的7个等级
  *
  * @author KspTool
- * @since 2026-04-29
+ * @since 1.6.21(U).90
  */
 @Getter
 public enum RowScopes {
@@ -52,5 +52,5 @@ public enum RowScopes {
     public int getCode() {
         return code;
     }
-    
+
 }

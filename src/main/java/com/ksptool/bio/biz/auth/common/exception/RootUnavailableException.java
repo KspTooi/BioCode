@@ -6,6 +6,8 @@ import org.springframework.security.authentication.AccountStatusException;
 
 /**
  * 租户不可用异常，当用户租户未找到、被禁用、被删除时，会抛出此异常
+ *
+ * @since 1.6.20(T).25
  */
 public class RootUnavailableException extends AccountStatusException {
 

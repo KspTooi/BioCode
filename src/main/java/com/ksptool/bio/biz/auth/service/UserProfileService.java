@@ -31,6 +31,11 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
+
+/**
+ * @author KspTool
+ * @since 1.5.23(W).109
+ */
 @Service
 public class UserProfileService {
 
@@ -81,7 +86,7 @@ public class UserProfileService {
         vo.setAvatarAttachId(null);
 
         //查询该用户拥有的角色
-        var roles = groupRepository.getGroupsByUserIdAndStatus(uid,Switch.on());
+        var roles = groupRepository.getGroupsByUserIdAndStatus(uid, Switch.on());
 
         //查询该用户拥有的权限码
         var pCodes = permissionRepository.getCodesByUserId(uid);
@@ -115,7 +120,7 @@ public class UserProfileService {
         }
 
         //如果权限桶中的权限码数量与权限POS数量不一致，则说明GM上有部分权限在系统中是没有录入的 直接把它们显示出来 不带名称
-        if(pBucket.size() != permissionsVos.size()){
+        if (pBucket.size() != permissionsVos.size()) {
             //暂不处理 因为这影响不大，菜单上配几个系统里面没有的权限码 用户看不到也用不了 直接无视掉
         }
 
