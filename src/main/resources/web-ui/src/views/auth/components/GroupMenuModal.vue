@@ -7,14 +7,23 @@
     destroy-on-close
     @close="onClose"
   >
-    <div class="tip-bar">
+    <!-- <div class="tip-bar">
       <el-icon class="tip-icon"><InfoFilled /></el-icon>
       <span>勾选后点击保存生效，父级目录会随子项一同绑定</span>
+    </div> -->
+
+    <div class="warn-bar">
+      <el-icon class="warn-icon"><WarningFilled /></el-icon>
+      <span>修改此用户组的菜单绑定将立即对所有已登录的组内用户生效</span>
     </div>
 
     <div class="batch-bar">
       <el-button size="small" @click="svc.selectAll">全选</el-button>
       <el-button size="small" @click="svc.deselectAll">取消全选</el-button>
+      <span class="cascade-switch">
+        <el-switch v-model="svc.cascadeCheck.value" size="small" />
+        <span class="cascade-label">级联变更</span>
+      </span>
     </div>
 
     <div class="tree-wrap">
@@ -26,7 +35,7 @@
         "
         :data="svc.treeData.value"
         :check="true"
-        :check-cascade="true"
+        :check-cascade="svc.cascadeCheck.value"
         :check-multiple="true"
         :check-on-node-click="true"
         :model-value-check="svc.checkedKeys.value"
@@ -60,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-import { InfoFilled } from "@element-plus/icons-vue";
+import { InfoFilled, WarningFilled } from "@element-plus/icons-vue";
 import StdAdvTree from "@/soa/std-series/StdAdvTree.vue";
 import GroupMenuModalService, { type GroupMenuModalProps } from "@/views/auth/components/service/GroupMenuModalService.ts";
 
@@ -97,6 +106,24 @@ const onClose = (): void => {
   color: var(--el-color-primary);
 }
 
+.warn-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  background: var(--el-color-warning-light-9);
+  border-radius: 4px;
+  padding: 7px 10px;
+  margin-bottom: 12px;
+}
+
+.warn-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+  color: var(--el-color-warning);
+}
+
 .tree-wrap {
   height: 520px;
   border: 1px solid var(--el-border-color-lighter);
@@ -116,6 +143,21 @@ const onClose = (): void => {
 
 .batch-bar {
   display: flex;
+  align-items: center;
+  gap: 8px;
   margin-bottom: 10px;
+}
+
+.cascade-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 16px;
+}
+
+.cascade-label {
+  font-size: 13px;
+  color: var(--el-text-color-regular);
+  white-space: nowrap;
 }
 </style>

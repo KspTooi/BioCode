@@ -18,6 +18,7 @@ export default {
     const treeRef = ref<InstanceType<typeof StdAdvTree>>();
     const treeData = ref<GetMenuTreeVo[]>([]);
     const checkedKeys = ref<(string | number)[]>([]);
+    const cascadeCheck = ref(false);
     const loading = ref(false);
     const submitting = ref(false);
 
@@ -82,10 +83,7 @@ export default {
         return;
       }
       submitting.value = true;
-      const innerTree = treeRef.value?.getTreeRef();
-      const halfKeys: (string | number)[] = innerTree ? (innerTree.getHalfCheckedKeys() as (string | number)[]) : [];
-      const allKeys = Array.from(new Set([...checkedKeys.value, ...halfKeys]));
-      const menuIds = allKeys.map((k) => String(k));
+      const menuIds = checkedKeys.value.map((k) => String(k));
       const result = await GroupApi.updateGroupGm({ groupId: props.data.id, menuIds });
       submitting.value = false;
       if (result.code != 0) {
@@ -119,6 +117,7 @@ export default {
       treeRef,
       treeData,
       checkedKeys,
+      cascadeCheck,
       loading,
       submitting,
       loadAll,

@@ -188,6 +188,7 @@
                         :value="item.code"
                       />
                     </el-select>
+                    <div class="panel-permission-hint">菜单中的权限码发生变更后，已拥有该菜单的用户组需重新登录方可生效。</div>
                   </el-form-item>
                   <el-form-item v-if="panelForm.kind == 0 || panelForm.kind == 1" :label="panelFormLabel + '图标'" prop="icon">
                     <StdIconPicker v-model="panelForm.icon" />
@@ -482,6 +483,13 @@ const {
 
 .panel-skeleton {
   padding: 24px 28px;
+}
+
+.panel-permission-hint {
+  font-size: 12px;
+  color: var(--el-text-color-placeholder);
+  margin-top: 6px;
+  line-height: 1.4;
 }
 
 .panel-section-empty {
