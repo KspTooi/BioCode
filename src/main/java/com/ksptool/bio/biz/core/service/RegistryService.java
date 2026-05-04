@@ -1,5 +1,8 @@
 package com.ksptool.bio.biz.core.service;
 
+import com.ksptool.assembly.entity.exception.BizException;
+import com.ksptool.assembly.entity.web.CommonIdDto;
+import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.bio.biz.core.model.registry.RegistryPo;
 import com.ksptool.bio.biz.core.model.registry.dto.AddRegistryDto;
 import com.ksptool.bio.biz.core.model.registry.dto.EditRegistryDto;
@@ -10,9 +13,6 @@ import com.ksptool.bio.biz.core.model.registry.vo.GetRegistryDetailsVo;
 import com.ksptool.bio.biz.core.model.registry.vo.GetRegistryEntryListVo;
 import com.ksptool.bio.biz.core.model.registry.vo.GetRegistryNodeTreeVo;
 import com.ksptool.bio.biz.core.repository.RegistryRepository;
-import com.ksptool.assembly.entity.exception.BizException;
-import com.ksptool.assembly.entity.web.CommonIdDto;
-import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.bio.commons.dataprocess.Str;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +25,10 @@ import java.util.*;
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
 
+/**
+ * @author KspTooi
+ * @since 1.5.1(A).20
+ */
 @Slf4j
 @Service
 public class RegistryService {

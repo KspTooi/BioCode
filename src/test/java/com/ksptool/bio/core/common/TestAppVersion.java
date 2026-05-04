@@ -24,7 +24,7 @@ public class TestAppVersion {
 
     @Test
     public void testNumericVersion() {
-        AppVersion appVersion = AppVersion.of("1.0M26");
+        AppVersion appVersion = AppVersion.of("1.6S32");
         System.out.println("数字版本号: " + appVersion.toNumericVersion());
     }
 

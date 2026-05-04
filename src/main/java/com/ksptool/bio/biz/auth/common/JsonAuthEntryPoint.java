@@ -19,6 +19,9 @@ import java.io.IOException;
  * <p>
  * 这个类主要用于SpringSecurity认证失败和权限不足时返回标准化的JSON响应。
  * 因为SpringSecurity的默认认证失败和权限不足处理方式是重定向到登录页面，这不符合前后端分离的开发模式，所以需要这个类来处理。
+ *
+ * @author KspTool
+ * @since 1.5.23(W).109
  */
 @Component
 public class JsonAuthEntryPoint implements AuthenticationEntryPoint, AccessDeniedHandler {

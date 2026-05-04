@@ -1,5 +1,6 @@
 package com.ksptool.bio.biz.auth.model.session.vo;
 
+import com.ksptool.bio.biz.auth.common.RowScopes;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,8 +23,8 @@ public class GetSessionListVo {
     @Schema(description = "登入时间")
     private LocalDateTime createTime;
 
-    @Schema(description = "最大RowScope等级 0:全部 1:本公司/租户及以下 2:本部门及以下 3:本部门 4:仅本人 5:指定部门")
-    private Integer rsMax;
+    @Schema(description = "最大RowScope等级 0:全集团 10:本公司+下级公司 20:仅本公司 30:本部门+下级部门 40:仅本部门 50:仅本人 60:指定组织")
+    private RowScopes rsMax;
 
     @Schema(description = "过期时间")
     private LocalDateTime expiresAt;

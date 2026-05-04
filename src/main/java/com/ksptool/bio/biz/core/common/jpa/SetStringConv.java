@@ -15,6 +15,9 @@ import static com.ksptool.entities.Entities.toJson;
  * <p>
  * 使用方式:
  * 在PO类的某个字段上加入注解 @Convert(converter = SetStringConv.class)
+ *
+ * @author KspTooi
+ * @since 1.6.15(O).65
  */
 @Converter
 public class SetStringConv implements AttributeConverter<Set<String>, String> {

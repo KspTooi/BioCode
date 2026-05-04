@@ -16,9 +16,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 注册表SDK 
+ * 注册表SDK
  * 这个类提供了注册表的常用操作，包括获取、设置、删除、创建等操作。
  * 这个类使用了Spring Cache来缓存注册表的值，以提高性能。
+ *
+ * @author KspTooi
+ * @since 1.5.2(B).1
  */
 @Service
 public class RegistrySdk {

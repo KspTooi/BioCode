@@ -8,6 +8,9 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * @since 1.6.21(U).90
+ */
 public class LocalDateAdapter extends TypeAdapter<LocalDate> {
 
     private static final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE;

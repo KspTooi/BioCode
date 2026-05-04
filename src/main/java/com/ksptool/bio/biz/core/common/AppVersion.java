@@ -10,6 +10,9 @@ import java.util.regex.Pattern;
  * 标准化应用程序版本号类
  * 格式要求: {主版本}.{次版本}{修订字母}{可选构建号}
  * 示例: 1.0A, 1.0A1, 1.0A1815
+ *
+ * @author KspTooi
+ * @since 1.6.14(N).45
  */
 @Getter
 public class AppVersion {

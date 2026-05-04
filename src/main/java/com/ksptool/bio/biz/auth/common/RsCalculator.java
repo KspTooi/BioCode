@@ -76,7 +76,7 @@ import java.util.List;
  * 综上所述本项目：标版选择2ID方案，扩展版选择3ID或4ID方案(由业务表自由扩展)
  *
  * @author KspTool
- * @since 2026-04-28
+ * @since 1.6.20(T).25
  */
 public class RsCalculator {
 
@@ -93,7 +93,7 @@ public class RsCalculator {
     private final OrgRepository coRepository;
 
     //用户最大RS等级
-    private final int rsMax;
+    private final RowScopes rsMax;
 
     /**
      * 构造函数
@@ -109,7 +109,7 @@ public class RsCalculator {
         /*
          * A:权限优先级
          * 当用户存在多个组时,提取所有组的RowScope等级,取最小值作为用户的RowScope等级
-         * RS等级: 0:全部 10:本公司+下级公司 20:仅本公司 30:本部门+下级部门 40:本部门 50:仅本人 60:指定部门
+         * RS等级: 0:全部 10:本公司+下级公司 20:仅本公司 30:本部门+下级部门 40:仅本部门 50:仅本人 60:指定部门
          *
          * B:允许访问的企业IDS
          * 当用户存在多个组时,提取所有组的允许访问的企业IDS,取并集作为用户的允许访问的企业IDS
@@ -118,11 +118,11 @@ public class RsCalculator {
          * 当用户存在多个组时,提取所有组的允许访问的部门IDS,取并集作为用户的允许访问的部门IDS
          */
         //计算用户的最大RS等级
-        int rsMax = 100;
+        RowScopes rsMax = RowScopes.DENY_ALL;
 
         //提取所有组的RowScope等级,取最小值作为用户的RowScope等级
         for (GroupPo group : groups) {
-            if (group.getRowScope() < rsMax) {
+            if (group.getRowScope().getCode() < rsMax.getCode()) {
                 rsMax = group.getRowScope();
             }
         }
@@ -140,19 +140,19 @@ public class RsCalculator {
         //允许访问的组织IDS
         var allowOrgIds = new HashSet<Long>();
 
-        //如果RS等级为100,则允许访问的组织IDS为空
-        if (rsMax == 100) {
+        //如果RS等级为拒绝所有,则允许访问的组织IDS为空
+        if (rsMax == RowScopes.DENY_ALL) {
             return RsCalculated.of(rsMax, allowOrgIds);
         }
 
-        //RS等级为60 只能访问角色上选择的组织机构
-        if (rsMax == 60) {
+        //RS等级为指定组织 只能访问角色上选择的组织机构
+        if (rsMax == RowScopes.SPECIFIED_ORG) {
 
             var allowDeptGroupIds = new HashSet<Long>();
 
             //提取哪些角色上面配了指定组织RS
             for (var g : groups) {
-                if (g.getRowScope() == 60) {
+                if (g.getRowScope() == RowScopes.SPECIFIED_ORG) {
                     allowDeptGroupIds.add(g.getId());
                 }
             }
@@ -163,18 +163,18 @@ public class RsCalculator {
             return RsCalculated.of(rsMax, allowOrgIds);
         }
 
-        //RS等级为50 只能访问本人数据 允许访问的企业、部门IDS为空
-        if (rsMax == 50) {
+        //RS等级为仅本人 只能访问本人数据 允许访问的企业、部门IDS为空
+        if (rsMax == RowScopes.SELF_ONLY) {
             return RsCalculated.of(rsMax, allowOrgIds);
         }
 
-        //RS < 50以下的值至少需要有公司或者部门 如果用户既没有公司 也没有部门 不再计算RS允许组织IDS 直接返回空集合
+        //RS < SELF_ONLY以下的值至少需要有公司或者部门 如果用户既没有公司 也没有部门 不再计算RS允许组织IDS 直接返回空集合
         if (user.getOrgId() == null && user.getDeptId() == null) {
             return RsCalculated.of(rsMax, allowOrgIds);
         }
 
-        //RS等级为40 只能访问本部门数据 直接把用户当前的部门ID加入到允许访问的部门IDS中
-        if (rsMax == 40) {
+        //RS等级为仅本部门 只能访问本部门数据 直接把用户当前的部门ID加入到允许访问的部门IDS中
+        if (rsMax == RowScopes.DEPT_ONLY) {
 
             //如果用户不挂部门，不计算RS权限 直接返回空集合
             if (user.getDeptId() == null) {
@@ -186,8 +186,8 @@ public class RsCalculator {
             return RsCalculated.of(rsMax, allowOrgIds);
         }
 
-        //RS等级为30 可以访问本部门+下级部门(直接把用户所属部门+子部门都添加进允许访问的部门IDS中)
-        if (rsMax == 30) {
+        //RS等级为本部门+下级部门(直接把用户所属部门+子部门都添加进允许访问的部门IDS中)
+        if (rsMax == RowScopes.DEPT_AND_SUBS) {
 
             //如果用户不挂部门，不计算RS权限 直接返回空集合
             if (user.getDeptId() == null) {
@@ -204,8 +204,8 @@ public class RsCalculator {
             return RsCalculated.of(rsMax, allowOrgIds);
         }
 
-        //RS等级为20 仅本公司以及下属部门的数据，不能访问下级子公司以及部门的数据
-        if (rsMax == 20) {
+        //RS等级为仅本公司 仅本公司以及下属部门的数据，不能访问下级子公司以及部门的数据
+        if (rsMax == RowScopes.COMPANY_ONLY) {
 
             //获取用户的公司ID
             var orgId = user.getOrgId();
@@ -227,8 +227,8 @@ public class RsCalculator {
             return RsCalculated.of(rsMax, allowOrgIds);
         }
 
-        //RS等级为10 可以访问本公司下面所有子公司以及部门的数据
-        if (rsMax == 10) {
+        //RS等级为本公司+下级公司 可以访问本公司下面所有子公司以及部门的数据
+        if (rsMax == RowScopes.COMPANY_AND_SUBS) {
 
             //获取用户的公司ID
             var orgId = user.getOrgId();
@@ -249,8 +249,8 @@ public class RsCalculator {
             return RsCalculated.of(rsMax, allowOrgIds);
         }
 
-        //RS等级为0 全集团数据 允许访问所有企业以及部门的数据
-        if (rsMax == 0) {
+        //RS等级为全集团 允许访问所有企业以及部门的数据
+        if (rsMax == RowScopes.ALL) {
             return RsCalculated.of(rsMax, allowOrgIds);
         }
 

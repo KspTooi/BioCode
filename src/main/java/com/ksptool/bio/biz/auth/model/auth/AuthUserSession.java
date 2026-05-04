@@ -1,5 +1,6 @@
 package com.ksptool.bio.biz.auth.model.auth;
 
+import com.ksptool.bio.biz.auth.common.RowScopes;
 import lombok.Getter;
 import lombok.Setter;
 import org.jspecify.annotations.NullMarked;
@@ -59,7 +60,7 @@ public class AuthUserSession implements UserDetails {
     private Set<GrantedAuthority> authorities;
 
     //最大RowScope等级 0:全集团 10:本公司+下级公司 20:仅本公司 30:本部门+下级部门 40:仅本部门 50:仅本人 60:指定组织 100:未配置
-    private Integer rsMax;
+    private RowScopes rsMax;
 
     //RowScope允许访问的组织IDS
     private Set<Long> rsAllowOrgIds;

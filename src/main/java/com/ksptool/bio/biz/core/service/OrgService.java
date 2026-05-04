@@ -25,7 +25,10 @@ import java.util.*;
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
 
-
+/**
+ * @author KspTooi
+ * @since 1.5.2(B).1
+ */
 @Service
 public class OrgService {
 
@@ -149,7 +152,7 @@ public class OrgService {
                 .orElseThrow(() -> new BizException("未能找到上级组织 ID: " + dto.getParentId()));
 
         //校验层级是否超过限制
-        if(parentPo.getLevel() >= 16){
+        if (parentPo.getLevel() >= 16) {
             throw new BizException("组织架构层级超过限制! 最大层级为16");
         }
 
@@ -238,7 +241,7 @@ public class OrgService {
         }
 
         //校验层级是否超过限制
-        if(parentPo.getLevel() >= 16){
+        if (parentPo.getLevel() >= 16) {
             throw new BizException("组织架构层级超过限制! 最大层级为16");
         }
 
@@ -283,7 +286,7 @@ public class OrgService {
         //合并同类项
         assign(dto, updatePo);
         updatePo.setLevel(parentPo.getLevel() + 1);
-        
+
         //保存当前修改的机构
         repository.save(updatePo);
 

@@ -4,6 +4,9 @@ import lombok.Getter;
 
 /**
  * 系统注册表
+ *
+ * @author KspTooi
+ * @since 1.6.13(M).107
  */
 public enum AppRegistry {
 
@@ -40,8 +43,8 @@ public enum AppRegistry {
     FA_ASP_MIN_LENGTH("field.auth", "asp_min_length", "8", NvalueKind.INTEGER, "密码最小长度", "为-1时表示不限制"),
 
     FA_SESSION_EXPIRE("field.auth", "session_expire", "30", NvalueKind.INTEGER, "用户Session过期时间(分钟)", "为-1时表示不限制"),
-    
-    
+
+
     //==================== GEN域配置 ====================
     FG_PROXY_ENABLE("field.gen", "proxy_enable", "0", NvalueKind.INTEGER, "是否启用代理", "0:否 1:是"),
     FG_PROXY_TYPE("field.gen", "proxy_type", "HTTP", NvalueKind.STRING, "代理类型", "只支持HTTP代理"),

@@ -12,6 +12,9 @@ import java.time.format.DateTimeFormatter;
 /**
  * LocalDateTime反序列化器(JSON字符串 -> Dto)
  * 这个类主要用来处理前端传进来的时间字符串，并将其转换为LDT对象。
+ *
+ * @author KspTooi
+ * @since 1.0.1(A).1
  */
 public class JacksonLdtInputConv extends ValueDeserializer<LocalDateTime> {
 
@@ -32,7 +35,8 @@ public class JacksonLdtInputConv extends ValueDeserializer<LocalDateTime> {
 
     /**
      * 反序列化JSON字符串为LocalDateTime对象 这里主要用来把前端传入的字符串转换成LDT对象
-     * @param p JsonParser 解析器
+     *
+     * @param p    JsonParser 解析器
      * @param ctxt DeserializationContext 反序列化上下文
      * @return LocalDateTime对象
      * @throws JacksonException 如果反序列化失败

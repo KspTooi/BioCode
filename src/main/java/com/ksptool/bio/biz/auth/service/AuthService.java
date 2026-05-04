@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
  * 4.后续的接口调用会自动使用这个安全上下文,通过这个AuthService可以快捷的检查当前用户是否拥有指定权限码或用户组
  *
  * @author KspTooi
+ * @since 1.2.7(G).37
  */
 @Slf4j
 @Service("auth")
@@ -75,6 +76,14 @@ public class AuthService {
         return false;
     }
 
+    /**
+     * 检查当前用户是否拥有超级权限(实例)
+     *
+     * @return 如果用户拥有超级权限返回true，否则返回false
+     */
+    public static boolean hasSuperCode() {
+        return hasPermission("*:*:*");
+    }
 
     /**
      * 检查当前用户是否拥有指定权限码(实例)
@@ -114,15 +123,6 @@ public class AuthService {
      */
     public boolean absentGroup(String groupCode) {
         return !hasGroup(groupCode);
-    }
-
-    /**
-     * 检查当前用户是否拥有超级权限(实例)
-     *
-     * @return 如果用户拥有超级权限返回true，否则返回false
-     */
-    public static boolean hasSuperCode() {
-        return hasPermission("*:*:*");
     }
 
 

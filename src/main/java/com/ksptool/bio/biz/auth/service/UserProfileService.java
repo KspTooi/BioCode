@@ -2,11 +2,15 @@ package com.ksptool.bio.biz.auth.service;
 
 import com.ksptool.assembly.entity.exception.AuthException;
 import com.ksptool.assembly.entity.exception.BizException;
+import com.ksptool.bio.biz.auth.common.PermissionBucket;
+import com.ksptool.bio.biz.auth.model.group.GroupPo;
 import com.ksptool.bio.biz.auth.model.profile.dto.ChangePasswordDto;
 import com.ksptool.bio.biz.auth.model.profile.vo.GetCurrentUserProfilePermissionVo;
 import com.ksptool.bio.biz.auth.model.profile.vo.GetCurrentUserProfileVo;
+import com.ksptool.bio.biz.auth.repository.GroupMenuRepository;
 import com.ksptool.bio.biz.auth.repository.GroupRepository;
 import com.ksptool.bio.biz.auth.repository.PermissionRepository;
+import com.ksptool.bio.biz.core.common.Switch;
 import com.ksptool.bio.biz.core.repository.UserRepository;
 import com.ksptool.bio.biz.core.service.AttachService;
 import org.apache.commons.lang3.StringUtils;
@@ -27,6 +31,11 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
+
+/**
+ * @author KspTool
+ * @since 1.5.23(W).109
+ */
 @Service
 public class UserProfileService {
 
@@ -47,6 +56,9 @@ public class UserProfileService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private GroupMenuRepository gmRepository;
 
 
     /**
@@ -74,11 +86,23 @@ public class UserProfileService {
         vo.setAvatarAttachId(null);
 
         //查询该用户拥有的角色
-        var roles = groupRepository.getGroupsByUserId(uid);
+        var roles = groupRepository.getGroupsByUserIdAndStatus(uid, Switch.on());
 
         //查询该用户拥有的权限码
-        var permissionsPos = permissionRepository.getPermissionsByUserId(uid);
+        var pCodes = permissionRepository.getCodesByUserId(uid);
 
+        var pBucket = new PermissionBucket();
+        pBucket.addPermission(pCodes);
+
+        //还需查询出GM派生出的权限码
+        var menus = gmRepository.getMenusByGids(roles.stream().map(GroupPo::getId).toList());
+
+        for (var menu : menus) {
+            pBucket.addPermission(menu.getPermissionCode());
+        }
+
+        //根据合并后的权限码查出权限POS (查POS是为了正确显示权限名称)
+        var permissionsPos = permissionRepository.getPermissionsByCodes(pBucket.toRaw());
         var permissionsVos = new ArrayList<GetCurrentUserProfilePermissionVo>();
         var roleNames = new ArrayList<String>();
 
@@ -93,6 +117,11 @@ public class UserProfileService {
             pVo.setCode(permissionPo.getCode());
             pVo.setName(permissionPo.getName());
             permissionsVos.add(pVo);
+        }
+
+        //如果权限桶中的权限码数量与权限POS数量不一致，则说明GM上有部分权限在系统中是没有录入的 直接把它们显示出来 不带名称
+        if (pBucket.size() != permissionsVos.size()) {
+            //暂不处理 因为这影响不大，菜单上配几个系统里面没有的权限码 用户看不到也用不了 直接无视掉
         }
 
         vo.setGroups(roleNames);

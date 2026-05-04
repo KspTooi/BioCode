@@ -15,10 +15,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * QF任务注册表
- * 
+ *
  * @author KspTool(ksptool@outlook.com)
- * @since 2026-02-10
  * @license Apache License 2.0
+ * @since 1.6.1(A).1
  */
 @Slf4j
 @Component

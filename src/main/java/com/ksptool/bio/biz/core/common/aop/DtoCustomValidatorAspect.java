@@ -21,6 +21,9 @@ import java.lang.reflect.Method;
  * 1.在控制器入参中使用 @Valid 注解
  * 2.在DTO类中实现 DtoCustomValidator 接口
  * 3.编写自定义验证方法，实现 DtoCustomValidator 接口中的 validate 方法
+ *
+ * @author KspTooi
+ * @since 1.6.14(N).68
  */
 @Aspect
 @Component

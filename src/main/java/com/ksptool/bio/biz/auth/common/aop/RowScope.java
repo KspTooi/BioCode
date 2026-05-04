@@ -24,7 +24,7 @@ import java.lang.annotation.*;
  * 注意: 拥有超级数据权限(*:*:*:*)的用户不受此过滤器约束，可查询全部数据。
  *
  * @author KspTool
- * @since 2026-03-15
+ * @since 1.6.21(U).90
  */
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)

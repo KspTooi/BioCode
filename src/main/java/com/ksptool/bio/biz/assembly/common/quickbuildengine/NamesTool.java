@@ -5,6 +5,9 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * 名称转换工具类
  * 提供各种命名格式之间的转换方法
+ *
+ * @author KspTooi
+ * @since 1.6.19(S).32
  */
 public class NamesTool {
 

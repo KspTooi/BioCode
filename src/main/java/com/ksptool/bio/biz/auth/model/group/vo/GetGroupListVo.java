@@ -1,5 +1,6 @@
 package com.ksptool.bio.biz.auth.model.group.vo;
 
+import com.ksptool.bio.biz.auth.common.RowScopes;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,14 +21,17 @@ public class GetGroupListVo {
     @Schema(description = "组名称")
     private String name;
 
-    @Schema(description = "成员数量")
-    private Integer memberCount;
+    @Schema(description = "成员数量(GU)")
+    private Integer guCount;
 
-    @Schema(description = "权限节点数量")
-    private Integer permissionCount;
+    @Schema(description = "菜单数量(GM)")
+    private Integer gmCount;
+
+    @Schema(description = "权限码数量(GP)")
+    private Integer gpCount;
 
     @Schema(description = "RS数据权限等级 0:全集团 10:本公司+下级公司 20:仅本公司 30:本部门+下级部门 40:仅本部门 50:仅本人 60:指定组织")
-    private Integer rowScope;
+    private RowScopes rowScope;
 
     @Schema(description = "系统内置组 0:否 1:是")
     private Integer isSystem;

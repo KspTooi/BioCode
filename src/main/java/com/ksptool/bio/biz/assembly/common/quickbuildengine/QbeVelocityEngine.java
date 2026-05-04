@@ -1,7 +1,5 @@
 package com.ksptool.bio.biz.assembly.common.quickbuildengine;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.ksptool.bio.biz.assembly.model.opschema.OpSchemaPo;
 import com.ksptool.text.PreparedPrompt;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +18,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+/**
+ * @author KspTooi
+ * @since 1.6.19(S).32
+ */
 @Slf4j
 public class QbeVelocityEngine {
 
@@ -234,19 +236,19 @@ public class QbeVelocityEngine {
      * @param GlobalVars 全局变量
      * @return VelocityContext 包含模型和全局变量的VelocityContext
      */
-    public VelocityContext buildVc(QbeModel model, OpSchemaPo schema,Map<String, String> GlobalVars) {
+    public VelocityContext buildVc(QbeModel model, OpSchemaPo schema, Map<String, String> GlobalVars) {
         //渲染模板 先把modelMap放进VC
         VelocityContext vc = new VelocityContext();
 
-        if(model != null){
+        if (model != null) {
             vc.put("model", model);
         }
 
-        if(schema != null){
+        if (schema != null) {
             vc.put("schema", schema);
         }
 
-        if(GlobalVars != null){
+        if (GlobalVars != null) {
             vc.put("global", GlobalVars);
         }
 

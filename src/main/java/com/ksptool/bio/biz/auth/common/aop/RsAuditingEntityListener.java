@@ -40,7 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * </pre>
  *
  * @author KspTool
- * @since 2026-04-29
+ * @since 1.6.21(U).90
  */
 public class RsAuditingEntityListener {
 
@@ -69,7 +69,7 @@ public class RsAuditingEntityListener {
             } catch (IllegalAccessException e) {
                 throw new IllegalStateException(
                         "RsAuditingEntityListener: 无法访问字段 " + field.getName()
-                        + " in " + target.getClass().getName(), e);
+                                + " in " + target.getClass().getName(), e);
             }
         }
     }

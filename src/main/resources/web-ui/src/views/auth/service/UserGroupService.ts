@@ -1,14 +1,12 @@
-import { ref, reactive, computed, watch, type Ref, onMounted } from "vue";
+import { ref, reactive, watch, type Ref, onMounted } from "vue";
 import { ElMessage, ElMessageBox, type FormInstance } from "element-plus";
 import AdminGroupApi, {
   type GetGroupListDto,
   type GetGroupListVo,
-  type GroupPermissionDefinitionVo,
   type GetGroupDetailsVo,
   type AddGroupDto,
   type EditGroupDto,
 } from "@/views/auth/api/GroupApi.ts";
-import AdminPermissionApi from "@/views/auth/api/PermissionApi.ts";
 import { Result } from "@/commons/model/Result.ts";
 import type { GetOrgTreeVo } from "@/views/core/api/OrgApi";
 
@@ -148,9 +146,10 @@ export default {
       isSystem: 0,
       status: 1,
       seq: 0,
-      permissions: [],
       rowScope: 0,
       deptIds: [],
+      permissionIds: [],
+      menuIds: [],
     });
 
     // 表单校验规则
@@ -177,7 +176,7 @@ export default {
       deptIds: [
         {
           validator: (rule: any, value: any, callback: any) => {
-            if (modalForm.rowScope === 5) {
+            if (modalForm.rowScope === 60) {
               if (!value || value.length === 0) {
                 callback(new Error("请选择至少一个部门"));
                 return;
@@ -189,21 +188,6 @@ export default {
         },
       ],
     };
-
-    // 权限相关
-    const permissionList = ref<GroupPermissionDefinitionVo[]>([]);
-    const permissionSearch = ref("");
-    const selectedPermissionIds = ref<string[]>([]);
-
-    const filteredPermissions = computed(() => {
-      const search = permissionSearch.value.toLowerCase().trim();
-      if (!search) {
-        return permissionList.value;
-      }
-      return permissionList.value.filter(
-        (permission) => permission.name.toLowerCase().includes(search) || permission.code.toLowerCase().includes(search)
-      );
-    });
 
     // 部门选择相关
     const deptSelectModalVisible = ref(false);
@@ -232,30 +216,10 @@ export default {
       modalForm.remark = "";
       modalForm.status = 1;
       modalForm.seq = 0;
-      modalForm.permissions = [];
       modalForm.rowScope = 0;
       modalForm.deptIds = [];
-
-      permissionSearch.value = "";
-      selectedPermissionIds.value = [];
-
-      if (modalMode.value === "add") {
-        try {
-          const permissions = await AdminPermissionApi.getPermissionDefinition();
-          permissionList.value = permissions.map((p) => ({
-            id: p.id,
-            code: p.code,
-            name: p.name,
-            has: 0,
-          }));
-        } catch {
-          // 静默处理
-        }
-      }
-
-      if (modalMode.value !== "add") {
-        permissionList.value = [];
-      }
+      modalForm.permissionIds = [];
+      modalForm.menuIds = [];
 
       if (modalFormRef.value) {
         modalFormRef.value.resetFields();
@@ -279,12 +243,10 @@ export default {
           modalForm.remark = ret.remark;
           modalForm.status = ret.status;
           modalForm.seq = ret.seq;
-          modalForm.permissions = ret.permissions || [];
           modalForm.rowScope = ret.rowScope ?? 0;
           modalForm.deptIds = ret.deptIds || [];
-
-          permissionList.value = ret.permissions || [];
-          selectedPermissionIds.value = ret.permissions ? ret.permissions.filter((p) => p.has === 0).map((p) => p.id) : [];
+          modalForm.permissionIds = ret.permissionIds || [];
+          modalForm.menuIds = ret.menuIds || [];
         } catch (error: any) {
           ElMessage.error(error.message || "获取用户组详情失败");
           return;
@@ -319,8 +281,7 @@ export default {
             status: modalForm.status,
             seq: modalForm.seq,
             rowScope: modalForm.rowScope,
-            deptIds: modalForm.rowScope === 5 ? modalForm.deptIds : [],
-            permissionIds: selectedPermissionIds.value,
+            deptIds: modalForm.rowScope === 60 ? modalForm.deptIds : [],
           };
           const result = await AdminGroupApi.addGroup(addDto);
           if (Result.isSuccess(result)) {
@@ -343,8 +304,7 @@ export default {
             status: modalForm.status,
             seq: modalForm.seq,
             rowScope: modalForm.rowScope,
-            deptIds: modalForm.rowScope === 5 ? modalForm.deptIds : [],
-            permissionIds: selectedPermissionIds.value,
+            deptIds: modalForm.rowScope === 60 ? modalForm.deptIds : [],
           };
           const result = await AdminGroupApi.editGroup(editDto);
           if (Result.isSuccess(result)) {
@@ -366,13 +326,6 @@ export default {
       await loadList();
     };
 
-    const selectAllPermissions = (): void => {
-      selectedPermissionIds.value = filteredPermissions.value.map((p) => p.id);
-    };
-
-    const deselectAllPermissions = (): void => {
-      selectedPermissionIds.value = [];
-    };
     const rsSimulationModalVisible = ref(false);
     const openRsSimulationModal = (): void => {
       rsSimulationModalVisible.value = true;
@@ -383,7 +336,7 @@ export default {
       () => modalForm.rowScope,
       (newVal): void => {
         // 如果不是指定部门，清空部门选择
-        if (newVal !== 5) {
+        if (newVal !== 60) {
           modalForm.deptIds = [];
         }
         // 触发验证
@@ -400,38 +353,14 @@ export default {
       isSystemGroup,
       modalForm,
       modalRules,
-      permissionList,
-      permissionSearch,
-      selectedPermissionIds,
-      filteredPermissions,
       deptSelectModalVisible,
       openDeptSelect,
       onDeptSelectConfirm,
       openModal,
       resetModal,
       submitModal,
-      selectAllPermissions,
-      deselectAllPermissions,
       openRsSimulationModal,
     };
   },
 
-  /**
-   * 权限管理模态框打包
-   */
-  useUserGroupPermissionModal() {
-    const modalPermissionEditVisible = ref(false);
-    const modalPermissionEditRow = ref<GetGroupListVo | null>(null);
-
-    const openPermissionEditModal = (row: GetGroupListVo): void => {
-      modalPermissionEditRow.value = row;
-      modalPermissionEditVisible.value = true;
-    };
-
-    return {
-      modalPermissionEditVisible,
-      modalPermissionEditRow,
-      openPermissionEditModal,
-    };
-  },
 };

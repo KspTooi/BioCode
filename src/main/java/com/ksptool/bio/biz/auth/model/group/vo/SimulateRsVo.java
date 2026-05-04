@@ -1,5 +1,6 @@
 package com.ksptool.bio.biz.auth.model.group.vo;
 
+import com.ksptool.bio.biz.auth.common.RowScopes;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,7 +12,7 @@ import java.util.List;
 public class SimulateRsVo {
 
     @Schema(description = "本次模拟使用的RS等级")
-    private Integer rsLevel;
+    private RowScopes rsLevel;
 
     @Schema(description = "模拟节点ID")
     private Long orgId;

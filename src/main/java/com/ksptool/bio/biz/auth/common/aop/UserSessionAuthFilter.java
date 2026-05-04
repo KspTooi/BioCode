@@ -40,6 +40,9 @@ import static com.ksptool.entities.Entities.as;
  * 2.用户每次请求，会自动携带bio-session-id Cookie或Authorization: Bearer <sessionId>请求头
  * 3.后端收到请求，通过这个过滤器，获取sessionId，并从数据库查询(此处已有缓存机制,不会每次都查询数据库)会话信息，如果会话存在且未过期，则重建安全上下文
  * 4.重建安全上下文后，SpringSecurity会自动将安全上下文设置到SecurityContextHolder中，后续的接口调用会自动使用这个安全上下文
+ *
+ * @author KspTool
+ * @since 1.5.23(W).109
  */
 @Component
 public class UserSessionAuthFilter extends OncePerRequestFilter {

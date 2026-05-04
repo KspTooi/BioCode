@@ -24,7 +24,10 @@ import java.util.concurrent.atomic.AtomicLong;
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
 
-
+/**
+ * @author KspTool
+ * @since 1.5.18(R).9
+ */
 @Slf4j
 @Service
 public class AuditErrorRcdService {

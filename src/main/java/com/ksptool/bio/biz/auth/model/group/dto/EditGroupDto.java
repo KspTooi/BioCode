@@ -1,5 +1,6 @@
 package com.ksptool.bio.biz.auth.model.group.dto;
 
+import com.ksptool.bio.biz.auth.common.RowScopes;
 import com.ksptool.bio.biz.core.common.aop.DtoCustomValidator;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
@@ -43,19 +44,18 @@ public class EditGroupDto implements DtoCustomValidator{
     @Min(value = 0, message = "排序号必须大于等于0")
     private Integer seq;
 
-    @Schema(description = "数据权限 0:全部 10:本公司/租户及以下 20:本部门及以下 30:本部门 40:仅本人 50:指定部门 60:指定部门及以下")
+    @Schema(description = "数据范围 0:全部 10:本公司+下级公司 20:仅本公司 30:本部门+下级部门 40:仅本部门 50:仅本人 60:指定组织")
     @NotNull(message = "数据权限不能为空")
-    @Min(value = 0, message = "数据权限不正确")
-    @Max(value = 60, message = "数据权限不正确")
-    private Integer rowScope;
+    private RowScopes rowScope;
 
     @NotNull(message = "部门ID列表不能为空")
-    @Schema(description = "部门ID列表")
+    @Schema(description = "部门ID列表 允许空数组但不能为NULL")
     private List<Long> deptIds;
 
-    @Schema(description = "权限ID列表")
+    @NotNull(message = "权限ID列表不能为空")
+    @Schema(description = "权限ID列表 允许空数组但不能为NULL")
     private List<Long> permissionIds;
-
+    
     /**
      * 验证入参
      *
@@ -64,13 +64,8 @@ public class EditGroupDto implements DtoCustomValidator{
     @Override
     public String validate() {
 
-        //数据权限只能是0、10、20、30、40、50、60
-        if (this.rowScope != 0 && this.rowScope != 10 && this.rowScope != 20 && this.rowScope != 30 && this.rowScope != 40 && this.rowScope != 50 && this.rowScope != 60) {
-            return "RS数据权限等级不正确";
-        }
-
-        //当数据权限为5(指定部门)时，部门ID列表不能为空
-        if (this.rowScope == 5) {
+        //当数据权限为指定组织时，部门ID列表不能为空
+        if (this.rowScope == RowScopes.SPECIFIED_ORG) {
             if (this.deptIds.isEmpty()) {
                 return "部门ID列表不能为空";
             }

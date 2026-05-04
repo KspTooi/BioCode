@@ -14,7 +14,19 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "auth_group_dept", comment = "GD表")
+@NoArgsConstructor
 public class GroupDeptPo {
+
+    /**
+     * 构造函数
+     *
+     * @param groupId 组ID
+     * @param deptId 部门ID
+     */
+    public GroupDeptPo(Long groupId, Long deptId) {
+        this.groupId = groupId;
+        this.deptId = deptId;
+    }
 
     @Id
     @Column(name = "group_id", nullable = false, comment = "组ID")
@@ -27,16 +39,6 @@ public class GroupDeptPo {
     @CreatedDate
     @Column(name = "create_time", nullable = false, comment = "创建时间")
     private LocalDateTime createTime;
-
-    @PrePersist
-    private void onCreate() {
-
-    }
-
-    @PreUpdate
-    private void onUpdate() {
-
-    }
 
     /**
      * 用于复合主键的类

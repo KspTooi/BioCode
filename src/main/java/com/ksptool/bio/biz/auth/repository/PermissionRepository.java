@@ -31,22 +31,6 @@ public interface PermissionRepository extends JpaRepository<PermissionPo, Long> 
 
 
     /**
-     * 根据用户ID获取用户拥有的全部权限
-     *
-     * @param userId 用户ID
-     * @return 权限列表
-     */
-    @Query("""
-            SELECT DISTINCT p
-            FROM UserGroupPo ug
-            JOIN GroupPermissionPo gp ON ug.groupId = gp.groupId
-            JOIN PermissionPo p ON gp.permissionId = p.id
-            WHERE ug.userId = :userId
-            """)
-    List<PermissionPo> getPermissionsByUserId(@Param("userId") Long userId);
-
-
-    /**
      * 获取全部系统权限码
      *
      * @return 系统权限码列表
@@ -142,5 +126,40 @@ public interface PermissionRepository extends JpaRepository<PermissionPo, Long> 
             WHERE gp.groupId = :groupId
             """)
     List<PermissionPo> getPermissionsByGroupId(@Param("groupId") Long groupId);
+
+
+    /**
+     * 根据用户ID获取用户拥有的全部权限
+     * 这里只能获取到已启用用户组派生出的权限
+     * @param userId 用户ID
+     * @return 权限列表
+     */
+    @Query("""
+            SELECT DISTINCT p
+            FROM UserGroupPo ug
+            JOIN GroupPo g ON ug.groupId = g.id
+            JOIN GroupPermissionPo gp ON ug.groupId = gp.groupId
+            JOIN PermissionPo p ON gp.permissionId = p.id
+            WHERE ug.userId = :userId AND g.status = 1
+            """)
+    List<PermissionPo> getPermissionsByUserId(@Param("userId") Long userId);
+
+    
+     /**
+     * 根据用户ID获取用户拥有的全部权限代码
+     * 这里只能获取到已启用用户组拥有的权限代码
+     *
+     * @param userId 用户ID
+     * @return 权限代码列表
+     */
+    @Query("""
+            SELECT DISTINCT p.code
+            FROM UserGroupPo ug
+            JOIN GroupPo g ON ug.groupId = g.id
+            JOIN GroupPermissionPo gp ON ug.groupId = gp.groupId
+            JOIN PermissionPo p ON gp.permissionId = p.id
+            WHERE ug.userId = :userId AND g.status = 1
+            """)
+    Set<String> getCodesByUserId(@Param("userId") Long userId);
 
 } 

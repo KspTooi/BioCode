@@ -2,6 +2,7 @@ package com.ksptool.bio.biz.auth.common.aop;
 
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.bio.biz.auth.common.PermissionBucket;
+import com.ksptool.bio.biz.auth.common.RowScopes;
 import com.ksptool.bio.biz.auth.common.mybatis.RsContext;
 import com.ksptool.bio.biz.auth.common.mybatis.RsContextHolder;
 import com.ksptool.bio.biz.auth.model.auth.AuthUserSession;
@@ -36,6 +37,8 @@ import java.util.List;
  * 数据隔离模式 (由 @RowScope.mode 决定):
  * - FULL      : 启用完整 RS 7级数据权限过滤(默认),按用户真实 rsMax 注入
  * - ROOT_ONLY : 仅租户隔离,强制将 rsMax 覆盖为 0 ,忽略用户的 7级 RS 等级
+ *
+ * @since 1.6.21(U).90
  */
 @Aspect
 @Component
@@ -85,9 +88,9 @@ public class RowScopeAspect {
 
         //根据模式决定实际生效的 rsMax 与 orgIds
         //- FULL      : 按用户真实 rsMax 与 rsAllowOrgIds 注入
-        //- ROOT_ONLY : 强制 rsMax = 0,仅按租户隔离, orgIds 占位即可
-        //- USER_ONLY : 强制 rsMax = 50,仅按用户隔离, creatorId 占位即可
-        Integer rsMax = 100;
+        //- ROOT_ONLY : 强制 rsMax = ALL,仅按租户隔离, orgIds 占位即可
+        //- USER_ONLY : 强制 rsMax = SELF_ONLY,仅按用户隔离, creatorId 占位即可
+        RowScopes rsMax = RowScopes.DENY_ALL;
         List<Long> orgIds = new ArrayList<>();
 
         //FULL模式下，按用户真实 rsMax 与 rsAllowOrgIds 注入
@@ -98,14 +101,14 @@ public class RowScopeAspect {
             }
         }
 
-        //ROOT_ONLY模式下，强制 rsMax = 0,仅按租户隔离, orgIds 占位即可
+        //ROOT_ONLY模式下，强制 rsMax = ALL,仅按租户隔离, orgIds 占位即可
         if (mode == RowScope.Mode.ROOT_ONLY) {
-            rsMax = 0;
+            rsMax = RowScopes.ALL;
         }
 
-        //USER_ONLY模式下，强制 rsMax = 50,仅按用户隔离
+        //USER_ONLY模式下，强制 rsMax = SELF_ONLY,仅按用户隔离
         if (mode == RowScope.Mode.USER_ONLY) {
-            rsMax = 50;
+            rsMax = RowScopes.SELF_ONLY;
         }
 
 
@@ -117,7 +120,7 @@ public class RowScopeAspect {
         Filter filter = session.enableFilter(ROW_SCOPE_FILTER_NAME);
 
         //注入参数 rootId 在所有分支中均强制使用,作为租户隔离硬底线
-        filter.setParameter("rsMax", rsMax);
+        filter.setParameter("rsMax", rsMax.getCode());
         filter.setParameter("userId", aud.getUserId());
         filter.setParameter("rootId", rootId);
 

@@ -42,48 +42,40 @@ import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
 
 
+/**
+ * @author KspTooi
+ * @since 1.6.19(S).32
+ */
 @Slf4j
 @Service
 public class OpSchemaService {
 
-    @Autowired
-    private Gson gson;
-
-    @Autowired
-    private OpSchemaRepository repository;
-
-    @Autowired
-    private DataSourceRepository datasourceRepository;
-
-    @Autowired
-    private RawModelService rawModelService;
-
-    @Autowired
-    private RawModelRepository rawModelRepository;
-
-    @Autowired
-    private ScmRepository scmRepository;
-
-    @Autowired
-    private AttachService attachService;
-
-    @Autowired
-    private ScmService scmService;
-
-    @Autowired
-    private PolyModelService polyModelService;
-
-    @Autowired
-    private PolyModelRepository polyModelRepository;
-
-    @Autowired
-    private TymSchemaRepository tymSchemaRepository;
-
-    @Autowired
-    private TymSchemaFieldRepository tymSfRepository;
-
     //QBE Velocity引擎实例
     private final QbeVelocityEngine qbeVelocityEngine = new QbeVelocityEngine();
+    @Autowired
+    private Gson gson;
+    @Autowired
+    private OpSchemaRepository repository;
+    @Autowired
+    private DataSourceRepository datasourceRepository;
+    @Autowired
+    private RawModelService rawModelService;
+    @Autowired
+    private RawModelRepository rawModelRepository;
+    @Autowired
+    private ScmRepository scmRepository;
+    @Autowired
+    private AttachService attachService;
+    @Autowired
+    private ScmService scmService;
+    @Autowired
+    private PolyModelService polyModelService;
+    @Autowired
+    private PolyModelRepository polyModelRepository;
+    @Autowired
+    private TymSchemaRepository tymSchemaRepository;
+    @Autowired
+    private TymSchemaFieldRepository tymSfRepository;
 
     /**
      * 查询输出方案列表

@@ -39,6 +39,9 @@ import java.util.stream.Collectors;
 /**
  * 维护中心服务
  * 提供维护中心所需的各项服务
+ *
+ * @author KspTooi
+ * @since 1.2.7(G).37
  */
 @Slf4j
 @Service
@@ -348,13 +351,13 @@ public class MaintainService {
         }
 
         //重新初始化超级用户、超级组的归属(以防止租户数据错误)
-        if(superUser != null){
+        if (superUser != null) {
             superUser.setRootId(sRootId);
             superUser.setStatus(Switch.on());
             superUser.setIsSystem(Switch.yes());
             uRepository.save(superUser);
         }
-        if(superGroup != null){ 
+        if (superGroup != null) {
             superGroup.setRootId(sRootId);
             superGroup.setOrgId(null);
             superGroup.setStatus(Switch.on());

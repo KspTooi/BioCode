@@ -2,6 +2,7 @@ package com.ksptool.bio.biz.assembly.common.quickbuildengine;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,9 @@ import java.util.Map;
 /**
  * QBE模型
  * 这个模型用于存储提供给QBE引擎的全部参数
+ *
+ * @author KspTooi
+ * @since 1.6.19(S).32
  */
 @Getter
 @Setter

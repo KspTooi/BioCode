@@ -20,13 +20,17 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.context.NullSecurityContextRepository;
 
+/**
+ * @author KspTool
+ * @since 1.5.23(W).109
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 @Slf4j
 public class SecurityConfig {
 
-    
+
     /**
      * USAF过滤器 这个过滤器会获取请求中的Token并重建安全上下文
      */

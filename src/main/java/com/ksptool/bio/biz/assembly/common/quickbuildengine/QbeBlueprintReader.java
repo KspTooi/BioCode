@@ -3,9 +3,8 @@ package com.ksptool.bio.biz.assembly.common.quickbuildengine;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,6 +14,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+/**
+ * @author KspTooi
+ * @since 1.6.19(S).32
+ */
 @Slf4j
 @Getter
 public class QbeBlueprintReader {
@@ -33,6 +36,7 @@ public class QbeBlueprintReader {
 
     /**
      * 构造函数
+     *
      * @param repositoryPath 蓝图仓库路径
      * @throws IllegalArgumentException 蓝图仓库路径不存在或不是目录
      */
@@ -48,7 +52,7 @@ public class QbeBlueprintReader {
         }
 
     }
-    
+
     /**
      * 读取蓝图
      *

@@ -13,10 +13,10 @@ import java.util.List;
 
 /**
  * QF任务Repository
- * 
+ *
  * @author KspTool(ksptool@outlook.com)
- * @since 2026-02-10
  * @license Apache License 2.0
+ * @since 1.6.1(A).1
  */
 @Repository
 public interface QtTaskRepository extends JpaRepository<QtTaskPo, Long> {

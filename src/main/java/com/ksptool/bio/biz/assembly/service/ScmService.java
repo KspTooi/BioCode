@@ -24,6 +24,7 @@ import com.ksptool.bio.biz.core.service.AttachService;
 import com.ksptool.bio.biz.core.service.RegistrySdk;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.LsRemoteCommand;
 import org.eclipse.jgit.api.TransportCommand;
@@ -53,6 +54,10 @@ import java.util.List;
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
 
+/**
+ * @author KspTooi
+ * @since 1.6.19(S).32
+ */
 @Slf4j
 @Service
 public class ScmService {
@@ -472,6 +477,17 @@ public class ScmService {
                 log.info("pushToScm: 工作区无变更，跳过提交 目录={}", basePath);
                 return;
             }
+
+            // 确保 HEAD 在目标本地分支上（首次 clone 后 fetch+reset 不会切换本地分支）
+            String branch = scmPo.getScmBranch();
+            Ref localBranchRef = git.getRepository().findRef("refs/heads/" + branch);
+            var checkoutCmd = git.checkout().setName(branch);
+            if (localBranchRef == null) {
+                checkoutCmd.setCreateBranch(true)
+                        .setStartPoint("refs/remotes/origin/" + branch)
+                        .setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.SET_UPSTREAM);
+            }
+            checkoutCmd.call();
 
             git.commit()
                     .setMessage(commitMessage)

@@ -13,6 +13,25 @@ import java.util.List;
 @Repository
 public interface GroupPermissionRepository extends JpaRepository<GroupPermissionPo, GroupPermissionPo.Pk>, JpaSpecificationExecutor<GroupPermissionPo> {
 
+    /**
+     * 根据用户组ID获取拥有的全部权限ID
+     *
+     * @param gid 用户组ID
+     * @return 权限ID列表
+     */
+    @Query("SELECT gp.permissionId FROM GroupPermissionPo gp WHERE gp.groupId = :gid")
+    List<Long> getPidsByGid(@Param("gid") Long gid);
+    
+    /**
+     * 根据用户组ID和权限ID列表删除权限关联
+     *
+     * @param gid 用户组ID
+     * @param pids 权限ID列表
+     * @return 删除的权限关联数量
+     */
+    @Modifying
+    @Query("DELETE FROM GroupPermissionPo gp WHERE gp.groupId = :gid AND gp.permissionId IN :pids")
+    int removeByGidAndPids(@Param("gid") Long gid, @Param("pids") List<Long> pids);
 
     /**
      * 根据用户组ID和权限ID获取权限关联

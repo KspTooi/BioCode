@@ -22,6 +22,9 @@ import org.springframework.web.context.request.ServletRequestAttributes;
  * <p>
  * 这个类主要用于记录用户登录审计日志，包括登录成功和登录失败的情况。
  * 它会监听SpringSecurity的登录成功和登录失败事件，并记录相应的审计日志。
+ *
+ * @author KspTool
+ * @since 1.5.23(W).109
  */
 @Slf4j
 @Component

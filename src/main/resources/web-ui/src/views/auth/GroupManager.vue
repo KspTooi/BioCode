@@ -53,11 +53,15 @@
       >
         <el-table-column type="selection" width="40" />
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
-        <el-table-column prop="name" label="用户组名称" min-width="120" />
-        <el-table-column prop="code" label="用户组编码" min-width="120" />
-        <el-table-column prop="memberCount" label="成员数量" min-width="100" />
-        <el-table-column prop="permissionCount" label="权限数量" min-width="100" />
-        <el-table-column prop="rowScope" label="数据权限" min-width="100">
+        <el-table-column prop="name" label="用户组名称" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="code" label="用户组编码" min-width="120" show-overflow-tooltip />
+        <el-table-column label="成员与菜单总数" min-width="140">
+          <template #default="scope">
+            <span>{{ scope.row.guCount }} / {{ scope.row.gmCount }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column v-has-super prop="gpCount" label="权限总数" min-width="100" />
+        <el-table-column prop="rowScope" label="数据权限" min-width="100" show-overflow-tooltip>
           <template #default="scope">
             <el-tag v-if="scope.row.rowScope === 0" type="primary">全集团</el-tag>
             <el-tag v-else-if="scope.row.rowScope === 10" type="success">本公司+下级公司</el-tag>
@@ -75,7 +79,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="排序" prop="seq" width="120">
+        <el-table-column label="排序" prop="seq" width="80">
           <template #default="scope">
             <ComSeqFixer
               :id="scope.row.id"
@@ -88,13 +92,16 @@
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" min-width="180" />
-        <el-table-column label="操作" fixed="right" min-width="180">
+        <el-table-column label="操作" fixed="right" min-width="300">
           <template #default="scope">
             <el-button link type="primary" size="small" :icon="EditIcon" @click="openModal('edit', scope.row)">
               编辑
             </el-button>
-            <el-button link type="primary" size="small" :icon="EditIcon" @click="openPermissionEditModal(scope.row)">
-              管理权限
+            <el-button link type="primary" size="small" :icon="EditIcon" @click="openMenuModal(scope.row)">
+              管理菜单
+            </el-button>
+            <el-button v-has-super link type="primary" size="small" :icon="EditIcon" @click="openGpModal(scope.row)">
+              管理GP
             </el-button>
             <el-button
               link
@@ -135,11 +142,9 @@
     </template>
   </StdListLayout>
 
-  <UserGpModal
-    :visible="modalPermissionEditVisible"
-    :row="modalPermissionEditRow"
-    @close="modalPermissionEditVisible = false"
-  />
+  <GroupMenuModal :visible="menuModalVisible" :data="menuModalRow" @close="menuModalVisible = false" @success="loadList" />
+
+  <GroupGpModal :visible="gpModalVisible" :data="gpModalRow" @close="gpModalVisible = false" @success="loadList" />
 
   <CoreOrgDeptSelectModal
     v-model="deptSelectModalVisible"
@@ -153,7 +158,7 @@
   <el-dialog
     v-model="modalVisible"
     :title="modalMode === 'edit' ? '编辑用户组' : '创建用户组'"
-    width="900px"
+    width="600px"
     :close-on-click-modal="false"
     @close="
       (async () => {
@@ -171,8 +176,7 @@
       :validate-on-rule-change="false"
     >
       <el-row :gutter="20">
-        <!-- 左侧基础信息 -->
-        <el-col :span="12">
+        <el-col :span="24">
           <div class="p-2.5">
             <div class="section-title text-sm font-bold mb-4 pl-2.5">基础信息</div>
             <el-form-item label="用户组编码" prop="code" label-for="group-code">
@@ -204,7 +208,7 @@
                 id="group-remark"
                 v-model="modalForm.remark"
                 type="textarea"
-                :rows="2"
+                :rows="4"
                 placeholder="请输入描述"
               />
             </el-form-item>
@@ -241,45 +245,6 @@
             </el-form-item>
           </div>
         </el-col>
-
-        <!-- 右侧权限分配 -->
-        <el-col :span="12">
-          <div class="p-2.5">
-            <div class="section-title text-sm font-bold mb-4 pl-2.5">功能权限分配</div>
-            <div class="permission-wrapper rounded overflow-hidden">
-              <div class="p-2.5 permission-header-bg">
-                <el-input v-model="permissionSearch" placeholder="搜索权限码/名称" clearable size="small">
-                  <template #prefix>
-                    <el-icon><Search /></el-icon>
-                  </template>
-                </el-input>
-                <div class="mt-2 flex justify-between items-center">
-                  <span class="text-xs text-gray-500">已选 {{ selectedPermissionIds.length }} 项</span>
-                  <el-button-group>
-                    <el-button type="primary" size="small" link @click="selectAllPermissions">全选</el-button>
-                    <el-button type="primary" size="small" link @click="deselectAllPermissions">清空</el-button>
-                  </el-button-group>
-                </div>
-              </div>
-              <div class="h-[380px] overflow-y-auto p-2.5">
-                <el-checkbox-group v-model="selectedPermissionIds">
-                  <div v-for="permission in filteredPermissions" :key="permission.id" class="permission-row py-1.5">
-                    <el-checkbox
-                      :value="permission.id"
-                      :disabled="modalMode === 'edit' && isSystemGroup && permission.code === '*:*:*'"
-                    >
-                      <div class="flex flex-col leading-snug ml-2">
-                        <div class="text-[13px] perm-name-color">{{ permission.name }}</div>
-                        <div class="text-[11px] font-mono perm-code-color">{{ permission.code }}</div>
-                      </div>
-                    </el-checkbox>
-                  </div>
-                </el-checkbox-group>
-                <el-empty v-if="filteredPermissions.length === 0" :image-size="60" description="无匹配权限" />
-              </div>
-            </div>
-          </div>
-        </el-col>
       </el-row>
     </el-form>
     <template #footer>
@@ -301,11 +266,15 @@ import type { FormInstance } from "element-plus";
 import type { GetGroupListVo, EditGroupDto, GetGroupDetailsVo } from "@/views/auth/api/GroupApi.ts";
 import AdminGroupApi from "@/views/auth/api/GroupApi.ts";
 import UserGroupService from "@/views/auth/service/UserGroupService.ts";
-import UserGpModal from "@/views/auth/components/UserGpModal.vue";
 import CoreOrgDeptSelectModal from "@/views/core/components/public/CoreOrgDeptSelectModal.vue";
 import StdListLayout from "@/soa/std-series/StdListLayout.vue";
 import ComSeqFixer from "@/soa/com-series/ComSeqFixer.vue";
 import RsSimulationModal from "@/views/auth/components/RsSimulationModal.vue";
+import GroupMenuModal from "@/views/auth/components/GroupMenuModal.vue";
+import GroupGpModal from "@/views/auth/components/GroupGpModal.vue";
+import UserAuthService from "@/views/auth/service/UserAuthService.ts";
+
+const { vHasSuper } = UserAuthService.usePreAuthorize();
 
 const EditIcon = markRaw(Edit);
 const DeleteIcon = markRaw(Delete);
@@ -327,29 +296,13 @@ const {
   isSystemGroup,
   modalForm,
   modalRules,
-  permissionSearch,
-  selectedPermissionIds,
-  filteredPermissions,
   openModal,
   resetModal,
   submitModal,
-  selectAllPermissions,
-  deselectAllPermissions,
   deptSelectModalVisible,
   openDeptSelect,
   onDeptSelectConfirm,
 } = UserGroupService.useUserGroupModal(modalFormRef, loadList);
-
-/**
- * 用户组权限模态框打包
- */
-const {
-  modalPermissionEditVisible,
-  modalPermissionEditRow,
-  openPermissionEditModal: openPermModal,
-} = UserGroupService.useUserGroupPermissionModal();
-
-const openPermissionEditModal = openPermModal;
 
 /**
  * 选中的列表项
@@ -361,6 +314,22 @@ const listSelected = ref<GetGroupListVo[]>([]);
  */
 const getGroupDetailForSeq = async (id: string): Promise<GetGroupDetailsVo> => {
   return await AdminGroupApi.getGroupDetails({ id });
+};
+
+const menuModalVisible = ref(false);
+const menuModalRow = ref<GetGroupListVo | null>(null);
+
+const openMenuModal = (row: GetGroupListVo): void => {
+  menuModalRow.value = row;
+  menuModalVisible.value = true;
+};
+
+const gpModalVisible = ref(false);
+const gpModalRow = ref<GetGroupListVo | null>(null);
+
+const openGpModal = (row: GetGroupListVo): void => {
+  gpModalRow.value = row;
+  gpModalVisible.value = true;
 };
 
 const rsSimulationModalVisible = ref(false);
@@ -381,7 +350,6 @@ const editGroupSeq = async (id: string, dto: any): Promise<void> => {
     seq: dto.seq,
     rowScope: dto.rowScope,
     deptIds: dto.deptIds ?? [],
-    permissionIds: dto.permissions ? dto.permissions.filter((p: any) => p.has === 0).map((p: any) => p.id) : [],
   };
   const result = await AdminGroupApi.editGroup(editDto);
   if (result.code !== 0) {
@@ -395,40 +363,5 @@ const editGroupSeq = async (id: string, dto: any): Promise<void> => {
 .section-title {
   color: var(--el-text-color-primary);
   border-left: 4px solid var(--el-color-primary);
-}
-
-.permission-wrapper {
-  border: 1px solid var(--el-border-color-lighter);
-}
-
-.permission-header-bg {
-  background-color: var(--el-fill-color-light);
-  border-bottom: 1px solid var(--el-border-color-lighter);
-}
-
-.permission-row {
-  border-bottom: 1px dashed var(--el-border-color-extra-light);
-}
-
-.permission-row:last-child {
-  border-bottom: none;
-}
-
-.perm-name-color {
-  color: var(--el-text-color-primary);
-}
-
-.perm-code-color {
-  color: var(--el-text-color-secondary);
-}
-
-:deep(.el-checkbox) {
-  height: auto;
-  display: flex;
-  align-items: center;
-}
-
-:deep(.el-checkbox__label) {
-  padding-left: 0;
 }
 </style>

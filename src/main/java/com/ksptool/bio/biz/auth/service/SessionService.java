@@ -3,6 +3,7 @@ package com.ksptool.bio.biz.auth.service;
 import com.ksptool.assembly.entity.exception.AuthException;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.PageResult;
+import com.ksptool.bio.biz.auth.common.RowScopes;
 import com.ksptool.bio.biz.auth.model.auth.AuthUserSession;
 import com.ksptool.bio.biz.auth.model.session.UserSessionPo;
 import com.ksptool.bio.biz.auth.model.session.dto.GetSessionListDto;
@@ -36,6 +37,10 @@ import java.util.stream.Collectors;
 import static com.ksptool.bio.biz.core.common.TupleMapper.tupleAs;
 import static com.ksptool.entities.Entities.assign;
 
+/**
+ * @author KspTool
+ * @since 1.1.1(A).80
+ */
 @Slf4j
 @Service
 public class SessionService {
@@ -145,14 +150,14 @@ public class SessionService {
         vo.setExpiresAt(session.getExpiresAt());
         vo.setPermissions(session.getPermissionCodes());
 
-        //RS 0:全部 1:本公司/租户及以下 2:本部门及以下 3:本部门 4:仅本人 5:指定部门
+        //RS 0:全集团 10:本公司+下级公司 20:仅本公司 30:本部门+下级部门 40:仅本部门 50:仅本人 60:指定组织
         var maxRs = session.getRsMax();
         var rsAllowDepts = session.getRsAllowOrgIds();
         var rsAllowDeptNames = new ArrayList<String>();
 
 
-        //处理RS权限列表
-        if (maxRs == 2 || maxRs == 3 || maxRs == 5) {
+        //处理RS权限列表 仅本部门+下级部门、仅本部门、指定组织时需要显示组织名称
+        if (maxRs == RowScopes.DEPT_AND_SUBS || maxRs == RowScopes.DEPT_ONLY || maxRs == RowScopes.SPECIFIED_ORG) {
 
             var depts = orgRepository.getDeptsByIds(new ArrayList<>(rsAllowDepts));
 
@@ -324,26 +329,26 @@ public class SessionService {
         }
 
         //更新基本信息
-        var aud = (AuthUserSession) userDetailsService.loadUserByUsername(oldSession.getUsername());
+        var aus = (AuthUserSession) userDetailsService.loadUserByUsername(oldSession.getUsername());
 
-        oldSession.setUsername(aud.getUsername());
-        oldSession.setRootId(aud.getRootId());
-        oldSession.setRootName(aud.getRootName());
-        oldSession.setDeptId(aud.getDeptId());
-        oldSession.setDeptName(aud.getDeptName());
-        oldSession.setDataVersion(aud.getDataVersion());
+        oldSession.setUsername(aus.getUsername());
+        oldSession.setRootId(aus.getRootId());
+        oldSession.setRootName(aus.getRootName());
+        oldSession.setDeptId(aus.getDeptId());
+        oldSession.setDeptName(aus.getDeptName());
+        oldSession.setDataVersion(aus.getDataVersion());
 
         //更新权限码
         var permCodes = new HashSet<String>();
 
-        for (var authority : aud.getAuthorities()) {
+        for (var authority : aus.getAuthorities()) {
             permCodes.add(authority.getAuthority());
         }
         oldSession.setPermissionCodes(permCodes);
 
         //更新RS数据
-        oldSession.setRsMax(aud.getRsMax());
-        oldSession.setRsAllowOrgIds(new HashSet<>(aud.getRsAllowOrgIds()));
+        oldSession.setRsMax(aus.getRsMax());
+        oldSession.setRsAllowOrgIds(new HashSet<>(aus.getRsAllowOrgIds()));
 
         //更新过期时间
         oldSession.setExpiresAt(LocalDateTime.now().plusSeconds(expiresInSeconds));

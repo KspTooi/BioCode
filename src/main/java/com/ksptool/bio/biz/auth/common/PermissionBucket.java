@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  * 这三类东西在系统中的本质就是一个字符串，但是类型不同，这个桶支持一锅大乱炖。
  *
  * @author KspTool
- * @since 2026-04-29
+ * @since 1.6.21(U).90
  */
 public class PermissionBucket {
 
@@ -34,6 +34,21 @@ public class PermissionBucket {
     public PermissionBucket() {
         //普通的HashSet输出不稳定,用LinkedHashSet保证顺序
         this.rawCodes = new LinkedHashSet<>();
+    }
+
+    /**
+     * 从Authentication中获取权限桶
+     *
+     * @param authentication Authentication
+     * @return 权限桶
+     */
+    public static PermissionBucket of(Authentication authentication) {
+        if (authentication == null) {
+            return new PermissionBucket();
+        }
+        var bucket = new PermissionBucket();
+        bucket.addGrantedAuthorities(new ArrayList<>(authentication.getAuthorities()));
+        return bucket;
     }
 
     /**
@@ -293,20 +308,5 @@ public class PermissionBucket {
     @Override
     public String toString() {
         return "PermissionBucket(" + rawCodes + ")";
-    }
-
-    /**
-     * 从Authentication中获取权限桶
-     *
-     * @param authentication Authentication
-     * @return 权限桶
-     */
-    public static PermissionBucket of(Authentication authentication) {
-        if (authentication == null) {
-            return new PermissionBucket();
-        }
-        var bucket = new PermissionBucket();
-        bucket.addGrantedAuthorities(new ArrayList<>(authentication.getAuthorities()));
-        return bucket;
     }
 }

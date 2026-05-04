@@ -8,6 +8,10 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import java.util.Optional;
 
+/**
+ * @author KspTooi
+ * @since 1.6.15(O).65
+ */
 @Configuration
 @EnableJpaAuditing
 public class JpaAuditConfig {

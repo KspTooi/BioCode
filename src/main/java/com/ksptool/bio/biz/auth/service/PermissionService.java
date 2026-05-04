@@ -11,9 +11,8 @@ import com.ksptool.bio.biz.auth.model.permission.vo.GetPermissionDetailsVo;
 import com.ksptool.bio.biz.auth.model.permission.vo.GetPermissionListVo;
 import com.ksptool.bio.biz.auth.repository.GroupPermissionRepository;
 import com.ksptool.bio.biz.auth.repository.PermissionRepository;
-import com.ksptool.bio.biz.core.service.UserService;
 import com.ksptool.bio.biz.core.service.MenuService;
-
+import com.ksptool.bio.biz.core.service.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
@@ -30,6 +29,10 @@ import java.util.Objects;
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
 
+/**
+ * @author KspTool
+ * @since 1.1.1(A).80
+ */
 @Service
 public class PermissionService {
 

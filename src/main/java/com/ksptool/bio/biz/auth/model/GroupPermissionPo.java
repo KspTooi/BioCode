@@ -12,6 +12,8 @@ import java.io.Serializable;
 @IdClass(GroupPermissionPo.Pk.class)
 @Entity
 @Table(name = "auth_group_permission", comment = "权限组关联表")
+@AllArgsConstructor
+@NoArgsConstructor
 public class GroupPermissionPo {
 
     @Id
@@ -34,4 +36,5 @@ public class GroupPermissionPo {
         private Long groupId;
         private Long permissionId;
     }
+
 }

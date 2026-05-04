@@ -16,15 +16,15 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.List;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 
 @RestController
@@ -43,6 +43,7 @@ public class ScmController {
         return scmService.getScmList(dto);
     }
 
+    @PreAuthorize("@auth.hasCode('assembly:scm:add')")
     @Operation(summary = "新增SCM")
     @PostMapping("/addScm")
     public Result<String> addScm(@RequestBody @Valid AddScmDto dto) throws Exception {
@@ -56,6 +57,7 @@ public class ScmController {
         return Result.success("操作成功");
     }
 
+    @PreAuthorize("@auth.hasCode('assembly:scm:edit')")
     @Operation(summary = "编辑SCM")
     @PostMapping("/editScm")
     public Result<String> editScm(@RequestBody @Valid EditScmDto dto) throws Exception {
@@ -69,6 +71,7 @@ public class ScmController {
         return Result.success("操作成功");
     }
 
+    @PreAuthorize("@auth.hasCode('assembly:scm:view')")
     @Operation(summary = "查询SCM详情")
     @PostMapping("/getScmDetails")
     public Result<GetScmDetailsVo> getScmDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {
@@ -79,6 +82,7 @@ public class ScmController {
         return Result.success(details);
     }
 
+    @PreAuthorize("@auth.hasCode('assembly:scm:remove')")
     @Operation(summary = "删除SCM")
     @PostMapping("/removeScm")
     public Result<String> removeScm(@RequestBody @Valid CommonIdDto dto) throws Exception {

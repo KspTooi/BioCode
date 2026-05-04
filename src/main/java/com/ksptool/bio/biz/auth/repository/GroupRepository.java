@@ -27,9 +27,9 @@ public interface GroupRepository extends JpaRepository<GroupPo, Long>, JpaSpecif
     @Query("""
             SELECT g FROM GroupPo g
             LEFT JOIN UserGroupPo ug ON g.id = ug.groupId
-            WHERE ug.userId = :userId
+            WHERE ug.userId = :userId AND g.status = :status
             """)
-    List<GroupPo> getGroupsByUserId(@Param("userId") Long userId);
+    List<GroupPo> getGroupsByUserIdAndStatus(@Param("userId") Long userId, @Param("status") Integer status);
 
     /**
      * 根据标识统计用户组数量 排除指定ID
@@ -71,8 +71,9 @@ public interface GroupRepository extends JpaRepository<GroupPo, Long>, JpaSpecif
             g.id AS id,
             g.code AS code,
             g.name AS name,
-            (SELECT COUNT(ug) FROM UserGroupPo ug WHERE ug.groupId = g.id) AS memberCount,
-            (SELECT COUNT(gp) FROM GroupPermissionPo gp WHERE gp.groupId = g.id) AS permissionCount,
+            (SELECT COUNT(ug) FROM UserGroupPo ug WHERE ug.groupId = g.id) AS guCount,
+            (SELECT COUNT(gm) FROM GroupMenuPo gm WHERE gm.groupId = g.id) AS gmCount,
+            (SELECT COUNT(gp) FROM GroupPermissionPo gp WHERE gp.groupId = g.id) AS gpCount,
             g.rowScope AS rowScope,
             g.isSystem AS isSystem,
             g.status AS status,

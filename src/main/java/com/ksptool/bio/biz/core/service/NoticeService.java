@@ -29,6 +29,10 @@ import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
 
 
+/**
+ * @author KspTooi
+ * @since 1.2.8(H).1
+ */
 @Slf4j
 @Service
 public class NoticeService {

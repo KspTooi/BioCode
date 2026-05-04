@@ -5,14 +5,7 @@ import com.ksptool.bio.biz.qt.repository.QtTaskRcdRepository;
 import com.ksptool.bio.biz.qt.repository.QtTaskRepository;
 import com.ksptool.bio.biz.qt.service.QtTaskRcdService;
 import com.ksptool.bio.biz.qt.service.QtTaskService;
-
 import lombok.extern.slf4j.Slf4j;
-
-import static com.ksptool.entities.Entities.toJson;
-
-import java.time.Duration;
-import java.time.LocalDateTime;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.quartz.JobExecutionContext;
@@ -25,12 +18,17 @@ import org.springframework.stereotype.Component;
 import tools.jackson.databind.JavaType;
 import tools.jackson.databind.ObjectMapper;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+
+import static com.ksptool.entities.Entities.toJson;
+
 /**
  * QF本地任务Bean执行器
- * 
+ *
  * @author KspTool(ksptool@outlook.com)
- * @since 2026-02-10
  * @license Apache License 2.0
+ * @since 1.6.1(A).1
  */
 @Slf4j
 @Component
