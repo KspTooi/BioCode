@@ -41,6 +41,10 @@ public class GetGroupDetailsVo {
     @Schema(description = "权限码列表")
     private List<GroupPermissionDefinitionVo> permissions;
 
+    @Schema(description = "权限码ID列表")
+    private List<Long> permissionIds;
+
+
     @Schema(description = "菜单ID列表")
     private List<Long> menuIds;
 }

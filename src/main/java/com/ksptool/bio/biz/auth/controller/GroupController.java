@@ -1,6 +1,7 @@
 package com.ksptool.bio.biz.auth.controller;
 
 
+import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.assembly.entity.web.Result;
@@ -10,6 +11,7 @@ import com.ksptool.bio.biz.auth.model.group.vo.GetGroupDetailsVo;
 import com.ksptool.bio.biz.auth.model.group.vo.GetGroupListVo;
 import com.ksptool.bio.biz.auth.model.group.vo.SimulateRsVo;
 import com.ksptool.bio.biz.auth.service.GroupService;
+import com.ksptool.bio.biz.auth.service.SessionService;
 import com.ksptool.bio.biz.core.service.MenuService;
 import com.ksptool.bio.biz.core.service.UserService;
 import com.ksptool.bio.commons.annotation.PrintLog;
@@ -96,8 +98,30 @@ public class GroupController {
         return Result.success("删除成功");
     }
 
+
+    @PreAuthorize("@auth.hasCode('*:*:*')")
+    @Operation(summary = "更新组权限(GP)")
+    @PostMapping("updateGroupGp")
+    @CacheEvict(cacheNames = {"userSession", "userProfile", "menuTree"}, allEntries = true)
+    public Result<String> updateGroupGp(@RequestBody @Valid UpdateGroupGpDto dto) throws Exception {
+
+        if(!SessionService.hasSuperCode()){
+            throw new BizException("只有超级管理员才能更新组权限(GP)");
+        }
+
+        service.updateGroupGp(dto);
+
+        //给拥有该组的用户加版本
+        userService.increaseDvByGroupId(dto.getGroupId());
+
+        //清菜单缓存
+        menuService.clearUserMenuTreeCache();
+        return Result.success("更新组权限(GP)成功");
+    }
+
+
     @PreAuthorize("@auth.hasCode('auth:group:edit')")
-    @Operation(summary = "更新组菜单")
+    @Operation(summary = "更新组菜单(GM)")
     @PostMapping("updateGroupGm")
     @CacheEvict(cacheNames = {"userSession", "userProfile", "menuTree"}, allEntries = true)
     public Result<String> updateGroupGm(@RequestBody @Valid UpdateGroupGmDto dto) throws Exception {
@@ -108,7 +132,7 @@ public class GroupController {
 
         //清菜单缓存
         menuService.clearUserMenuTreeCache();
-        return Result.success("更新组菜单成功");
+        return Result.success("更新组菜单(GM)成功");
     }
 
     @PreAuthorize("@auth.hasCode('auth:group:view')")

@@ -272,6 +272,9 @@ public class GroupService {
             vo.setDeptIds(deptIds);
         }
 
+        //获取该组拥有的GP
+        vo.setPermissionIds(gpRepository.getPidsByGid(id));
+
         //获取该组拥有的GM
         vo.setMenuIds(gmRepository.getMidsByGid(id));
         return vo;
@@ -337,6 +340,33 @@ public class GroupService {
 
         //执行静默删除
         repository.deleteAllById(safeRemoveIds);
+    }
+
+
+
+    /**
+     * 更新组权限(GP)
+     *
+     * @param dto 更新组权限参数
+     * @throws BizException 用户组不存在
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void updateGroupGp(UpdateGroupGpDto dto) throws BizException {
+        var g = repository.findById(dto.getGroupId()).orElseThrow(() -> new BizException("用户组不存在"));
+
+        //对比GP关系的差异
+        var gpIdsDiff = new IdsDiff(gpRepository.getPidsByGid(g.getId()), dto.getPermissionIds());
+
+        //处理GP的新增/删除关系
+        if (gpIdsDiff.hasAdd()) {
+            var gpPos = gpIdsDiff.getAddIds().stream().map(id -> new GroupPermissionPo(g.getId(), id)).toList();
+            gpRepository.saveAll(gpPos);
+        }
+
+        if (gpIdsDiff.hasRemove()) {
+            gpRepository.removeByGidAndPids(g.getId(), gpIdsDiff.getRemoveIds());
+        }
+
     }
 
     /**
