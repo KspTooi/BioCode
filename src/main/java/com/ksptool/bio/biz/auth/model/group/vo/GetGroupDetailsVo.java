@@ -26,7 +26,7 @@ public class GetGroupDetailsVo {
     @Schema(description = "系统内置组 0:否 1:是")
     private Integer isSystem;
 
-    @Schema(description = "组状态：0-禁用，1-启用")
+    @Schema(description = "组状态：0:禁用 1:启用")
     private Integer status;
 
     @Schema(description = "排序号")
