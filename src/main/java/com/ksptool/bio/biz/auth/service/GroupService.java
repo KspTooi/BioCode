@@ -332,6 +332,18 @@ public class GroupService {
     public void updateGroupGp(UpdateGroupGpDto dto) throws BizException {
         var g = repository.findById(dto.getGroupId()).orElseThrow(() -> new BizException("用户组不存在"));
 
+        //系统组不能把SA权限去除
+        if(g.isSystem()){
+
+            var sa = pRepository.getByCode(SuperEntities.PERMISSION.getCode());
+
+            if(!dto.getPermissionIds().contains(sa.getId())){
+                throw new BizException("系统内置组不允许去除超级操作权限(SA)");
+            }
+
+        }
+
+
         //对比GP关系的差异
         var gpIdsDiff = new IdsDiff(gpRepository.getPidsByGid(g.getId()), dto.getPermissionIds());
 
