@@ -1,5 +1,6 @@
 import { ref, computed, watch } from "vue";
 import { ElMessage } from "element-plus";
+import { Result } from "@/commons/model/Result";
 import type { GetGroupListVo } from "@/views/auth/api/GroupApi.ts";
 import GroupApi from "@/views/auth/api/GroupApi.ts";
 import PermissionApi from "@/views/auth/api/PermissionApi.ts";
@@ -34,7 +35,10 @@ export default {
 
     const modalSelectedCount = computed(() => modalSelectedIds.value.length);
 
-    const load = async (): Promise<void> => {
+    /**
+     * 加载权限定义及组已绑定的权限
+     */
+    const openModal = async (): Promise<void> => {
       if (!props.data?.id) {
         return;
       }
@@ -57,34 +61,51 @@ export default {
       }
     };
 
+    /**
+     * 全选当前过滤结果
+     */
     const selectAll = (): void => {
       modalSelectedIds.value = modalFilteredPermissions.value.map((p) => p.id);
     };
 
+    /**
+     * 清空选择
+     */
     const deselectAll = (): void => {
       modalSelectedIds.value = [];
     };
 
-    const submit = async (): Promise<void> => {
+    /**
+     * 提交权限绑定
+     */
+    const submitModal = async (): Promise<void> => {
       if (!props.data?.id) {
         return;
       }
       modalLoading.value = true;
-      const result = await GroupApi.updateGroupGp({
-        groupId: props.data.id,
-        permissionIds: modalSelectedIds.value,
-      });
-      modalLoading.value = false;
-      if (result.code != 0) {
-        ElMessage.error(result.message || "保存失败");
-        return;
+      try {
+        const result = await GroupApi.updateGroupGp({
+          groupId: props.data.id,
+          permissionIds: modalSelectedIds.value,
+        });
+        if (Result.isError(result)) {
+          ElMessage.error(result.message || "保存失败");
+          return;
+        }
+        ElMessage.success("组权限已保存");
+        emit("close");
+        emit("success");
+      } catch (error: any) {
+        ElMessage.error(error.message || "保存失败");
+      } finally {
+        modalLoading.value = false;
       }
-      ElMessage.success("组权限已保存");
-      emit("close");
-      emit("success");
     };
 
-    const reset = (): void => {
+    /**
+     * 重置状态
+     */
+    const resetModal = (): void => {
       modalPermissionList.value = [];
       modalSelectedIds.value = [];
       modalSearch.value = "";
@@ -95,11 +116,11 @@ export default {
       () => props.visible,
       async (val) => {
         if (val) {
-          await load();
+          await openModal();
           return;
         }
-        reset();
-      },
+        resetModal();
+      }
     );
 
     return {
@@ -111,7 +132,7 @@ export default {
       modalSelectedCount,
       selectAll,
       deselectAll,
-      submit,
+      submitModal,
     };
   },
 };
