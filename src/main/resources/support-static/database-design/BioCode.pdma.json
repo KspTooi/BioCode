@@ -4,7 +4,7 @@
   "avatar": "",
   "version": "4.9.4",
   "createdTime": "2025-5-31 18:54:43",
-  "updatedTime": "2026-5-5 07:19:23",
+  "updatedTime": "2026-5-5 07:31:50",
   "dbConns": [],
   "profile": {
     "default": {
@@ -34006,7 +34006,7 @@
           "codeRoot": ""
         }
       },
-      "defKey": "core_package",
+      "defKey": "core_pack",
       "defName": "菜单包表",
       "comment": "",
       "properties": {
@@ -34379,7 +34379,7 @@
           "codeRoot": ""
         }
       },
-      "defKey": "core_menu_package",
+      "defKey": "core_menu_pack",
       "defName": "MP表",
       "comment": "",
       "properties": {
@@ -34540,7 +34540,7 @@
           "id": "1A677EBA-804E-4EDA-9472-8D4DDDC2C6BC"
         },
         {
-          "defKey": "package_id",
+          "defKey": "pack_id",
           "defName": "菜单包ID",
           "comment": "",
           "type": "",
@@ -34590,7 +34590,7 @@
           "codeRoot": ""
         }
       },
-      "defKey": "core_root_package",
+      "defKey": "core_root_pack",
       "defName": "RP表",
       "comment": "",
       "properties": {
@@ -34751,7 +34751,7 @@
           "id": "EB787E8E-48DB-4AC3-BAC6-EA4D61540CA8"
         },
         {
-          "defKey": "package_id",
+          "defKey": "pack_id",
           "defName": "菜单包ID",
           "comment": "",
           "type": "",
