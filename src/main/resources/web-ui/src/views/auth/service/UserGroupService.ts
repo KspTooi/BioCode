@@ -416,22 +416,4 @@ export default {
     };
   },
 
-  /**
-   * 权限管理模态框打包
-   */
-  useUserGroupPermissionModal() {
-    const modalPermissionEditVisible = ref(false);
-    const modalPermissionEditRow = ref<GetGroupListVo | null>(null);
-
-    const openPermissionEditModal = (row: GetGroupListVo): void => {
-      modalPermissionEditRow.value = row;
-      modalPermissionEditVisible.value = true;
-    };
-
-    return {
-      modalPermissionEditVisible,
-      modalPermissionEditRow,
-      openPermissionEditModal,
-    };
-  },
 };

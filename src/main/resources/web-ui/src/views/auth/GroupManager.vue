@@ -93,9 +93,6 @@
             <el-button link type="primary" size="small" :icon="EditIcon" @click="openModal('edit', scope.row)">
               编辑
             </el-button>
-            <el-button link type="primary" size="small" :icon="EditIcon" @click="openPermissionEditModal(scope.row)">
-              管理权限
-            </el-button>
             <el-button link type="primary" size="small" :icon="EditIcon" @click="openMenuModal(scope.row)">
               管理菜单
             </el-button>
@@ -137,12 +134,6 @@
       />
     </template>
   </StdListLayout>
-
-  <UserGpModal
-    :visible="modalPermissionEditVisible"
-    :row="modalPermissionEditRow"
-    @close="modalPermissionEditVisible = false"
-  />
 
   <GroupMenuModal
     :visible="menuModalVisible"
@@ -311,7 +302,6 @@ import type { FormInstance } from "element-plus";
 import type { GetGroupListVo, EditGroupDto, GetGroupDetailsVo } from "@/views/auth/api/GroupApi.ts";
 import AdminGroupApi from "@/views/auth/api/GroupApi.ts";
 import UserGroupService from "@/views/auth/service/UserGroupService.ts";
-import UserGpModal from "@/views/auth/components/UserGpModal.vue";
 import CoreOrgDeptSelectModal from "@/views/core/components/public/CoreOrgDeptSelectModal.vue";
 import StdListLayout from "@/soa/std-series/StdListLayout.vue";
 import ComSeqFixer from "@/soa/com-series/ComSeqFixer.vue";
@@ -350,17 +340,6 @@ const {
   openDeptSelect,
   onDeptSelectConfirm,
 } = UserGroupService.useUserGroupModal(modalFormRef, loadList);
-
-/**
- * 用户组权限模态框打包
- */
-const {
-  modalPermissionEditVisible,
-  modalPermissionEditRow,
-  openPermissionEditModal: openPermModal,
-} = UserGroupService.useUserGroupPermissionModal();
-
-const openPermissionEditModal = openPermModal;
 
 /**
  * 选中的列表项
