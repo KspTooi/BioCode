@@ -1,5 +1,8 @@
 package com.ksptool.bio.biz.qt.service;
 
+import com.ksptool.assembly.entity.exception.BizException;
+import com.ksptool.assembly.entity.web.CommonIdDto;
+import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.bio.biz.qt.model.qttaskgroup.QtTaskGroupPo;
 import com.ksptool.bio.biz.qt.model.qttaskgroup.dto.AddQtTaskGroupDto;
 import com.ksptool.bio.biz.qt.model.qttaskgroup.dto.EditQtTaskGroupDto;
@@ -8,9 +11,6 @@ import com.ksptool.bio.biz.qt.model.qttaskgroup.vo.GetQtTaskGroupDetailsVo;
 import com.ksptool.bio.biz.qt.model.qttaskgroup.vo.GetQtTaskGroupListVo;
 import com.ksptool.bio.biz.qt.repository.QtTaskGroupRepository;
 import com.ksptool.bio.biz.qt.repository.QtTaskRepository;
-import com.ksptool.assembly.entity.exception.BizException;
-import com.ksptool.assembly.entity.web.CommonIdDto;
-import com.ksptool.assembly.entity.web.PageResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -25,10 +25,10 @@ import static com.ksptool.entities.Entities.assign;
 
 /**
  * QF任务分组服务
- * 
+ *
  * @author KspTool(ksptool@outlook.com)
- * @since 2026-02-10
  * @license Apache License 2.0
+ * @since 1.6.1(A).1
  */
 @Service
 public class QtTaskGroupService {

@@ -7,6 +7,9 @@ import java.util.*;
 /**
  * ID列表差异计算器
  * 用于计算已存在的ID列表与输入的ID列表之间的差异
+ *
+ * @author KspTool
+ * @since 1.6.21(U).90
  */
 @Getter
 public class IdsDiff {
@@ -39,7 +42,7 @@ public class IdsDiff {
         }
     }
 
-    
+
     /**
      * 是否存在需要新增的ID
      *

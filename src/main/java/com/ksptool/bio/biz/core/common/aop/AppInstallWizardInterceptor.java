@@ -14,6 +14,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+/**
+ * @author KspTooi
+ * @since 1.6.14(N).45
+ */
 @Component
 public class AppInstallWizardInterceptor implements HandlerInterceptor {
 

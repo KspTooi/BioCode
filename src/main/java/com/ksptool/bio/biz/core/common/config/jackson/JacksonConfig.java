@@ -18,6 +18,9 @@ import java.util.TimeZone;
  * Jackson全局配置 (Spring Boot 4.0 / Jackson 3 适配版)
  * Long/BigInteger -> String (解决前端精度丢失)
  * LocalDateTime -> yyyy-MM-dd HH:mm:ss
+ *
+ * @author KspTooi
+ * @since 1.0.1(A).1
  */
 @Configuration
 public class JacksonConfig {

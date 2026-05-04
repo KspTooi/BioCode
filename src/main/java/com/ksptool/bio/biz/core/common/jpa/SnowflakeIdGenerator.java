@@ -8,6 +8,10 @@ import org.hibernate.generator.EventTypeSets;
 
 import java.util.EnumSet;
 
+/**
+ * @author KspTooi
+ * @since 1.6.15(O).65
+ */
 public class SnowflakeIdGenerator implements BeforeExecutionGenerator {
 
     @Override

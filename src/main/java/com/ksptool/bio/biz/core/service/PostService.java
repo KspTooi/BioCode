@@ -1,5 +1,8 @@
 package com.ksptool.bio.biz.core.service;
 
+import com.ksptool.assembly.entity.exception.BizException;
+import com.ksptool.assembly.entity.web.CommonIdDto;
+import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.bio.biz.core.model.post.PostPo;
 import com.ksptool.bio.biz.core.model.post.dto.AddPostDto;
 import com.ksptool.bio.biz.core.model.post.dto.EditPostDto;
@@ -7,9 +10,6 @@ import com.ksptool.bio.biz.core.model.post.dto.GetPostListDto;
 import com.ksptool.bio.biz.core.model.post.vo.GetPostDetailsVo;
 import com.ksptool.bio.biz.core.model.post.vo.GetPostListVo;
 import com.ksptool.bio.biz.core.repository.PostRepository;
-import com.ksptool.assembly.entity.exception.BizException;
-import com.ksptool.assembly.entity.web.CommonIdDto;
-import com.ksptool.assembly.entity.web.PageResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -21,6 +21,10 @@ import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
 
 
+/**
+ * @author KspTooi
+ * @since 1.5.2(B).1
+ */
 @Service
 public class PostService {
 

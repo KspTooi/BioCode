@@ -1,5 +1,8 @@
 package com.ksptool.bio.biz.core.service;
 
+import com.ksptool.assembly.entity.exception.BizException;
+import com.ksptool.assembly.entity.web.CommonIdDto;
+import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.bio.biz.core.model.noticetemplate.NoticeTemplatePo;
 import com.ksptool.bio.biz.core.model.noticetemplate.dto.AddNoticeTemplateDto;
 import com.ksptool.bio.biz.core.model.noticetemplate.dto.EditNoticeTemplateDto;
@@ -7,9 +10,6 @@ import com.ksptool.bio.biz.core.model.noticetemplate.dto.GetNoticeTemplateListDt
 import com.ksptool.bio.biz.core.model.noticetemplate.vo.GetNoticeTemplateDetailsVo;
 import com.ksptool.bio.biz.core.model.noticetemplate.vo.GetNoticeTemplateListVo;
 import com.ksptool.bio.biz.core.repository.NoticeTemplateRepository;
-import com.ksptool.assembly.entity.exception.BizException;
-import com.ksptool.assembly.entity.web.CommonIdDto;
-import com.ksptool.assembly.entity.web.PageResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -20,7 +20,10 @@ import java.util.List;
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
 
-
+/**
+ * @author KspTooi
+ * @since 1.2.8(H).1
+ */
 @Service
 public class NoticeTemplateService {
 

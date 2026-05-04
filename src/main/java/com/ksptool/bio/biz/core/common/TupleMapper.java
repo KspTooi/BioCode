@@ -15,12 +15,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -35,22 +30,22 @@ import java.util.concurrent.ConcurrentHashMap;
  * </pre>
  * <p>
  * 要求 JPQL 中每一列都使用 {@code AS 驼峰别名}，别名与目标 VO 字段名一致。
- * 
+ *
  * @author WangQingHua(603484930@qq.com)
- * @since 2026-04-17
  * @license Apache-2.0
+ * @since 2026-04-17
  */
 public final class TupleMapper {
+
+    private static final Map<Class<?>, Map<String, Field>> FIELD_CACHE = new ConcurrentHashMap<>();
 
     private TupleMapper() {
     }
 
-    private static final Map<Class<?>, Map<String, Field>> FIELD_CACHE = new ConcurrentHashMap<>();
-
     /**
      * 将单个 Tuple 映射为目标类型实例。
-     * 
-     * @param tuple 待映射的Tuple
+     *
+     * @param tuple       待映射的Tuple
      * @param targetClass 目标类型
      * @return 映射后的对象
      * @throws IllegalStateException 如果无法实例化目标类型
@@ -99,8 +94,8 @@ public final class TupleMapper {
 
     /**
      * 将 Tuple 列表映射为目标类型列表。
-     * 
-     * @param tuples 待映射的Tuple列表
+     *
+     * @param tuples      待映射的Tuple列表
      * @param targetClass 目标类型
      * @return 映射后的对象列表
      */
@@ -118,8 +113,8 @@ public final class TupleMapper {
 
     /**
      * 将 Page&lt;Tuple&gt; 映射为 Page&lt;T&gt;，保留分页信息与总数。
-     * 
-     * @param page 待映射的Tuple分页
+     *
+     * @param page        待映射的Tuple分页
      * @param targetClass 目标类型
      * @return 映射后的对象分页
      */
@@ -134,7 +129,7 @@ public final class TupleMapper {
 
     /**
      * 读取目标类所有可写字段（含父类），按字段名建立索引并缓存。
-     * 
+     *
      * @param cls 目标类
      * @return 字段索引
      */
@@ -169,8 +164,8 @@ public final class TupleMapper {
 
     /**
      * 类型适配：覆盖常见的 数值互转 / 日期时间 / 字符串 等场景，其余类型原样返回。
-     * 
-     * @param value 待转换的值
+     *
+     * @param value      待转换的值
      * @param targetType 目标类型
      * @return 转换后的值
      */
@@ -226,8 +221,8 @@ public final class TupleMapper {
 
     /**
      * 数字类型互转。命中返回转换结果，未命中返回 null。
-     * 
-     * @param n 待转换的数字
+     *
+     * @param n          待转换的数字
      * @param targetType 目标类型
      * @return 转换后的值
      */

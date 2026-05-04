@@ -11,6 +11,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
+/**
+ * @since 1.6.21(U).90
+ */
 @Configuration
 public class GsonConfig {
 

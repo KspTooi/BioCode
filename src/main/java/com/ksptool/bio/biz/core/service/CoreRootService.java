@@ -35,7 +35,10 @@ import static com.ksptool.bio.biz.core.common.TupleMapper.tupleAs;
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
 
-
+/**
+ * @author KspTooi
+ * @since 1.6.21(U).90
+ */
 @Service
 public class CoreRootService {
 

@@ -42,6 +42,9 @@ import java.util.*;
 
 /**
  * 文件附件服务(通用)
+ *
+ * @author KspTooi
+ * @since 1.0.1(A).1
  */
 @Service
 @Slf4j

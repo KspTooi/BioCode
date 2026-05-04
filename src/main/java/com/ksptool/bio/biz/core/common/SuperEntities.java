@@ -1,12 +1,14 @@
 package com.ksptool.bio.biz.core.common;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
  * 超级实体枚举
  * 超级实体是指系统内置的超级租户、超级用户、超级组、超级权限、超级数据权限
  * 这些实体会在系统冷启动时自动创建，它们拥有整个系统中的最高权限+最高数据权限且不受任何限制
+ *
+ * @author KspTool
+ * @since 1.6.21(U).90
  */
 @Getter
 public enum SuperEntities {
@@ -35,7 +37,7 @@ public enum SuperEntities {
     /**
      * 构造函数
      *
-     * @param id 超级实体的固定ID (权限类为null)
+     * @param id   超级实体的固定ID (权限类为null)
      * @param code 超级权限的Code (非权限类为null)
      */
     SuperEntities(Long id, String code) {

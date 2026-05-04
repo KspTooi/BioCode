@@ -1,15 +1,14 @@
 package com.ksptool.bio.biz.qt.service;
 
+import com.ksptool.assembly.entity.exception.BizException;
+import com.ksptool.assembly.entity.web.CommonIdDto;
+import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.bio.biz.qt.model.qttask.QtTaskPo;
 import com.ksptool.bio.biz.qt.model.qttaskrcd.QtTaskRcdPo;
 import com.ksptool.bio.biz.qt.model.qttaskrcd.dto.GetQtTaskRcdListDto;
 import com.ksptool.bio.biz.qt.model.qttaskrcd.vo.GetQtTaskRcdDetailsVo;
 import com.ksptool.bio.biz.qt.model.qttaskrcd.vo.GetQtTaskRcdListVo;
 import com.ksptool.bio.biz.qt.repository.QtTaskRcdRepository;
-import com.ksptool.assembly.entity.exception.BizException;
-import com.ksptool.assembly.entity.web.CommonIdDto;
-import com.ksptool.assembly.entity.web.PageResult;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -23,10 +22,10 @@ import static com.ksptool.entities.Entities.assign;
 
 /**
  * QF任务调度日志服务
- * 
+ *
  * @author KspTool(ksptool@outlook.com)
- * @since 2026-02-10
  * @license Apache License 2.0
+ * @since 1.6.1(A).1
  */
 @Service
 public class QtTaskRcdService {

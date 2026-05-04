@@ -18,6 +18,10 @@ import java.time.LocalDateTime;
 import static com.ksptool.bio.biz.auth.service.SessionService.session;
 import static com.ksptool.entities.Entities.as;
 
+/**
+ * @author KspTooi
+ * @since 1.2.8(H).1
+ */
 @Service
 public class NoticeRcdService {
 

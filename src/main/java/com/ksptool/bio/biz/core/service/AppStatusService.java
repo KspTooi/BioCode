@@ -23,32 +23,50 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * @author KspTooi
+ * @since 1.6.7(G).1
+ */
 @Service
 @Slf4j
 public class AppStatusService {
 
     //最新快照，用于缓存最新采样数据
     private final AtomicReference<GetRtStatusVo> snapshot = new AtomicReference<>();
+
     // OSHI 核心对象，只初始化一次
     private SystemInfo si;
+
     private HardwareAbstractionLayer hal;
+
     private CentralProcessor cpu;
+
     private OperatingSystem os;
+
     @Value("${module-app-status.sample-delay-ms:1000}")
     private long sampleDelayMs;
+
     // 为 true 时在 getSystemInfo 中返回 jvmInputArgs 原始值，默认关闭（避免泄露密码/Token/连接串）
     @Value("${module-app-status.expose-jvm-args:false}")
     private boolean exposeJvmArgs;
+
     // 上一帧 CPU ticks（用于差值计算使用率）
     private long[] prevCpuTicks;
+
     // 上一帧网卡累计字节/包数
     private long prevNetRxBytes;
+
     private long prevNetTxBytes;
+
     private long prevNetRxPackets;
+
     private long prevNetTxPackets;
+
     // 上一帧磁盘累计字节数
     private long prevDiskReadBytes;
+
     private long prevDiskWriteBytes;
+
     // 上一帧采样时间戳（毫秒），用于计算实际间隔
     private long prevSampleMs = 0;
 

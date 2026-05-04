@@ -7,6 +7,10 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+/**
+ * @author KspTooi
+ * @since 1.6.19(S).32
+ */
 @Getter
 @Setter
 public class ExtendedFileAttachJson {

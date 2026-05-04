@@ -41,6 +41,10 @@ import static com.ksptool.bio.biz.core.common.TupleMapper.tupleAs;
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
 
+/**
+ * @author KspTooi
+ * @since 1.0.1(A).1
+ */
 @Service
 public class UserService {
 
@@ -225,7 +229,7 @@ public class UserService {
         }
 
         //处理系统内置用户的更新逻辑
-        if(user.isSystem()){
+        if (user.isSystem()) {
 
             //内置用户不能改组
             var gIds = ugRepository.getGroupIdsByGrantedUserId(user.getId());
