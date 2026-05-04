@@ -21,7 +21,7 @@
       <el-button size="small" @click="svc.selectAll">全选</el-button>
       <el-button size="small" @click="svc.deselectAll">取消全选</el-button>
       <span class="cascade-switch">
-        <el-switch v-model="svc.cascadeCheck.value" size="small" />
+        <el-switch v-model="svc.modalCascadeCheck.value" size="small" />
         <span class="cascade-label">级联变更</span>
       </span>
     </div>
@@ -30,16 +30,16 @@
       <StdAdvTree
         :ref="
           (el: any) => {
-            svc.treeRef.value = el;
+            svc.modalTreeRef.value = el;
           }
         "
-        :data="svc.treeData.value"
+        :data="svc.modalTreeData.value"
         :check="true"
-        :check-cascade="svc.cascadeCheck.value"
+        :check-cascade="svc.modalCascadeCheck.value"
         :check-multiple="true"
         :check-on-node-click="true"
-        :model-value-check="svc.checkedKeys.value"
-        :loading="svc.loading.value"
+        :model-value-check="svc.modalCheckedKeys.value"
+        :loading="svc.modalLoading.value"
         nk="id"
         nt="name"
         nc="children"
@@ -62,14 +62,14 @@
     </div>
 
     <template #footer>
-      <el-button type="primary" :loading="svc.submitting.value" @click="svc.submit">保存</el-button>
+      <el-button type="primary" :loading="svc.modalLoading.value" @click="svc.submit">保存</el-button>
       <el-button @click="onClose">关闭</el-button>
     </template>
   </el-dialog>
 </template>
 
 <script setup lang="ts">
-import { InfoFilled, WarningFilled } from "@element-plus/icons-vue";
+import { WarningFilled } from "@element-plus/icons-vue";
 import StdAdvTree from "@/soa/std-series/StdAdvTree.vue";
 import GroupMenuModalService, { type GroupMenuModalProps } from "@/views/auth/components/service/GroupMenuModalService.ts";
 

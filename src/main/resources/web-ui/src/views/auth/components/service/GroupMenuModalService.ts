@@ -7,40 +7,37 @@ import type { GetMenuTreeVo } from "@/views/core/api/MenuApi.ts";
 import StdAdvTree from "@/soa/std-series/StdAdvTree.vue";
 
 export interface GroupMenuModalProps {
-  //是否显示模态框
   visible: boolean;
-  //组信息
   data?: GetGroupListVo | null;
 }
 
 export default {
   useGroupMenuModal(props: GroupMenuModalProps, emit: (e: "close" | "success") => void) {
-    const treeRef = ref<InstanceType<typeof StdAdvTree>>();
-    const treeData = ref<GetMenuTreeVo[]>([]);
-    const checkedKeys = ref<(string | number)[]>([]);
-    const cascadeCheck = ref(false);
-    const loading = ref(false);
-    const submitting = ref(false);
+    const modalTreeRef = ref<InstanceType<typeof StdAdvTree>>();
+    const modalTreeData = ref<GetMenuTreeVo[]>([]);
+    const modalCheckedKeys = ref<(string | number)[]>([]);
+    const modalCascadeCheck = ref(false);
+    const modalLoading = ref(false);
 
     const loadAll = async (): Promise<void> => {
       if (!props.data?.id) {
         return;
       }
-      loading.value = true;
+      modalLoading.value = true;
       const [menuResult, groupDetails] = await Promise.all([
         MenuApi.getMenuTree({}),
         GroupApi.getGroupDetails({ id: props.data.id }),
       ]);
       if (menuResult.code == 0) {
-        treeData.value = menuResult.data;
+        modalTreeData.value = menuResult.data;
       }
       const ids = groupDetails.menuIds ?? [];
-      checkedKeys.value = ids.map((id) => String(id));
-      loading.value = false;
+      modalCheckedKeys.value = ids.map((id) => String(id));
+      modalLoading.value = false;
     };
 
     const onCheckedKeysChange = (keys: (string | number)[]): void => {
-      checkedKeys.value = keys;
+      modalCheckedKeys.value = keys;
     };
 
     /**
@@ -60,32 +57,32 @@ export default {
     };
 
     const selectAll = (): void => {
-      const innerTree = treeRef.value?.getTreeRef();
+      const innerTree = modalTreeRef.value?.getTreeRef();
       if (!innerTree) {
         return;
       }
-      const allKeys = collectAllKeys(treeData.value);
+      const allKeys = collectAllKeys(modalTreeData.value);
       innerTree.setCheckedKeys(allKeys);
-      checkedKeys.value = allKeys;
+      modalCheckedKeys.value = allKeys;
     };
 
     const deselectAll = (): void => {
-      const innerTree = treeRef.value?.getTreeRef();
+      const innerTree = modalTreeRef.value?.getTreeRef();
       if (!innerTree) {
         return;
       }
       innerTree.setCheckedKeys([]);
-      checkedKeys.value = [];
+      modalCheckedKeys.value = [];
     };
 
     const submit = async (): Promise<void> => {
       if (!props.data?.id) {
         return;
       }
-      submitting.value = true;
-      const menuIds = checkedKeys.value.map((k) => String(k));
+      modalLoading.value = true;
+      const menuIds = modalCheckedKeys.value.map((k) => String(k));
       const result = await GroupApi.updateGroupGm({ groupId: props.data.id, menuIds });
-      submitting.value = false;
+      modalLoading.value = false;
       if (result.code != 0) {
         ElMessage.error(result.message || "保存失败");
         return;
@@ -96,10 +93,10 @@ export default {
     };
 
     const reset = (): void => {
-      treeData.value = [];
-      checkedKeys.value = [];
-      loading.value = false;
-      submitting.value = false;
+      modalTreeData.value = [];
+      modalCheckedKeys.value = [];
+      modalCascadeCheck.value = false;
+      modalLoading.value = false;
     };
 
     watch(
@@ -114,18 +111,15 @@ export default {
     );
 
     return {
-      treeRef,
-      treeData,
-      checkedKeys,
-      cascadeCheck,
-      loading,
-      submitting,
-      loadAll,
+      modalTreeRef,
+      modalTreeData,
+      modalCheckedKeys,
+      modalCascadeCheck,
+      modalLoading,
       onCheckedKeysChange,
       selectAll,
       deselectAll,
       submit,
-      reset,
     };
   },
 };
