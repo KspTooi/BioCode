@@ -71,47 +71,6 @@ export interface UpdateGroupGmDto {
   menuIds?: string[]; // 菜单ID列表
 }
 
-export interface GetGroupPermissionMenuViewDto {
-  groupId: string; // 组ID
-  keyword?: string; // 模糊匹配 菜单名称、菜单路径
-  hasPermission?: number | null; // 是否已授权 0:否 1:是
-}
-
-export interface GetGroupPermissionMenuViewVo {
-  id: string; // 菜单ID
-  parentId: string | null; // 父级ID null:根节点
-  name: string; // 菜单名称
-  icon: string; // 菜单图标
-  kind: number; // 菜单类型 0:目录 1:菜单 2:按钮
-  path: string; // 菜单路径
-  permissionCode: string; // 所需权限码
-  missingPermission: number; // 是否缺失权限节点 0:否 1:完全缺失 2:部分缺失
-  hasPermission: number; // 当前组是否有权限 0:否 1:是 2:部分授权
-  seq: number; // 排序
-  children: GetGroupPermissionMenuViewVo[]; // 子菜单
-}
-
-export interface GetGroupPermissionNodeDto extends PageQuery {
-  groupId: string; // 组ID
-  keyword?: string | null; // 模糊匹配 权限节点名称
-  hasPermission?: number | null; // 是否已授权 0:否 1:是
-}
-
-export interface GetGroupPermissionNodeVo {
-  id: string; // 权限ID
-  name: string; // 权限名称
-  code: string; // 权限标识
-  remark: string; // 权限描述
-  seq: number; // 排序号
-  hasPermission: number; // 是否已授权 0:否 1:是
-}
-
-export interface GrantAndRevokeDto {
-  groupId: string; // 组ID
-  permissionCodes: string[]; // 权限代码列表
-  type: number; // 类型 0:授权 1:取消授权
-}
-
 export interface SimulateRsDto {
   orgId: string; // 模拟用户所在的组织节点ID
   rsLevel: number; // 模拟的RS等级 0/10/20/30/40/50/100
@@ -174,31 +133,6 @@ export default {
    */
   updateGroupGm: async (dto: UpdateGroupGmDto): Promise<Result<string>> => {
     return await Http.postEntity<Result<string>>("/group/updateGroupGm", dto);
-  },
-
-  /**
-   * 批量授权或取消授权
-   */
-  grantAndRevoke: async (dto: GrantAndRevokeDto): Promise<Result<string>> => {
-    return await Http.postEntity<Result<string>>("/group/grantAndRevoke", dto);
-  },
-
-  /**
-   * 获取组权限菜单视图
-   */
-  getGroupPermissionMenuView: async (dto: GetGroupPermissionMenuViewDto): Promise<GetGroupPermissionMenuViewVo[]> => {
-    const result = await Http.postEntity<Result<GetGroupPermissionMenuViewVo[]>>("/group/getGroupPermissionMenuView", dto);
-    if (result.code == 0) {
-      return result.data;
-    }
-    throw new Error(result.message);
-  },
-
-  /**
-   * 获取组权限节点视图
-   */
-  getGroupPermissionNodeView: async (dto: GetGroupPermissionNodeDto): Promise<PageResult<GetGroupPermissionNodeVo>> => {
-    return await Http.postEntity<PageResult<GetGroupPermissionNodeVo>>("/group/getGroupPermissionNodeView", dto);
   },
 
   /**
