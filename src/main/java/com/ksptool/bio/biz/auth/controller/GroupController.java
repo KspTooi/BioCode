@@ -8,9 +8,6 @@ import com.ksptool.bio.biz.auth.common.aop.RowScope;
 import com.ksptool.bio.biz.auth.model.group.dto.*;
 import com.ksptool.bio.biz.auth.model.group.vo.GetGroupDetailsVo;
 import com.ksptool.bio.biz.auth.model.group.vo.GetGroupListVo;
-import com.ksptool.bio.biz.auth.model.group.vo.GetGroupPermissionMenuViewVo;
-import com.ksptool.bio.biz.auth.model.group.vo.GetGroupPermissionNodeVo;
-import com.ksptool.bio.biz.auth.model.group.dto.SimulateRsDto;
 import com.ksptool.bio.biz.auth.model.group.vo.SimulateRsVo;
 import com.ksptool.bio.biz.auth.service.GroupService;
 import com.ksptool.bio.biz.core.service.MenuService;
@@ -26,8 +23,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @PrintLog
 @RestController
@@ -107,35 +102,6 @@ public class GroupController {
     public Result<String> updateGroupGm(@RequestBody @Valid UpdateGroupGmDto dto) throws Exception {
         service.updateGroupGm(dto);
         return Result.success("更新组菜单成功");
-    }
-
-    @PreAuthorize("@auth.hasCode('auth:group:edit')")
-    @Operation(summary = "获取组权限菜单视图")
-    @PostMapping("getGroupPermissionMenuView")
-    public Result<List<GetGroupPermissionMenuViewVo>> getGroupPermissionMenuView(@RequestBody @Valid GetGroupPermissionMenuViewDto dto) throws Exception {
-        return Result.success(service.getGroupPermissionMenuView(dto));
-    }
-
-    @PreAuthorize("@auth.hasCode('auth:group:edit')")
-    @Operation(summary = "获取组权限节点视图")
-    @PostMapping("getGroupPermissionNodeView")
-    public PageResult<GetGroupPermissionNodeVo> getGroupPermissionNodeView(@RequestBody @Valid GetGroupPermissionNodeDto dto) throws Exception {
-        return service.getGroupPermissionNodeView(dto);
-    }
-
-    @PreAuthorize("@auth.hasCode('auth:group:edit')")
-    @Operation(summary = "批量授权或取消授权")
-    @PostMapping("grantAndRevoke")
-    @CacheEvict(cacheNames = {"userSession", "userProfile", "menuTree"}, allEntries = true)
-    public Result<String> grantAndRevoke(@RequestBody @Valid GrantAndRevokeDto dto) throws Exception {
-        service.grantAndRevoke(dto);
-
-        //给拥有该组的用户加版本
-        userService.increaseDvByGroupId(dto.getGroupId());
-
-        //清菜单缓存
-        menuService.clearUserMenuTreeCache();
-        return Result.success("授权或取消授权成功");
     }
 
     @PreAuthorize("@auth.hasCode('auth:group:view')")
