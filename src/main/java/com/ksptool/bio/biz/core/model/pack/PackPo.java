@@ -1,4 +1,4 @@
-package com.ksptool.bio.biz.package.model;
+package com.ksptool.bio.biz.core.model.pack;
 
 import com.ksptool.assembly.entity.exception.AuthException;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
@@ -19,11 +19,11 @@ import org.hibernate.annotations.SQLRestriction;
 @Getter
 @Setter
 @Entity
-@Table(name = "core_package")
+@Table(name = "core_pack")
 @EntityListeners(AuditingEntityListener.class)
-@SQLDelete(sql = "UPDATE core_package SET delete_time = NOW() WHERE id = ?")
+@SQLDelete(sql = "UPDATE core_pack SET delete_time = NOW() WHERE id = ?")
 @SQLRestriction("delete_time IS NULL")
-public class PackagePo {
+public class PackPo {
 
     @Id
     @SnowflakeIdGenerated

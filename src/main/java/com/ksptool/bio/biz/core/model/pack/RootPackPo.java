@@ -1,4 +1,4 @@
-package com.ksptool.bio.biz.rootpackage.model;
+package com.ksptool.bio.biz.core.model.pack;
 
 import com.ksptool.assembly.entity.exception.AuthException;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
@@ -19,9 +19,9 @@ import org.hibernate.annotations.SQLRestriction;
 @Getter
 @Setter
 @Entity
-@Table(name = "core_root_package")
+@Table(name = "core_root_pack")
 @EntityListeners(AuditingEntityListener.class)
-public class RootPackagePo {
+public class RootPackPo {
 
     @Id
     @SnowflakeIdGenerated
@@ -30,8 +30,8 @@ public class RootPackagePo {
 
     @Id
     @SnowflakeIdGenerated
-    @Column(name = "package_id", nullable = false, comment = "菜单包ID")
-    private Long packageId;
+    @Column(name = "pack_id", nullable = false, comment = "菜单包ID")
+    private Long packId;
 
 
     @PrePersist

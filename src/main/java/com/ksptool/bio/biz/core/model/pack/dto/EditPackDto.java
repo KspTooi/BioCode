@@ -1,4 +1,4 @@
-package com.ksptool.bio.biz.package.model.dto;
+package com.ksptool.bio.biz.core.model.pack.dto;
 
 import java.time.LocalDateTime;
 import java.math.BigDecimal;
@@ -10,7 +10,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @Getter
 @Setter
-public class EditPackageDto {
+public class EditPackDto {
 
     @Schema(description="主键ID")
     private Long id;

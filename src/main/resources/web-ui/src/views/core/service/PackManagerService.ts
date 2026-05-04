@@ -6,9 +6,9 @@ import type {
   GetPackageDetailsVo,
   AddPackageDto,
   EditPackageDto,
-} from "@/views/package/api/PackageApi.ts";
-import PackageApi from "@/views/package/api/PackageApi.ts";
-import { Result } from "@/commons/model/Result";
+} from "../api/PackApi.ts";
+import PackageApi from "@/views/core/api/PackApi.ts";
+import { Result } from "@/commons/model/Result.ts";
 import { ElMessage, ElMessageBox } from "element-plus";
 
 /**
