@@ -115,7 +115,15 @@ export default {
     const checkStrictly = computed(() => !(props.checkCascade ?? true));
     const checkOnClickNode = computed(() => props.checkOnNodeClick ?? false);
 
-    const onCheck = (_data: any, checkInfo: { checkedKeys: (string | number)[]; checkedNodes: any[]; halfCheckedKeys: (string | number)[]; halfCheckedNodes: any[] }): void => {
+    const onCheck = (
+      _data: any,
+      checkInfo: {
+        checkedKeys: (string | number)[];
+        checkedNodes: any[];
+        halfCheckedKeys: (string | number)[];
+        halfCheckedNodes: any[];
+      }
+    ): void => {
       let keys = checkInfo.checkedKeys;
       const isMultiple = props.checkMultiple ?? true;
 
