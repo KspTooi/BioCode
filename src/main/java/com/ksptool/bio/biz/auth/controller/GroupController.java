@@ -48,7 +48,7 @@ public class GroupController {
         return service.getGroupList(dto);
     }
 
-    
+
     @PreAuthorize("@auth.hasCode('auth:group:add')")
     @Operation(summary = "新增用户组")
     @PostMapping("addGroup")
@@ -95,12 +95,19 @@ public class GroupController {
         menuService.clearUserMenuTreeCache();
         return Result.success("删除成功");
     }
-    
+
     @PreAuthorize("@auth.hasCode('auth:group:edit')")
     @Operation(summary = "更新组菜单")
     @PostMapping("updateGroupGm")
+    @CacheEvict(cacheNames = {"userSession", "userProfile", "menuTree"}, allEntries = true)
     public Result<String> updateGroupGm(@RequestBody @Valid UpdateGroupGmDto dto) throws Exception {
         service.updateGroupGm(dto);
+
+        //给拥有该组的用户加版本
+        userService.increaseDvByGroupId(dto.getGroupId());
+
+        //清菜单缓存
+        menuService.clearUserMenuTreeCache();
         return Result.success("更新组菜单成功");
     }
 
