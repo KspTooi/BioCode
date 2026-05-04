@@ -42,6 +42,41 @@ export default {
       checkedKeys.value = keys;
     };
 
+    /**
+     * 递归收集树中所有节点的 id
+     */
+    const collectAllKeys = (nodes: GetMenuTreeVo[]): string[] => {
+      const keys: string[] = [];
+      for (const node of nodes) {
+        if (node.id) {
+          keys.push(String(node.id));
+        }
+        if (node.children?.length) {
+          keys.push(...collectAllKeys(node.children));
+        }
+      }
+      return keys;
+    };
+
+    const selectAll = (): void => {
+      const innerTree = treeRef.value?.getTreeRef();
+      if (!innerTree) {
+        return;
+      }
+      const allKeys = collectAllKeys(treeData.value);
+      innerTree.setCheckedKeys(allKeys);
+      checkedKeys.value = allKeys;
+    };
+
+    const deselectAll = (): void => {
+      const innerTree = treeRef.value?.getTreeRef();
+      if (!innerTree) {
+        return;
+      }
+      innerTree.setCheckedKeys([]);
+      checkedKeys.value = [];
+    };
+
     const submit = async (): Promise<void> => {
       if (!props.data?.id) {
         return;
@@ -88,6 +123,8 @@ export default {
       submitting,
       loadAll,
       onCheckedKeysChange,
+      selectAll,
+      deselectAll,
       submit,
       reset,
     };

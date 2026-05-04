@@ -12,9 +12,18 @@
       <span>勾选后点击保存生效，父级目录会随子项一同绑定</span>
     </div>
 
+    <div class="batch-bar">
+      <el-button size="small" @click="svc.selectAll">全选</el-button>
+      <el-button size="small" @click="svc.deselectAll">取消全选</el-button>
+    </div>
+
     <div class="tree-wrap">
       <StdAdvTree
-        ref="svc.treeRef"
+        :ref="
+          (el: any) => {
+            svc.treeRef.value = el;
+          }
+        "
         :data="svc.treeData.value"
         :check="true"
         :check-cascade="true"
@@ -44,10 +53,8 @@
     </div>
 
     <template #footer>
-      <div class="dialog-footer">
-        <el-button type="primary" :loading="svc.submitting.value" @click="svc.submit">保存</el-button>
-        <el-button @click="onClose">关闭</el-button>
-      </div>
+      <el-button type="primary" :loading="svc.submitting.value" @click="svc.submit">保存</el-button>
+      <el-button @click="onClose">关闭</el-button>
     </template>
   </el-dialog>
 </template>
@@ -107,9 +114,8 @@ const onClose = (): void => {
   flex-shrink: 0;
 }
 
-.dialog-footer {
+.batch-bar {
   display: flex;
-  justify-content: flex-end;
-  gap: 8px;
+  margin-bottom: 10px;
 }
 </style>
