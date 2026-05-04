@@ -96,6 +96,9 @@
             <el-button link type="primary" size="small" :icon="EditIcon" @click="openPermissionEditModal(scope.row)">
               管理权限
             </el-button>
+            <el-button link type="primary" size="small" :icon="EditIcon" @click="openMenuModal(scope.row)">
+              管理菜单
+            </el-button>
             <el-button
               link
               type="danger"
@@ -139,6 +142,13 @@
     :visible="modalPermissionEditVisible"
     :row="modalPermissionEditRow"
     @close="modalPermissionEditVisible = false"
+  />
+
+  <GroupMenuModal
+    :visible="menuModalVisible"
+    :data="menuModalRow"
+    @close="menuModalVisible = false"
+    @success="loadList"
   />
 
   <CoreOrgDeptSelectModal
@@ -306,6 +316,7 @@ import CoreOrgDeptSelectModal from "@/views/core/components/public/CoreOrgDeptSe
 import StdListLayout from "@/soa/std-series/StdListLayout.vue";
 import ComSeqFixer from "@/soa/com-series/ComSeqFixer.vue";
 import RsSimulationModal from "@/views/auth/components/RsSimulationModal.vue";
+import GroupMenuModal from "@/views/auth/components/GroupMenuModal.vue";
 
 const EditIcon = markRaw(Edit);
 const DeleteIcon = markRaw(Delete);
@@ -361,6 +372,14 @@ const listSelected = ref<GetGroupListVo[]>([]);
  */
 const getGroupDetailForSeq = async (id: string): Promise<GetGroupDetailsVo> => {
   return await AdminGroupApi.getGroupDetails({ id });
+};
+
+const menuModalVisible = ref(false);
+const menuModalRow = ref<GetGroupListVo | null>(null);
+
+const openMenuModal = (row: GetGroupListVo): void => {
+  menuModalRow.value = row;
+  menuModalVisible.value = true;
 };
 
 const rsSimulationModalVisible = ref(false);

@@ -115,12 +115,12 @@ public class GroupService {
             }).toList();
 
             //这些所有的组织都必须属于同一个租户
-            if(!dPos.isEmpty()){
+            if (!dPos.isEmpty()) {
 
                 var hSet = new HashSet<Long>();
                 hSet.addAll(dPos.stream().map(d -> d.getRootId()).toList());
 
-                if(hSet.size() > 1){
+                if (hSet.size() > 1) {
                     throw new BizException("选择的多个组织机构不属于同一个租户!");
                 }
 
@@ -148,32 +148,32 @@ public class GroupService {
         GroupPo g = repository.findById(dto.getId()).orElseThrow(() -> new BizException("用户组不存在"));
 
         //处理系统内置用户组的更新逻辑
-        if(g.isSystem()){
+        if (g.isSystem()) {
 
             //内置用户组不可调整RS数据权限
-            if(dto.getRowScope() != null && dto.getRowScope() != g.getRowScope()){
+            if (dto.getRowScope() != null && dto.getRowScope() != g.getRowScope()) {
                 throw new BizException("内置用户组不允许调整RS数据权限！");
             }
 
             //内置用户组不可调整状态
-            if(dto.getStatus() != null && dto.getStatus() != g.getStatus()){
+            if (dto.getStatus() != null && dto.getStatus() != g.getStatus()) {
                 throw new BizException("内置用户组不允许调整状态！");
             }
 
             //内置用户组不可调整编码
-            if(dto.getCode() != null && !dto.getCode().equals(g.getCode())){
+            if (dto.getCode() != null && !dto.getCode().equals(g.getCode())) {
                 throw new BizException("内置用户组不允许调整编码！");
             }
 
             //获取超级操作权限
             var sa = pRepository.getByCode(SuperEntities.PERMISSION.getCode());
 
-            if(sa == null){
+            if (sa == null) {
                 throw new BizException("系统异常，未能获取超级操作权限！");
             }
 
             //检测dto里面是否把超级操作权限去除了 以避免用户解除超级组的SA权限导致超级组报废
-            if(!dto.getPermissionIds().contains(sa.getId())){
+            if (!dto.getPermissionIds().contains(sa.getId())) {
                 throw new BizException("内置用户组不允许解除超级操作权限！");
             }
 
@@ -191,24 +191,24 @@ public class GroupService {
         var gdIdsDiff = new IdsDiff(gdRepository.getDidsByGid(g.getId()), dto.getDeptIds());
 
         //处理GP的新增/删除关系
-        if(gpIdsDiff.hasAdd()){
+        if (gpIdsDiff.hasAdd()) {
             var gpPos = gpIdsDiff.getAddIds().stream().map(id -> new GroupPermissionPo(g.getId(), id)).toList();
             gpRepository.saveAll(gpPos);
         }
-        
-        if(gpIdsDiff.hasRemove()){
+
+        if (gpIdsDiff.hasRemove()) {
             gpRepository.removeByGidAndPids(g.getId(), gpIdsDiff.getRemoveIds());
         }
 
         //处理GD的新增/删除关系 只有RS=指定组织时才需要处理 如果RS不是指定组织 则直接清空GD关系
-        if(g.getRowScope() != RowScopes.SPECIFIED_ORG){
+        if (g.getRowScope() != RowScopes.SPECIFIED_ORG) {
             gdRepository.removeByGid(g.getId());
         }
 
-        if(g.getRowScope() == RowScopes.SPECIFIED_ORG){
+        if (g.getRowScope() == RowScopes.SPECIFIED_ORG) {
 
-            if(gdIdsDiff.hasAdd()){
-                
+            if (gdIdsDiff.hasAdd()) {
+
                 var dPos = orgRepository.findAllById(gdIdsDiff.getAddIds());
                 var gdPos = dPos.stream().map(d -> new GroupDeptPo(g.getId(), d.getId())).toList();
 
@@ -219,14 +219,14 @@ public class GroupService {
                 var oldDPos = orgRepository.findAllById(gdRepository.getDeptIdsByGroupId(g.getId()));
                 hSet.addAll(oldDPos.stream().map(d -> d.getRootId()).toList());
 
-                if(hSet.size() > 1){
+                if (hSet.size() > 1) {
                     throw new BizException("选择的多个组织机构不属于同一个租户!");
                 }
 
                 gdRepository.saveAll(gdPos);
             }
-            
-            if(gdIdsDiff.hasRemove()){
+
+            if (gdIdsDiff.hasRemove()) {
                 gdRepository.removeByGidAndDids(g.getId(), gdIdsDiff.getRemoveIds());
             }
 
@@ -348,20 +348,21 @@ public class GroupService {
      * @param dto 更新组菜单参数
      * @throws BizException 用户组不存在
      */
+    @Transactional(rollbackFor = Exception.class)
     public void updateGroupGm(UpdateGroupGmDto dto) throws BizException {
 
         var g = repository.findById(dto.getGroupId()).orElseThrow(() -> new BizException("用户组不存在"));
-        
+
         //对比GM关系的差异
         var gmIdsDiff = new IdsDiff(gmRepository.getMidsByGid(g.getId()), dto.getMenuIds());
 
         //处理GM的新增/删除关系
-        if(gmIdsDiff.hasAdd()){
+        if (gmIdsDiff.hasAdd()) {
             var gmPos = gmIdsDiff.getAddIds().stream().map(id -> new GroupMenuPo(g.getId(), id)).toList();
             gmRepository.saveAll(gmPos);
         }
-        
-        if(gmIdsDiff.hasRemove()){
+
+        if (gmIdsDiff.hasRemove()) {
             gmRepository.removeByGidAndMids(g.getId(), gmIdsDiff.getRemoveIds());
         }
 
@@ -780,7 +781,6 @@ public class GroupService {
         vo.setVisibleOrgIds(new ArrayList<>());
         return vo;
     }
-
 
 
 }

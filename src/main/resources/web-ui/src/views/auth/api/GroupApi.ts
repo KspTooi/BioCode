@@ -37,9 +37,10 @@ export interface GetGroupDetailsVo {
   isSystem: number; // 系统内置组 0:否 1:是
   status: number; // 组状态：0-禁用，1-启用
   seq: number; // 排序号
-  rowScope: number; // 数据权限 0:全部 1:本公司/租户及以下 2:本部门及以下 3:本部门 4:仅本人 5:指定部门
+  rowScope: number; // RS数据权限等级 0:全集团 10:本公司+下级公司 20:仅本公司 30:本部门+下级部门 40:仅本部门 50:仅本人 60:指定组织
   deptIds?: string[]; // 部门ID列表
   permissions: GroupPermissionDefinitionVo[]; // 权限节点列表
+  menuIds?: string[]; // 菜单ID列表
 }
 
 export interface AddGroupDto {
@@ -48,7 +49,7 @@ export interface AddGroupDto {
   remark?: string; // 组描述
   status: number; // 组状态：0-禁用，1-启用
   seq: number; // 排序号
-  rowScope: number; // 数据权限 0:全部 1:本公司/租户及以下 2:本部门及以下 3:本部门 4:仅本人 5:指定部门
+  rowScope: number; // RS数据权限等级 0:全集团 10:本公司+下级公司 20:仅本公司 30:本部门+下级部门 40:仅本部门 50:仅本人 60:指定组织
   deptIds?: string[]; // 部门ID列表
   permissionIds?: string[]; // 权限ID列表
 }
@@ -60,9 +61,14 @@ export interface EditGroupDto {
   remark?: string; // 组描述
   status: number; // 组状态：0-禁用，1-启用
   seq: number; // 排序号
-  rowScope: number; // 数据权限 0:全部 1:本公司/租户及以下 2:本部门及以下 3:本部门 4:仅本人 5:指定部门
+  rowScope: number; // RS数据权限等级 0:全集团 10:本公司+下级公司 20:仅本公司 30:本部门+下级部门 40:仅本部门 50:仅本人 60:指定组织
   deptIds?: string[]; // 部门ID列表
   permissionIds?: string[]; // 权限ID列表
+}
+
+export interface UpdateGroupGmDto {
+  groupId: string; // 组ID
+  menuIds?: string[]; // 菜单ID列表
 }
 
 export interface GetGroupPermissionMenuViewDto {
@@ -128,17 +134,6 @@ export default {
   },
 
   /**
-   * 获取组详情
-   */
-  getGroupDetails: async (dto: CommonIdDto): Promise<GetGroupDetailsVo> => {
-    const result = await Http.postEntity<Result<GetGroupDetailsVo>>("/group/getGroupDetails", dto);
-    if (result.code == 0) {
-      return result.data;
-    }
-    throw new Error(result.message);
-  },
-
-  /**
    * 新增组
    */
   addGroup: async (dto: AddGroupDto): Promise<Result<string>> => {
@@ -150,6 +145,35 @@ export default {
    */
   editGroup: async (dto: EditGroupDto): Promise<Result<string>> => {
     return await Http.postEntity<Result<string>>("/group/editGroup", dto);
+  },
+
+  /**
+   * 获取组详情
+   */
+  getGroupDetails: async (dto: CommonIdDto): Promise<GetGroupDetailsVo> => {
+    const result = await Http.postEntity<Result<GetGroupDetailsVo>>("/group/getGroupDetails", dto);
+    if (result.code == 0) {
+      return result.data;
+    }
+    throw new Error(result.message);
+  },
+
+  /**
+   * 删除组
+   */
+  removeGroup: async (dto: CommonIdDto): Promise<string> => {
+    const result = await Http.postEntity<Result<string>>("/group/removeGroup", dto);
+    if (result.code == 0) {
+      return result.message;
+    }
+    throw new Error(result.message);
+  },
+
+  /**
+   * 更新组菜单
+   */
+  updateGroupGm: async (dto: UpdateGroupGmDto): Promise<Result<string>> => {
+    return await Http.postEntity<Result<string>>("/group/updateGroupGm", dto);
   },
 
   /**
@@ -184,17 +208,6 @@ export default {
     const result = await Http.postEntity<Result<SimulateRsVo>>("/group/simulateRs", dto);
     if (result.code == 0) {
       return result.data;
-    }
-    throw new Error(result.message);
-  },
-
-  /**
-   * 删除组
-   */
-  removeGroup: async (dto: CommonIdDto): Promise<string> => {
-    const result = await Http.postEntity<Result<string>>("/group/removeGroup", dto);
-    if (result.code == 0) {
-      return result.message;
     }
     throw new Error(result.message);
   },
