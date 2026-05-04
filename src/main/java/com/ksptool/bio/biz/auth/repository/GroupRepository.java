@@ -27,9 +27,9 @@ public interface GroupRepository extends JpaRepository<GroupPo, Long>, JpaSpecif
     @Query("""
             SELECT g FROM GroupPo g
             LEFT JOIN UserGroupPo ug ON g.id = ug.groupId
-            WHERE ug.userId = :userId
+            WHERE ug.userId = :userId AND g.status = :status
             """)
-    List<GroupPo> getGroupsByUserId(@Param("userId") Long userId);
+    List<GroupPo> getGroupsByUserIdAndStatus(@Param("userId") Long userId, @Param("status") Integer status);
 
     /**
      * 根据标识统计用户组数量 排除指定ID
