@@ -143,4 +143,19 @@ public interface PermissionRepository extends JpaRepository<PermissionPo, Long> 
             """)
     List<PermissionPo> getPermissionsByGroupId(@Param("groupId") Long groupId);
 
+     /**
+     * 根据用户ID获取用户拥有的全部权限代码
+     *
+     * @param userId 用户ID
+     * @return 权限代码列表
+     */
+    @Query("""
+            SELECT DISTINCT p.code
+            FROM UserGroupPo ug
+            JOIN GroupPermissionPo gp ON ug.groupId = gp.groupId
+            JOIN PermissionPo p ON gp.permissionId = p.id
+            WHERE ug.userId = :userId
+            """)
+    Set<String> getCodesByUserId(@Param("userId") Long userId);
+
 } 

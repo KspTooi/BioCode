@@ -19,7 +19,6 @@ import java.util.Set;
 public interface UserRepository extends JpaRepository<UserPo, Long> {
 
 
-
     /**
      * 根据用户名获取用户
      *
@@ -97,22 +96,6 @@ public interface UserRepository extends JpaRepository<UserPo, Long> {
             WHERE ug.userId = :userId
             """)
     List<PermissionPo> getUserPermissions(@Param("userId") Long userId);
-
-
-    /**
-     * 获取用户权限代码列表
-     *
-     * @param userId 用户ID
-     * @return 权限代码列表
-     */
-    @Query("""
-            SELECT DISTINCT p.code
-            FROM UserGroupPo ug
-            JOIN GroupPermissionPo gp ON ug.groupId = gp.groupId
-            JOIN PermissionPo p ON gp.permissionId = p.id
-            WHERE ug.userId = :userId
-            """)
-    Set<String> getUserPermissionCodes(@Param("userId") Long userId);
 
 
     /**

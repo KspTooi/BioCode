@@ -325,26 +325,26 @@ public class SessionService {
         }
 
         //更新基本信息
-        var aud = (AuthUserSession) userDetailsService.loadUserByUsername(oldSession.getUsername());
+        var aus = (AuthUserSession) userDetailsService.loadUserByUsername(oldSession.getUsername());
 
-        oldSession.setUsername(aud.getUsername());
-        oldSession.setRootId(aud.getRootId());
-        oldSession.setRootName(aud.getRootName());
-        oldSession.setDeptId(aud.getDeptId());
-        oldSession.setDeptName(aud.getDeptName());
-        oldSession.setDataVersion(aud.getDataVersion());
+        oldSession.setUsername(aus.getUsername());
+        oldSession.setRootId(aus.getRootId());
+        oldSession.setRootName(aus.getRootName());
+        oldSession.setDeptId(aus.getDeptId());
+        oldSession.setDeptName(aus.getDeptName());
+        oldSession.setDataVersion(aus.getDataVersion());
 
         //更新权限码
         var permCodes = new HashSet<String>();
 
-        for (var authority : aud.getAuthorities()) {
+        for (var authority : aus.getAuthorities()) {
             permCodes.add(authority.getAuthority());
         }
         oldSession.setPermissionCodes(permCodes);
 
         //更新RS数据
-        oldSession.setRsMax(aud.getRsMax());
-        oldSession.setRsAllowOrgIds(new HashSet<>(aud.getRsAllowOrgIds()));
+        oldSession.setRsMax(aus.getRsMax());
+        oldSession.setRsAllowOrgIds(new HashSet<>(aus.getRsAllowOrgIds()));
 
         //更新过期时间
         oldSession.setExpiresAt(LocalDateTime.now().plusSeconds(expiresInSeconds));

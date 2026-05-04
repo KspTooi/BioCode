@@ -4,8 +4,11 @@ import com.ksptool.bio.biz.auth.common.PermissionBucket;
 import com.ksptool.bio.biz.auth.common.RsCalculator;
 import com.ksptool.bio.biz.auth.common.exception.RootUnavailableException;
 import com.ksptool.bio.biz.auth.model.auth.AuthUserSession;
+import com.ksptool.bio.biz.auth.model.group.GroupPo;
 import com.ksptool.bio.biz.auth.repository.GroupDeptRepository;
 import com.ksptool.bio.biz.auth.repository.GroupRepository;
+import com.ksptool.bio.biz.auth.repository.PermissionRepository;
+import com.ksptool.bio.biz.auth.repository.GroupMenuRepository;
 import com.ksptool.bio.biz.core.repository.CoreRootRepository;
 import com.ksptool.bio.biz.core.repository.OrgRepository;
 import com.ksptool.bio.biz.core.repository.UserRepository;
@@ -18,6 +21,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import java.time.format.DateTimeFormatter;
+import java.util.HashSet;
+import java.util.stream.Collectors;
+
 import static com.ksptool.entities.Entities.assign;
 
 
@@ -41,6 +47,12 @@ public class AuthUserDetailsService implements UserDetailsService {
 
     @Autowired
     private CoreRootRepository rRepository;
+
+    @Autowired
+    private PermissionRepository pRepository;
+
+    @Autowired
+    private GroupMenuRepository gmRepository;
 
 
     @NullMarked
@@ -77,10 +89,22 @@ public class AuthUserDetailsService implements UserDetailsService {
             }
 
             //获取用户拥有的全部权限码
-            var permissionCodes = uRepository.getUserPermissionCodes(user.getId());
+            var permissionCodes = pRepository.getCodesByUserId(user.getId());
 
             //获取用户拥有的全部用户组
             var groups = gRepository.getGroupsByUserId(user.getId());
+
+            //通过菜单衍生的权限码
+            var menusCodes = new HashSet<String>();
+
+            //获取组上的全部菜单，并合并权限码
+            if(!groups.isEmpty()){
+                var menus = gmRepository.getMenusByGids(groups.stream().map(GroupPo::getId).toList());
+                for(var menu : menus){
+                    menusCodes.addAll(menu.getPermissionCode());
+                }
+            }
+
 
             //组装AUS
             var aus = new AuthUserSession();
@@ -105,6 +129,7 @@ public class AuthUserDetailsService implements UserDetailsService {
             var pb = new PermissionBucket();
             pb.addGroupPos(groups);
             pb.addPermission(permissionCodes);
+            pb.addPermission(menusCodes);
             aus.setAuthorities(pb.toGrantedAuthorities());
 
             //开始计算RS数据权限(使用全新的RS计算器)
