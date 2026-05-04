@@ -242,29 +242,7 @@ public class GroupService {
 
         GroupPo po = repository.findById(id).orElseThrow(() -> new BizException("用户组不存在"));
 
-        //获取系统中的全部权限列表
-        List<PermissionPo> allPermPos = pRepository.findAll();
-
-        //获取该用户组拥有的权限IDS
-        var groupPermIds = gpRepository.getPermissionIdsByGroupId(id);
-
         GetGroupDetailsVo vo = as(po, GetGroupDetailsVo.class);
-        List<GroupPermissionDefinitionVo> defVos = new ArrayList<>();
-
-        for (var permission : allPermPos) {
-
-            var defVo = as(permission, GroupPermissionDefinitionVo.class);
-            defVo.setHas(1);
-
-            //如果该用户组拥有该权限 则设置为0
-            if (groupPermIds.contains(permission.getId())) {
-                defVo.setHas(0);
-            }
-
-            defVos.add(defVo);
-        }
-
-        vo.setPermissions(defVos);
 
         //如果数据权限为指定组织时，则需要获取组织列表
         if (po.getRowScope() == RowScopes.SPECIFIED_ORG) {

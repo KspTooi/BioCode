@@ -4,13 +4,6 @@ import type PageQuery from "@/commons/model/PageQuery.ts";
 import type PageResult from "@/commons/model/PageResult.ts";
 import type Result from "@/commons/model/Result.ts";
 
-export interface GroupPermissionDefinitionVo {
-  id: string; // 权限节点ID
-  code: string; // 权限节点标识
-  name: string; // 权限节点名称
-  has: number; // 当前组是否拥有 0:拥有 1:不拥有
-}
-
 export interface GetGroupListDto extends PageQuery {
   keyword?: string; // 模糊匹配 组编码、组名称、组描述
   status?: number; // 组状态：0:禁用 1:启用
@@ -39,7 +32,6 @@ export interface GetGroupDetailsVo {
   seq: number; // 排序号
   rowScope: number; // RS数据权限等级 0:全集团 10:本公司+下级公司 20:仅本公司 30:本部门+下级部门 40:仅本部门 50:仅本人 60:指定组织
   deptIds?: string[]; // 部门ID列表
-  permissions: GroupPermissionDefinitionVo[]; // 权限节点列表
   permissionIds?: string[]; // 权限ID列表
   menuIds?: string[]; // 菜单ID列表
 }
