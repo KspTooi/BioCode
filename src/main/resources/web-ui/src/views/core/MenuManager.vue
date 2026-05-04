@@ -45,7 +45,14 @@
                 <el-tag v-if="data.kind === 2" size="small" class="menu-kind-tag">按钮</el-tag>
               </template>
               <template #actions="{ data }">
-                <el-button link type="success" size="small" :icon="PlusIcon" @click="openPanel('add-item', data)">
+                <el-button
+                  v-show="data.kind !== 2"
+                  link
+                  type="success"
+                  size="small"
+                  :icon="PlusIcon"
+                  @click="openPanel('add-item', data)"
+                >
                   创建
                 </el-button>
                 <el-button link type="danger" size="small" :icon="DeleteIcon" @click="removeNode(data.id)">删除</el-button>
