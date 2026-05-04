@@ -37,7 +37,7 @@ public class TymSchemaController {
         return tymSchemaService.getTymSchemaList(dto);
     }
 
-    @PreAuthorize("@auth.hasCode('assembly:tymSchema:add')")
+    @PreAuthorize("@auth.hasCode('assembly:tyschema:add')")
     @Operation(summary = "新增类型映射方案")
     @PostMapping("/addTymSchema")
     public Result<String> addTymSchema(@RequestBody @Valid AddTymSchemaDto dto) throws Exception {
@@ -45,7 +45,7 @@ public class TymSchemaController {
         return Result.success("新增成功");
     }
 
-    @PreAuthorize("@auth.hasCode('assembly:tymSchema:edit')")
+    @PreAuthorize("@auth.hasCode('assembly:tyschema:edit')")
     @Operation(summary = "编辑类型映射方案")
     @PostMapping("/editTymSchema")
     public Result<String> editTymSchema(@RequestBody @Valid EditTymSchemaDto dto) throws Exception {
@@ -53,7 +53,7 @@ public class TymSchemaController {
         return Result.success("修改成功");
     }
 
-    @PreAuthorize("@auth.hasCode('assembly:tymSchema:view')")
+    @PreAuthorize("@auth.hasCode('assembly:tyschema:view')")
     @Operation(summary = "查询类型映射方案详情")
     @PostMapping("/getTymSchemaDetails")
     public Result<GetTymSchemaDetailsVo> getTymSchemaDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {
@@ -64,7 +64,7 @@ public class TymSchemaController {
         return Result.success(details);
     }
 
-    @PreAuthorize("@auth.hasCode('assembly:tymSchema:remove')")
+    @PreAuthorize("@auth.hasCode('assembly:tyschema:remove')")
     @Operation(summary = "删除类型映射方案")
     @PostMapping("/removeTymSchema")
     public Result<String> removeTymSchema(@RequestBody @Valid CommonIdDto dto) throws Exception {

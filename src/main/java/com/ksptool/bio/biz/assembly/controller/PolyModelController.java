@@ -37,7 +37,7 @@ PolyModelController {
         return polyModelService.getPolyModelList(dto);
     }
 
-    @PreAuthorize("@auth.hasCode('assembly:polyModel:add')")
+    @PreAuthorize("@auth.hasCode('assembly:polymodel:add')")
     @Operation(summary = "新增聚合模型")
     @PostMapping("/addPolyModel")
     public Result<String> addPolyModel(@RequestBody @Valid AddPolyModelDto dto) throws Exception {
@@ -45,7 +45,7 @@ PolyModelController {
         return Result.success("新增成功");
     }
 
-    @PreAuthorize("@auth.hasCode('assembly:polyModel:edit')")
+    @PreAuthorize("@auth.hasCode('assembly:polymodel:edit')")
     @Operation(summary = "编辑聚合模型")
     @PostMapping("/editPolyModel")
     public Result<String> editPolyModel(@RequestBody @Valid EditPolyModelDto dto) throws Exception {
@@ -53,7 +53,7 @@ PolyModelController {
         return Result.success("修改成功");
     }
 
-    @PreAuthorize("@auth.hasCode('assembly:polyModel:view')")
+    @PreAuthorize("@auth.hasCode('assembly:polymodel:view')")
     @Operation(summary = "查询聚合模型详情")
     @PostMapping("/getPolyModelDetails")
     public Result<GetPolyModelDetailsVo> getPolyModelDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {
@@ -64,7 +64,7 @@ PolyModelController {
         return Result.success(details);
     }
 
-    @PreAuthorize("@auth.hasCode('assembly:polyModel:remove')")
+    @PreAuthorize("@auth.hasCode('assembly:polymodel:remove')")
     @Operation(summary = "删除聚合模型元素")
     @PostMapping("/removePolyModel")
     public Result<String> removePolyModel(@RequestBody @Valid CommonIdDto dto) throws Exception {

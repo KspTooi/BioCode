@@ -41,7 +41,7 @@ public class DataSourceController {
         return dataSourceService.getDataSourceList(dto);
     }
 
-    @PreAuthorize("@auth.hasCode('assembly:dataSource:add')")
+    @PreAuthorize("@auth.hasCode('assembly:datasource:add')")
     @Operation(summary = "新增数据源")
     @PostMapping("/addDataSource")
     public Result<String> addDataSource(@RequestBody @Valid AddDataSourceDto dto) throws Exception {
@@ -49,7 +49,7 @@ public class DataSourceController {
         return Result.success("新增成功");
     }
 
-    @PreAuthorize("@auth.hasCode('assembly:dataSource:edit')")
+    @PreAuthorize("@auth.hasCode('assembly:datasource:edit')")
     @Operation(summary = "编辑数据源")
     @PostMapping("/editDataSource")
     public Result<String> editDataSource(@RequestBody @Valid EditDataSourceDto dto) throws Exception {
@@ -57,7 +57,7 @@ public class DataSourceController {
         return Result.success("修改成功");
     }
 
-    @PreAuthorize("@auth.hasCode('assembly:dataSource:view')")
+    @PreAuthorize("@auth.hasCode('assembly:datasource:view')")
     @Operation(summary = "查询数据源详情")
     @PostMapping("/getDataSourceDetails")
     public Result<GetDataSourceDetailsVo> getDataSourceDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {
@@ -68,7 +68,7 @@ public class DataSourceController {
         return Result.success(details);
     }
 
-    @PreAuthorize("@auth.hasCode('assembly:dataSource:remove')")
+    @PreAuthorize("@auth.hasCode('assembly:datasource:remove')")
     @Operation(summary = "删除数据源")
     @PostMapping("/removeDataSource")
     public Result<String> removeDataSource(@RequestBody @Valid CommonIdDto dto) throws Exception {
@@ -81,7 +81,7 @@ public class DataSourceController {
         return Result.success("操作成功");
     }
 
-    @PreAuthorize("@auth.hasCode('assembly:dataSource:test')")
+    @PreAuthorize("@auth.hasCode('assembly:datasource:test')")
     @Operation(summary = "测试数据源连接")
     @PostMapping("/testDataSourceConnection")
     public Result<String> testDataSourceConnection(@RequestBody @Valid CommonIdDto dto) throws Exception {
