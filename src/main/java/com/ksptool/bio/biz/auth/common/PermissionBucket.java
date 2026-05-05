@@ -230,6 +230,16 @@ public class PermissionBucket {
     }
 
     /**
+     * 判断桶内是否包含透视权限(PERSP)
+     * 拥有此权限可在查询中看到所有内置数据(isSystem=true)
+     *
+     * @return 是否包含透视权限
+     */
+    public boolean hasPerspCode() {
+        return rawCodes.contains("*:*:*:*:PS");
+    }
+
+    /**
      * 判断桶是否为空
      *
      * @return 是否为空
