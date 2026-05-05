@@ -365,6 +365,12 @@ public class MaintainService {
             gRepository.save(superGroup);
         }
 
+        //超级租户的管理员账户指向超级用户
+        if (superRoot != null) {
+            superRoot.setAdminUserId(sUserId);
+            rRepository.save(superRoot);
+        }
+
         var vo = new MaintainUpdateVo();
         vo.setExistCount(0);
         vo.setAddedCount(actions);
