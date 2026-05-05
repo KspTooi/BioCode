@@ -441,11 +441,30 @@ export default {
       loadMenus();
     };
 
-    onMounted(() => {
-      //检查缓存的模式
-      const store = useMenuServiceStore();
-
-      console.log(store.panelMode);
+    onMounted(async () => {
+      // 编辑模式恢复时重新拉取最新数据，避免展示过时缓存
+      if (treeStore.panelMode === "edit" && treeStore.panelVisible && treeStore.panelForm.id) {
+        try {
+          const ret = await MenuApi.getMenuDetails({ id: treeStore.panelForm.id });
+          if (Result.isSuccess(ret)) {
+            Object.assign(treeStore.panelForm, {
+              id: ret.data.id,
+              parentId: ret.data.parentId ?? "",
+              name: ret.data.name,
+              kind: ret.data.kind,
+              path: ret.data.path,
+              icon: ret.data.icon,
+              hide: ret.data.hide,
+              permissionCode: ret.data.permissionCode,
+              seq: ret.data.seq,
+              remark: ret.data.remark,
+            });
+          }
+        } catch {
+          // 拉取失败则关闭面板
+          treeStore.panelVisible = false;
+        }
+      }
     });
 
     return {
