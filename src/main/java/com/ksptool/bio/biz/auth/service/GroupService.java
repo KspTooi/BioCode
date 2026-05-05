@@ -64,9 +64,6 @@ public class GroupService {
     @Autowired
     private OrgRepository orgRepository;
 
-    @Autowired
-    private MenuRepository menuRepository;
-
     /**
      * 获取用户组列表
      *
@@ -159,7 +156,7 @@ public class GroupService {
             }
 
             //内置用户组不可调整状态
-            if (dto.getStatus() != null && dto.getStatus() != g.getStatus()) {
+            if (dto.getStatus() != null && !dto.getStatus().equals(g.getStatus())) {
                 throw new BizException("内置用户组不允许调整状态！");
             }
 
@@ -184,19 +181,8 @@ public class GroupService {
         //合并同类项
         assign(dto, g);
 
-        //对比GP + GD关系的差异
-        var gpIdsDiff = new IdsDiff(gpRepository.getPidsByGid(g.getId()), dto.getPermissionIds());
+        //对比D关系的差异
         var gdIdsDiff = new IdsDiff(gdRepository.getDidsByGid(g.getId()), dto.getDeptIds());
-
-        //处理GP的新增/删除关系
-        if (gpIdsDiff.hasAdd()) {
-            var gpPos = gpIdsDiff.getAddIds().stream().map(id -> new GroupPermissionPo(g.getId(), id)).toList();
-            gpRepository.saveAll(gpPos);
-        }
-
-        if (gpIdsDiff.hasRemove()) {
-            gpRepository.removeByGidAndPids(g.getId(), gpIdsDiff.getRemoveIds());
-        }
 
         //处理GD的新增/删除关系 只有RS=指定组织时才需要处理 如果RS不是指定组织 则直接清空GD关系
         if (g.getRowScope() != RowScopes.SPECIFIED_ORG) {
