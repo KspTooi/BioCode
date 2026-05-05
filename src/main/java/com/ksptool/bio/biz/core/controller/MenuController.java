@@ -43,7 +43,7 @@ public class MenuController {
         return Result.success(menuService.getUserMenuTree(session().getUserId()));
     }
 
-    @PreAuthorize("@auth.hasCode('core:menu:list')")
+
     @PostMapping("/getMenuTree")
     @Operation(summary = "获取菜单与按钮树(用于菜单管理)")
     public Result<List<GetMenuTreeVo>> getMenuTree(@RequestBody @Valid GetMenuTreeDto dto) throws Exception {

@@ -47,7 +47,6 @@ public class PermissionController {
         return Result.success(service.getPermissionDefinition());
     }
 
-    @PreAuthorize("@auth.hasCode('auth:permission:list')")
     @Operation(summary = "获取权限列表")
     @PostMapping("getPermissionList")
     public PageResult<GetPermissionListVo> getPermissionList(@RequestBody @Valid GetPermissionListDto dto) {
