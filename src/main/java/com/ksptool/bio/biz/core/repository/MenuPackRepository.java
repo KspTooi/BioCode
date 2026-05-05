@@ -32,10 +32,22 @@ public interface MenuPackRepository extends JpaRepository<MenuPackPo, MenuPackPo
     @Query("DELETE FROM MenuPackPo mp WHERE mp.packId = :pid AND mp.menuId IN :mids")
     int removeByPidAndMids(@Param("pid") Long pid, @Param("mids") List<Long> mids);
 
+    /**
+     * 根据菜单ID删除菜单关联
+     *
+     * @param mid 菜单ID
+     * @return 删除的菜单关联数量
+     */
     @Modifying
     @Query("DELETE FROM MenuPackPo mp WHERE mp.menuId = :mid")
     int removeByMid(@Param("mid") Long mid);
 
+    /**
+     * 根据菜单包ID删除菜单关联
+     *
+     * @param pid 菜单包ID
+     * @return 删除的菜单关联数量
+     */
     @Modifying
     @Query("DELETE FROM MenuPackPo mp WHERE mp.packId = :pid")
     int removeByPid(@Param("pid") Long pid);
