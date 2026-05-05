@@ -4,7 +4,7 @@
   "avatar": "",
   "version": "4.9.4",
   "createdTime": "2025-5-31 18:54:43",
-  "updatedTime": "2026-5-5 07:31:50",
+  "updatedTime": "2026-5-5 08:35:48",
   "dbConns": [],
   "profile": {
     "default": {
@@ -21608,6 +21608,24 @@
           "domain": "3F9E08C8-96C1-4FD0-9F00-BEF0DB7FB7B9",
           "id": "A2F8A4FF-CB6C-49B9-B568-F9948FF55132",
           "uiHint": null
+        },
+        {
+          "defKey": "is_system",
+          "defName": "内置租户 0:否 1:是",
+          "comment": "",
+          "type": "",
+          "len": "",
+          "scale": "",
+          "primaryKey": false,
+          "notNull": true,
+          "autoIncrement": false,
+          "defaultValue": "",
+          "hideInGraph": false,
+          "refDict": "",
+          "baseType": "03F05E70-3F80-47EE-AA1A-9348591BD47D",
+          "extProps": {},
+          "domain": "1B3F3434-1CE8-4D13-A4C3-CDAE3CDF0498",
+          "id": "E4268320-51D9-4D5F-A88E-38EA9BE4CC53"
         },
         {
           "defKey": "create_time",
