@@ -37,7 +37,7 @@ public class OrgController {
     @Autowired
     private UserService userService;
 
-    @PreAuthorize("@auth.hasCode('core:org:view')")
+
     @PostMapping("/getOrgTree")
     @Operation(summary = "查询组织机构树(不分页)")
     public Result<List<GetOrgTreeVo>> getOrgTree(@RequestBody @Valid GetOrgTreeDto dto) throws Exception {
