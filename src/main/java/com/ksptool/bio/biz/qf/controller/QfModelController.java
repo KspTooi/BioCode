@@ -41,7 +41,7 @@ public class QfModelController {
     @Autowired
     private QfModelService qfModelService;
 
-    @PreAuthorize("@auth.hasCode('qf:model:view')")
+    @PreAuthorize("@auth.hasCode('qf:model:list')")
     @PostMapping("/getQfModelList")
     @Operation(summary = "查询流程模型列表")
     public PageResult<GetQfModelListVo> getQfModelList(@RequestBody @Valid GetQfModelListDto dto) throws Exception {
@@ -81,7 +81,7 @@ public class QfModelController {
     }
 
 
-    @PreAuthorize("@auth.hasCode('qf:model:view')")
+    @PreAuthorize("@auth.hasCode('qf:model:details')")
     @Operation(summary = "查询流程模型详情")
     @PostMapping("/getQfModelDetails")
     public Result<GetQfModelDetailsVo> getQfModelDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {

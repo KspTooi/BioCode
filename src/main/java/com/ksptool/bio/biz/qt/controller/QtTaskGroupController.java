@@ -38,7 +38,7 @@ public class QtTaskGroupController {
     @Autowired
     private QtTaskGroupService qtTaskGroupService;
 
-    @PreAuthorize("@auth.hasCode('qt:group:view')")
+    @PreAuthorize("@auth.hasCode('qt:group:list')")
     @PostMapping("/getQtTaskGroupList")
     @Operation(summary = "查询任务分组列表")
     public PageResult<GetQtTaskGroupListVo> getQtTaskGroupList(@RequestBody @Valid GetQtTaskGroupListDto dto) throws Exception {
@@ -61,7 +61,7 @@ public class QtTaskGroupController {
         return Result.success("修改成功");
     }
 
-    @PreAuthorize("@auth.hasCode('qt:group:view')")
+    @PreAuthorize("@auth.hasCode('qt:group:details')")
     @Operation(summary = "查询任务分组详情")
     @PostMapping("/getQtTaskGroupDetails")
     public Result<GetQtTaskGroupDetailsVo> getQtTaskGroupDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {

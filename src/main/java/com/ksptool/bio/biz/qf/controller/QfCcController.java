@@ -41,7 +41,7 @@ public class QfCcController {
     @Autowired
     private QfCcService qfCcService;
 
-    @PreAuthorize("@auth.hasCode('qf:cc:view')")
+    @PreAuthorize("@auth.hasCode('qf:cc:list')")
     @PostMapping("/getQfCcList")
     @Operation(summary = "查询抄送列表")
     public PageResult<GetQfCcListVo> getQfCcList(@RequestBody @Valid GetQfCcListDto dto) throws Exception {
@@ -49,7 +49,7 @@ public class QfCcController {
     }
 
 
-    @PreAuthorize("@auth.hasCode('qf:cc:view')")
+    @PreAuthorize("@auth.hasCode('qf:cc:details')")
     @Operation(summary = "查询抄送详情")
     @PostMapping("/getQfCcDetails")
     public Result<GetQfCcDetailsVo> getQfCcDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {

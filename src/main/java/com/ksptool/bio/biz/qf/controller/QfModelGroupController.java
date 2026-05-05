@@ -40,7 +40,7 @@ public class QfModelGroupController {
     @Autowired
     private QfModelGroupService qfModelGroupService;
 
-    @PreAuthorize("@auth.hasCode('qf:model:group:view')")
+    @PreAuthorize("@auth.hasCode('qf:model:group:list')")
     @PostMapping("/getQfModelGroupList")
     @Operation(summary = "查询流程模型分组列表")
     public PageResult<GetQfModelGroupListVo> getQfModelGroupList(@RequestBody @Valid GetQfModelGroupListDto dto) throws Exception {
@@ -63,7 +63,7 @@ public class QfModelGroupController {
         return Result.success("修改成功");
     }
 
-    @PreAuthorize("@auth.hasCode('qf:model:group:view')")
+    @PreAuthorize("@auth.hasCode('qf:model:group:details')")
     @Operation(summary = "查询流程模型分组详情")
     @PostMapping("/getQfModelGroupDetails")
     public Result<GetQfModelGroupDetailsVo> getQfModelGroupDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {

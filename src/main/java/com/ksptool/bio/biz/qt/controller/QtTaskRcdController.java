@@ -34,14 +34,14 @@ public class QtTaskRcdController {
     @Autowired
     private QtTaskRcdService qtTaskRcdService;
 
-    @PreAuthorize("@auth.hasCode('qt:rcd:view')")
+    @PreAuthorize("@auth.hasCode('qt:rcd:list')")
     @PostMapping("/getQtTaskRcdList")
     @Operation(summary = "查询调度日志列表")
     public PageResult<GetQtTaskRcdListVo> getQtTaskRcdList(@RequestBody @Valid GetQtTaskRcdListDto dto) throws Exception {
         return qtTaskRcdService.getQtTaskRcdList(dto);
     }
 
-    @PreAuthorize("@auth.hasCode('qt:rcd:view')")
+    @PreAuthorize("@auth.hasCode('qt:rcd:details')")
     @Operation(summary = "查询调度日志详情")
     @PostMapping("/getQtTaskRcdDetails")
     public Result<GetQtTaskRcdDetailsVo> getQtTaskRcdDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {

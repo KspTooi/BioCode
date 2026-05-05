@@ -43,14 +43,14 @@ public class QfModelDeployRcdController {
     @Autowired
     private QfProcService qfProcService;
 
-    @PreAuthorize("@auth.hasCode('qf:model:deploy:view')")
+    @PreAuthorize("@auth.hasCode('qf:model:deploy:list')")
     @PostMapping("/getQfModelDeployRcdList")
     @Operation(summary = "查询流程模型部署列表")
     public PageResult<GetQfModelDeployRcdListVo> getQfModelDeployRcdList(@RequestBody @Valid GetQfModelDeployRcdListDto dto) throws Exception {
         return qfModelDeployRcdService.getQfModelDeployRcdList(dto);
     }
 
-    @PreAuthorize("@auth.hasCode('qf:model:deploy:view')")
+    @PreAuthorize("@auth.hasCode('qf:model:deploy:details')")
     @Operation(summary = "查询流程模型部署详情")
     @PostMapping("/getQfModelDeployRcdDetails")
     public Result<GetQfModelDeployRcdDetailsVo> getQfModelDeployRcdDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {

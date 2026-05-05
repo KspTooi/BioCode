@@ -41,7 +41,7 @@ public class QfBizFormController {
     @Autowired
     private QfBizFormService qfBizFormService;
 
-    @PreAuthorize("@auth.hasCode('qf:biz:form:view')")
+    @PreAuthorize("@auth.hasCode('qf:biz:form:list')")
     @PostMapping("/getBizFormList")
     @Operation(summary = "查询业务表单列表")
     public PageResult<GetQfBizFormListVo> getBizFormList(@RequestBody @Valid GetQfBizFormListDto dto) throws Exception {
@@ -64,7 +64,7 @@ public class QfBizFormController {
         return Result.success("修改成功");
     }
 
-    @PreAuthorize("@auth.hasCode('qf:biz:form:view')")
+    @PreAuthorize("@auth.hasCode('qf:biz:form:details')")
     @Operation(summary = "查询业务表单详情")
     @PostMapping("/getBizFormDetails")
     public Result<GetQfBizFormDetailsVo> getBizFormDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {
