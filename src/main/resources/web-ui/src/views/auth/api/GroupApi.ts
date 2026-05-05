@@ -45,9 +45,7 @@ export interface AddGroupDto {
   seq: number; // 排序号
   rowScope: number; // RS数据权限等级 0:全集团 10:本公司+下级公司 20:仅本公司 30:本部门+下级部门 40:仅本部门 50:仅本人 60:指定组织
   deptIds?: string[]; // 部门ID列表
-  permissionIds?: string[]; // 权限ID列表
 }
-
 export interface EditGroupDto {
   id: string; // 组ID
   code: string; // 组编码
@@ -57,9 +55,7 @@ export interface EditGroupDto {
   seq: number; // 排序号
   rowScope: number; // RS数据权限等级 0:全集团 10:本公司+下级公司 20:仅本公司 30:本部门+下级部门 40:仅本部门 50:仅本人 60:指定组织
   deptIds?: string[]; // 部门ID列表
-  permissionIds?: string[]; // 权限ID列表
 }
-
 export interface UpdateGroupGmDto {
   groupId: string; // 组ID
   menuIds?: string[]; // 菜单ID列表

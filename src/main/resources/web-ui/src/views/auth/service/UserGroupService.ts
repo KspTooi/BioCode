@@ -148,7 +148,6 @@ export default {
       seq: 0,
       rowScope: 0,
       deptIds: [],
-      permissionIds: [],
       menuIds: [],
     });
 
@@ -218,7 +217,6 @@ export default {
       modalForm.seq = 0;
       modalForm.rowScope = 0;
       modalForm.deptIds = [];
-      modalForm.permissionIds = [];
       modalForm.menuIds = [];
 
       if (modalFormRef.value) {
@@ -245,7 +243,6 @@ export default {
           modalForm.seq = ret.seq;
           modalForm.rowScope = ret.rowScope ?? 0;
           modalForm.deptIds = ret.deptIds || [];
-          modalForm.permissionIds = ret.permissionIds || [];
           modalForm.menuIds = ret.menuIds || [];
         } catch (error: any) {
           ElMessage.error(error.message || "获取用户组详情失败");

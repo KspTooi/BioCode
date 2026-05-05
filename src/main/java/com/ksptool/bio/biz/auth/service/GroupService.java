@@ -96,16 +96,6 @@ public class GroupService {
         g = repository.save(g);
         var gId = g.getId();
 
-        //处理GP关系
-        var pPos = pRepository.findAllById(dto.getPermissionIds());
-        var gpPos = pPos.stream().map(p -> {
-            return new GroupPermissionPo(gId, p.getId());
-        }).toList();
-
-        if (!gpPos.isEmpty()) {
-            gpRepository.saveAll(gpPos);
-        }
-
         //处理GD关系 RS=指定组织时才需要处理 如果RS不是指定组织 则直接清空GD关系
         if (dto.getRowScope() == RowScopes.SPECIFIED_ORG) {
 
