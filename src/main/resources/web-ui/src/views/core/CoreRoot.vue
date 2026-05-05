@@ -33,7 +33,7 @@
 
     <!-- 操作按钮区域 -->
     <StdListAreaAction class="flex gap-2">
-      <el-button type="primary" @click="openModal('add', null)">创建租户</el-button>
+      <el-button type="success" @click="openModal('add', null)">创建租户</el-button>
     </StdListAreaAction>
 
     <!-- 列表表格区域 -->
@@ -42,11 +42,16 @@
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
         <el-table-column prop="name" label="租户名称" min-width="120" show-overflow-tooltip />
         <el-table-column prop="adminUsername" label="管理员账号" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="expireTime" label="到期时间" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="expireTime" label="到期时间" min-width="120" show-overflow-tooltip>
+          <template #default="scope">
+            <span v-if="scope.row.expireTime">{{ scope.row.expireTime }}</span>
+            <span v-if="!scope.row.expireTime" class="text-gray-400">无限制</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="isSystem" label="内置" min-width="80" align="center">
           <template #default="scope">
             <el-tag v-if="scope.row.isSystem === 1" type="warning">是</el-tag>
-            <span v-else>否</span>
+            <el-tag v-if="scope.row.isSystem === 0" type="info">否</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="status" label="状态" min-width="100" show-overflow-tooltip align="center">
@@ -62,7 +67,16 @@
             <el-button link type="primary" size="small" :icon="EditIcon" @click="openModal('edit', scope.row)">
               编辑
             </el-button>
-            <el-button link type="danger" size="small" :icon="DeleteIcon" :disabled="scope.row.isSystem === 1" @click="removeList(scope.row)"> 删除 </el-button>
+            <el-button
+              link
+              type="danger"
+              size="small"
+              :icon="DeleteIcon"
+              :disabled="scope.row.isSystem === 1"
+              @click="removeList(scope.row)"
+            >
+              删除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -142,11 +156,7 @@
             show-word-limit
           />
         </el-form-item>
-        <el-form-item
-          v-if="modalMode === 'add'"
-          label="管理员密码"
-          prop="_adminPassword"
-        >
+        <el-form-item v-if="modalMode === 'add'" label="管理员密码" prop="_adminPassword">
           <el-input
             :maxlength="40"
             v-model="modalForm._adminPassword"
@@ -165,14 +175,14 @@
             show-word-limit
             placeholder="请输入备注"
             clearable
-			  	/>
-		  	</el-form-item>
+          />
+        </el-form-item>
         <el-form-item label="状态" prop="status">
-				  <el-radio-group v-model="modalForm.status" :disabled="modalMode === 'edit' && modalForm.isSystem === 1">
+          <el-radio-group v-model="modalForm.status" :disabled="modalMode === 'edit' && modalForm.isSystem === 1">
             <el-radio :value="0">正常</el-radio>
             <el-radio :value="1">停用</el-radio>
           </el-radio-group>
-			  </el-form-item>
+        </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -201,8 +211,7 @@ const EditIcon = markRaw(Edit);
 const DeleteIcon = markRaw(Delete);
 
 // 列表管理打包
-const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } =
-  CoreRootService.useCoreRootList();
+const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } = CoreRootService.useCoreRootList();
 
 // 模态框表单引用
 const modalFormRef = ref<FormInstance>();
