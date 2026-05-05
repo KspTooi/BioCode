@@ -62,10 +62,13 @@
         </el-table-column>
 
         <el-table-column prop="createTime" label="创建时间" min-width="120" show-overflow-tooltip />
-        <el-table-column label="操作" fixed="right" min-width="180">
+        <el-table-column label="操作" fixed="right" min-width="260">
           <template #default="scope">
             <el-button link type="primary" size="small" :icon="EditIcon" @click="openModal('edit', scope.row)">
               编辑
+            </el-button>
+            <el-button link type="primary" size="small" :icon="EditIcon" @click="openRpModal(scope.row)">
+              管理菜单包
             </el-button>
             <el-button
               link
@@ -193,6 +196,8 @@
         </div>
       </template>
     </el-dialog>
+
+    <RootRpModal :visible="rpModalVisible" :data="rpModalRow" @close="rpModalVisible = false" @success="loadList" />
   </StdListContainer>
 </template>
 
@@ -200,7 +205,9 @@
 import { ref, markRaw } from "vue";
 import { Edit, Delete } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
+import type { GetCoreRootListVo } from "@/views/core/api/CoreRootApi.ts";
 import CoreRootService from "@/views/core/service/CoreRootService.ts";
+import RootRpModal from "@/views/core/components/RootRpModal.vue";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
 import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
 import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";
@@ -219,6 +226,14 @@ const modalFormRef = ref<FormInstance>();
 // 模态框打包
 const { modalVisible, modalLoading, modalMode, modalForm, modalRules, openModal, resetModal, submitModal } =
   CoreRootService.useCoreRootModal(modalFormRef, loadList);
+
+const rpModalVisible = ref(false);
+const rpModalRow = ref<GetCoreRootListVo | null>(null);
+
+const openRpModal = (row: GetCoreRootListVo): void => {
+  rpModalRow.value = row;
+  rpModalVisible.value = true;
+};
 </script>
 
 <style scoped></style>

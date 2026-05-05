@@ -36,8 +36,17 @@ export interface GetCoreRootDetailsVo {
   remark: string; // 备注
   status: number; // 状态 1:正常，0:停用
   isSystem: number; // 内置租户 0:否 1:是
+  packIds: string[]; // 已绑定的菜单包ID列表
   _adminUsername: string; // [前端] 管理员账号
   _adminPassword: string; // [前端] 管理员密码
+}
+
+/**
+ * 更新租户绑定菜单包Dto
+ */
+export interface UpdateRootPackDto {
+  rootId: string; // 租户ID
+  packIds: string[]; // 菜单包ID列表
 }
 
 /**
@@ -111,6 +120,17 @@ export default {
    */
   removeCoreRoot: async (dto: CommonIdDto): Promise<string> => {
     const result = await Http.postEntity<Result<string>>("/coreRoot/removeCoreRoot", dto);
+    if (result.code === 0) {
+      return result.message;
+    }
+    throw new Error(result.message);
+  },
+
+  /**
+   * 更新租户绑定菜单包
+   */
+  updateRootPack: async (dto: UpdateRootPackDto): Promise<string> => {
+    const result = await Http.postEntity<Result<string>>("/coreRoot/updateRootPack", dto);
     if (result.code === 0) {
       return result.message;
     }

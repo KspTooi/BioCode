@@ -107,6 +107,7 @@ export default {
       remark: "",
       status: 0,
       isSystem: 0,
+      packIds: [],
       _adminUsername: "",
       _adminPassword: "",
     });
@@ -138,6 +139,7 @@ export default {
         modalForm.remark = "";
         modalForm.status = 0;
         modalForm.isSystem = 0;
+        modalForm.packIds = [];
         modalForm._adminUsername = "";
         modalForm._adminPassword = "";
         modalVisible.value = true;
@@ -158,6 +160,7 @@ export default {
           modalForm.remark = details.remark ?? "";
           modalForm.status = details.status;
           modalForm.isSystem = details.isSystem ?? 0;
+          modalForm.packIds = details.packIds ?? [];
           modalForm._adminUsername = row.adminUsername ?? "";
           modalForm._adminPassword = "";
         } catch (error: any) {
@@ -180,6 +183,7 @@ export default {
       modalForm.remark = "";
       modalForm.status = 0;
       modalForm.isSystem = 0;
+      modalForm.packIds = [];
       modalForm._adminUsername = "";
       modalForm._adminPassword = "";
     };
