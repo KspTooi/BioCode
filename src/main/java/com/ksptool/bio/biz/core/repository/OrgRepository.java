@@ -36,7 +36,7 @@ public interface OrgRepository extends JpaRepository<OrgPo, Long> {
      * @param id       需排除的ID
      * @return 组织机构数量
      */
-    @Query("SELECT COUNT(u) FROM OrgPo u WHERE u.name = :name AND u.parentId = :parentId AND(:id IS NULL OR u.id != :id)")
+    @Query("SELECT COUNT(u) FROM OrgPo u WHERE u.name = :name AND (u.parentId = :parentId OR (:parentId IS NULL AND u.parentId IS NULL)) AND (:id IS NULL OR u.id != :id)")
     int countByNameAndParentIdExcludeId(@Param("name") String name, @Param("parentId") Long parentId, @Param("id") Long id);
 
     /**
