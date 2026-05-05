@@ -36,7 +36,7 @@ public interface PackRepository extends JpaRepository<PackPo, Long>{
             (:#{#dto.name} IS NULL OR p.name LIKE CONCAT('%', :#{#dto.name}, '%'))
             AND (:#{#dto.code} IS NULL OR p.code LIKE CONCAT('%', :#{#dto.code}, '%'))
             AND (:#{#dto.status} IS NULL OR p.status = :#{#dto.status} )
-            ORDER BY p.createTime DESC
+            ORDER BY p.seq ASC, p.createTime ASC
             """)
     Page<Tuple> getPackList(@Param("dto") GetPackListDto dto, Pageable pageable);
 
