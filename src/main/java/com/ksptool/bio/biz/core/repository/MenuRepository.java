@@ -78,4 +78,25 @@ public interface MenuRepository extends JpaRepository<MenuPo, Long> {
             """)
     @Modifying
     void clearMenu();
+
+    /**
+     * 获取可授予菜单列表
+     *
+     * @param rid 租户ID
+     * @param uid 用户ID
+     * @return 可授予菜单列表
+     */
+    @Query("""
+            SELECT t FROM MenuPo t
+            WHERE t.id IN (
+                SELECT gm.menuId FROM GroupMenuPo gm
+                WHERE gm.groupId IN (
+                    SELECT ug.groupId FROM UserGroupPo ug
+                    WHERE ug.userId = :uid
+                )
+            )
+            AND t.hide = 0 AND t.rootId = :rid
+            ORDER BY t.seq ASC,t.createTime DESC
+            """)
+    List<MenuPo> getGrantedMenus(@Param("rid") Long rid,@Param("uid") Long uid);
 }

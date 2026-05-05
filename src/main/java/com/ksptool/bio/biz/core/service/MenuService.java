@@ -21,7 +21,9 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
@@ -87,12 +89,32 @@ public class MenuService {
      * @return 菜单与按钮树
      * @throws BizException 业务异常
      */
-    public List<GetMenuTreeVo> getMenuTree(GetMenuTreeDto dto) throws BizException {
+    public List<GetMenuTreeVo> getMenuTree(GetMenuTreeDto dto) throws Exception {
 
-        List<MenuPo> list = menuRepository.getMenuTree(dto);
+        List<MenuPo> pos = menuRepository.getMenuTree(dto);
 
+        /*//普通用户查询可授予菜单
+        if (!SessionService.hasSuperCode()) {
+
+            var uid = SessionService.session().getUserId();
+
+            //如果是查询可授予菜单，则只查当前用户拥有的菜单(通过GM派生)
+            if (dto.getGrantable().isOn()) {
+
+                //普通租户也要查询为-1租户的菜单、在系统里这个租户的菜单是全局菜单
+                pos = menuRepository.getGrantedMenus(SuperEntities.ROOT.getId(), uid);
+
+            }
+
+        }
+
+        //超级用户查询所有菜单
+        if(SessionService.hasSuperCode()){
+            pos = menuRepository.getMenuTree(dto);
+        }
+*/
         //将list转换为平面vo
-        var flatVos = as(list, GetMenuTreeVo.class);
+        var flatVos = as(pos, GetMenuTreeVo.class);
         return TreeBuilder.build(flatVos);
     }
 
