@@ -30,10 +30,6 @@ export default {
      * 加载列表
      */
     const loadList = async (): Promise<void> => {
-      if (listLoading.value) {
-        return;
-      }
-
       listLoading.value = true;
       const result = await AdminGroupApi.getGroupList(listForm);
 
@@ -359,5 +355,4 @@ export default {
       openRsSimulationModal,
     };
   },
-
 };
