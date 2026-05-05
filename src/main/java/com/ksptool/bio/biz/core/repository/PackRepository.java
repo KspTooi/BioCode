@@ -10,6 +10,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 @Repository
 public interface PackRepository extends JpaRepository<PackPo, Long>{
 
@@ -48,4 +50,15 @@ public interface PackRepository extends JpaRepository<PackPo, Long>{
             SELECT COUNT(u) FROM PackPo u WHERE u.code = :code
             """)
     Integer countByCode(@Param("code") String code);
+
+    /**
+     * 根据ID列表统计菜单包数量
+     *
+     * @param ids ID列表
+     * @return 存在的数量
+     */
+    @Query("""
+            SELECT COUNT(p) FROM PackPo p WHERE p.id IN :ids
+            """)
+    long countByIds(@Param("ids") List<Long> ids);
 }

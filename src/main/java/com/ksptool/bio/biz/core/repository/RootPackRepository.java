@@ -51,4 +51,13 @@ public interface RootPackRepository extends JpaRepository<RootPackPo, RootPackPo
     @Modifying
     @Query("DELETE FROM RootPackPo rp WHERE rp.rootId = :rid")
     int removeByRid(@Param("rid") Long rid);
+
+    /**
+     * 根据菜单包ID获取绑定的全部租户ID列表
+     *
+     * @param pid 菜单包ID
+     * @return 租户ID列表
+     */
+    @Query("SELECT rp.rootId FROM RootPackPo rp WHERE rp.packId = :pid")
+    List<Long> getRidsByPid(@Param("pid") Long pid);
 }
