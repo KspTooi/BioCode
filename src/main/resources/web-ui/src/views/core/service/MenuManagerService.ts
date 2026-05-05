@@ -244,7 +244,6 @@ export default {
               icon: item.icon,
               hide: item.hide,
               permissionCode: item.permissionCode,
-              missingPermission: item.missingPermission,
               seq: item.seq,
               disabled,
               children: item.children ? filter(item.children) : [],

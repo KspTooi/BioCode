@@ -56,7 +56,6 @@ export interface GetMenuTreeVo {
   icon?: string | null; // 菜单图标
   hide?: number | null; // 是否隐藏 0:否 1:是
   permissionCode?: string[]; // 所需权限码列表
-  missingPermission?: number | null; // 是否缺失权限节点 0:否 1:完全缺失 2:部分缺失
   seq?: number | null; // 排序
   children: GetMenuTreeVo[]; // 子菜单
 }
