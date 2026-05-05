@@ -175,11 +175,6 @@ public class GroupService {
                 throw new BizException("系统异常，未能获取超级操作权限！");
             }
 
-            //检测dto里面是否把超级操作权限去除了 以避免用户解除超级组的SA权限导致超级组报废
-            if (!dto.getPermissionIds().contains(sa.getId())) {
-                throw new BizException("内置用户组不允许解除超级操作权限！");
-            }
-
         }
 
         if (repository.countByCodeExcludeId(dto.getCode(), g.getId()) > 0) {
@@ -342,6 +337,7 @@ public class GroupService {
 
             var sa = pRepository.getByCode(SuperEntities.PERMISSION.getCode());
 
+            //检测dto里面是否把超级操作权限去除了 以避免用户解除超级组的SA权限导致超级组报废
             if (!dto.getPermissionIds().contains(sa.getId())) {
                 throw new BizException("系统内置组不允许去除超级操作权限(SA)");
             }
