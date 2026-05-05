@@ -1,8 +1,10 @@
 package com.ksptool.bio.biz.core.controller;
 
 
+import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.Result;
+import com.ksptool.bio.biz.auth.service.SessionService;
 import com.ksptool.bio.biz.core.model.menu.dto.AddMenuDto;
 import com.ksptool.bio.biz.core.model.menu.dto.EditMenuDto;
 import com.ksptool.bio.biz.core.model.menu.dto.GetMenuTreeDto;
@@ -56,10 +58,14 @@ public class MenuController {
     @CacheEvict(cacheNames = {"userSession", "userProfile", "menuTree"}, allEntries = true)
     public Result<String> addMenu(@RequestBody @Valid AddMenuDto dto) throws Exception {
 
-
         //验证输入参数
         if (dto.validate() != null) {
             return Result.error(dto.validate());
+        }
+
+        //检查当前用户是否在超级租户里面
+        if (!SessionService.isSuperRoot()) {
+            throw new BizException("您所在的租户不是超级租户，无法新增菜单。");
         }
 
         menuService.addMenu(dto);
@@ -75,6 +81,11 @@ public class MenuController {
         //验证输入参数
         if (dto.validate() != null) {
             return Result.error(dto.validate());
+        }
+
+        //检查当前用户是否在超级租户里面
+        if (!SessionService.isSuperRoot()) {
+            throw new BizException("您所在的租户不是超级租户，无法编辑菜单。");
         }
 
         menuService.editMenu(dto);
