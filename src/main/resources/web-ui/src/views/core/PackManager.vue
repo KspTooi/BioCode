@@ -133,7 +133,7 @@
           <el-input-number v-model="modalForm.seq" :min="0" :max="9999" />
         </el-form-item>
         <el-form-item label="备注" prop="remark">
-          <el-input v-model="modalForm.remark" placeholder="请输入备注" clearable :maxlength="200" show-word-limit />
+          <el-input v-model="modalForm.remark" type="textarea" :rows="3" placeholder="请输入备注" :maxlength="200" show-word-limit />
         </el-form-item>
       </el-form>
       <template #footer>
