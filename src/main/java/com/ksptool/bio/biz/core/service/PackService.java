@@ -20,6 +20,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 import static com.ksptool.bio.biz.core.common.TupleMapper.tupleAs;
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
@@ -109,8 +111,28 @@ public class PackService {
         repository.deleteById(dto.getId());
     }
 
+
     /**
-     * 更新菜单包绑定的菜单
+     * 根据菜单ID查询所属的菜单包列表
+     *
+     * @param menuId 菜单ID
+     * @return 菜单包列表(仅含id和name)
+     */
+    public List<GetPackListVo> getPacksByMenuId(Long menuId) {
+        var packIds = menuPackRepository.getPidsByMid(menuId);
+        if (packIds.isEmpty()) {
+            return List.of();
+        }
+        return repository.findAllById(packIds).stream().map(p -> {
+            var vo = new GetPackListVo();
+            vo.setId(p.getId());
+            vo.setName(p.getName());
+            return vo;
+        }).toList();
+    }
+
+    /**
+     * 更新菜单包的菜单绑定
      *
      * @param dto 更新条件
      * @throws BizException 业务异常

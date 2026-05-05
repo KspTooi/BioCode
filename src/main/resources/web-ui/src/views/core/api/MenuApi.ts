@@ -1,6 +1,7 @@
 import type CommonIdDto from "@/commons/model/CommonIdDto.ts";
 import Http from "@/commons/Http.ts";
 import type Result from "@/commons/model/Result.ts";
+import type { GetPackListVo } from "@/views/core/api/PackApi.ts";
 
 export interface AddMenuDto {
   parentId?: string | null; // 父级ID null:根节点
@@ -114,5 +115,12 @@ export default {
    */
   removeMenu: async (dto: CommonIdDto): Promise<Result<string>> => {
     return await Http.postEntity<Result<string>>("/menu/removeMenu", dto);
+  },
+
+  /**
+   * 根据菜单ID查询所属菜单包
+   */
+  getPacksByMenuId: async (dto: CommonIdDto): Promise<Result<GetPackListVo[]>> => {
+    return await Http.postEntity<Result<GetPackListVo[]>>("/pack/getPacksByMenuId", dto);
   },
 };
