@@ -6,6 +6,7 @@ import com.ksptool.assembly.entity.web.Result;
 import com.ksptool.bio.biz.core.model.root.dto.AddCoreRootDto;
 import com.ksptool.bio.biz.core.model.root.dto.EditCoreRootDto;
 import com.ksptool.bio.biz.core.model.root.dto.GetCoreRootListDto;
+import com.ksptool.bio.biz.core.model.root.dto.UpdateRootRpDto;
 import com.ksptool.bio.biz.core.model.root.vo.GetCoreRootDetailsVo;
 import com.ksptool.bio.biz.core.model.root.vo.GetCoreRootListVo;
 import com.ksptool.bio.biz.core.service.CoreRootService;
@@ -71,6 +72,14 @@ public class CoreRootController {
     public Result<String> removeCoreRoot(@RequestBody @Valid CommonIdDto dto) throws Exception {
         coreRootService.removeCoreRoot(dto);
         return Result.success("操作成功");
+    }
+
+    @PreAuthorize("@auth.hasCode('core:root:edit')")
+    @Operation(summary = "更新租户的菜单包绑定")
+    @PostMapping("/updateRootRp")
+    public Result<String> updateRootRp(@RequestBody @Valid UpdateRootRpDto dto) throws Exception {
+        coreRootService.updateRootRp(dto);
+        return Result.success("更新成功");
     }
 
 }

@@ -12,16 +12,20 @@ import com.ksptool.bio.biz.auth.repository.GroupRepository;
 import com.ksptool.bio.biz.auth.repository.PermissionRepository;
 import com.ksptool.bio.biz.auth.repository.UserGroupRepository;
 import com.ksptool.bio.biz.auth.service.SessionService;
+import com.ksptool.bio.biz.core.common.IdsDiff;
 import com.ksptool.bio.biz.core.common.SuperEntities;
 import com.ksptool.bio.biz.core.common.Switch;
+import com.ksptool.bio.biz.core.model.pack.RootPackPo;
 import com.ksptool.bio.biz.core.model.root.CoreRootPo;
 import com.ksptool.bio.biz.core.model.root.dto.AddCoreRootDto;
 import com.ksptool.bio.biz.core.model.root.dto.EditCoreRootDto;
 import com.ksptool.bio.biz.core.model.root.dto.GetCoreRootListDto;
+import com.ksptool.bio.biz.core.model.root.dto.UpdateRootRpDto;
 import com.ksptool.bio.biz.core.model.root.vo.GetCoreRootDetailsVo;
 import com.ksptool.bio.biz.core.model.root.vo.GetCoreRootListVo;
 import com.ksptool.bio.biz.core.model.user.UserPo;
 import com.ksptool.bio.biz.core.repository.CoreRootRepository;
+import com.ksptool.bio.biz.core.repository.RootPackRepository;
 import com.ksptool.bio.biz.core.repository.UserRepository;
 import jakarta.persistence.Tuple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,6 +70,9 @@ public class CoreRootService {
 
     @Autowired
     private GroupPermissionRepository gpRepository;
+
+    @Autowired
+    private RootPackRepository rpRepository;
 
     /**
      * 查询租户列表
@@ -209,7 +216,9 @@ public class CoreRootService {
     public GetCoreRootDetailsVo getCoreRootDetails(CommonIdDto dto) throws BizException {
         CoreRootPo po = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("查询详情失败,数据不存在或无权限访问."));
-        return as(po, GetCoreRootDetailsVo.class);
+        GetCoreRootDetailsVo vo = as(po, GetCoreRootDetailsVo.class);
+        vo.setPackIds(rpRepository.getPidsByRid(po.getId()));
+        return vo;
     }
 
     /**
@@ -243,6 +252,30 @@ public class CoreRootService {
 
         //销毁该租户下所有用户会话
         sessionService.closeSessionByRootId(dto.getId());
+    }
+
+    /**
+     * 更新租户绑定的菜单包
+     *
+     * @param dto 更新条件
+     * @throws BizException 业务异常
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void updateRootRp(UpdateRootRpDto dto) throws BizException {
+        repository.findById(dto.getRootId())
+                .orElseThrow(() -> new BizException("租户不存在或无权限访问."));
+
+        var rpIdsDiff = new IdsDiff(rpRepository.getPidsByRid(dto.getRootId()), dto.getPackIds());
+
+        if (rpIdsDiff.hasAdd()) {
+            var rpPos = rpIdsDiff.getAddIds().stream()
+                    .map(packId -> new RootPackPo(dto.getRootId(), packId)).toList();
+            rpRepository.saveAll(rpPos);
+        }
+
+        if (rpIdsDiff.hasRemove()) {
+            rpRepository.removeByRidAndPids(dto.getRootId(), rpIdsDiff.getRemoveIds());
+        }
     }
 
 }
