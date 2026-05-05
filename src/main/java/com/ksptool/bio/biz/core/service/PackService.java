@@ -49,7 +49,11 @@ public class PackService {
      * @param dto 新增条件
      */
     @Transactional(rollbackFor = Exception.class)
-    public void addPack(AddPackDto dto){
+    public void addPack(AddPackDto dto) throws BizException {
+        if (repository.countByCode(dto.getCode()) > 0) {
+            throw new BizException("菜单包编码已存在:[" + dto.getCode() + "]");
+        }
+
         PackPo insertPo = as(dto,PackPo.class);
         repository.save(insertPo);
     }
