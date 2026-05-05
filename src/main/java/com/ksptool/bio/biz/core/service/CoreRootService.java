@@ -127,9 +127,9 @@ public class CoreRootService {
         u.setPhone(null);
         u.setEmail(null);
         u.setLoginCount(0);
-        u.setStatus(0);
+        u.setStatus(Switch.on());
         u.setRootId(insertPo.getId());
-        u.setIsSystem(1);
+        u.setIsSystem(Switch.yes());
         u.setDataVersion(0L);
         u = userRepository.save(u);
 
@@ -144,10 +144,10 @@ public class CoreRootService {
         g.setCode("root_admin");
         g.setName("租户管理员");
         g.setRemark("自动创建的角色，该角色拥有本租户下的的全部权限。");
-        g.setStatus(1);
+        g.setStatus(Switch.on());
         g.setSeq(0);
         g.setRowScope(RowScopes.ALL);
-        g.setIsSystem(1);
+        g.setIsSystem(Switch.yes());
         groupRepository.save(g);
 
         //给新创建的管理员账号分配为租户管理员
