@@ -31,14 +31,14 @@ public class AuditErrorRcdController {
     @Autowired
     private AuditErrorRcdService auditErrorRcdService;
 
-    @PreAuthorize("@auth.hasCode('audit:error:view')")
+    @PreAuthorize("@auth.hasCode('audit:error:list')")
     @PostMapping("/getAuditErrorRcdList")
     @Operation(summary = "查询系统错误记录列表")
     public PageResult<GetAuditErrorRcdListVo> getAuditErrorRcdList(@RequestBody @Valid GetAuditErrorRcdListDto dto) throws Exception {
         return auditErrorRcdService.getAuditErrorRcdList(dto);
     }
 
-    @PreAuthorize("@auth.hasCode('audit:error:view')")
+    @PreAuthorize("@auth.hasCode('audit:error:details')")
     @Operation(summary = "查询系统错误记录详情")
     @PostMapping("/getAuditErrorRcdDetails")
     public Result<GetAuditErrorRcdDetailsVo> getAuditErrorRcdDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {

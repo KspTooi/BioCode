@@ -60,7 +60,7 @@ public class OpSchemaController {
         return Result.success(message, null);
     }
 
-    @PreAuthorize("@auth.hasCode('assembly:opschema:view')")
+    @PreAuthorize("@auth.hasCode('assembly:opschema:details')")
     @Operation(summary = "查询输出方案详情")
     @PostMapping("/getOpSchemaDetails")
     public Result<GetOpSchemaDetailsVo> getOpSchemaDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {

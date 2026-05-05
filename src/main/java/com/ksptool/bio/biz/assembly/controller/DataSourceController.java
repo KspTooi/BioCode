@@ -57,7 +57,7 @@ public class DataSourceController {
         return Result.success("修改成功");
     }
 
-    @PreAuthorize("@auth.hasCode('assembly:datasource:view')")
+    @PreAuthorize("@auth.hasCode('assembly:datasource:details')")
     @Operation(summary = "查询数据源详情")
     @PostMapping("/getDataSourceDetails")
     public Result<GetDataSourceDetailsVo> getDataSourceDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {

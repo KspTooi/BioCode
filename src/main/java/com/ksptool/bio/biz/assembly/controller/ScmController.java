@@ -71,7 +71,7 @@ public class ScmController {
         return Result.success("操作成功");
     }
 
-    @PreAuthorize("@auth.hasCode('assembly:scm:view')")
+    @PreAuthorize("@auth.hasCode('assembly:scm:details')")
     @Operation(summary = "查询SCM详情")
     @PostMapping("/getScmDetails")
     public Result<GetScmDetailsVo> getScmDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {

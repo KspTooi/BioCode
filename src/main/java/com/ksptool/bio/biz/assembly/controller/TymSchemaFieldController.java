@@ -52,7 +52,7 @@ public class TymSchemaFieldController {
         return Result.success("修改成功");
     }
 
-    @PreAuthorize("@auth.hasCode('assembly:tyschemafield:view')")
+    @PreAuthorize("@auth.hasCode('assembly:tyschemafield:details')")
     @Operation(summary = "查询类型映射方案字段详情")
     @PostMapping("/getTymSchemaFieldDetails")
     public Result<GetTymSchemaFieldDetailsVo> getTymSchemaFieldDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {
