@@ -8,7 +8,10 @@ import com.ksptool.bio.biz.core.model.registry.vo.ExportRegistryVo;
 import com.ksptool.bio.biz.core.model.registry.vo.GetRegistryDetailsVo;
 import com.ksptool.bio.biz.core.model.registry.vo.GetRegistryEntryListVo;
 import com.ksptool.bio.biz.core.model.registry.vo.GetRegistryNodeTreeVo;
+import com.ksptool.bio.biz.core.service.RegistrySdk;
 import com.ksptool.bio.biz.core.service.RegistryService;
+import com.ksptool.bio.biz.auth.service.SessionService;
+import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.assembly.entity.web.Result;
@@ -36,14 +39,17 @@ public class RegistryController {
     @Autowired
     private RegistryService registryService;
 
-    @PreAuthorize("@auth.hasCode('core:registry:view')")
+    @Autowired
+    private RegistrySdk registrySdk;
+
+    @PreAuthorize("@auth.hasCode('core:registry:list')")
     @PostMapping("/getRegistryNodeTree")
     @Operation(summary = "查询注册表节点树")
     public Result<List<GetRegistryNodeTreeVo>> getRegistryNodeTree() throws Exception {
         return Result.success(registryService.getRegistryNodeTree());
     }
 
-    @PreAuthorize("@auth.hasCode('core:registry:view')")
+    @PreAuthorize("@auth.hasCode('core:registry:list')")
     @PostMapping("/getRegistryEntryList")
     @Operation(summary = "查询注册表条目列表")
     public PageResult<GetRegistryEntryListVo> getRegistryEntryList(@RequestBody @Valid GetRegistryListDto dto) throws Exception {
@@ -80,7 +86,7 @@ public class RegistryController {
         return Result.success("修改成功");
     }
 
-    @PreAuthorize("@auth.hasCode('core:registry:view')")
+    @PreAuthorize("@auth.hasCode('core:registry:details')")
     @Operation(summary = "查询注册表条目详情")
     @PostMapping("/getRegistryDetails")
     public Result<GetRegistryDetailsVo> getRegistryDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {
@@ -135,6 +141,14 @@ public class RegistryController {
         //准备导出向导
         ExportWizard<ExportRegistryVo> ew = new ExportWizard<>(registryService.exportRegistry(dto), response);
         ew.transfer("注册表条目");
+    }
+
+    @PreAuthorize("@auth.hasCode('core:registry:clearcache')")
+    @Operation(summary = "清除注册表缓存")
+    @PostMapping("/clearRegistryCache")
+    public Result<String> clearRegistryCache() throws BizException {
+        registrySdk.clearAllCache();
+        return Result.success("注册表缓存已清除");
     }
 
 }

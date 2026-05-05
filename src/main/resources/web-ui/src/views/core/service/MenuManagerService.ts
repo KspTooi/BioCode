@@ -1,4 +1,4 @@
-import { computed, onMounted, ref, watch, type Ref } from "vue";
+import { computed, h, onMounted, ref, watch, type Ref } from "vue";
 import type { AddMenuDto, EditMenuDto, GetMenuDetailsVo, GetMenuTreeVo } from "@/views/core/api/MenuApi.ts";
 import MenuApi from "@/views/core/api/MenuApi.ts";
 import { Result } from "@/commons/model/Result";
@@ -94,8 +94,32 @@ export default {
     };
 
     const removeNode = async (id: string): Promise<void> => {
+      // 查询该菜单被哪些菜单包引用
+      let packNames: string[] = [];
       try {
-        await ElMessageBox.confirm("确定删除该菜单吗？", "提示", {
+        const result = await MenuApi.getPacksByMenuId({ id });
+        if (Result.isSuccess(result) && result.data && result.data.length > 0) {
+          packNames = result.data.map((p) => p.name);
+        }
+      } catch {
+        ElMessage.error("获取菜单包引用失败");
+        return;
+      }
+
+      // 构建确认消息
+      let message: ReturnType<typeof h> | string = "确定删除该菜单吗？";
+      if (packNames.length > 0) {
+        message = h("div", null, [
+          h("p", { style: { color: "#f56c6c", marginBottom: "8px" } }, [
+            `该菜单正被以下 ${packNames.length} 个菜单包引用，删除后关联将被自动清理：`,
+          ]),
+          h("p", { style: { color: "#f56c6c", fontWeight: "bold", marginBottom: "12px" } }, packNames.join("、")),
+          h("p", null, "确定删除该菜单吗？"),
+        ]);
+      }
+
+      try {
+        await ElMessageBox.confirm(message, "提示", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning",
@@ -220,7 +244,6 @@ export default {
               icon: item.icon,
               hide: item.hide,
               permissionCode: item.permissionCode,
-              missingPermission: item.missingPermission,
               seq: item.seq,
               disabled,
               children: item.children ? filter(item.children) : [],
@@ -441,11 +464,30 @@ export default {
       loadMenus();
     };
 
-    onMounted(() => {
-      //检查缓存的模式
-      const store = useMenuServiceStore();
-
-      console.log(store.panelMode);
+    onMounted(async () => {
+      // 编辑模式恢复时重新拉取最新数据，避免展示过时缓存
+      if (treeStore.panelMode === "edit" && treeStore.panelVisible && treeStore.panelForm.id) {
+        try {
+          const ret = await MenuApi.getMenuDetails({ id: treeStore.panelForm.id });
+          if (Result.isSuccess(ret)) {
+            Object.assign(treeStore.panelForm, {
+              id: ret.data.id,
+              parentId: ret.data.parentId ?? "",
+              name: ret.data.name,
+              kind: ret.data.kind,
+              path: ret.data.path,
+              icon: ret.data.icon,
+              hide: ret.data.hide,
+              permissionCode: ret.data.permissionCode,
+              seq: ret.data.seq,
+              remark: ret.data.remark,
+            });
+          }
+        } catch {
+          // 拉取失败则关闭面板
+          treeStore.panelVisible = false;
+        }
+      }
     });
 
     return {

@@ -44,14 +44,14 @@ public class QfTodoController {
     @Autowired
     private QfTodoService qfTodoService;
 
-    @PreAuthorize("@auth.hasCode('qf:todo:view')")
+    @PreAuthorize("@auth.hasCode('qf:todo:list')")
     @PostMapping("/getQfTodoList")
     @Operation(summary = "查询待办事项列表")
     public PageResult<GetQfTodoListVo> getQfTodoList(@RequestBody @Valid GetQfTodoListDto dto) throws Exception {
         return qfTodoService.getQfTodoList(dto);
     }
 
-    @PreAuthorize("@auth.hasCode('qf:todo:view')")
+    @PreAuthorize("@auth.hasCode('qf:todo:details')")
     @Operation(summary = "查询待办事项详情")
     @PostMapping("/getQfTodoDetails")
     public Result<GetQfTodoDetailsVo> getQfTodoDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {
@@ -82,7 +82,7 @@ public class QfTodoController {
      * 代办审批的时候回显审批流画布
      *
      */
-    @PreAuthorize("@auth.hasCode('qf:todo:view')")
+    @PreAuthorize("@auth.hasCode('qf:todo:details')")
     @Operation(summary = "获取待办事项审批流")
     @PostMapping("/getQfTodoApproveFlow")
     public Result<String> getQfTodoApproveFlow(@RequestBody @Valid CommonIdDto dto) throws Exception {
@@ -99,7 +99,7 @@ public class QfTodoController {
      * 返回 节点名称，节点审批人，节点审批时间，节点审批结果
      *
      */
-    @PreAuthorize("@auth.hasCode('qf:todo:view')")
+    @PreAuthorize("@auth.hasCode('qf:todo:details')")
     @Operation(summary = "获取待办事项流程流转记录")
     @PostMapping("/getQfTodoApproveFlowRecord")
     public Result<List<ApproveFlowRecordVo>> getQfTodoApproveFlowRecord(@RequestBody @Valid CommonIdDto dto) throws Exception {

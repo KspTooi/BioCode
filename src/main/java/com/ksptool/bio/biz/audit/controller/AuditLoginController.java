@@ -30,14 +30,14 @@ public class AuditLoginController {
     @Autowired
     private AuditLoginService auditLoginService;
 
-    @PreAuthorize("@auth.hasCode('audit:login:view')")
+    @PreAuthorize("@auth.hasCode('audit:login:list')")
     @PostMapping("/getAuditLoginList")
     @Operation(summary = "获取登录日志列表")
     public PageResult<GetAuditLoginListVo> getAuditLoginList(@RequestBody @Valid GetAuditLoginListDto dto) throws Exception {
         return auditLoginService.getAuditLoginList(dto);
     }
 
-    @PreAuthorize("@auth.hasCode('audit:login:view')")
+    @PreAuthorize("@auth.hasCode('audit:login:details')")
     @Operation(summary = "获取登录日志详情")
     @PostMapping("/getAuditLoginDetails")
     public Result<GetAuditLoginDetailsVo> getAuditLoginDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {

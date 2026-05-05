@@ -161,6 +161,18 @@ export default {
   },
 
   /**
+   * 清除注册表缓存
+   * @returns 成功消息
+   */
+  clearRegistryCache: async (): Promise<string> => {
+    const result = await Http.postEntity<Result<string>>("/registry/clearRegistryCache", {});
+    if (result.code === 0) {
+      return result.message;
+    }
+    throw new Error(result.message);
+  },
+
+  /**
    * 导出注册表条目
    * @param dto 查询参数
    */

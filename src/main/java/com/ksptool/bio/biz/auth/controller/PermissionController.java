@@ -47,14 +47,13 @@ public class PermissionController {
         return Result.success(service.getPermissionDefinition());
     }
 
-    @PreAuthorize("@auth.hasCode('auth:permission:view')")
     @Operation(summary = "获取权限列表")
     @PostMapping("getPermissionList")
     public PageResult<GetPermissionListVo> getPermissionList(@RequestBody @Valid GetPermissionListDto dto) {
         return service.getPermissionList(dto);
     }
 
-    @PreAuthorize("@auth.hasCode('auth:permission:view')")
+    @PreAuthorize("@auth.hasCode('auth:permission:details')")
     @Operation(summary = "获取权限详情")
     @PostMapping("getPermissionDetails")
     public Result<GetPermissionDetailsVo> getPermissionDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {

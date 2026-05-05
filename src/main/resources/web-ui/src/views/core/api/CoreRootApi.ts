@@ -9,7 +9,8 @@ import type Result from "@/commons/model/Result.ts";
  */
 export interface GetCoreRootListDto extends PageQuery {
   name?: string; // 租户名称
-  expireTime?: string; // 到期时间(null长期)
+  expireTimeRangeStart?: string; // 到期时间起
+  expireTimeRangeEnd?: string; // 到期时间止
   status?: number; // 状态 1:正常，0:停用
 }
 
@@ -19,10 +20,11 @@ export interface GetCoreRootListDto extends PageQuery {
 export interface GetCoreRootListVo {
   id: string; // 主键ID
   name: string; // 租户名称
+  ruCount: number; // 用户总数
   expireTime: string; // 到期时间(null长期)
   status: number; // 状态 1:正常，0:停用
   adminUsername?: string; // 管理员账号
-  // adminPassword?: string; // 管理员密码
+  isSystem: number; // 内置租户 0:否 1:是
   createTime: string; // 创建时间
 }
 
@@ -35,6 +37,18 @@ export interface GetCoreRootDetailsVo {
   expireTime: string; // 到期时间(null长期)
   remark: string; // 备注
   status: number; // 状态 1:正常，0:停用
+  isSystem: number; // 内置租户 0:否 1:是
+  packIds: string[]; // 已绑定的菜单包ID列表
+  _adminUsername: string; // [前端] 管理员账号
+  _adminPassword: string; // [前端] 管理员密码
+}
+
+/**
+ * 更新租户绑定菜单包Dto
+ */
+export interface UpdateRootRpDto {
+  rootId: string; // 租户ID
+  packIds: string[]; // 菜单包ID列表
 }
 
 /**
@@ -108,6 +122,17 @@ export default {
    */
   removeCoreRoot: async (dto: CommonIdDto): Promise<string> => {
     const result = await Http.postEntity<Result<string>>("/coreRoot/removeCoreRoot", dto);
+    if (result.code === 0) {
+      return result.message;
+    }
+    throw new Error(result.message);
+  },
+
+  /**
+   * 更新租户绑定菜单包
+   */
+  updateRootRp: async (dto: UpdateRootRpDto): Promise<string> => {
+    const result = await Http.postEntity<Result<string>>("/coreRoot/updateRootRp", dto);
     if (result.code === 0) {
       return result.message;
     }

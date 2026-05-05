@@ -55,9 +55,17 @@
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
         <el-table-column prop="name" label="用户组名称" min-width="120" show-overflow-tooltip />
         <el-table-column prop="code" label="用户组编码" min-width="120" show-overflow-tooltip />
-        <el-table-column label="成员与菜单总数" min-width="140">
+        <el-table-column label="成员 / 菜单" min-width="120" align="center">
           <template #default="scope">
-            <span>{{ scope.row.guCount }} / {{ scope.row.gmCount }}</span>
+            <span class="stat-item">
+              <el-icon><component :is="UserIcon" /></el-icon>
+              <span>{{ scope.row.guCount }}</span>
+            </span>
+            <span class="stat-sep">/</span>
+            <span class="stat-item">
+              <el-icon><component :is="MenuIcon" /></el-icon>
+              <span>{{ scope.row.gmCount }}</span>
+            </span>
           </template>
         </el-table-column>
         <el-table-column v-has-super prop="gpCount" label="权限总数" min-width="100" />
@@ -261,7 +269,7 @@
 
 <script setup lang="ts">
 import { ref, markRaw } from "vue";
-import { Edit, Delete } from "@element-plus/icons-vue";
+import { Edit, Delete, User, Menu } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
 import type { GetGroupListVo, EditGroupDto, GetGroupDetailsVo } from "@/views/auth/api/GroupApi.ts";
 import AdminGroupApi from "@/views/auth/api/GroupApi.ts";
@@ -278,6 +286,8 @@ const { vHasSuper } = UserAuthService.usePreAuthorize();
 
 const EditIcon = markRaw(Edit);
 const DeleteIcon = markRaw(Delete);
+const UserIcon = markRaw(User);
+const MenuIcon = markRaw(Menu);
 const modalFormRef = ref<FormInstance>();
 
 /**
@@ -359,7 +369,23 @@ const editGroupSeq = async (id: string, dto: any): Promise<void> => {
 </script>
 
 <style scoped>
-/* 使用 CSS 变量的样式保留在这里 */
+.stat-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  vertical-align: middle;
+}
+
+.stat-item .el-icon {
+  display: inline-flex;
+  align-items: center;
+}
+
+.stat-sep {
+  margin: 0 6px;
+  color: var(--el-text-color-placeholder);
+}
+
 .section-title {
   color: var(--el-text-color-primary);
   border-left: 4px solid var(--el-color-primary);

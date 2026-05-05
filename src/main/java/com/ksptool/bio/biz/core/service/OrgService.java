@@ -122,7 +122,7 @@ public class OrgService {
         if (dto.getKind() == 0) {
 
             //先校验名字是否唯一
-            if (repository.countByNameAndLevel(dto.getName(), 1) > 0) {
+            if (repository.countByNameAndParentIdExcludeId(dto.getName(), null, null) > 0) {
                 throw new BizException("无法处理新增请求,企业名称 [" + dto.getName() + "] 已存在.");
             }
 
@@ -208,7 +208,7 @@ public class OrgService {
         if (updatePo.getKind() == 0) {
 
             //先校验名字是否唯一
-            if (repository.countByNameAndLevel(dto.getName(), 1) > 0) {
+            if (repository.countByNameAndParentIdExcludeId(dto.getName(), null, updatePo.getId()) > 0) {
                 throw new BizException("无法处理编辑请求,企业名称 [" + dto.getName() + "] 已存在.");
             }
 

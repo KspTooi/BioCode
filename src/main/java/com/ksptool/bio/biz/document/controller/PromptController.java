@@ -3,6 +3,7 @@ package com.ksptool.bio.biz.document.controller;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.assembly.entity.web.Result;
+import com.ksptool.bio.biz.auth.common.aop.RowScope;
 import com.ksptool.bio.biz.document.model.prompt.dto.AddPromptDto;
 import com.ksptool.bio.biz.document.model.prompt.dto.CompilePromptDto;
 import com.ksptool.bio.biz.document.model.prompt.dto.EditPromptDto;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/prompt")
 @Tag(name = "EP-提示词管理", description = "提示词管理")
 @Slf4j
+@RowScope(mode = RowScope.Mode.ROOT_ONLY)
 public class PromptController {
 
     @Autowired
@@ -74,7 +76,7 @@ public class PromptController {
         return Result.success("操作成功");
     }
 
-    
+
     @PreAuthorize("@auth.hasCode('ep:prompt:compile')")
     @Operation(summary = "编译提示词")
     @PostMapping("/compilePrompt")

@@ -30,7 +30,7 @@ public class NoticeTemplateController {
     @Autowired
     private NoticeTemplateService noticeTemplateService;
 
-    @PreAuthorize("@auth.hasCode('core:notice_template:view')")
+    @PreAuthorize("@auth.hasCode('core:notice_template:list')")
     @PostMapping("/getNoticeTemplateList")
     @Operation(summary = "查询通知模板列表")
     public PageResult<GetNoticeTemplateListVo> getNoticeTemplateList(@RequestBody @Valid GetNoticeTemplateListDto dto) throws Exception {
@@ -53,7 +53,7 @@ public class NoticeTemplateController {
         return Result.success("修改成功");
     }
 
-    @PreAuthorize("@auth.hasCode('core:notice_template:view')")
+    @PreAuthorize("@auth.hasCode('core:notice_template:details')")
     @Operation(summary = "查询通知模板详情")
     @PostMapping("/getNoticeTemplateDetails")
     public Result<GetNoticeTemplateDetailsVo> getNoticeTemplateDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {

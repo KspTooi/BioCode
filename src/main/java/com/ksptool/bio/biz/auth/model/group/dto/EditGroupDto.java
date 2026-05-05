@@ -51,10 +51,6 @@ public class EditGroupDto implements DtoCustomValidator{
     @NotNull(message = "部门ID列表不能为空")
     @Schema(description = "部门ID列表 允许空数组但不能为NULL")
     private List<Long> deptIds;
-
-    @NotNull(message = "权限ID列表不能为空")
-    @Schema(description = "权限ID列表 允许空数组但不能为NULL")
-    private List<Long> permissionIds;
     
     /**
      * 验证入参

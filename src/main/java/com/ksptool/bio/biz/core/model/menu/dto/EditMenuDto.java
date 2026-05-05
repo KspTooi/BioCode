@@ -114,6 +114,9 @@ public class EditMenuDto {
             if (Str.isNotBlank(icon)) {
                 return "按钮不支持填写图标";
             }
+            if (hide != null && hide == 1) {
+                return "按钮不支持隐藏";
+            }
 
         }
 

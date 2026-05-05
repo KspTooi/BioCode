@@ -29,7 +29,7 @@ public class SessionController {
     private SessionService service;
 
     @RowScope
-    @PreAuthorize("@auth.hasCode('auth:session:view')")
+    @PreAuthorize("@auth.hasCode('auth:session:list')")
     @Operation(summary = "获取在线用户列表")
     @PostMapping("getSessionList")
     public PageResult<GetSessionListVo> getSessionList(@RequestBody @Valid GetSessionListDto dto) {
@@ -37,7 +37,7 @@ public class SessionController {
     }
 
     @RowScope
-    @PreAuthorize("@auth.hasCode('auth:session:view')")
+    @PreAuthorize("@auth.hasCode('auth:session:details')")
     @Operation(summary = "获取在线用户详情")
     @PostMapping("getSessionDetails")
     public Result<GetSessionDetailsVo> getSessionDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {

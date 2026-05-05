@@ -9,6 +9,7 @@ import com.ksptool.bio.biz.core.model.attach.AttachPo;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 import org.springframework.data.annotation.CreatedBy;
@@ -28,7 +29,8 @@ import java.time.LocalDateTime;
 @Setter
 @SQLDelete(sql = "UPDATE core_user SET delete_time = NOW() WHERE id = ?")
 @SQLRestriction("delete_time IS NULL")
-public class UserPo extends RowScopePo{
+@Filter(name = "systemScopeFilter", condition = "is_system = :isSystem")
+public class UserPo extends RowScopePo {
 
     @Id
     @SnowflakeIdGenerated
@@ -116,7 +118,7 @@ public class UserPo extends RowScopePo{
             dataVersion = 0L;
         }
 
-        if(rootId == null){
+        if (rootId == null) {
             rootId = SessionService.session().getRootId();
         }
 
@@ -143,7 +145,7 @@ public class UserPo extends RowScopePo{
      * @return 最细粒度的组织架构ID
      */
     public Long getMinOrgId() {
-        if(deptId != null){
+        if (deptId != null) {
             return deptId;
         }
         return orgId;

@@ -12,15 +12,21 @@ import com.ksptool.bio.biz.auth.repository.GroupRepository;
 import com.ksptool.bio.biz.auth.repository.PermissionRepository;
 import com.ksptool.bio.biz.auth.repository.UserGroupRepository;
 import com.ksptool.bio.biz.auth.service.SessionService;
+import com.ksptool.bio.biz.core.common.IdsDiff;
 import com.ksptool.bio.biz.core.common.SuperEntities;
+import com.ksptool.bio.biz.core.common.Switch;
+import com.ksptool.bio.biz.core.model.pack.RootPackPo;
 import com.ksptool.bio.biz.core.model.root.CoreRootPo;
 import com.ksptool.bio.biz.core.model.root.dto.AddCoreRootDto;
 import com.ksptool.bio.biz.core.model.root.dto.EditCoreRootDto;
 import com.ksptool.bio.biz.core.model.root.dto.GetCoreRootListDto;
+import com.ksptool.bio.biz.core.model.root.dto.UpdateRootRpDto;
 import com.ksptool.bio.biz.core.model.root.vo.GetCoreRootDetailsVo;
 import com.ksptool.bio.biz.core.model.root.vo.GetCoreRootListVo;
 import com.ksptool.bio.biz.core.model.user.UserPo;
 import com.ksptool.bio.biz.core.repository.CoreRootRepository;
+import com.ksptool.bio.biz.core.repository.PackRepository;
+import com.ksptool.bio.biz.core.repository.RootPackRepository;
 import com.ksptool.bio.biz.core.repository.UserRepository;
 import jakarta.persistence.Tuple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,6 +72,12 @@ public class CoreRootService {
     @Autowired
     private GroupPermissionRepository gpRepository;
 
+    @Autowired
+    private RootPackRepository rpRepository;
+
+    @Autowired
+    private PackRepository packRepository;
+
     /**
      * 查询租户列表
      *
@@ -73,16 +85,8 @@ public class CoreRootService {
      * @return 查询结果
      */
     public PageResult<GetCoreRootListVo> getCoreRootList(GetCoreRootListDto dto) {
-        CoreRootPo query = new CoreRootPo();
-        assign(dto, query);
-
-        Page<Tuple> page = repository.getCoreRootList(query, dto.pageRequest());
-        if (page.isEmpty()) {
-            return PageResult.successWithEmpty();
-        }
-
-        List<GetCoreRootListVo> vos = tupleAs(page.getContent(), GetCoreRootListVo.class);
-        return PageResult.success(vos, (int) page.getTotalElements());
+        Page<Tuple> page = repository.getCoreRootList(dto, dto.pageRequest());
+        return PageResult.success(tupleAs(page.getContent(), GetCoreRootListVo.class), (int) page.getTotalElements());
     }
 
     /**
@@ -111,6 +115,7 @@ public class CoreRootService {
         //先创建租户 这样才可以拿到租户ID
         CoreRootPo insertPo = as(dto, CoreRootPo.class);
         insertPo.setAdminUserId(-1L);
+        insertPo.setIsSystem(Switch.no());
         insertPo = repository.save(insertPo);
 
         //给租户创建一个管理员账号
@@ -122,9 +127,9 @@ public class CoreRootService {
         u.setPhone(null);
         u.setEmail(null);
         u.setLoginCount(0);
-        u.setStatus(0);
+        u.setStatus(Switch.on());
         u.setRootId(insertPo.getId());
-        u.setIsSystem(1);
+        u.setIsSystem(Switch.yes());
         u.setDataVersion(0L);
         u = userRepository.save(u);
 
@@ -139,10 +144,10 @@ public class CoreRootService {
         g.setCode("root_admin");
         g.setName("租户管理员");
         g.setRemark("自动创建的角色，该角色拥有本租户下的的全部权限。");
-        g.setStatus(1);
+        g.setStatus(Switch.on());
         g.setSeq(0);
         g.setRowScope(RowScopes.ALL);
-        g.setIsSystem(1);
+        g.setIsSystem(Switch.yes());
         groupRepository.save(g);
 
         //给新创建的管理员账号分配为租户管理员
@@ -183,6 +188,16 @@ public class CoreRootService {
         CoreRootPo updatePo = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("更新失败,数据不存在或无权限访问."));
 
+        //内置租户不可调整状态
+        if (updatePo.isSystem() && dto.getStatus() != null && !dto.getStatus().equals(updatePo.getStatus())) {
+            throw new BizException("内置租户不允许调整状态！");
+        }
+
+        //内置租户不可调整到期时间
+        if (updatePo.isSystem() && dto.getExpireTime() != null && !dto.getExpireTime().equals(updatePo.getExpireTime())) {
+            throw new BizException("内置租户不允许调整到期时间！");
+        }
+
         assign(dto, updatePo);
         repository.save(updatePo);
     }
@@ -197,7 +212,9 @@ public class CoreRootService {
     public GetCoreRootDetailsVo getCoreRootDetails(CommonIdDto dto) throws BizException {
         CoreRootPo po = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("查询详情失败,数据不存在或无权限访问."));
-        return as(po, GetCoreRootDetailsVo.class);
+        GetCoreRootDetailsVo vo = as(po, GetCoreRootDetailsVo.class);
+        vo.setPackIds(rpRepository.getPidsByRid(po.getId()));
+        return vo;
     }
 
     /**
@@ -210,14 +227,66 @@ public class CoreRootService {
     public void removeCoreRoot(CommonIdDto dto) throws BizException {
 
         if (dto.isBatch()) {
+            for (Long id : dto.getIds()) {
+                var root = repository.findById(id)
+                    .orElseThrow(() -> new BizException("租户不存在或无权限访问."));
+                if (root.isSystem()) {
+                    throw new BizException("内置租户不允许删除！");
+                }
+                rpRepository.removeByRid(id);
+            }
             repository.deleteAllById(dto.getIds());
             return;
         }
 
+        var root = repository.findById(dto.getId())
+            .orElseThrow(() -> new BizException("租户不存在或无权限访问."));
+        if (root.isSystem()) {
+            throw new BizException("内置租户不允许删除！");
+        }
+
+        rpRepository.removeByRid(dto.getId());
         repository.deleteById(dto.getId());
 
         //销毁该租户下所有用户会话
         sessionService.closeSessionByRootId(dto.getId());
+    }
+
+    /**
+     * 更新租户绑定的菜单包
+     *
+     * @param dto 更新条件
+     * @throws BizException 业务异常
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void updateRootRp(UpdateRootRpDto dto) throws BizException {
+        var root = repository.findById(dto.getRootId())
+                .orElseThrow(() -> new BizException("租户不存在或无权限访问."));
+
+        if (root.isSystem()) {
+            throw new BizException("内置租户不允许绑定菜单包！");
+        }
+
+        //校验菜单包ID是否存在
+        var packIds = dto.getPackIds();
+        if (!packIds.isEmpty()) {
+            var existingCount = packRepository.countByIds(packIds);
+            if (existingCount != packIds.size()) {
+                throw new BizException("菜单包ID不存在");
+            }
+        }
+
+        var rpIdsDiff = new IdsDiff(rpRepository.getPidsByRid(dto.getRootId()), packIds);
+
+        if (rpIdsDiff.hasAdd()) {
+            var rpPos = rpIdsDiff.getAddIds().stream()
+                    .map(packId -> new RootPackPo(dto.getRootId(), packId)).toList();
+            rpRepository.saveAll(rpPos);
+        }
+
+        if (rpIdsDiff.hasRemove()) {
+            rpRepository.removeByRidAndPids(dto.getRootId(), rpIdsDiff.getRemoveIds());
+        }
     }
 
 }

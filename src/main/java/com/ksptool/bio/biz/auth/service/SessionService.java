@@ -10,6 +10,7 @@ import com.ksptool.bio.biz.auth.model.session.dto.GetSessionListDto;
 import com.ksptool.bio.biz.auth.model.session.vo.GetSessionDetailsVo;
 import com.ksptool.bio.biz.auth.model.session.vo.GetSessionListVo;
 import com.ksptool.bio.biz.auth.repository.UserSessionRepository;
+import com.ksptool.bio.biz.core.common.SuperEntities;
 import com.ksptool.bio.biz.core.model.org.OrgPo;
 import com.ksptool.bio.biz.core.model.user.UserPo;
 import com.ksptool.bio.biz.core.repository.OrgRepository;
@@ -392,6 +393,19 @@ public class SessionService {
         }
 
         return session;
+    }
+
+    /**
+     * 判断当前用户是否在超级租户里面
+     *
+     * @return 是否在超级租户里面
+     */
+    public static boolean isSuperRoot() {
+        try {
+            return Objects.equals(session().getRootId(), SuperEntities.ROOT.getId());
+        } catch (AuthException e) {
+            return false;
+        }
     }
 
 }

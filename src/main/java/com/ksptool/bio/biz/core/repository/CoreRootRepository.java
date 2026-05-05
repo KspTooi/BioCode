@@ -1,7 +1,7 @@
 package com.ksptool.bio.biz.core.repository;
 
 import com.ksptool.bio.biz.core.model.root.CoreRootPo;
-
+import com.ksptool.bio.biz.core.model.root.dto.GetCoreRootListDto;
 import jakarta.persistence.Tuple;
 
 import org.springframework.data.domain.Page;
@@ -16,22 +16,25 @@ import org.springframework.stereotype.Repository;
 public interface CoreRootRepository extends JpaRepository<CoreRootPo, Long> {
 
     @Query("""
-            SELECT 
+            SELECT
             u.id AS id,
             u.name AS name,
             u.expireTime AS expireTime,
             u.status AS status,
+            u.isSystem AS isSystem,
             up.username AS adminUsername,
+            (SELECT COUNT(usr) FROM UserPo usr WHERE usr.rootId = u.id) AS ruCount,
             u.createTime AS createTime
             FROM CoreRootPo u
             LEFT JOIN UserPo up ON u.adminUserId = up.id
             WHERE
-            (:#{#po.name} IS NULL OR u.name LIKE CONCAT('%', :#{#po.name}, '%'))
-            AND (:#{#po.expireTime} IS NULL OR u.expireTime = :#{#po.expireTime} )
-            AND (:#{#po.status} IS NULL OR u.status = :#{#po.status} )
+            (:#{#dto.name} IS NULL OR u.name LIKE CONCAT('%', :#{#dto.name}, '%'))
+            AND (:#{#dto.expireTimeRangeStart} IS NULL OR u.expireTime >= :#{#dto.expireTimeRangeStart})
+            AND (:#{#dto.expireTimeRangeEnd} IS NULL OR u.expireTime <= :#{#dto.expireTimeRangeEnd})
+            AND (:#{#dto.status} IS NULL OR u.status = :#{#dto.status} )
             ORDER BY u.createTime DESC
             """)
-    Page<Tuple> getCoreRootList(@Param("po") CoreRootPo po, Pageable pageable);
+    Page<Tuple> getCoreRootList(@Param("dto") GetCoreRootListDto dto, Pageable pageable);
 
     /**
      * 根据名称统计租户数量 排除指定ID

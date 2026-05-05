@@ -4,6 +4,7 @@ import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.assembly.entity.web.Result;
 import com.ksptool.bio.biz.auth.common.aop.RowScope;
+import com.ksptool.bio.biz.auth.common.aop.SystemScope;
 import com.ksptool.bio.biz.core.model.user.dto.*;
 import com.ksptool.bio.biz.core.model.user.vo.GetUserDetailsVo;
 import com.ksptool.bio.biz.core.model.user.vo.GetUserListVo;
@@ -14,7 +15,6 @@ import com.ksptool.bio.commons.dataprocess.ImportWizard;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -22,12 +22,15 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 
 @PrintLog
 @RestController
 @RequestMapping("/user")
 @Tag(name = "CORE-用户管理", description = "用户管理")
 @RowScope(mode = RowScope.Mode.ROOT_ONLY)
+@SystemScope
 public class UserController {
 
     @Autowired
@@ -36,14 +39,13 @@ public class UserController {
     @Autowired
     private MenuService menuService;
 
-    @PreAuthorize("@auth.hasCode('core:user:view')")
     @Operation(summary = "获取用户列表")
     @PostMapping("getUserList")
     public PageResult<GetUserListVo> getUserList(@RequestBody @Valid GetUserListDto dto) {
         return service.getUserList(dto);
     }
 
-    @PreAuthorize("@auth.hasCode('core:user:view')")
+    @PreAuthorize("@auth.hasCode('core:user:details')")
     @Operation(summary = "获取用户详情")
     @PostMapping("getUserDetails")
     public Result<GetUserDetailsVo> getUserDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {

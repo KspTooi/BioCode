@@ -5,6 +5,7 @@ import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.bio.biz.auth.repository.PermissionRepository;
 import com.ksptool.bio.biz.auth.service.SessionService;
+import com.ksptool.bio.biz.core.common.TreeBuilder;
 import com.ksptool.bio.biz.core.model.menu.MenuPo;
 import com.ksptool.bio.biz.core.model.menu.dto.AddMenuDto;
 import com.ksptool.bio.biz.core.model.menu.dto.EditMenuDto;
@@ -12,6 +13,7 @@ import com.ksptool.bio.biz.core.model.menu.dto.GetMenuTreeDto;
 import com.ksptool.bio.biz.core.model.menu.vo.GetMenuDetailsVo;
 import com.ksptool.bio.biz.core.model.menu.vo.GetMenuTreeVo;
 import com.ksptool.bio.biz.core.model.menu.vo.GetUserMenuTreeVo;
+import com.ksptool.bio.biz.core.repository.MenuPackRepository;
 import com.ksptool.bio.biz.core.repository.MenuRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -19,7 +21,9 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
@@ -33,6 +37,9 @@ public class MenuService {
 
     @Autowired
     private PermissionRepository permissionRepository;
+
+    @Autowired
+    private MenuPackRepository menuPackRepository;
 
     @Autowired
     private MenuRepository menuRepository;
@@ -69,32 +76,7 @@ public class MenuService {
             flatVos.add(vo);
         }
 
-        //将平面vo转换为tree
-        List<GetUserMenuTreeVo> treeVos = new ArrayList<>();
-        Map<Long, GetUserMenuTreeVo> map = new HashMap<>();
-
-        for (GetUserMenuTreeVo vo : flatVos) {
-            map.put(vo.getId(), vo);
-        }
-
-        for (GetUserMenuTreeVo vo : flatVos) {
-
-            //没有父节点，说明是顶级菜单，直接加入结果集
-            if (vo.getParentId() == null) {
-                treeVos.add(vo);
-                continue;
-            }
-
-            GetUserMenuTreeVo parent = map.get(vo.getParentId());
-            if (parent != null) {
-                //找到父节点，把自己塞进父节点的 children 列表里
-                parent.getChildren().add(vo);
-                continue;
-            }
-            treeVos.add(vo);
-        }
-
-        //2026-04-13新增：在此处调用剪枝方法，过滤空壳目录
+        List<GetUserMenuTreeVo> treeVos = TreeBuilder.build(flatVos);
         pruneEmptyDirectories(treeVos);
         return treeVos;
     }
@@ -107,88 +89,33 @@ public class MenuService {
      * @return 菜单与按钮树
      * @throws BizException 业务异常
      */
-    public List<GetMenuTreeVo> getMenuTree(GetMenuTreeDto dto) throws BizException {
+    public List<GetMenuTreeVo> getMenuTree(GetMenuTreeDto dto) throws Exception {
 
-        List<MenuPo> list = menuRepository.getMenuTree(dto);
+        List<MenuPo> pos = menuRepository.getMenuTree(dto);
 
-        List<GetMenuTreeVo> flatVos = new ArrayList<>();
+        /*//普通用户查询可授予菜单
+        if (!SessionService.hasSuperCode()) {
 
+            var uid = SessionService.session().getUserId();
+
+            //如果是查询可授予菜单，则只查当前用户拥有的菜单(通过GM派生)
+            if (dto.getGrantable().isOn()) {
+
+                //普通租户也要查询为-1租户的菜单、在系统里这个租户的菜单是全局菜单
+                pos = menuRepository.getGrantedMenus(SuperEntities.ROOT.getId(), uid);
+
+            }
+
+        }
+
+        //超级用户查询所有菜单
+        if(SessionService.hasSuperCode()){
+            pos = menuRepository.getMenuTree(dto);
+        }
+*/
         //将list转换为平面vo
-        for (MenuPo po : list) {
-            GetMenuTreeVo vo = as(po, GetMenuTreeVo.class);
-            vo.setChildren(new ArrayList<>());
-            vo.setParentId(null);
-            if (po.getParentId() != null) {
-                vo.setParentId(po.getParentId());
-            }
-
-            flatVos.add(vo);
-        }
-
-        //将平面vo转换为tree
-        List<GetMenuTreeVo> treeVos = new ArrayList<>();
-        Map<Long, GetMenuTreeVo> map = new HashMap<>();
-
-        for (GetMenuTreeVo vo : flatVos) {
-            map.put(vo.getId(), vo);
-        }
-
-        for (GetMenuTreeVo vo : flatVos) {
-            if (vo.getParentId() == null) {
-                treeVos.add(vo);
-                continue;
-            }
-
-            GetMenuTreeVo parent = map.get(vo.getParentId());
-            if (parent != null) {
-                parent.getChildren().add(vo);
-            } else {
-                treeVos.add(vo);
-            }
-        }
-
-        //搜集菜单中的权限列表
-        var permissions = new HashSet<String>();
-        for (MenuPo menuPo : list) {
-            permissions.addAll(menuPo.getPermissionCode());
-        }
-
-        //查找数据库中不存在的权限
-        Set<String> existingPermissions = permissionRepository.getExistingPermissionsByCode(permissions);
-        Set<String> missingPermissions = new HashSet<>(permissions);
-        missingPermissions.removeAll(existingPermissions);
-
-        // 设置缺失权限标记
-        for (GetMenuTreeVo vo : flatVos) {
-            if (vo.getPermissionCode() == null || vo.getPermissionCode().isEmpty()) {
-                vo.setMissingPermission(0);
-                continue;
-            }
-
-            List<String> perms = new ArrayList<>(vo.getPermissionCode());
-            int missingCount = 0;
-            int totalCount = perms.size();
-
-            for (String perm : perms) {
-                if (missingPermissions.contains(perm)) {
-                    missingCount++;
-                }
-            }
-
-            if (missingCount == 0) {
-                vo.setMissingPermission(0);
-                continue;
-            }
-
-            if (missingCount == totalCount) {
-                vo.setMissingPermission(1);
-                continue;
-            }
-
-            vo.setMissingPermission(2);
-        }
-
-        return treeVos;
+        var flatVos = as(pos, GetMenuTreeVo.class);
+        return TreeBuilder.build(flatVos);
     }
 
     /**
@@ -323,6 +250,7 @@ public class MenuService {
             }
 
             menuRepository.deleteById(po.getId());
+            menuPackRepository.removeByMid(po.getId());
             return;
         }
 
@@ -335,6 +263,7 @@ public class MenuService {
             }
 
             menuRepository.deleteById(id);
+            menuPackRepository.removeByMid(id);
         }
 
     }

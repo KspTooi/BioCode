@@ -44,6 +44,9 @@ public class CoreRootPo {
     @Column(name = "admin_user_id", comment = "管理账号ID")
     private Long adminUserId;
 
+    @Column(name = "is_system", columnDefinition = "TINYINT", nullable = false, comment = "内置租户 0:否 1:是")
+    private Integer isSystem;
+
     @CreatedDate
     @Column(name = "create_time", nullable = false, comment = "创建时间")
     private LocalDateTime createTime;
@@ -62,6 +65,10 @@ public class CoreRootPo {
 
     @Column(name = "delete_time", comment = "删除时间")
     private LocalDateTime deleteTime;
+
+    public boolean isSystem() {
+        return isSystem != null && isSystem == 1;
+    }
 
     /**
      * 判断租户是否已过期

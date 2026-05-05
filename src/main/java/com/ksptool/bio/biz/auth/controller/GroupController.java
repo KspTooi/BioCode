@@ -43,7 +43,6 @@ public class GroupController {
     private UserService userService;
 
 
-    @PreAuthorize("@auth.hasCode('auth:group:view')")
     @Operation(summary = "获取用户组列表")
     @PostMapping("getGroupList")
     public PageResult<GetGroupListVo> getGroupList(@RequestBody @Valid GetGroupListDto dto) {
@@ -75,7 +74,7 @@ public class GroupController {
         return Result.success("修改成功");
     }
 
-    @PreAuthorize("@auth.hasCode('auth:group:view')")
+    @PreAuthorize("@auth.hasCode('auth:group:details')")
     @Operation(summary = "获取用户组详情")
     @PostMapping("getGroupDetails")
     public Result<GetGroupDetailsVo> getGroupDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {

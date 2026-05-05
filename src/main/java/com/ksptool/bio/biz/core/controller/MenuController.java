@@ -1,8 +1,10 @@
 package com.ksptool.bio.biz.core.controller;
 
 
+import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.Result;
+import com.ksptool.bio.biz.auth.service.SessionService;
 import com.ksptool.bio.biz.core.model.menu.dto.AddMenuDto;
 import com.ksptool.bio.biz.core.model.menu.dto.EditMenuDto;
 import com.ksptool.bio.biz.core.model.menu.dto.GetMenuTreeDto;
@@ -38,14 +40,14 @@ public class MenuController {
     private MenuService menuService;
 
     @PostMapping("/getUserMenuTree")
-    @Operation(summary = "获取用户菜单与按钮树(用于前端菜单展示,这个接口带有缓存)")
+    @Operation(summary = "获取用户菜单与按钮树(这是显示到用户左侧菜单的数据,这个接口带有缓存)")
     public Result<List<GetUserMenuTreeVo>> getUserMenuTree() throws Exception {
         return Result.success(menuService.getUserMenuTree(session().getUserId()));
     }
 
-    @PreAuthorize("@auth.hasCode('core:menu:view')")
+
     @PostMapping("/getMenuTree")
-    @Operation(summary = "获取菜单与按钮树(用于菜单管理)")
+    @Operation(summary = "获取菜单与按钮树(这是显示到菜单管理界面的数据,这个接口不带有缓存)")
     public Result<List<GetMenuTreeVo>> getMenuTree(@RequestBody @Valid GetMenuTreeDto dto) throws Exception {
         return Result.success(menuService.getMenuTree(dto));
     }
@@ -56,10 +58,14 @@ public class MenuController {
     @CacheEvict(cacheNames = {"userSession", "userProfile", "menuTree"}, allEntries = true)
     public Result<String> addMenu(@RequestBody @Valid AddMenuDto dto) throws Exception {
 
-
         //验证输入参数
         if (dto.validate() != null) {
             return Result.error(dto.validate());
+        }
+
+        //检查当前用户是否在超级租户里面
+        if (!SessionService.isSuperRoot()) {
+            throw new BizException("您所在的租户不是超级租户，无法新增菜单。");
         }
 
         menuService.addMenu(dto);
@@ -77,11 +83,16 @@ public class MenuController {
             return Result.error(dto.validate());
         }
 
+        //检查当前用户是否在超级租户里面
+        if (!SessionService.isSuperRoot()) {
+            throw new BizException("您所在的租户不是超级租户，无法编辑菜单。");
+        }
+
         menuService.editMenu(dto);
         return Result.success("编辑成功");
     }
 
-    @PreAuthorize("@auth.hasCode('core:menu:view')")
+    @PreAuthorize("@auth.hasCode('core:menu:details')")
     @PostMapping("/getMenuDetails")
     @Operation(summary = "获取菜单与按钮详情")
     public Result<GetMenuDetailsVo> getMenuDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {

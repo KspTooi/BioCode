@@ -2,9 +2,43 @@
   <div class="list-layout">
     <splitpanes class="custom-theme">
       <!-- 左侧树形列表 -->
-      <pane size="20" min-size="10" max-size="40">
-        <div class="h-full flex flex-col pt-2 px-1">
-          <RegistryNodeTree @on-select="onSelectNode" />
+      <pane max-size="55" style="min-width: 375px">
+        <div class="h-full pt-2 px-1">
+          <StdAdvTree
+            :data="nodeTreeData"
+            :loading="nodeTreeLoading"
+            search
+            search-placeholder="搜索注册表节点"
+            :nr="true"
+            :check="false"
+            nr-title="根节点"
+            nr-icon="ep:list"
+            :action="true"
+            :action-mode="['add', 'edit', 'remove']"
+            :nk="'id'"
+            :nt="'nkey'"
+            :nc="'children'"
+            :expand-on-click="false"
+            @on-select="onTreeNodeSelect"
+            @on-root-select="onTreeNodeSelect(null)"
+            @on-add="openNodeModal('add', null, $event)"
+            @on-edit="openNodeModal('edit', $event)"
+            @on-remove="removeNode($event, loadNodeTree)"
+            @on-refresh="loadNodeTree"
+          >
+            <template #label="{ data }">
+              <span>{{ data.nkey }}</span>
+              <span v-if="data.label" class="node-label-extra">({{ data.label }})</span>
+            </template>
+            <template #icon>
+              <el-icon class="tree-node-icon"><Folder /></el-icon>
+            </template>
+            <template #root-actions>
+              <el-button link type="success" size="small" :icon="PlusIcon" @click="openNodeModal('add', null, null)">
+                创建节点
+              </el-button>
+            </template>
+          </StdAdvTree>
         </div>
       </pane>
 
@@ -50,6 +84,9 @@
             >
               导入条目
             </el-button>
+            <el-button v-has-code="'core:registry:clearcache'" type="warning" :icon="DeleteIcon" @click="onClearCache"
+              >清除缓存</el-button
+            >
           </StdListAreaAction>
 
           <StdListAreaTable>
@@ -143,7 +180,7 @@
       @on-close="loadList(currentKeyPath)"
     />
 
-    <!-- 注册表编辑/创建模态框 -->
+    <!-- 注册表条目编辑/创建模态框 -->
     <el-dialog
       v-model="modalVisible"
       :title="modalMode === 'edit' ? '编辑条目' : '创建条目'"
@@ -203,46 +240,89 @@
         </div>
       </template>
     </el-dialog>
+
+    <!-- 节点编辑/创建模态框 -->
+    <el-dialog
+      v-model="nodeModalVisible"
+      :title="nodeModalMode === 'add' ? '新建节点' : '编辑节点'"
+      width="500px"
+      :close-on-click-modal="false"
+      @close="resetNodeModal"
+    >
+      <el-form v-if="nodeModalVisible" ref="nodeFormRef" :model="nodeForm" :rules="nodeRules" label-width="100px">
+        <el-form-item label="节点Key" prop="nkey">
+          <el-input
+            v-model="nodeForm.nkey"
+            placeholder="请输入节点Key（字母、数字、下划线或中划线）"
+            :disabled="nodeModalMode === 'edit'"
+            maxlength="128"
+            show-word-limit
+          />
+        </el-form-item>
+        <el-form-item label="节点标签" prop="label">
+          <el-input v-model="nodeForm.label" placeholder="请输入节点标签" maxlength="32" show-word-limit />
+        </el-form-item>
+        <el-form-item label="排序" prop="seq">
+          <el-input-number v-model="nodeForm.seq" :min="0" />
+        </el-form-item>
+        <el-form-item label="说明" prop="remark">
+          <el-input v-model="nodeForm.remark" type="textarea" placeholder="请输入说明" maxlength="1000" show-word-limit />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="nodeModalVisible = false">取消</el-button>
+          <el-button type="primary" :loading="nodeModalLoading" @click="submitNodeModal">
+            {{ nodeModalMode === "add" ? "创建" : "保存" }}
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, markRaw } from "vue";
-import { Edit, Delete, Upload, Download } from "@element-plus/icons-vue";
+import { Edit, Delete, Upload, Download, Folder, Plus } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
 import { Splitpanes, Pane } from "splitpanes";
 import "splitpanes/dist/splitpanes.css";
 import RegistryManagerService from "@/views/core/service/RegistryManagerService.ts";
 import RegistryApi, { type GetRegistryNodeTreeVo } from "@/views/core/api/RegistryApi";
-import RegistryNodeTree from "@/views/core/components/RegistryNodeTree.vue";
+import RegistryNodeTreeService from "@/views/core/service/RegistryNodeTreeService.ts";
+import StdAdvTree from "@/soa/std-series/StdAdvTree.vue";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
 import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
 import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";
 import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
 import ImportWizardModal from "@/soa/com-series/ImportWizardModal.vue";
-import { ElMessage } from "element-plus";
+import UserAuthService from "@/views/auth/service/UserAuthService.ts";
+import { ElMessage, ElMessageBox } from "element-plus";
 
 // 静态图标引用 (使用 markRaw 避免响应式开销)
 const EditIcon = markRaw(Edit);
 const DeleteIcon = markRaw(Delete);
 const UploadIcon = markRaw(Upload);
 const DownloadIcon = markRaw(Download);
+const PlusIcon = markRaw(Plus);
+
+// 权限指令
+const { vHasCode } = UserAuthService.usePreAuthorize();
 
 // 导入向导引用
 const importWizardRef = ref<InstanceType<typeof ImportWizardModal>>();
 
 // 组件状态管理
-const currentKeyPath = ref<string | null>(null); // 当前选中的树节点路径
-const currentNodeId = ref<string | null>(null); // 当前选中的树节点 ID
+const currentKeyPath = ref<string | null>(null);
+const currentNodeId = ref<string | null>(null);
 
 /**
  * 处理树节点选中事件
- * @param node 树形组件传回的节点对象
  */
-const onSelectNode = (node: GetRegistryNodeTreeVo | null): void => {
+const onTreeNodeSelect = (node: GetRegistryNodeTreeVo | null): void => {
   currentKeyPath.value = node?.keyPath ?? null;
   currentNodeId.value = node?.id ?? null;
-  resetList(currentKeyPath.value); // 选中节点后重置并刷新列表
+  resetList(currentKeyPath.value);
 };
 
 // 注册表条目列表打包
@@ -262,16 +342,62 @@ const {
 const modalFormRef = ref<FormInstance>();
 const _loadList = (): Promise<void> => loadList(currentKeyPath.value);
 
-// 模态框打包
+// 条目模态框打包
 const { modalVisible, modalLoading, modalMode, modalForm, modalRules, openModal, submitModal } =
   RegistryManagerService.useRegistryModal(modalFormRef, _loadList);
+
+// 节点树逻辑
+const {
+  treeData: nodeTreeData,
+  loading: nodeTreeLoading,
+  loadTreeData: loadNodeTree,
+  removeNode,
+} = RegistryNodeTreeService.useRegistryNodeTree();
+
+// 节点模态框
+const nodeFormRef = ref<FormInstance>();
+const {
+  modalVisible: nodeModalVisible,
+  modalLoading: nodeModalLoading,
+  modalMode: nodeModalMode,
+  modalForm: nodeForm,
+  modalRules: nodeRules,
+  openModal: openNodeModal,
+  submitModal: submitNodeModal,
+  resetModal: resetNodeModal,
+} = RegistryNodeTreeService.useNodeModal(nodeFormRef, loadNodeTree);
+
+// 初始加载
+loadNodeTree();
 
 /**
  * 触发查询动作
  */
 const onSearch = (): void => {
-  listForm.value.pageNum = 1; // 重置为第一页
+  listForm.value.pageNum = 1;
   loadList(currentKeyPath.value);
+};
+
+/**
+ * 清除注册表缓存
+ */
+const onClearCache = async (): Promise<void> => {
+  try {
+    await ElMessageBox.confirm("确定要清除注册表缓存吗？", "提示", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+  } catch {
+    return;
+  }
+
+  try {
+    await RegistryApi.clearRegistryCache();
+    ElMessage.success("注册表缓存已清除");
+  } catch (error: any) {
+    ElMessage.error(error.message || "清除缓存失败");
+  }
 };
 
 /**
@@ -293,6 +419,13 @@ const onExport = async (): Promise<void> => {
 </script>
 
 <style scoped>
+.tree-node-icon {
+  flex-shrink: 0;
+  margin-right: 6px;
+  font-size: 14px;
+  color: var(--el-color-primary);
+}
+
 .list-layout {
   width: 100%;
   height: 100%;

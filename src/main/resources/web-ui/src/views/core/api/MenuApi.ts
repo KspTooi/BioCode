@@ -1,6 +1,7 @@
 import type CommonIdDto from "@/commons/model/CommonIdDto.ts";
 import Http from "@/commons/Http.ts";
 import type Result from "@/commons/model/Result.ts";
+import type { GetPackListVo } from "@/views/core/api/PackApi.ts";
 
 export interface AddMenuDto {
   parentId?: string | null; // 父级ID null:根节点
@@ -55,7 +56,6 @@ export interface GetMenuTreeVo {
   icon?: string | null; // 菜单图标
   hide?: number | null; // 是否隐藏 0:否 1:是
   permissionCode?: string[]; // 所需权限码列表
-  missingPermission?: number | null; // 是否缺失权限节点 0:否 1:完全缺失 2:部分缺失
   seq?: number | null; // 排序
   children: GetMenuTreeVo[]; // 子菜单
 }
@@ -114,5 +114,12 @@ export default {
    */
   removeMenu: async (dto: CommonIdDto): Promise<Result<string>> => {
     return await Http.postEntity<Result<string>>("/menu/removeMenu", dto);
+  },
+
+  /**
+   * 根据菜单ID查询所属菜单包
+   */
+  getPacksByMenuId: async (dto: CommonIdDto): Promise<Result<GetPackListVo[]>> => {
+    return await Http.postEntity<Result<GetPackListVo[]>>("/pack/getPacksByMenuId", dto);
   },
 };

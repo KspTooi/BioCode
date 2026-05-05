@@ -376,6 +376,64 @@ import QfApproveModal from "@/views/qf/public/QfApproveModal.vue";
 - 表单型：`use<Entity>Modal(modalFormRef, reloadCallback)` → `useNoticeModal()`
 - 业务子模块：`use<Entity><子功能>()` → `useGpMenuViewList()` / `useGpPermissionOperations()`
 
+### 方法级注释（硬性）
+
+每个 `useXxx()` 函数**必须**在其声明上方添加标准 JSDoc 块注释，说明该 hook 的用途。
+
+- 形式固定为多行 JSDoc 块：`/** ... */`，以 `/**` 起首、` */` 收尾，中间每行以 ` * ` 开头
+- 首行写一句话用途总述，说清楚"管什么"，不要展开实现细节
+- 如有入参，**必须**用 `@param` 标注每个参数（参数名 + 一句话用途）
+- 不写 `@returns`（hook 返回的对象由 §10「暴露的属性 / 方法」固定清单约束，无需重复）
+- 句式建议：
+  - 列表型：`<实体中文名>列表查询与删除`
+  - 表单型：`<实体中文名>新增/编辑表单`
+  - 业务子模块：按职责一句话描述，例如 `用户组菜单视图列表` / `用户组权限授予/撤销`
+
+正确示例：
+
+```ts
+export default {
+  /**
+   * 通知列表查询与删除
+   */
+  useNoticeList() { ... },
+
+  /**
+   * 通知新增/编辑表单
+   * @param modalFormRef 表单实例引用，用于 validate / resetFields
+   * @param reloadCallback 提交成功后的列表刷新回调
+   */
+  useNoticeModal(modalFormRef, reloadCallback) { ... },
+
+  /**
+   * 用户组菜单视图列表
+   */
+  useGpMenuViewList() { ... },
+};
+```
+
+错误示例：
+
+```ts
+export default {
+  // ❌ 没有注释
+  useNoticeList() { ... },
+
+  // ❌ 用 // 行注释而非 JSDoc
+  // 通知列表
+  useNoticeModal() { ... },
+
+  /** ❌ 单行 JSDoc，不符合多行块风格 */
+  useGpMenuViewList() { ... },
+
+  /**
+   * ❌ 过度展开实现细节
+   * 这个函数会先调用接口，然后处理数据，最后……
+   */
+  useGpPermissionOperations() { ... },
+};
+```
+
 ### 暴露的属性 / 方法（命名固定）
 
 | 类别 | 名称 | 含义 |
@@ -425,7 +483,7 @@ export default {
    - 前端专用字段必须以 `_` 开头并放在结构末尾，不允许混入后端字段中间
 2. **类型声明位置**：所有 `Dto/Vo` 仅在 `api/XxxApi.ts` 中声明（§1）
 3. **表单 = DetailsVo**：`modalForm` 必须 `reactive<GetXxxDetailsVo>(...)`，提交时手动构造 `Add/Edit Dto`，无 `Partial / & / Pick / Omit` 拼合（§3）
-4. **Service 命名/暴露集合**：函数名、属性名、方法名与 §10 的固定清单完全一致
+4. **Service 命名/暴露集合**：函数名、属性名、方法名与 §10 的固定清单完全一致；每个 `useXxx()` 必须有标准多行 JSDoc 方法级注释，含一句话用途及 `@param`（§10）
 5. **文件命名**：SFC / Service / Api / Route 命名符合 §9
 6. **组件位置**：域内 → `components/`；跨域 → `<源域>/public/`；不向 `@/soa/` 写新文件（§8）
 7. **路由**：新增页面只追加到该域唯一的 `<域>RouteRegister.ts`（§7）

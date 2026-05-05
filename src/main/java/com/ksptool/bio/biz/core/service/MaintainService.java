@@ -2,6 +2,7 @@ package com.ksptool.bio.biz.core.service;
 
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.bio.BioRunner;
+import com.ksptool.bio.biz.auth.common.CheatPermission;
 import com.ksptool.bio.biz.auth.model.GroupPermissionPo;
 import com.ksptool.bio.biz.auth.model.UserGroupPo;
 import com.ksptool.bio.biz.auth.model.permission.PermissionPo;
@@ -158,22 +159,16 @@ public class MaintainService {
             scannedPermissions.add(po);
         }
 
-        // 添加超级权限
-        var superCode = new PermissionPo();
-        superCode.setCode("*:*:*");
-        superCode.setName("超级操作权限");
-        superCode.setRemark("拥有此权限的用户组不受任何操作权限限制");
-        superCode.setSeq(0);
-        superCode.setIsSystem(Switch.yes());
-        scannedPermissions.add(superCode);
-
-        var superRsCode = new PermissionPo();
-        superRsCode.setCode("*:*:*:*");
-        superRsCode.setName("超级数据权限(RS)");
-        superRsCode.setRemark("拥有此权限的用户组不受任何数据权限限制");
-        superRsCode.setSeq(0);
-        superRsCode.setIsSystem(Switch.yes());
-        scannedPermissions.add(superRsCode);
+        // 添加超级权限(以CheatPermission为准)
+        for (var cp : CheatPermission.values()) {
+            var po = new PermissionPo();
+            po.setCode(cp.getCode());
+            po.setName(cp.getName());
+            po.setRemark(cp.getRemark());
+            po.setSeq(-1);
+            po.setIsSystem(Switch.yes());
+            scannedPermissions.add(po);
+        }
 
         // 扫描数据库中已定义的全部权限码(这不包含那些用户自己定义的权限码 只获取系统权限码)
         Set<PermissionPo> existingPermissions = pRepository.getAllSystemPermissions();
@@ -243,8 +238,8 @@ public class MaintainService {
         var sRootId = SuperEntities.ROOT.getId();
         var sUserId = SuperEntities.USER.getId();
         var sGroupId = SuperEntities.GROUP.getId();
-        var spCode = SuperEntities.PERMISSION.getCode();
-        var srCode = SuperEntities.RS_PERMISSION.getCode();
+        var spCode = CheatPermission.SA.getCode();
+        var srCode = CheatPermission.SR.getCode();
 
         //获取超级租户
         var superRoot = rRepository.findById(sRootId).orElse(null);
@@ -363,6 +358,13 @@ public class MaintainService {
             superGroup.setStatus(Switch.on());
             superGroup.setIsSystem(Switch.yes());
             gRepository.save(superGroup);
+        }
+
+        //超级租户的管理员账户指向超级用户
+        if (superRoot != null) {
+            superRoot.setAdminUserId(sUserId);
+            superRoot.setIsSystem(Switch.yes());
+            rRepository.save(superRoot);
         }
 
         var vo = new MaintainUpdateVo();

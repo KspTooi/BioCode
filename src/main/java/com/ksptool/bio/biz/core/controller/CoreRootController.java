@@ -6,6 +6,7 @@ import com.ksptool.assembly.entity.web.Result;
 import com.ksptool.bio.biz.core.model.root.dto.AddCoreRootDto;
 import com.ksptool.bio.biz.core.model.root.dto.EditCoreRootDto;
 import com.ksptool.bio.biz.core.model.root.dto.GetCoreRootListDto;
+import com.ksptool.bio.biz.core.model.root.dto.UpdateRootRpDto;
 import com.ksptool.bio.biz.core.model.root.vo.GetCoreRootDetailsVo;
 import com.ksptool.bio.biz.core.model.root.vo.GetCoreRootListVo;
 import com.ksptool.bio.biz.core.service.CoreRootService;
@@ -31,7 +32,7 @@ public class CoreRootController {
     @Autowired
     private CoreRootService coreRootService;
 
-    @PreAuthorize("@auth.hasCode('core:root:view')")
+    @PreAuthorize("@auth.hasCode('core:root:list')")
     @PostMapping("/getCoreRootList")
     @Operation(summary = "查询租户列表")
     public PageResult<GetCoreRootListVo> getCoreRootList(@RequestBody @Valid GetCoreRootListDto dto) throws Exception {
@@ -54,7 +55,7 @@ public class CoreRootController {
         return Result.success("修改成功");
     }
 
-    @PreAuthorize("@auth.hasCode('core:root:view')")
+    @PreAuthorize("@auth.hasCode('core:root:details')")
     @Operation(summary = "查询租户详情")
     @PostMapping("/getCoreRootDetails")
     public Result<GetCoreRootDetailsVo> getCoreRootDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {
@@ -71,6 +72,14 @@ public class CoreRootController {
     public Result<String> removeCoreRoot(@RequestBody @Valid CommonIdDto dto) throws Exception {
         coreRootService.removeCoreRoot(dto);
         return Result.success("操作成功");
+    }
+
+    @PreAuthorize("@auth.hasCode('core:root:edit')")
+    @Operation(summary = "更新租户的菜单包绑定")
+    @PostMapping("/updateRootRp")
+    public Result<String> updateRootRp(@RequestBody @Valid UpdateRootRpDto dto) throws Exception {
+        coreRootService.updateRootRp(dto);
+        return Result.success("更新成功");
     }
 
 }

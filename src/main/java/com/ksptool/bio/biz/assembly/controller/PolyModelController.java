@@ -53,7 +53,7 @@ PolyModelController {
         return Result.success("修改成功");
     }
 
-    @PreAuthorize("@auth.hasCode('assembly:polymodel:view')")
+    @PreAuthorize("@auth.hasCode('assembly:polymodel:details')")
     @Operation(summary = "查询聚合模型详情")
     @PostMapping("/getPolyModelDetails")
     public Result<GetPolyModelDetailsVo> getPolyModelDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {

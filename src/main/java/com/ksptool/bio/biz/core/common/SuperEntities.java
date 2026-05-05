@@ -22,10 +22,10 @@ public enum SuperEntities {
     //超级组 ID=-1 隶属于超级租户
     GROUP(-1L, null),
 
-    //超级功能权限 通配符 *:*:*
+    //超级功能权限(SA) 通配符 *:*:*
     PERMISSION(null, "*:*:*"),
 
-    //超级数据权限 通配符 *:*:*:*
+    //超级数据权限(SR) 通配符 *:*:*:*
     RS_PERMISSION(null, "*:*:*:*");
 
     //超级实体的固定ID (权限类为null)

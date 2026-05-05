@@ -1,5 +1,6 @@
 package com.ksptool.bio.biz.core.model.menu.vo;
 
+import com.ksptool.bio.biz.core.common.TreeBuilder;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,7 +10,7 @@ import java.util.Set;
 
 @Getter
 @Setter
-public class GetMenuTreeVo {
+public class GetMenuTreeVo implements TreeBuilder.TreeNode<GetMenuTreeVo> {
 
     @Schema(description = "菜单ID")
     private Long id;
@@ -34,9 +35,6 @@ public class GetMenuTreeVo {
 
     @Schema(description = "权限码列表")
     private Set<String> permissionCode;
-
-    @Schema(description = "是否缺失权限节点 0:否 1:是 2:部分缺失")
-    private Integer missingPermission;
 
     @Schema(description = "排序")
     private Integer seq;

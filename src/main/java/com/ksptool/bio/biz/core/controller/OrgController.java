@@ -37,7 +37,7 @@ public class OrgController {
     @Autowired
     private UserService userService;
 
-    @PreAuthorize("@auth.hasCode('core:org:view')")
+
     @PostMapping("/getOrgTree")
     @Operation(summary = "查询组织机构树(不分页)")
     public Result<List<GetOrgTreeVo>> getOrgTree(@RequestBody @Valid GetOrgTreeDto dto) throws Exception {
@@ -66,7 +66,7 @@ public class OrgController {
         return Result.success("修改成功");
     }
 
-    @PreAuthorize("@auth.hasCode('core:org:view')")
+    @PreAuthorize("@auth.hasCode('core:org:details')")
     @Operation(summary = "查询组织机构详情")
     @PostMapping("/getOrgDetails")
     public Result<GetOrgDetailsVo> getOrgDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {

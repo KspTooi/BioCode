@@ -42,7 +42,7 @@ public class QtTaskController {
     @Autowired
     private QtTaskService qtTaskService;
 
-    @PreAuthorize("@auth.hasCode('qt:task:view')")
+    @PreAuthorize("@auth.hasCode('qt:task:list')")
     @PostMapping("/getQtTaskList")
     @Operation(summary = "获取任务列表")
     public PageResult<GetQtTaskListVo> getQtTaskList(@RequestBody @Valid GetQtTaskListDto dto) throws Exception {
@@ -101,7 +101,7 @@ public class QtTaskController {
         return Result.success("修改成功");
     }
 
-    @PreAuthorize("@auth.hasCode('qt:task:view')")
+    @PreAuthorize("@auth.hasCode('qt:task:details')")
     @Operation(summary = "获取任务详情")
     @PostMapping("/getQtTaskDetails")
     public Result<GetQtTaskDetailsVo> getQtTaskDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {
