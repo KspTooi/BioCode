@@ -31,4 +31,12 @@ public interface MenuPackRepository extends JpaRepository<MenuPackPo, MenuPackPo
     @Modifying
     @Query("DELETE FROM MenuPackPo mp WHERE mp.packId = :pid AND mp.menuId IN :mids")
     int removeByPidAndMids(@Param("pid") Long pid, @Param("mids") List<Long> mids);
+
+    @Modifying
+    @Query("DELETE FROM MenuPackPo mp WHERE mp.menuId = :mid")
+    int removeByMid(@Param("mid") Long mid);
+
+    @Modifying
+    @Query("DELETE FROM MenuPackPo mp WHERE mp.packId = :pid")
+    int removeByPid(@Param("pid") Long pid);
 }

@@ -12,6 +12,7 @@ import com.ksptool.bio.biz.core.model.menu.dto.GetMenuTreeDto;
 import com.ksptool.bio.biz.core.model.menu.vo.GetMenuDetailsVo;
 import com.ksptool.bio.biz.core.model.menu.vo.GetMenuTreeVo;
 import com.ksptool.bio.biz.core.model.menu.vo.GetUserMenuTreeVo;
+import com.ksptool.bio.biz.core.repository.MenuPackRepository;
 import com.ksptool.bio.biz.core.repository.MenuRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -33,6 +34,9 @@ public class MenuService {
 
     @Autowired
     private PermissionRepository permissionRepository;
+
+    @Autowired
+    private MenuPackRepository menuPackRepository;
 
     @Autowired
     private MenuRepository menuRepository;
@@ -323,6 +327,7 @@ public class MenuService {
             }
 
             menuRepository.deleteById(po.getId());
+            menuPackRepository.removeByMid(po.getId());
             return;
         }
 
@@ -335,6 +340,7 @@ public class MenuService {
             }
 
             menuRepository.deleteById(id);
+            menuPackRepository.removeByMid(id);
         }
 
     }

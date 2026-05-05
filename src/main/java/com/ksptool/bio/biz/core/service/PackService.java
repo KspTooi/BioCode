@@ -99,9 +99,13 @@ public class PackService {
     @Transactional(rollbackFor = Exception.class)
     public void removePack(CommonIdDto dto) throws BizException {
         if (dto.isBatch()) {
+            for (Long id : dto.getIds()) {
+                menuPackRepository.removeByPid(id);
+            }
             repository.deleteAllById(dto.getIds());
             return;
         }
+        menuPackRepository.removeByPid(dto.getId());
         repository.deleteById(dto.getId());
     }
 
