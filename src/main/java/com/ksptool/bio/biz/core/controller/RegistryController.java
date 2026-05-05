@@ -8,7 +8,10 @@ import com.ksptool.bio.biz.core.model.registry.vo.ExportRegistryVo;
 import com.ksptool.bio.biz.core.model.registry.vo.GetRegistryDetailsVo;
 import com.ksptool.bio.biz.core.model.registry.vo.GetRegistryEntryListVo;
 import com.ksptool.bio.biz.core.model.registry.vo.GetRegistryNodeTreeVo;
+import com.ksptool.bio.biz.core.service.RegistrySdk;
 import com.ksptool.bio.biz.core.service.RegistryService;
+import com.ksptool.bio.biz.auth.service.SessionService;
+import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.assembly.entity.web.Result;
@@ -35,6 +38,9 @@ public class RegistryController {
 
     @Autowired
     private RegistryService registryService;
+
+    @Autowired
+    private RegistrySdk registrySdk;
 
     @PreAuthorize("@auth.hasCode('core:registry:list')")
     @PostMapping("/getRegistryNodeTree")
@@ -135,6 +141,14 @@ public class RegistryController {
         //准备导出向导
         ExportWizard<ExportRegistryVo> ew = new ExportWizard<>(registryService.exportRegistry(dto), response);
         ew.transfer("注册表条目");
+    }
+
+    @PreAuthorize("@auth.hasCode('core:registry:clearcache')")
+    @Operation(summary = "清除注册表缓存")
+    @PostMapping("/clearRegistryCache")
+    public Result<String> clearRegistryCache() throws BizException {
+        registrySdk.clearAllCache();
+        return Result.success("注册表缓存已清除");
     }
 
 }

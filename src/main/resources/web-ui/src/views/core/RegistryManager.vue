@@ -50,6 +50,7 @@
             >
               导入条目
             </el-button>
+            <el-button v-has-code="'core:registry:clearcache'" type="warning" :icon="DeleteIcon" @click="onClearCache">清除缓存</el-button>
           </StdListAreaAction>
 
           <StdListAreaTable>
@@ -220,13 +221,17 @@ import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
 import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";
 import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
 import ImportWizardModal from "@/soa/com-series/ImportWizardModal.vue";
-import { ElMessage } from "element-plus";
+import UserAuthService from "@/views/auth/service/UserAuthService.ts";
+import { ElMessage, ElMessageBox } from "element-plus";
 
 // 静态图标引用 (使用 markRaw 避免响应式开销)
 const EditIcon = markRaw(Edit);
 const DeleteIcon = markRaw(Delete);
 const UploadIcon = markRaw(Upload);
 const DownloadIcon = markRaw(Download);
+
+// 权限指令
+const { vHasCode } = UserAuthService.usePreAuthorize();
 
 // 导入向导引用
 const importWizardRef = ref<InstanceType<typeof ImportWizardModal>>();
@@ -272,6 +277,28 @@ const { modalVisible, modalLoading, modalMode, modalForm, modalRules, openModal,
 const onSearch = (): void => {
   listForm.value.pageNum = 1; // 重置为第一页
   loadList(currentKeyPath.value);
+};
+
+/**
+ * 清除注册表缓存
+ */
+const onClearCache = async (): Promise<void> => {
+  try {
+    await ElMessageBox.confirm("确定要清除注册表缓存吗？", "提示", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+  } catch {
+    return;
+  }
+
+  try {
+    await RegistryApi.clearRegistryCache();
+    ElMessage.success("注册表缓存已清除");
+  } catch (error: any) {
+    ElMessage.error(error.message || "清除缓存失败");
+  }
 };
 
 /**
