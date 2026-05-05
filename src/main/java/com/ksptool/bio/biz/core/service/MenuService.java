@@ -5,6 +5,7 @@ import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.bio.biz.auth.repository.PermissionRepository;
 import com.ksptool.bio.biz.auth.service.SessionService;
+import com.ksptool.bio.biz.core.common.TreeBuilder;
 import com.ksptool.bio.biz.core.model.menu.MenuPo;
 import com.ksptool.bio.biz.core.model.menu.dto.AddMenuDto;
 import com.ksptool.bio.biz.core.model.menu.dto.EditMenuDto;
@@ -73,32 +74,7 @@ public class MenuService {
             flatVos.add(vo);
         }
 
-        //将平面vo转换为tree
-        List<GetUserMenuTreeVo> treeVos = new ArrayList<>();
-        Map<Long, GetUserMenuTreeVo> map = new HashMap<>();
-
-        for (GetUserMenuTreeVo vo : flatVos) {
-            map.put(vo.getId(), vo);
-        }
-
-        for (GetUserMenuTreeVo vo : flatVos) {
-
-            //没有父节点，说明是顶级菜单，直接加入结果集
-            if (vo.getParentId() == null) {
-                treeVos.add(vo);
-                continue;
-            }
-
-            GetUserMenuTreeVo parent = map.get(vo.getParentId());
-            if (parent != null) {
-                //找到父节点，把自己塞进父节点的 children 列表里
-                parent.getChildren().add(vo);
-                continue;
-            }
-            treeVos.add(vo);
-        }
-
-        //2026-04-13新增：在此处调用剪枝方法，过滤空壳目录
+        List<GetUserMenuTreeVo> treeVos = TreeBuilder.build(flatVos);
         pruneEmptyDirectories(treeVos);
         return treeVos;
     }
@@ -129,29 +105,7 @@ public class MenuService {
             flatVos.add(vo);
         }
 
-        //将平面vo转换为tree
-        List<GetMenuTreeVo> treeVos = new ArrayList<>();
-        Map<Long, GetMenuTreeVo> map = new HashMap<>();
-
-        for (GetMenuTreeVo vo : flatVos) {
-            map.put(vo.getId(), vo);
-        }
-
-        for (GetMenuTreeVo vo : flatVos) {
-            if (vo.getParentId() == null) {
-                treeVos.add(vo);
-                continue;
-            }
-
-            GetMenuTreeVo parent = map.get(vo.getParentId());
-            if (parent != null) {
-                parent.getChildren().add(vo);
-            } else {
-                treeVos.add(vo);
-            }
-        }
-
-        return treeVos;
+        return TreeBuilder.build(flatVos);
     }
 
     /**

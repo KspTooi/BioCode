@@ -1,5 +1,6 @@
 package com.ksptool.bio.biz.core.model.menu.vo;
 
+import com.ksptool.bio.biz.core.common.TreeBuilder;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,7 +10,7 @@ import java.util.Set;
 
 @Getter
 @Setter
-public class GetUserMenuTreeVo {
+public class GetUserMenuTreeVo implements TreeBuilder.TreeNode<GetUserMenuTreeVo> {
 
     @Schema(description = "菜单ID")
     private Long id;
