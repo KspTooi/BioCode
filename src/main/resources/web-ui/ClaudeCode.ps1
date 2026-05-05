@@ -7,14 +7,19 @@ Write-Host "         ClaudeCode 启动脚本" -ForegroundColor Cyan
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host ""
 
-# 安装/更新 claude-code
-Write-Host "[1/3] 正在安装/更新 claude-code..." -ForegroundColor Yellow
-npm install -g @anthropic-ai/claude-code@latest
-if ($LASTEXITCODE -ne 0) {
-    Write-Host ""
-    Write-Host "[错误] 安装失败，请检查 Node.js 和 npm 是否已正确安装。" -ForegroundColor Red
-    Read-Host "按回车键退出"
-    exit 1
+# 询问是否需要更新 claude-code
+$updateInput = Read-Host "是否更新 claude-code？(回车=更新 / n=跳过)"
+if ($updateInput -ne "n") {
+    Write-Host "[1/3] 正在安装/更新 claude-code..." -ForegroundColor Yellow
+    npm install -g @anthropic-ai/claude-code@latest
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host ""
+        Write-Host "[错误] 安装失败，请检查 Node.js 和 npm 是否已正确安装。" -ForegroundColor Red
+        Read-Host "按回车键退出"
+        exit 1
+    }
+} else {
+    Write-Host "[1/3] 已跳过更新 claude-code。" -ForegroundColor DarkGray
 }
 Write-Host ""
 
