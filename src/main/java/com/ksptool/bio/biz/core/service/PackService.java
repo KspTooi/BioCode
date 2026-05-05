@@ -6,14 +6,17 @@ import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.bio.biz.core.common.IdsDiff;
 import com.ksptool.bio.biz.core.model.pack.MenuPackPo;
 import com.ksptool.bio.biz.core.model.pack.PackPo;
+import com.ksptool.bio.biz.core.model.root.CoreRootPo;
 import com.ksptool.bio.biz.core.model.pack.dto.AddPackDto;
 import com.ksptool.bio.biz.core.model.pack.dto.EditPackDto;
 import com.ksptool.bio.biz.core.model.pack.dto.GetPackListDto;
 import com.ksptool.bio.biz.core.model.pack.dto.UpdatePackMenuDto;
 import com.ksptool.bio.biz.core.model.pack.vo.GetPackDetailsVo;
 import com.ksptool.bio.biz.core.model.pack.vo.GetPackListVo;
+import com.ksptool.bio.biz.core.repository.CoreRootRepository;
 import com.ksptool.bio.biz.core.repository.MenuPackRepository;
 import com.ksptool.bio.biz.core.repository.PackRepository;
+import com.ksptool.bio.biz.core.repository.RootPackRepository;
 import jakarta.persistence.Tuple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -35,6 +38,12 @@ public class PackService {
 
     @Autowired
     private MenuPackRepository menuPackRepository;
+
+    @Autowired
+    private RootPackRepository rootPackRepository;
+
+    @Autowired
+    private CoreRootRepository coreRootRepository;
 
     /**
      * 查询菜单包列表
@@ -102,12 +111,26 @@ public class PackService {
     public void removePack(CommonIdDto dto) throws BizException {
         if (dto.isBatch()) {
             for (Long id : dto.getIds()) {
+                var boundRootIds = rootPackRepository.getRidsByPid(id);
+                if (!boundRootIds.isEmpty()) {
+                    var boundRootNames = coreRootRepository.findAllById(boundRootIds).stream()
+                        .map(CoreRootPo::getName).toList();
+                    throw new BizException("无法删除，该菜单包正被以下租户使用: " + String.join("、", boundRootNames));
+                }
                 menuPackRepository.removeByPid(id);
+                rootPackRepository.removeByPid(id);
             }
             repository.deleteAllById(dto.getIds());
             return;
         }
+        var boundRootIds = rootPackRepository.getRidsByPid(dto.getId());
+        if (!boundRootIds.isEmpty()) {
+            var boundRootNames = coreRootRepository.findAllById(boundRootIds).stream()
+                .map(CoreRootPo::getName).toList();
+            throw new BizException("无法删除，该菜单包正被以下租户使用: " + String.join("、", boundRootNames));
+        }
         menuPackRepository.removeByPid(dto.getId());
+        rootPackRepository.removeByPid(dto.getId());
         repository.deleteById(dto.getId());
     }
 
