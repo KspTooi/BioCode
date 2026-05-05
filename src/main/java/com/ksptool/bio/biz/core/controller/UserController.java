@@ -45,7 +45,7 @@ public class UserController {
         return service.getUserList(dto);
     }
 
-    @PreAuthorize("@auth.hasCode('core:user:view')")
+    @PreAuthorize("@auth.hasCode('core:user:details')")
     @Operation(summary = "获取用户详情")
     @PostMapping("getUserDetails")
     public Result<GetUserDetailsVo> getUserDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {

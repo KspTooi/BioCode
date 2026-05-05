@@ -32,7 +32,7 @@ public class PostController {
     @Autowired
     private PostService postService;
 
-    @PreAuthorize("@auth.hasCode('core:post:view')")
+    @PreAuthorize("@auth.hasCode('core:post:list')")
     @PostMapping("/getPostList")
     @Operation(summary = "查询岗位列表")
     public PageResult<GetPostListVo> getPostList(@RequestBody @Valid GetPostListDto dto) throws Exception {
@@ -55,7 +55,7 @@ public class PostController {
         return Result.success("修改成功");
     }
 
-    @PreAuthorize("@auth.hasCode('core:post:view')")
+    @PreAuthorize("@auth.hasCode('core:post:details')")
     @Operation(summary = "查询岗位详情")
     @PostMapping("/getPostDetails")
     public Result<GetPostDetailsVo> getPostDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {

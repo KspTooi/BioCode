@@ -32,7 +32,7 @@ public class NoticeController {
     private NoticeService noticeService;
 
 
-    @PreAuthorize("@auth.hasCode('core:notice:view')")
+    @PreAuthorize("@auth.hasCode('core:notice:list')")
     @PostMapping("/getNoticeList")
     @Operation(summary = "查询消息通知列表")
     public PageResult<GetNoticeListVo> getNoticeList(@RequestBody @Valid GetNoticeListDto dto) throws Exception {
@@ -63,7 +63,7 @@ public class NoticeController {
         return Result.success("修改消息通知成功");
     }
 
-    @PreAuthorize("@auth.hasCode('core:notice:view')")
+    @PreAuthorize("@auth.hasCode('core:notice:details')")
     @Operation(summary = "查询消息通知详情")
     @PostMapping("/getNoticeDetails")
     public Result<GetNoticeDetailsVo> getNoticeDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {

@@ -36,14 +36,14 @@ public class RegistryController {
     @Autowired
     private RegistryService registryService;
 
-    @PreAuthorize("@auth.hasCode('core:registry:view')")
+    @PreAuthorize("@auth.hasCode('core:registry:list')")
     @PostMapping("/getRegistryNodeTree")
     @Operation(summary = "查询注册表节点树")
     public Result<List<GetRegistryNodeTreeVo>> getRegistryNodeTree() throws Exception {
         return Result.success(registryService.getRegistryNodeTree());
     }
 
-    @PreAuthorize("@auth.hasCode('core:registry:view')")
+    @PreAuthorize("@auth.hasCode('core:registry:list')")
     @PostMapping("/getRegistryEntryList")
     @Operation(summary = "查询注册表条目列表")
     public PageResult<GetRegistryEntryListVo> getRegistryEntryList(@RequestBody @Valid GetRegistryListDto dto) throws Exception {
@@ -80,7 +80,7 @@ public class RegistryController {
         return Result.success("修改成功");
     }
 
-    @PreAuthorize("@auth.hasCode('core:registry:view')")
+    @PreAuthorize("@auth.hasCode('core:registry:details')")
     @Operation(summary = "查询注册表条目详情")
     @PostMapping("/getRegistryDetails")
     public Result<GetRegistryDetailsVo> getRegistryDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {

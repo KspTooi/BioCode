@@ -32,7 +32,7 @@ public class CoreRootController {
     @Autowired
     private CoreRootService coreRootService;
 
-    @PreAuthorize("@auth.hasCode('core:root:view')")
+    @PreAuthorize("@auth.hasCode('core:root:list')")
     @PostMapping("/getCoreRootList")
     @Operation(summary = "查询租户列表")
     public PageResult<GetCoreRootListVo> getCoreRootList(@RequestBody @Valid GetCoreRootListDto dto) throws Exception {
@@ -55,7 +55,7 @@ public class CoreRootController {
         return Result.success("修改成功");
     }
 
-    @PreAuthorize("@auth.hasCode('core:root:view')")
+    @PreAuthorize("@auth.hasCode('core:root:details')")
     @Operation(summary = "查询租户详情")
     @PostMapping("/getCoreRootDetails")
     public Result<GetCoreRootDetailsVo> getCoreRootDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {

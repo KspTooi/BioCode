@@ -34,7 +34,7 @@ public class PackController {
     @Autowired
     private PackService packService;
 
-    @PreAuthorize("@auth.hasCode('core:pack:view')")
+    @PreAuthorize("@auth.hasCode('core:pack:list')")
     @PostMapping("/getPackList")
     @Operation(summary = "查询菜单包列表")
     public PageResult<GetPackListVo> getPackList(@RequestBody @Valid GetPackListDto dto) throws Exception {
@@ -57,7 +57,7 @@ public class PackController {
         return Result.success("修改成功");
     }
 
-    @PreAuthorize("@auth.hasCode('core:pack:view')")
+    @PreAuthorize("@auth.hasCode('core:pack:details')")
     @Operation(summary = "查询菜单包详情")
     @PostMapping("/getPackDetails")
     public Result<GetPackDetailsVo> getPackDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {
@@ -76,7 +76,7 @@ public class PackController {
         return Result.success("操作成功");
     }
 
-    @PreAuthorize("@auth.hasCode('core:pack:view')")
+    @PreAuthorize("@auth.hasCode('core:pack:list')")
     @Operation(summary = "根据菜单ID查询所属菜单包")
     @PostMapping("/getPacksByMenuId")
     public Result<List<GetPackListVo>> getPacksByMenuId(@RequestBody @Valid CommonIdDto dto) throws Exception {

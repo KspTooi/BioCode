@@ -31,7 +31,7 @@ public class ExcelTemplateController {
     @Autowired
     private ExcelTemplateService excelTemplateService;
 
-    @PreAuthorize("@auth.hasCode('core:excel_template:view')")
+    @PreAuthorize("@auth.hasCode('core:excel_template:list')")
     @PostMapping("/getExcelTemplateList")
     @Operation(summary = "查询Excel模板列表")
     public PageResult<GetExcelTemplateListVo> getExcelTemplateList(@RequestBody @Valid GetExcelTemplateListDto dto) throws Exception {
