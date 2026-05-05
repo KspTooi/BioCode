@@ -89,6 +89,16 @@ export default {
       rows.forEach((row) => boundIds.value.add(String(row.id)));
     };
 
+    const onRowClick = (row: GetPackListVo, column: any): void => {
+      if (!tableRef.value) {
+        return;
+      }
+      if (column.type === "selection") {
+        return;
+      }
+      tableRef.value.toggleRowSelection(row);
+    };
+
     const openModal = async (): Promise<void> => {
       await loadBoundIds();
       await loadPackList();
@@ -101,7 +111,7 @@ export default {
       loading.value = true;
       try {
         const packIds = Array.from(boundIds.value);
-        await CoreRootApi.updateRootPack({ rootId: props.data.id, packIds });
+        await CoreRootApi.updateRootRp({ rootId: props.data.id, packIds });
         ElMessage.success("菜单包绑定已保存");
         emit("close");
         emit("success");
@@ -148,6 +158,7 @@ export default {
       resetSearch,
       loadPackList,
       onSelectionChange,
+      onRowClick,
       submitModal,
     };
   },

@@ -22,17 +22,14 @@
 
     <div class="table-wrap">
       <el-table
-        ref="
-          (el: any) => {
-            svc.tableRef.value = el;
-          }
-        "
+        :ref="(el: any) => { svc.tableRef.value = el; }"
         :data="svc.packList.value"
         stripe
         border
         height="100%"
         v-loading="svc.loading.value"
         @selection-change="svc.onSelectionChange"
+        @row-click="svc.onRowClick"
       >
         <el-table-column type="selection" width="50" />
         <el-table-column prop="name" label="菜单包名称" min-width="160" show-overflow-tooltip />

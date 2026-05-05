@@ -44,7 +44,7 @@ export interface GetCoreRootDetailsVo {
 /**
  * 更新租户绑定菜单包Dto
  */
-export interface UpdateRootPackDto {
+export interface UpdateRootRpDto {
   rootId: string; // 租户ID
   packIds: string[]; // 菜单包ID列表
 }
@@ -129,8 +129,8 @@ export default {
   /**
    * 更新租户绑定菜单包
    */
-  updateRootPack: async (dto: UpdateRootPackDto): Promise<string> => {
-    const result = await Http.postEntity<Result<string>>("/coreRoot/updateRootPack", dto);
+  updateRootRp: async (dto: UpdateRootRpDto): Promise<string> => {
+    const result = await Http.postEntity<Result<string>>("/coreRoot/updateRootRp", dto);
     if (result.code === 0) {
       return result.message;
     }
