@@ -91,20 +91,8 @@ public class MenuService {
 
         List<MenuPo> list = menuRepository.getMenuTree(dto);
 
-        List<GetMenuTreeVo> flatVos = new ArrayList<>();
-
         //将list转换为平面vo
-        for (MenuPo po : list) {
-            GetMenuTreeVo vo = as(po, GetMenuTreeVo.class);
-            vo.setChildren(new ArrayList<>());
-            vo.setParentId(null);
-            if (po.getParentId() != null) {
-                vo.setParentId(po.getParentId());
-            }
-
-            flatVos.add(vo);
-        }
-
+        var flatVos = as(list, GetMenuTreeVo.class);
         return TreeBuilder.build(flatVos);
     }
 
