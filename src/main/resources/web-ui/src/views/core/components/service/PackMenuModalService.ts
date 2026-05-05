@@ -13,6 +13,9 @@ export interface PackMenuModalProps {
 }
 
 export default {
+  /**
+   * 菜单包菜单绑定弹窗管理
+   */
   usePackMenuModal(props: PackMenuModalProps, emit: (e: "close" | "success") => void) {
     const modalTreeRef = ref<InstanceType<typeof StdAdvTree>>();
     const modalTreeData = ref<GetMenuTreeVo[]>([]);

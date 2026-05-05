@@ -18,18 +18,11 @@
             />
           </el-form-item>
           <el-form-item label="状态">
-            <!-- <el-input v-model.number="listForm.status" placeholder="输入状态" clearable /> -->
             <el-select v-model="listForm.status" placeholder="请选择状态" clearable style="width: 120px">
               <el-option label="正常" :value="0" />
               <el-option label="停用" :value="1" />
             </el-select>
           </el-form-item>
-          <!-- <el-form-item label="状态">
-            <el-select v-model="listForm.enabled" placeholder="请选择状态" clearable style="width: 120px">
-              <el-option label="启用" :value="1" />
-              <el-option label="禁用" :value="0" />
-            </el-select>
-          </el-form-item> -->
         </div>
         <el-form-item>
           <el-button type="primary" :disabled="listLoading" @click="loadList">查询</el-button>
@@ -50,19 +43,14 @@
         <el-table-column prop="name" label="租户名称" min-width="120" show-overflow-tooltip />
         <el-table-column prop="adminUsername" label="管理员账号" min-width="120" show-overflow-tooltip />
         <el-table-column prop="expireTime" label="到期时间" min-width="120" show-overflow-tooltip />
-        <!-- <el-table-column prop="enabled" label="状态" min-width="100" align="center">
-          <template #default="{ row }">
-            <el-switch
-              v-model="row.status"
-              :active-value="1"
-              :inactive-value="0"
-              @change="() => updateStatus(row)"
-            />
+        <el-table-column prop="isSystem" label="内置" min-width="80" align="center">
+          <template #default="scope">
+            <el-tag v-if="scope.row.isSystem === 1" type="warning">是</el-tag>
+            <span v-else>否</span>
           </template>
-        </el-table-column> -->
+        </el-table-column>
         <el-table-column prop="status" label="状态" min-width="100" show-overflow-tooltip align="center">
           <template #default="scope">
-            <!-- 状态 1:正常，0:停用 -->
             <el-tag v-if="scope.row.status === 1" type="info">停用</el-tag>
             <el-tag v-if="scope.row.status === 0" type="success">正常</el-tag>
           </template>
@@ -74,7 +62,7 @@
             <el-button link type="primary" size="small" :icon="EditIcon" @click="openModal('edit', scope.row)">
               编辑
             </el-button>
-            <el-button link type="danger" size="small" :icon="DeleteIcon" @click="removeList(scope.row)"> 删除 </el-button>
+            <el-button link type="danger" size="small" :icon="DeleteIcon" :disabled="scope.row.isSystem === 1" @click="removeList(scope.row)"> 删除 </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -134,6 +122,7 @@
             value-format="YYYY-MM-DD HH:mm:ss"
             style="width: 100%"
             clearable
+            :disabled="modalMode === 'edit' && modalForm.isSystem === 1"
             :disabled-date="
               (date) => {
                 const today = new Date();
@@ -143,31 +132,29 @@
             "
           />
         </el-form-item>
-        <el-form-item label="管理员账号" :prop="modalMode === 'add' ? 'adminUsername' : undefined">
+        <el-form-item label="管理员账号" :prop="modalMode === 'add' ? '_adminUsername' : undefined">
           <el-input
             :maxlength="40"
-            v-model="modalForm.adminUsername"
+            v-model="modalForm._adminUsername"
             placeholder="请输入管理员账号"
             :disabled="modalMode === 'edit'"
             clearable
             show-word-limit
           />
-          <!-- maxlength="40" -->
         </el-form-item>
         <el-form-item
           v-if="modalMode === 'add'"
           label="管理员密码"
-          prop="adminPassword"
+          prop="_adminPassword"
         >
           <el-input
             :maxlength="40"
-            v-model="modalForm.adminPassword"
+            v-model="modalForm._adminPassword"
             placeholder="请输入管理员密码"
             show-password
             clearable
             show-word-limit
           />
-          <!-- maxlength="40" -->
         </el-form-item>
         <el-form-item label="备注" prop="remark">
           <el-input
@@ -180,9 +167,8 @@
             clearable
 			  	/>
 		  	</el-form-item>
-        <!-- :disabled="props.isView" -->
         <el-form-item label="状态" prop="status">
-				  <el-radio-group v-model="modalForm.status">
+				  <el-radio-group v-model="modalForm.status" :disabled="modalMode === 'edit' && modalForm.isSystem === 1">
             <el-radio :value="0">正常</el-radio>
             <el-radio :value="1">停用</el-radio>
           </el-radio-group>
@@ -215,7 +201,7 @@ const EditIcon = markRaw(Edit);
 const DeleteIcon = markRaw(Delete);
 
 // 列表管理打包
-const { listForm, listData, listTotal, listLoading, loadList, updateStatus, resetList, removeList } =
+const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } =
   CoreRootService.useCoreRootList();
 
 // 模态框表单引用

@@ -22,7 +22,7 @@ export interface GetCoreRootListVo {
   expireTime: string; // 到期时间(null长期)
   status: number; // 状态 1:正常，0:停用
   adminUsername?: string; // 管理员账号
-  // adminPassword?: string; // 管理员密码
+  isSystem: number; // 内置租户 0:否 1:是
   createTime: string; // 创建时间
 }
 
@@ -35,6 +35,9 @@ export interface GetCoreRootDetailsVo {
   expireTime: string; // 到期时间(null长期)
   remark: string; // 备注
   status: number; // 状态 1:正常，0:停用
+  isSystem: number; // 内置租户 0:否 1:是
+  _adminUsername: string; // [前端] 管理员账号
+  _adminPassword: string; // [前端] 管理员密码
 }
 
 /**

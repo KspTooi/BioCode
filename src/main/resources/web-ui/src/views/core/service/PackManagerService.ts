@@ -103,7 +103,7 @@ export default {
   },
 
   /**
-   * 模态框管理（统一处理新增和编辑）
+   * 菜单包模态框管理
    */
   usePackModal(modalFormRef: Ref<FormInstance | undefined>, reloadCallback: () => void) {
     const modalVisible = ref(false);
