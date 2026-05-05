@@ -22,7 +22,8 @@ export default {
       pageNum: 1,
       pageSize: 20,
       name: "",
-      expireTime: "",
+      expireTimeRangeStart: "",
+      expireTimeRangeEnd: "",
       status: null,
     });
 
@@ -50,7 +51,8 @@ export default {
       listForm.value.pageNum = 1;
       listForm.value.pageSize = 20;
       listForm.value.name = "";
-      listForm.value.expireTime = "";
+      listForm.value.expireTimeRangeStart = "";
+      listForm.value.expireTimeRangeEnd = "";
       listForm.value.status = null;
       loadList();
     };

@@ -8,13 +8,11 @@
             <el-input v-model="listForm.name" placeholder="输入租户名称" clearable />
           </el-form-item>
           <el-form-item label="到期时间">
-            <el-date-picker
-              v-model="listForm.expireTime"
-              type="datetime"
-              placeholder="选择到期时间"
-              value-format="YYYY-MM-DD HH:mm:ss"
-              format="YYYY-MM-DD HH:mm:ss"
-              clearable
+            <StdDateRange
+              v-model:range-start="listForm.expireTimeRangeStart"
+              v-model:range-end="listForm.expireTimeRangeEnd"
+              start-placeholder="开始时间"
+              end-placeholder="结束时间"
             />
           </el-form-item>
           <el-form-item label="状态">
@@ -216,6 +214,7 @@ import type { FormInstance } from "element-plus";
 import type { GetCoreRootListVo } from "@/views/core/api/CoreRootApi.ts";
 import CoreRootService from "@/views/core/service/CoreRootService.ts";
 import RootRpModal from "@/views/core/components/RootRpModal.vue";
+import StdDateRange from "@/soa/std-series/StdDateRange.vue";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
 import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
 import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";

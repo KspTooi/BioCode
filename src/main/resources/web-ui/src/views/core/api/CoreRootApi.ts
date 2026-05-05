@@ -9,7 +9,8 @@ import type Result from "@/commons/model/Result.ts";
  */
 export interface GetCoreRootListDto extends PageQuery {
   name?: string; // 租户名称
-  expireTime?: string; // 到期时间(null长期)
+  expireTimeRangeStart?: string; // 到期时间起
+  expireTimeRangeEnd?: string; // 到期时间止
   status?: number; // 状态 1:正常，0:停用
 }
 
