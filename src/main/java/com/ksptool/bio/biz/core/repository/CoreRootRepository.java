@@ -21,6 +21,7 @@ public interface CoreRootRepository extends JpaRepository<CoreRootPo, Long> {
             u.name AS name,
             u.expireTime AS expireTime,
             u.status AS status,
+            u.isSystem AS isSystem,
             up.username AS adminUsername,
             u.createTime AS createTime
             FROM CoreRootPo u

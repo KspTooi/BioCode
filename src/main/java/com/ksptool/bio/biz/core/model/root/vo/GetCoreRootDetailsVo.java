@@ -25,4 +25,7 @@ public class GetCoreRootDetailsVo {
     @Schema(description = "状态 0:正常 1:禁用")
     private Integer status;
 
+    @Schema(description = "内置租户 0:否 1:是")
+    private Integer isSystem;
+
 }

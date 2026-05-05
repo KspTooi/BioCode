@@ -13,6 +13,7 @@ import com.ksptool.bio.biz.auth.repository.PermissionRepository;
 import com.ksptool.bio.biz.auth.repository.UserGroupRepository;
 import com.ksptool.bio.biz.auth.service.SessionService;
 import com.ksptool.bio.biz.core.common.SuperEntities;
+import com.ksptool.bio.biz.core.common.Switch;
 import com.ksptool.bio.biz.core.model.root.CoreRootPo;
 import com.ksptool.bio.biz.core.model.root.dto.AddCoreRootDto;
 import com.ksptool.bio.biz.core.model.root.dto.EditCoreRootDto;
@@ -111,6 +112,7 @@ public class CoreRootService {
         //先创建租户 这样才可以拿到租户ID
         CoreRootPo insertPo = as(dto, CoreRootPo.class);
         insertPo.setAdminUserId(-1L);
+        insertPo.setIsSystem(Switch.no());
         insertPo = repository.save(insertPo);
 
         //给租户创建一个管理员账号
@@ -183,6 +185,16 @@ public class CoreRootService {
         CoreRootPo updatePo = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("更新失败,数据不存在或无权限访问."));
 
+        //内置租户不可调整状态
+        if (updatePo.isSystem() && dto.getStatus() != null && !dto.getStatus().equals(updatePo.getStatus())) {
+            throw new BizException("内置租户不允许调整状态！");
+        }
+
+        //内置租户不可调整到期时间
+        if (updatePo.isSystem() && dto.getExpireTime() != null && !dto.getExpireTime().equals(updatePo.getExpireTime())) {
+            throw new BizException("内置租户不允许调整到期时间！");
+        }
+
         assign(dto, updatePo);
         repository.save(updatePo);
     }
@@ -210,8 +222,21 @@ public class CoreRootService {
     public void removeCoreRoot(CommonIdDto dto) throws BizException {
 
         if (dto.isBatch()) {
+            for (Long id : dto.getIds()) {
+                var root = repository.findById(id)
+                    .orElseThrow(() -> new BizException("租户不存在或无权限访问."));
+                if (root.isSystem()) {
+                    throw new BizException("内置租户不允许删除！");
+                }
+            }
             repository.deleteAllById(dto.getIds());
             return;
+        }
+
+        var root = repository.findById(dto.getId())
+            .orElseThrow(() -> new BizException("租户不存在或无权限访问."));
+        if (root.isSystem()) {
+            throw new BizException("内置租户不允许删除！");
         }
 
         repository.deleteById(dto.getId());

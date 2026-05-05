@@ -368,6 +368,7 @@ public class MaintainService {
         //超级租户的管理员账户指向超级用户
         if (superRoot != null) {
             superRoot.setAdminUserId(sUserId);
+            superRoot.setIsSystem(Switch.yes());
             rRepository.save(superRoot);
         }
 

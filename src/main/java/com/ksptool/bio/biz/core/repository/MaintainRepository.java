@@ -16,7 +16,7 @@ public interface MaintainRepository extends JpaRepository<CoreRootPo, Long> {
      * @return 创建的超级租户ID
      */
     @Query("""
-            INSERT INTO CoreRootPo (id, name, status, adminUserId, createTime, creatorId, updateTime, updaterId) VALUES (:id, '超级租户', 0, 0, NOW(), 0, NOW(), 0)
+            INSERT INTO CoreRootPo (id, name, status, adminUserId, isSystem, createTime, creatorId, updateTime, updaterId) VALUES (:id, '超级租户', 0, 0, 1, NOW(), 0, NOW(), 0)
             """)
     @Modifying
     int createDefaultRoot(@Param("id") Long id);
