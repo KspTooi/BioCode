@@ -197,7 +197,7 @@
                   <el-row :gutter="20">
                     <el-col :span="12">
                       <el-form-item label="状态" prop="hide">
-                        <el-radio-group v-model="panelForm.hide">
+                        <el-radio-group v-model="panelForm.hide" :disabled="panelForm.kind === 2">
                           <el-radio :value="0">正常</el-radio>
                           <el-radio :value="1">隐藏</el-radio>
                         </el-radio-group>
