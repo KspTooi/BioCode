@@ -113,7 +113,7 @@ export default {
       id: "",
       name: "",
       code: "",
-      status: 0,
+      status: 1,
       seq: 0,
       remark: "",
     });
@@ -130,7 +130,7 @@ export default {
         { required: true, message: "请输入菜单包编码", trigger: "blur" },
         { max: 16, message: "菜单包编码长度不能超过16个字符", trigger: "blur" },
       ],
-      status: [{ required: true, message: "请输入状态 0:禁用 1:启用", trigger: "blur" }],
+      status: [{ required: true, message: "请选择状态", trigger: "change" }],
       seq: [{ required: true, message: "请输入排序", trigger: "blur" }],
       remark: [{ max: 200, message: "备注长度不能超过200个字符", trigger: "blur" }],
     };
@@ -147,7 +147,7 @@ export default {
         modalForm.id = "";
         modalForm.name = "";
         modalForm.code = "";
-        modalForm.status = 0;
+        modalForm.status = 1;
         modalForm.seq = 0;
         modalForm.remark = "";
         modalVisible.value = true;
