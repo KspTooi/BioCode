@@ -14,8 +14,11 @@ public class GetCoreRootListDto extends PageQuery {
     @Schema(description = "租户名称")
     private String name;
 
-    @Schema(description = "到期时间")
-    private LocalDateTime expireTime;
+    @Schema(description = "到期时间范围-开始")
+    private LocalDateTime expireTimeRangeStart;
+
+    @Schema(description = "到期时间范围-结束")
+    private LocalDateTime expireTimeRangeEnd;
 
     @Schema(description = "状态 0:正常 1:禁用")
     private Integer status;

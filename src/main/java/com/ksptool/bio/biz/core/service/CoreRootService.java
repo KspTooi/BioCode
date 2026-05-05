@@ -85,16 +85,8 @@ public class CoreRootService {
      * @return 查询结果
      */
     public PageResult<GetCoreRootListVo> getCoreRootList(GetCoreRootListDto dto) {
-        CoreRootPo query = new CoreRootPo();
-        assign(dto, query);
-
-        Page<Tuple> page = repository.getCoreRootList(query, dto.pageRequest());
-        if (page.isEmpty()) {
-            return PageResult.successWithEmpty();
-        }
-
-        List<GetCoreRootListVo> vos = tupleAs(page.getContent(), GetCoreRootListVo.class);
-        return PageResult.success(vos, (int) page.getTotalElements());
+        Page<Tuple> page = repository.getCoreRootList(dto, dto.pageRequest());
+        return PageResult.success(tupleAs(page.getContent(), GetCoreRootListVo.class), (int) page.getTotalElements());
     }
 
     /**
