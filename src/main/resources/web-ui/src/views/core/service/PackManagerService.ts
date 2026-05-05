@@ -1,13 +1,13 @@
 import { onMounted, reactive, ref, type Ref } from "vue";
 import type { FormInstance, FormRules } from "element-plus";
 import type {
-  GetPackageListDto,
-  GetPackageListVo,
-  GetPackageDetailsVo,
-  AddPackageDto,
-  EditPackageDto,
+  GetPackListDto,
+  GetPackListVo,
+  GetPackDetailsVo,
+  AddPackDto,
+  EditPackDto,
 } from "../api/PackApi.ts";
-import PackageApi from "@/views/core/api/PackApi.ts";
+import PackApi from "@/views/core/api/PackApi.ts";
 import { Result } from "@/commons/model/Result.ts";
 import { ElMessage, ElMessageBox } from "element-plus";
 
@@ -20,8 +20,8 @@ export default {
   /**
    * 菜单包列表管理
    */
-  usePackageList() {
-    const listForm = ref<GetPackageListDto>({
+  usePackList() {
+    const listForm = ref<GetPackListDto>({
       pageNum: 1,
       pageSize: 20,
       name: "",
@@ -29,7 +29,7 @@ export default {
       status: null,
     });
 
-    const listData = ref<GetPackageListVo[]>([]);
+    const listData = ref<GetPackListVo[]>([]);
     const listTotal = ref(0);
     const listLoading = ref(false);
 
@@ -38,7 +38,7 @@ export default {
      */
     const loadList = async (): Promise<void> => {
       listLoading.value = true;
-      const result = await PackageApi.getPackageList(listForm.value);
+      const result = await PackApi.getPackList(listForm.value);
 
       if (Result.isSuccess(result)) {
         listData.value = result.data;
@@ -67,7 +67,7 @@ export default {
     /**
      * 删除记录
      */
-    const removeList = async (row: GetPackageListVo): Promise<void> => {
+    const removeList = async (row: GetPackListVo): Promise<void> => {
       try {
         await ElMessageBox.confirm("确定删除该条记录吗？", "提示", {
           confirmButtonText: "确定",
@@ -79,7 +79,7 @@ export default {
       }
 
       try {
-        await PackageApi.removePackage({ id: row.id });
+        await PackApi.removePack({ id: row.id });
         ElMessage.success("删除成功");
         await loadList();
       } catch (error: any) {
@@ -105,11 +105,11 @@ export default {
   /**
    * 模态框管理（统一处理新增和编辑）
    */
-  usePackageModal(modalFormRef: Ref<FormInstance | undefined>, reloadCallback: () => void) {
+  usePackModal(modalFormRef: Ref<FormInstance | undefined>, reloadCallback: () => void) {
     const modalVisible = ref(false);
     const modalLoading = ref(false);
     const modalMode = ref<ModalMode>("add");
-    const modalForm = reactive<GetPackageDetailsVo>({
+    const modalForm = reactive<GetPackDetailsVo>({
       id: "",
       name: "",
       code: "",
@@ -140,7 +140,7 @@ export default {
      * @param mode 模式: 'add' | 'edit'
      * @param row 编辑时传入的行数据
      */
-    const openModal = async (mode: ModalMode, row: GetPackageListVo | null): Promise<void> => {
+    const openModal = async (mode: ModalMode, row: GetPackListVo | null): Promise<void> => {
       modalMode.value = mode;
 
       if (mode === "add") {
@@ -161,7 +161,7 @@ export default {
         }
 
         try {
-          const details = await PackageApi.getPackageDetails({ id: row.id });
+          const details = await PackApi.getPackDetails({ id: row.id });
           modalForm.id = details.id;
           modalForm.name = details.name;
           modalForm.code = details.code;
@@ -209,14 +209,14 @@ export default {
 
       if (modalMode.value === "add") {
         try {
-          const addDto: AddPackageDto = {
+          const addDto: AddPackDto = {
             name: modalForm.name,
             code: modalForm.code,
             status: modalForm.status,
             seq: modalForm.seq,
             remark: modalForm.remark,
           };
-          await PackageApi.addPackage(addDto);
+          await PackApi.addPack(addDto);
           ElMessage.success("新增成功");
           modalVisible.value = false;
           resetModal();
@@ -236,14 +236,14 @@ export default {
         }
 
         try {
-          const editDto: EditPackageDto = {
+          const editDto: EditPackDto = {
             id: modalForm.id,
             name: modalForm.name,
             status: modalForm.status,
             seq: modalForm.seq,
             remark: modalForm.remark,
           };
-          await PackageApi.editPackage(editDto);
+          await PackApi.editPack(editDto);
           ElMessage.success("编辑成功");
           modalVisible.value = false;
           resetModal();

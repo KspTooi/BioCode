@@ -7,7 +7,7 @@ import type Result from "@/commons/model/Result.ts";
 /**
  * 查询菜单包列表Dto
  */
-export interface GetPackageListDto extends PageQuery {
+export interface GetPackListDto extends PageQuery {
   name?: string; // 菜单包名
   code?: string; // 菜单包编码
   status?: number; // 状态 0:禁用 1:启用
@@ -16,7 +16,7 @@ export interface GetPackageListDto extends PageQuery {
 /**
  * 查询菜单包列表Vo
  */
-export interface GetPackageListVo {
+export interface GetPackListVo {
   id: string; // 主键ID
   name: string; // 菜单包名
   code: string; // 菜单包编码
@@ -28,7 +28,7 @@ export interface GetPackageListVo {
 /**
  * 查询菜单包详情Vo
  */
-export interface GetPackageDetailsVo {
+export interface GetPackDetailsVo {
   id: string; // 主键ID
   name: string; // 菜单包名
   code: string; // 菜单包编码
@@ -40,7 +40,7 @@ export interface GetPackageDetailsVo {
 /**
  * 新增菜单包Dto
  */
-export interface AddPackageDto {
+export interface AddPackDto {
   name: string; // 菜单包名
   code: string; // 菜单包编码
   status: number; // 状态 0:禁用 1:启用
@@ -51,7 +51,7 @@ export interface AddPackageDto {
 /**
  * 编辑菜单包Dto
  */
-export interface EditPackageDto {
+export interface EditPackDto {
   id: string; // 主键ID
   name: string; // 菜单包名
   status: number; // 状态 0:禁用 1:启用
@@ -63,15 +63,15 @@ export default {
   /**
    * 获取菜单包列表
    */
-  getPackageList: async (dto: GetPackageListDto): Promise<PageResult<GetPackageListVo>> => {
-    return await Http.postEntity<PageResult<GetPackageListVo>>("/package/getPackageList", dto);
+  getPackList: async (dto: GetPackListDto): Promise<PageResult<GetPackListVo>> => {
+    return await Http.postEntity<PageResult<GetPackListVo>>("/pack/getPackList", dto);
   },
 
   /**
    * 获取菜单包详情
    */
-  getPackageDetails: async (dto: CommonIdDto): Promise<GetPackageDetailsVo> => {
-    const result = await Http.postEntity<Result<GetPackageDetailsVo>>("/package/getPackageDetails", dto);
+  getPackDetails: async (dto: CommonIdDto): Promise<GetPackDetailsVo> => {
+    const result = await Http.postEntity<Result<GetPackDetailsVo>>("/pack/getPackDetails", dto);
     if (result.code === 0) {
       return result.data;
     }
@@ -81,8 +81,8 @@ export default {
   /**
    * 新增菜单包
    */
-  addPackage: async (dto: AddPackageDto): Promise<string> => {
-    const result = await Http.postEntity<Result<string>>("/package/addPackage", dto);
+  addPack: async (dto: AddPackDto): Promise<string> => {
+    const result = await Http.postEntity<Result<string>>("/pack/addPack", dto);
     if (result.code === 0) {
       return result.message;
     }
@@ -92,8 +92,8 @@ export default {
   /**
    * 编辑菜单包
    */
-  editPackage: async (dto: EditPackageDto): Promise<string> => {
-    const result = await Http.postEntity<Result<string>>("/package/editPackage", dto);
+  editPack: async (dto: EditPackDto): Promise<string> => {
+    const result = await Http.postEntity<Result<string>>("/pack/editPack", dto);
     if (result.code === 0) {
       return result.message;
     }
@@ -103,8 +103,8 @@ export default {
   /**
    * 删除菜单包
    */
-  removePackage: async (dto: CommonIdDto): Promise<string> => {
-    const result = await Http.postEntity<Result<string>>("/package/removePackage", dto);
+  removePack: async (dto: CommonIdDto): Promise<string> => {
+    const result = await Http.postEntity<Result<string>>("/pack/removePack", dto);
     if (result.code === 0) {
       return result.message;
     }

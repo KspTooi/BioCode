@@ -121,7 +121,7 @@
 import { ref, markRaw } from "vue";
 import { Edit, Delete } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
-import PackageService from "@/views/core/service/PackManagerService.js";
+import PackService from "@/views/core/service/PackManagerService.js";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
 import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
 import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";
@@ -132,14 +132,14 @@ const EditIcon = markRaw(Edit);
 const DeleteIcon = markRaw(Delete);
 
 // 列表管理打包
-const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } = PackageService.usePackageList();
+const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } = PackService.usePackList();
 
 // 模态框表单引用
 const modalFormRef = ref<FormInstance>();
 
 // 模态框打包
 const { modalVisible, modalLoading, modalMode, modalForm, modalRules, openModal, resetModal, submitModal } =
-  PackageService.usePackageModal(modalFormRef, loadList);
+  PackService.usePackModal(modalFormRef, loadList);
 </script>
 
 <style scoped></style>
