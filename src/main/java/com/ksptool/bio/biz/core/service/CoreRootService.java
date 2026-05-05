@@ -268,8 +268,12 @@ public class CoreRootService {
      */
     @Transactional(rollbackFor = Exception.class)
     public void updateRootRp(UpdateRootRpDto dto) throws BizException {
-        repository.findById(dto.getRootId())
+        var root = repository.findById(dto.getRootId())
                 .orElseThrow(() -> new BizException("租户不存在或无权限访问."));
+
+        if (root.isSystem()) {
+            throw new BizException("内置租户不允许绑定菜单包！");
+        }
 
         //校验菜单包ID是否存在
         var packIds = dto.getPackIds();

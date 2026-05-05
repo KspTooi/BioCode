@@ -67,7 +67,14 @@
             <el-button link type="primary" size="small" :icon="EditIcon" @click="openModal('edit', scope.row)">
               编辑
             </el-button>
-            <el-button link type="primary" size="small" :icon="EditIcon" @click="openRpModal(scope.row)">
+            <el-button
+              link
+              type="primary"
+              size="small"
+              :icon="EditIcon"
+              :disabled="scope.row.isSystem === 1"
+              @click="openRpModal(scope.row)"
+            >
               管理菜单包
             </el-button>
             <el-button
