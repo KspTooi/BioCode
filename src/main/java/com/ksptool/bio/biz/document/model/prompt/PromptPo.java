@@ -1,12 +1,11 @@
 package com.ksptool.bio.biz.document.model.prompt;
 
 import com.ksptool.assembly.entity.exception.AuthException;
-import com.ksptool.bio.biz.auth.common.aop.RowScopePo;
+import com.ksptool.bio.biz.auth.common.aop.RowScopeRootOnlyPo;
 import com.ksptool.bio.biz.auth.service.SessionService;
 import com.ksptool.bio.biz.core.common.jpa.ListCTJConv;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
 import com.ksptool.bio.biz.core.common.model.CustomizeTagJson;
-
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,7 +27,7 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 @SQLDelete(sql = "UPDATE ep_prompt SET delete_time = NOW() WHERE id = ?")
 @SQLRestriction("delete_time IS NULL")
-public class PromptPo extends RowScopePo {
+public class PromptPo extends RowScopeRootOnlyPo {
 
     @Id
     @SnowflakeIdGenerated

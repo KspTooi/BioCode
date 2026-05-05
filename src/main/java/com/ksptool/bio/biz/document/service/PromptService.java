@@ -3,7 +3,6 @@ package com.ksptool.bio.biz.document.service;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
-import com.ksptool.bio.biz.auth.common.aop.RowScope;
 import com.ksptool.bio.biz.document.model.prompt.PromptPo;
 import com.ksptool.bio.biz.document.model.prompt.dto.AddPromptDto;
 import com.ksptool.bio.biz.document.model.prompt.dto.CompilePromptDto;
@@ -13,7 +12,6 @@ import com.ksptool.bio.biz.document.model.prompt.vo.GetPromptDetailsVo;
 import com.ksptool.bio.biz.document.model.prompt.vo.GetPromptListVo;
 import com.ksptool.bio.biz.document.repository.PromptRepository;
 import com.ksptool.text.PreparedPrompt;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -29,7 +27,6 @@ import static com.ksptool.entities.Entities.assign;
 
 
 @Service
-@RowScope
 public class PromptService {
 
     @Autowired
