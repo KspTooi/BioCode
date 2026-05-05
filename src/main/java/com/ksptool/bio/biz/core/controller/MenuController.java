@@ -40,14 +40,14 @@ public class MenuController {
     private MenuService menuService;
 
     @PostMapping("/getUserMenuTree")
-    @Operation(summary = "获取用户菜单与按钮树(用于前端菜单展示,这个接口带有缓存)")
+    @Operation(summary = "获取用户菜单与按钮树(这是显示到用户左侧菜单的数据,这个接口带有缓存)")
     public Result<List<GetUserMenuTreeVo>> getUserMenuTree() throws Exception {
         return Result.success(menuService.getUserMenuTree(session().getUserId()));
     }
 
 
     @PostMapping("/getMenuTree")
-    @Operation(summary = "获取菜单与按钮树(用于菜单管理)")
+    @Operation(summary = "获取菜单与按钮树(这是显示到菜单管理界面的数据,这个接口不带有缓存)")
     public Result<List<GetMenuTreeVo>> getMenuTree(@RequestBody @Valid GetMenuTreeDto dto) throws Exception {
         return Result.success(menuService.getMenuTree(dto));
     }

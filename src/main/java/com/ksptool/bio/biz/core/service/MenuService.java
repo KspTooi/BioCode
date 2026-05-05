@@ -151,47 +151,6 @@ public class MenuService {
             }
         }
 
-        //搜集菜单中的权限列表
-        var permissions = new HashSet<String>();
-        for (MenuPo menuPo : list) {
-            permissions.addAll(menuPo.getPermissionCode());
-        }
-
-        //查找数据库中不存在的权限
-        Set<String> existingPermissions = permissionRepository.getExistingPermissionsByCode(permissions);
-        Set<String> missingPermissions = new HashSet<>(permissions);
-        missingPermissions.removeAll(existingPermissions);
-
-        // 设置缺失权限标记
-        for (GetMenuTreeVo vo : flatVos) {
-            if (vo.getPermissionCode() == null || vo.getPermissionCode().isEmpty()) {
-                vo.setMissingPermission(0);
-                continue;
-            }
-
-            List<String> perms = new ArrayList<>(vo.getPermissionCode());
-            int missingCount = 0;
-            int totalCount = perms.size();
-
-            for (String perm : perms) {
-                if (missingPermissions.contains(perm)) {
-                    missingCount++;
-                }
-            }
-
-            if (missingCount == 0) {
-                vo.setMissingPermission(0);
-                continue;
-            }
-
-            if (missingCount == totalCount) {
-                vo.setMissingPermission(1);
-                continue;
-            }
-
-            vo.setMissingPermission(2);
-        }
-
         return treeVos;
     }
 
