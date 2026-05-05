@@ -116,6 +116,7 @@ export default {
       status: 1,
       seq: 0,
       remark: "",
+      menuIds: [],
     });
 
     /**
@@ -150,6 +151,7 @@ export default {
         modalForm.status = 1;
         modalForm.seq = 0;
         modalForm.remark = "";
+        modalForm.menuIds = [];
         modalVisible.value = true;
         return;
       }
@@ -168,6 +170,7 @@ export default {
           modalForm.status = details.status;
           modalForm.seq = details.seq;
           modalForm.remark = details.remark;
+          modalForm.menuIds = details.menuIds ?? [];
           modalVisible.value = true;
         } catch (error: any) {
           ElMessage.error(error.message);
@@ -189,6 +192,7 @@ export default {
       modalForm.status = 0;
       modalForm.seq = 0;
       modalForm.remark = "";
+      modalForm.menuIds = [];
     };
 
     /**

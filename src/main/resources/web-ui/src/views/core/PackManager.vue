@@ -36,6 +36,7 @@
 
         <el-table-column prop="name" label="菜单包名" min-width="120" show-overflow-tooltip />
         <el-table-column prop="code" label="菜单包编码" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="mCount" label="菜单总数" min-width="80" align="center" />
         <el-table-column prop="status" label="状态" min-width="80" align="center">
           <template #default="scope">
             <el-tag :type="scope.row.status === 1 ? 'success' : 'danger'">
@@ -68,6 +69,9 @@
           <template #default="scope">
             <el-button link type="primary" size="small" @click="openModal('edit', scope.row)" :icon="EditIcon">
               编辑
+            </el-button>
+            <el-button link type="primary" size="small" @click="openMenuModal(scope.row)" :icon="EditIcon">
+              管理菜单
             </el-button>
             <el-button link type="danger" size="small" @click="removeList(scope.row)" :icon="DeleteIcon"> 删除 </el-button>
           </template>
@@ -145,6 +149,8 @@
         </div>
       </template>
     </el-dialog>
+
+    <PackMenuModal :visible="menuModalVisible" :data="menuModalRow" @close="menuModalVisible = false" @success="loadList" />
   </StdListContainer>
 </template>
 
@@ -152,9 +158,11 @@
 import { ref, markRaw } from "vue";
 import { Edit, Delete } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
+import type { GetPackListVo } from "@/views/core/api/PackApi.ts";
 import PackService from "@/views/core/service/PackManagerService.js";
 import PackApi from "@/views/core/api/PackApi.ts";
 import ComSeqFixer from "@/soa/com-series/ComSeqFixer.vue";
+import PackMenuModal from "@/views/core/components/PackMenuModal.vue";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
 import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
 import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";
@@ -173,6 +181,14 @@ const modalFormRef = ref<FormInstance>();
 // 模态框打包
 const { modalVisible, modalLoading, modalMode, modalForm, modalRules, openModal, resetModal, submitModal } =
   PackService.usePackModal(modalFormRef, loadList);
+
+const menuModalVisible = ref(false);
+const menuModalRow = ref<GetPackListVo | null>(null);
+
+const openMenuModal = (row: GetPackListVo): void => {
+  menuModalRow.value = row;
+  menuModalVisible.value = true;
+};
 </script>
 
 <style scoped></style>

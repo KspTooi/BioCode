@@ -22,6 +22,7 @@ export interface GetPackListVo {
   code: string; // 菜单包编码
   status: number; // 状态 0:禁用 1:启用
   seq: number; // 排序
+  mCount: number; // 菜单总数
   createTime: string; // 创建时间
 }
 
@@ -35,6 +36,15 @@ export interface GetPackDetailsVo {
   status: number; // 状态 0:禁用 1:启用
   seq: number; // 排序
   remark: string; // 备注
+  menuIds: string[]; // 已绑定菜单ID列表
+}
+
+/**
+ * 更新菜单包绑定菜单Dto
+ */
+export interface UpdatePackMenuDto {
+  packId: string; // 菜单包ID
+  menuIds: string[]; // 菜单ID列表
 }
 
 /**
@@ -105,6 +115,17 @@ export default {
    */
   removePack: async (dto: CommonIdDto): Promise<string> => {
     const result = await Http.postEntity<Result<string>>("/pack/removePack", dto);
+    if (result.code === 0) {
+      return result.message;
+    }
+    throw new Error(result.message);
+  },
+
+  /**
+   * 更新菜单包绑定菜单
+   */
+  updatePackMenu: async (dto: UpdatePackMenuDto): Promise<string> => {
+    const result = await Http.postEntity<Result<string>>("/pack/updatePackMenu", dto);
     if (result.code === 0) {
       return result.message;
     }

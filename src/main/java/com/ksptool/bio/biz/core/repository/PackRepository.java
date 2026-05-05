@@ -1,6 +1,8 @@
 package com.ksptool.bio.biz.core.repository;
 
 import com.ksptool.bio.biz.core.model.pack.PackPo;
+import com.ksptool.bio.biz.core.model.pack.dto.GetPackListDto;
+import jakarta.persistence.Tuple;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.domain.Page;
@@ -14,19 +16,27 @@ public interface PackRepository extends JpaRepository<PackPo, Long>{
     /**
      * 查询菜单包列表
      *
-     * @param po       查询条件
+     * @param dto      查询条件
      * @param pageable 分页条件
      * @return 菜单包列表
      */
     @Query("""
-            SELECT u FROM PackPo u
+            SELECT
+            p.id AS id,
+            p.name AS name,
+            p.code AS code,
+            p.status AS status,
+            p.seq AS seq,
+            p.createTime AS createTime,
+            (SELECT COUNT(mp) FROM MenuPackPo mp WHERE mp.packId = p.id) AS mCount
+            FROM PackPo p
             WHERE
-            (:#{#po.name} IS NULL OR u.name LIKE CONCAT('%', :#{#po.name}, '%'))
-            AND (:#{#po.code} IS NULL OR u.code LIKE CONCAT('%', :#{#po.code}, '%'))
-            AND (:#{#po.status} IS NULL OR u.status = :#{#po.status} )
-            ORDER BY u.createTime DESC
+            (:#{#dto.name} IS NULL OR p.name LIKE CONCAT('%', :#{#dto.name}, '%'))
+            AND (:#{#dto.code} IS NULL OR p.code LIKE CONCAT('%', :#{#dto.code}, '%'))
+            AND (:#{#dto.status} IS NULL OR p.status = :#{#dto.status} )
+            ORDER BY p.createTime DESC
             """)
-    Page<PackPo> getPackList(@Param("po") PackPo po, Pageable pageable);
+    Page<Tuple> getPackList(@Param("dto") GetPackListDto dto, Pageable pageable);
 
     /**
      * 根据编码统计菜单包数量
