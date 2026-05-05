@@ -17,6 +17,7 @@ import com.ksptool.bio.biz.core.service.PackService;
 import com.ksptool.bio.biz.core.model.pack.dto.AddPackDto;
 import com.ksptool.bio.biz.core.model.pack.dto.EditPackDto;
 import com.ksptool.bio.biz.core.model.pack.dto.GetPackListDto;
+import com.ksptool.bio.biz.core.model.pack.dto.UpdatePackMenuDto;
 import com.ksptool.bio.biz.core.model.pack.vo.GetPackListVo;
 import com.ksptool.bio.biz.core.model.pack.vo.GetPackDetailsVo;
 
@@ -70,6 +71,14 @@ public class PackController {
     public Result<String> removePack(@RequestBody @Valid CommonIdDto dto) throws Exception{
         packService.removePack(dto);
         return Result.success("操作成功");
+    }
+
+    @PreAuthorize("@auth.hasCode('core:pack:edit')")
+    @Operation(summary ="更新菜单包的菜单绑定")
+    @PostMapping("/updatePackMenu")
+    public Result<String> updatePackMenu(@RequestBody @Valid UpdatePackMenuDto dto) throws Exception{
+        packService.updatePackMenu(dto);
+        return Result.success("更新成功");
     }
 
 }

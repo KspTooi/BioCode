@@ -6,13 +6,17 @@ import com.ksptool.assembly.entity.exception.BizException;
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
 
+import com.ksptool.bio.biz.core.common.IdsDiff;
+import com.ksptool.bio.biz.core.repository.MenuPackRepository;
 import com.ksptool.bio.biz.core.repository.PackRepository;
+import com.ksptool.bio.biz.core.model.pack.MenuPackPo;
 import com.ksptool.bio.biz.core.model.pack.PackPo;
 import com.ksptool.bio.biz.core.model.pack.vo.GetPackListVo;
 import com.ksptool.bio.biz.core.model.pack.dto.GetPackListDto;
 import com.ksptool.bio.biz.core.model.pack.vo.GetPackDetailsVo;
 import com.ksptool.bio.biz.core.model.pack.dto.EditPackDto;
 import com.ksptool.bio.biz.core.model.pack.dto.AddPackDto;
+import com.ksptool.bio.biz.core.model.pack.dto.UpdatePackMenuDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -25,6 +29,9 @@ public class PackService {
 
     @Autowired
     private PackRepository repository;
+
+    @Autowired
+    private MenuPackRepository menuPackRepository;
 
     /**
      * 查询菜单包列表
@@ -81,7 +88,9 @@ public class PackService {
     public GetPackDetailsVo getPackDetails(CommonIdDto dto) throws BizException {
         PackPo po = repository.findById(dto.getId())
             .orElseThrow(()-> new BizException("查询详情失败,数据不存在或无权限访问."));
-        return as(po,GetPackDetailsVo.class);
+        GetPackDetailsVo vo = as(po,GetPackDetailsVo.class);
+        vo.setMenuIds(menuPackRepository.getMidsByPid(po.getId()));
+        return vo;
     }
 
     /**
@@ -96,6 +105,29 @@ public class PackService {
             return;
         }
         repository.deleteById(dto.getId());
+    }
+
+    /**
+     * 更新菜单包绑定的菜单
+     * @param dto 更新条件
+     * @throws BizException 业务异常
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void updatePackMenu(UpdatePackMenuDto dto) throws BizException {
+        repository.findById(dto.getPackId())
+            .orElseThrow(()-> new BizException("菜单包不存在或无权限访问."));
+
+        var mpIdsDiff = new IdsDiff(menuPackRepository.getMidsByPid(dto.getPackId()), dto.getMenuIds());
+
+        if (mpIdsDiff.hasAdd()) {
+            var mpPos = mpIdsDiff.getAddIds().stream()
+                .map(menuId -> new MenuPackPo(menuId, dto.getPackId())).toList();
+            menuPackRepository.saveAll(mpPos);
+        }
+
+        if (mpIdsDiff.hasRemove()) {
+            menuPackRepository.removeByPidAndMids(dto.getPackId(), mpIdsDiff.getRemoveIds());
+        }
     }
 
 }
