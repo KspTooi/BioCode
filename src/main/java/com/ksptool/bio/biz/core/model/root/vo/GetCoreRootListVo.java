@@ -16,6 +16,9 @@ public class GetCoreRootListVo {
     @Schema(description = "租户名称")
     private String name;
 
+    @Schema(description = "租户下用户数量")
+    private Long ruCount;
+
     @Schema(description = "到期时间(null长期)")
     private LocalDateTime expireTime;
 

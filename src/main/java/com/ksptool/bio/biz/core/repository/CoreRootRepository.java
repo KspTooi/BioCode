@@ -23,6 +23,7 @@ public interface CoreRootRepository extends JpaRepository<CoreRootPo, Long> {
             u.status AS status,
             u.isSystem AS isSystem,
             up.username AS adminUsername,
+            (SELECT COUNT(usr) FROM UserPo usr WHERE usr.rootId = u.id) AS ruCount,
             u.createTime AS createTime
             FROM CoreRootPo u
             LEFT JOIN UserPo up ON u.adminUserId = up.id

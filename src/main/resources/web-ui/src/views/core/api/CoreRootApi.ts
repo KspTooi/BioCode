@@ -19,6 +19,7 @@ export interface GetCoreRootListDto extends PageQuery {
 export interface GetCoreRootListVo {
   id: string; // 主键ID
   name: string; // 租户名称
+  ruCount: number; // 用户总数
   expireTime: string; // 到期时间(null长期)
   status: number; // 状态 1:正常，0:停用
   adminUsername?: string; // 管理员账号

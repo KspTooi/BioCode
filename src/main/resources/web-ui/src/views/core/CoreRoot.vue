@@ -41,6 +41,7 @@
       <el-table v-loading="listLoading" :data="listData" stripe border height="100%">
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
         <el-table-column prop="name" label="租户名称" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="ruCount" label="用户总数" min-width="80" align="center" />
         <el-table-column prop="adminUsername" label="管理员账号" min-width="120" show-overflow-tooltip />
         <el-table-column prop="expireTime" label="到期时间" min-width="120" show-overflow-tooltip>
           <template #default="scope">
