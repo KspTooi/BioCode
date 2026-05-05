@@ -25,6 +25,7 @@ import com.ksptool.bio.biz.core.model.root.vo.GetCoreRootDetailsVo;
 import com.ksptool.bio.biz.core.model.root.vo.GetCoreRootListVo;
 import com.ksptool.bio.biz.core.model.user.UserPo;
 import com.ksptool.bio.biz.core.repository.CoreRootRepository;
+import com.ksptool.bio.biz.core.repository.PackRepository;
 import com.ksptool.bio.biz.core.repository.RootPackRepository;
 import com.ksptool.bio.biz.core.repository.UserRepository;
 import jakarta.persistence.Tuple;
@@ -73,6 +74,9 @@ public class CoreRootService {
 
     @Autowired
     private RootPackRepository rpRepository;
+
+    @Autowired
+    private PackRepository packRepository;
 
     /**
      * 查询租户列表
@@ -237,6 +241,7 @@ public class CoreRootService {
                 if (root.isSystem()) {
                     throw new BizException("内置租户不允许删除！");
                 }
+                rpRepository.removeByRid(id);
             }
             repository.deleteAllById(dto.getIds());
             return;
@@ -248,6 +253,7 @@ public class CoreRootService {
             throw new BizException("内置租户不允许删除！");
         }
 
+        rpRepository.removeByRid(dto.getId());
         repository.deleteById(dto.getId());
 
         //销毁该租户下所有用户会话
@@ -265,7 +271,16 @@ public class CoreRootService {
         repository.findById(dto.getRootId())
                 .orElseThrow(() -> new BizException("租户不存在或无权限访问."));
 
-        var rpIdsDiff = new IdsDiff(rpRepository.getPidsByRid(dto.getRootId()), dto.getPackIds());
+        //校验菜单包ID是否存在
+        var packIds = dto.getPackIds();
+        if (!packIds.isEmpty()) {
+            var existingCount = packRepository.countByIds(packIds);
+            if (existingCount != packIds.size()) {
+                throw new BizException("菜单包ID不存在");
+            }
+        }
+
+        var rpIdsDiff = new IdsDiff(rpRepository.getPidsByRid(dto.getRootId()), packIds);
 
         if (rpIdsDiff.hasAdd()) {
             var rpPos = rpIdsDiff.getAddIds().stream()
