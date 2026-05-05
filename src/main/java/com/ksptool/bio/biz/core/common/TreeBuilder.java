@@ -45,12 +45,17 @@ public class TreeBuilder<T extends TreeBuilder.TreeNode<T>> {
             }
 
             T parent = index.get(parentId);
-            if (parent != null) {
-                parent.getChildren().add(node);
+            if (parent == null) {
+                roots.add(node);
                 continue;
             }
 
-            roots.add(node);
+            List<T> children = parent.getChildren();
+            if (children == null) {
+                children = new ArrayList<>();
+                parent.setChildren(children);
+            }
+            children.add(node);
         }
 
         return roots;
@@ -65,5 +70,7 @@ public class TreeBuilder<T extends TreeBuilder.TreeNode<T>> {
         Long getParentId();
 
         List<T> getChildren();
+
+        void setChildren(List<T> children);
     }
 }
