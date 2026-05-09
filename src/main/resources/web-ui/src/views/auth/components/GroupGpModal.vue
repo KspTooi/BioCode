@@ -14,7 +14,10 @@
 
     <div class="info-bar">
       <el-icon class="info-icon"><InfoFilled /></el-icon>
-      <span>用户的实际权限 = GM 派生权限（菜单绑定） + GP 直接权限（本页操作）。GP 用于对特定权限码做例外增删，常规授权请走 GM。</span>
+      <span
+        >用户的实际权限 = GM 派生权限（菜单绑定） + GP 直接权限（本页操作）。GP 用于对特定权限码做例外增删，常规授权请走
+        GM。</span
+      >
     </div>
 
     <div class="permission-wrapper" v-loading="svc.modalLoading.value">
@@ -36,7 +39,8 @@
       <div class="permission-body">
         <el-checkbox-group v-model="svc.modalSelectedIds.value">
           <div v-for="perm in svc.modalFilteredPermissions.value" :key="perm.id" class="perm-row">
-            <el-checkbox :value="perm.id" :disabled="svc.isSystemGroup.value && perm.code === '*:*:*'">
+            <!-- 内置的ID为-1的超级用户不能去除超级操作权限(SA) -->
+            <el-checkbox :value="perm.id" :disabled="svc.isSystemGroup.value && perm.code === '*:*:*' && props.data.id == '-1'">
               <div class="perm-info">
                 <div class="perm-name">{{ perm.name }}</div>
                 <div class="perm-code">{{ perm.code }}</div>
@@ -58,7 +62,6 @@
 <script setup lang="ts">
 import { InfoFilled, Search, WarningFilled } from "@element-plus/icons-vue";
 import GroupGpModalService, { type GroupGpModalProps } from "@/views/auth/components/service/GroupGpModalService.ts";
-
 const props = defineProps<GroupGpModalProps>();
 
 const emit = defineEmits<{

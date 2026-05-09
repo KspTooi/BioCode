@@ -75,6 +75,14 @@ export default {
      * 清空选择
      */
     const deselectAll = (): void => {
+      if (isSystemGroup.value && props.data?.id == "-1") {
+        // 系统内置组不允许去除SA权限
+        const saPermission = modalPermissionList.value.find((p) => p.code === "*:*:*");
+        if (saPermission) {
+          modalSelectedIds.value = [saPermission.id];
+          return;
+        }
+      }
       modalSelectedIds.value = [];
     };
 
@@ -84,15 +92,6 @@ export default {
     const submitModal = async (): Promise<void> => {
       if (!props.data?.id) {
         return;
-      }
-
-      // 系统内置组不允许去除SA权限
-      if (isSystemGroup.value) {
-        const saPermission = modalPermissionList.value.find((p) => p.code === SA_CODE);
-        if (saPermission && !modalSelectedIds.value.includes(saPermission.id)) {
-          ElMessage.error("系统内置组不允许去除超级操作权限(SA)");
-          return;
-        }
       }
 
       modalLoading.value = true;
