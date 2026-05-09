@@ -121,7 +121,7 @@
         </el-radio-group>
       </el-form-item>
 
-      <el-form-item v-if="[1, 2, 3].includes(modalKind)" label="上级组织" prop="parentId">
+      <el-form-item v-if="[1, 2].includes(modalForm.kind)" label="上级组织" prop="parentId">
         <el-tree-select
           v-model="modalForm.parentId"
           :data="filterTreeSelectData"
@@ -172,20 +172,12 @@ const modalFormRef = ref<FormInstance | null>(null);
 const { queryForm, listLoading, filteredData, treeSelectData, resetQuery, removeList, loadList } =
   OrgManagerService.useOrgTree();
 
-const {
-  modalKindName,
-  modalKind,
-  modalVisible,
-  modalLoading,
-  modalMode,
-  modalForm,
-  modalRules,
-  openModal,
-  resetModal,
-  submitModal,
-} = OrgManagerService.useOrgModal(modalFormRef, loadList);
+const { modalKindName, modalVisible, modalLoading, modalMode, modalForm, modalRules, openModal, resetModal, submitModal } =
+  OrgManagerService.useOrgModal(modalFormRef, loadList);
 
 const filterTreeSelectData = computed(() => {
+  const treeSelect = JSON.parse(JSON.stringify(treeSelectData.value));
+
   const disableNode = (tree: any[], id: string): any[] => {
     return tree.map((node) => {
       if (node.value === id) {
@@ -207,7 +199,7 @@ const filterTreeSelectData = computed(() => {
   };
 
   // 如果当前是编辑，并且编辑的是企业(kind===0)或子企业(kind===1)，则屏蔽所有kind===2（部门）节点
-  if (modalMode.value === "edit" && (modalForm.kind === 0 || modalForm.kind === 1)) {
+  if (modalMode.value !== "add-item" && (modalForm.kind === 0 || modalForm.kind === 1)) {
     const findKind2Nodes = (nodes: any[]): any[] => {
       let kind2Nodes: any[] = [];
       nodes.forEach((node) => {
@@ -220,19 +212,16 @@ const filterTreeSelectData = computed(() => {
       });
       return kind2Nodes;
     };
-    const kind2Nodes = findKind2Nodes(treeSelectData.value);
-    // 遍历kind2Nodes，提取每个对象的value属性，组成一个新数组
-    const idsToDisable = kind2Nodes.map((node) => node.value);
-    let result = treeSelectData.value;
-    idsToDisable.forEach((id) => {
-      result = disableNode(result, id);
+    const kind2Nodes = findKind2Nodes(treeSelect);
+    // 遍历kind2Nodes，添加disabled：true
+    kind2Nodes.forEach((node) => {
+      node.disabled = true;
     });
-    return result;
   }
 
   // 如果当前是编辑，并且编辑的是部门(kind===2)，则只能选择本企业的节点
   if (modalMode.value === "edit" && modalForm.kind === 2) {
-    // for (const item of treeSelectData.value) {
+    // for (const item of treeSelect) {
     // 递归查找指定rootId的对象节点
     const findNodeById = (nodes: any[], id: string | null): any | null => {
       if (!id) {
@@ -252,7 +241,7 @@ const filterTreeSelectData = computed(() => {
       return null;
     };
 
-    const nodeWithRootId = findNodeById(treeSelectData.value, modalForm.id);
+    const nodeWithRootId = findNodeById(treeSelect, modalForm.id);
 
     // 查找某个节点的最顶级父节点
     function findTopLevelParent(nodes: any[], targetNode: any): any | null {
@@ -283,20 +272,20 @@ const filterTreeSelectData = computed(() => {
       return null;
     }
 
-    const topLevelParent = findTopLevelParent(treeSelectData.value, nodeWithRootId);
+    const topLevelParent = findTopLevelParent(treeSelect, nodeWithRootId);
 
-    const filteredItems = treeSelectData.value.filter((item) => item.value !== topLevelParent?.value);
+    const filteredItems = treeSelect.filter((item) => item.value !== topLevelParent?.value);
 
     // 提取filteredItems数组中第一层的value，合并成一个数组并打印出来
     const firstLevelValues = filteredItems.map((item) => item.value);
-    let result = treeSelectData.value;
+    let result = treeSelect;
     firstLevelValues.forEach((id) => {
       result = disableNode(result, id);
     });
     return result;
   }
 
-  return treeSelectData.value;
+  return treeSelect;
 });
 
 const getOrgDetail = async (id: string): Promise<GetOrgDetailsVo> => {
