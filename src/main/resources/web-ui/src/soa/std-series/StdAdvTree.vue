@@ -117,6 +117,7 @@ const props = withDefaults(defineProps<StdAdvTreeProps>(), {
   searchFields: () => ["name"],
   searchCascade: false,
   searchRefresh: false,
+  filterMethod: undefined,
 
   nr: false,
   nrTitle: "全部",

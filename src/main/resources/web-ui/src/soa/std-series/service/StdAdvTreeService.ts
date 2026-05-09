@@ -39,6 +39,9 @@ export interface StdAdvTreeProps {
   //是否在搜索旁显示刷新按钮
   searchRefresh?: boolean;
 
+  //过滤节点方法
+  filterMethod?: (value: string, data: any, node?: any) => boolean;
+
   //是否显示根节点(NodeRoot)
   nr?: boolean;
 
@@ -182,14 +185,18 @@ export default {
      * 过滤节点
      */
     const filterNode = (value: string, data: any, node?: any): boolean => {
+      // 外部 filterMethod 优先，搜索文字与外部过滤同时满足才显示
+      const passExternal = props.filterMethod ? props.filterMethod(value, data, node) : true;
+
       if (!value) {
-        return true;
+        return passExternal;
       }
+
       const fields = props.searchFields?.length ? props.searchFields : [props.nt ?? "name"];
       const matchData = (d: any): boolean => fields.some((field) => String(d[field] ?? "").includes(value));
 
       if (matchData(data)) {
-        return true;
+        return passExternal;
       }
 
       //级联搜索：祖先命中时，后代节点也保留可见
@@ -199,7 +206,7 @@ export default {
       let parent = node.parent;
       while (parent && parent.level > 0 && parent.data) {
         if (matchData(parent.data)) {
-          return true;
+          return passExternal;
         }
         parent = parent.parent;
       }
