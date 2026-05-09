@@ -187,6 +187,7 @@ defineExpose({ reset, filter, checkAll, checkClear, treeRef });
   display: flex;
   align-items: center;
   gap: 6px;
+  margin-bottom: 5px;
 }
 
 .filter-wrapper .el-input {
@@ -247,7 +248,7 @@ defineExpose({ reset, filter, checkAll, checkClear, treeRef });
 /* ── 节点行 ── */
 :deep(.el-tree-node__content) {
   height: 32px;
-  margin-bottom: 2px;
+  /* margin-bottom: 2px; */
   transition: background-color 0.15s;
 }
 
@@ -302,8 +303,8 @@ defineExpose({ reset, filter, checkAll, checkClear, treeRef });
   justify-content: space-between;
   height: 32px;
   padding: 0 8px 0 11px;
-  border-radius: 3px;
-  margin-bottom: 2px;
+  /* border-radius: 3px; */
+  /* margin-bottom: 2px; */
   cursor: pointer;
   font-size: 13px;
   transition: background-color 0.15s;
