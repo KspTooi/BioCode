@@ -110,6 +110,7 @@ const props = withDefaults(defineProps<StdAdvTreeProps>(), {
   checkCascade: true,
   checkOnNodeClick: true,
   checkDisableNks: () => [],
+  checkDisableMethod: undefined,
 
   search: false,
   searchPlaceholder: "搜索",

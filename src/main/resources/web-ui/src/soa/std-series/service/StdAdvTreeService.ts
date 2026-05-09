@@ -21,6 +21,9 @@ export interface StdAdvTreeProps {
   //禁用选中的节点key
   checkDisableNks?: (string | number)[];
 
+  //禁用节点方法
+  checkDisableMethod?: (node: any) => boolean;
+
   //是否显示搜索框
   search?: boolean;
 
@@ -138,24 +141,40 @@ export default {
     });
 
     /**
-     * 树数据
+     * 树数据：根据 checkDisableNks 与 checkDisableMethod 标记禁用
      */
     const treeData = computed(() => {
-      if (!props.checkDisableNks?.length) {
+      const disableNks = props.checkDisableNks ?? [];
+      const disableMethod = props.checkDisableMethod;
+      const hasNks = disableNks.length > 0;
+      const hasMethod = typeof disableMethod === "function";
+
+      //没有任何禁用规则，直接返回原始数据
+      if (!hasNks && !hasMethod) {
         return props.data;
       }
+
+      const isNodeDisabled = (node: any): boolean => {
+        if (hasNks && disableNks.includes(node[props.nk])) {
+          return true;
+        }
+        if (hasMethod && disableMethod(node)) {
+          return true;
+        }
+        return false;
+      };
+
       const markDisabled = (nodes: any[]): any[] => {
         return nodes.map((node) => {
           const children = node[props.nc];
-          if (props.checkDisableNks.includes(node[props.nk])) {
-            return { ...node, disabled: true, [props.nc]: children ? markDisabled(children) : undefined };
+          const nextChildren = Array.isArray(children) ? markDisabled(children) : children;
+          if (isNodeDisabled(node)) {
+            return { ...node, disabled: true, [props.nc]: nextChildren };
           }
-          if (children && Array.isArray(children)) {
-            return { ...node, [props.nc]: markDisabled(children) };
-          }
-          return node;
+          return { ...node, [props.nc]: nextChildren };
         });
       };
+
       return markDisabled(props.data);
     });
 
