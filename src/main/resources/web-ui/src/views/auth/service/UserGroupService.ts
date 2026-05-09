@@ -173,7 +173,7 @@ export default {
           validator: (rule: any, value: any, callback: any) => {
             if (modalForm.rowScope === 60) {
               if (!value || value.length === 0) {
-                callback(new Error("请选择至少一个部门"));
+                callback(new Error("请选择至少一个组织"));
                 return;
               }
             }
