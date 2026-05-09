@@ -68,7 +68,7 @@
             </span>
           </template>
         </el-table-column>
-        <el-table-column v-has-super prop="gpCount" label="权限总数" min-width="100" />
+        <el-table-column v-if="hasSuper()" prop="gpCount" label="权限总数" min-width="100" />
         <el-table-column prop="rowScope" label="数据权限" min-width="100" show-overflow-tooltip>
           <template #default="scope">
             <el-tag v-if="scope.row.rowScope === 0" type="primary">全集团</el-tag>
@@ -105,7 +105,14 @@
             <el-button link type="primary" size="small" :icon="EditIcon" @click="openModal('edit', scope.row)">
               编辑
             </el-button>
-            <el-button link type="primary" size="small" :icon="EditIcon" @click="openMenuModal(scope.row)">
+            <el-button
+              link
+              type="primary"
+              :disabled="scope.row.isSystem === 1"
+              size="small"
+              :icon="EditIcon"
+              @click="openMenuModal(scope.row)"
+            >
               管理菜单
             </el-button>
             <el-button v-has-super link type="primary" size="small" :icon="EditIcon" @click="openGpModal(scope.row)">
@@ -158,6 +165,7 @@
     v-model="deptSelectModalVisible"
     multiple
     type="all"
+    title="指定组织"
     :default-selected="modalForm.deptIds"
     @confirm="onDeptSelectConfirm"
   />
@@ -282,7 +290,7 @@ import GroupMenuModal from "@/views/auth/components/GroupMenuModal.vue";
 import GroupGpModal from "@/views/auth/components/GroupGpModal.vue";
 import UserAuthService from "@/views/auth/service/UserAuthService.ts";
 
-const { vHasSuper } = UserAuthService.usePreAuthorize();
+const { vHasSuper, hasSuper } = UserAuthService.usePreAuthorize();
 
 const EditIcon = markRaw(Edit);
 const DeleteIcon = markRaw(Delete);
