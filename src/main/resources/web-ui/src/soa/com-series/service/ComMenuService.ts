@@ -6,7 +6,9 @@ import { ElMessage } from "element-plus";
 import { computed, ref, type Ref } from "vue";
 import { useRoute } from "vue-router";
 import ComTabService from "@/soa/com-series/service/ComTabService.ts";
+import UserAuthService from "@/views/auth/service/UserAuthService.ts";
 
+const { hasSuper } = UserAuthService.usePreAuthorize();
 const fallbackMc: GetUserMenuTreeVo = {
   id: "fallback-maintenance-center",
   name: "维护中心(备用)",
@@ -89,8 +91,8 @@ export default {
       //检查菜单树里面是否有维护中心
       const mcMenu = getMenuByPath("/core/application-maintain");
 
-      //如果维护中心菜单不存在，则在菜单树的第一位添加一个备用的维护中心菜单
-      if (mcMenu == null) {
+      //如果维护中心菜单不存在，则在菜单树的第一位添加一个备用的维护中心菜单(仅sa权限用户需添加备用)
+      if (mcMenu == null && hasSuper()) {
         console.log("添加备用维护中心菜单", fallbackMc);
         menuStore.menuTree.push(fallbackMc);
       }
