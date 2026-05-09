@@ -1,4 +1,4 @@
-import { ref, computed, onMounted, nextTick, type Ref } from "vue";
+import { ref, computed, watch, nextTick, type Ref } from "vue";
 import { watchDebounced } from "@vueuse/core";
 import type { ElTree } from "element-plus";
 
@@ -196,18 +196,35 @@ export default {
       { debounce: 300 }
     );
 
-    onMounted(async () => {
-      await nextTick();
+    //同步选中节点高亮：selectedNk 或 data 或 treeRef 变化时同步
+    watch(
+      [selectedNk, () => props.data, () => treeRef.value],
+      async ([nk, , tree]) => {
+        if (!tree) {
+          return;
+        }
+        await nextTick();
+        if (nk === null || nk === undefined || nk === props.nrValue) {
+          tree.setCurrentKey(null);
+          return;
+        }
+        tree.setCurrentKey(nk);
+      },
+      { flush: "post", immediate: true }
+    );
 
-      if (selectedNk.value !== null && selectedNk.value !== undefined) {
-        const isRoot = selectedNk.value === props.nrValue;
-        treeRef.value?.setCurrentKey(isRoot ? null : selectedNk.value);
-      }
-
-      if (checkedNks.value.length > 0) {
-        treeRef.value?.setCheckedKeys(checkedNks.value);
-      }
-    });
+    //同步勾选状态：checkedNks 或 data 或 treeRef 变化时同步
+    watch(
+      [checkedNks, () => props.data, () => treeRef.value],
+      async ([keys, , tree]) => {
+        if (!tree) {
+          return;
+        }
+        await nextTick();
+        tree.setCheckedKeys(keys ?? []);
+      },
+      { flush: "post", immediate: true }
+    );
 
     /**
      * 节点勾选事件
