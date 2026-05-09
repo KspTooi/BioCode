@@ -22,7 +22,11 @@
 
     <div class="table-wrap">
       <el-table
-        :ref="(el: any) => { svc.tableRef.value = el; }"
+        :ref="
+          (el: any) => {
+            svc.tableRef.value = el;
+          }
+        "
         :data="svc.packList.value"
         stripe
         border
