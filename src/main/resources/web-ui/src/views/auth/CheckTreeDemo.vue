@@ -16,21 +16,29 @@
           <el-checkbox v-model="cascadeEnabled" size="small" :disabled="!checkEnabled">级联选择</el-checkbox>
           <el-checkbox v-model="clickCheckEnabled" size="small" :disabled="!checkEnabled">点击节点选中</el-checkbox>
           <el-checkbox v-model="checkStrictlySingle" size="small" :disabled="!checkEnabled">单选模式</el-checkbox>
+          <el-checkbox v-model="searchCascadeEnabled" size="small">搜索级联</el-checkbox>
+          <el-checkbox v-model="expandOnClickEnabled" size="small" :disabled="clickCheckEnabled">点击展开</el-checkbox>
+          <div class="control-btns">
+            <el-button size="small" :disabled="!checkEnabled" @click="onCheckAll">全选</el-button>
+            <el-button size="small" :disabled="!checkEnabled" @click="onCheckClear">清空</el-button>
+          </div>
         </div>
 
         <div class="tree-area">
           <StdAdvTree
             ref="demoTreeRef"
+            v-model:checked-nks="checkedKeys"
+            v-model:checked-half-nks="halfCheckedKeys"
             :data="treeData"
             :check="checkEnabled"
             :check-cascade="cascadeEnabled"
             :check-on-node-click="clickCheckEnabled"
             :check-multiple="!checkStrictlySingle"
-            :init-value-check="initCheckedKeys"
+            :search-cascade="searchCascadeEnabled"
+            :expand-on-click="expandOnClickEnabled"
             search
             search-placeholder="搜索部门"
             ni="icon"
-            @update:model-value-check="onCheckedKeysChange"
           />
         </div>
       </div>
@@ -87,19 +95,33 @@
           <div class="info-settings">
             <div class="setting-row">
               <span>复选框:</span>
-              <el-tag :type="checkEnabled ? 'success' : 'info'" size="small">{{ checkEnabled ? '开' : '关' }}</el-tag>
+              <el-tag :type="checkEnabled ? 'success' : 'info'" size="small">{{ checkEnabled ? "开" : "关" }}</el-tag>
             </div>
             <div class="setting-row">
               <span>级联:</span>
-              <el-tag :type="cascadeEnabled ? 'success' : 'info'" size="small">{{ cascadeEnabled ? '开' : '关' }}</el-tag>
+              <el-tag :type="cascadeEnabled ? 'success' : 'info'" size="small">{{ cascadeEnabled ? "开" : "关" }}</el-tag>
             </div>
             <div class="setting-row">
               <span>点击选中:</span>
-              <el-tag :type="clickCheckEnabled ? 'success' : 'info'" size="small">{{ clickCheckEnabled ? '开' : '关' }}</el-tag>
+              <el-tag :type="clickCheckEnabled ? 'success' : 'info'" size="small">{{ clickCheckEnabled ? "开" : "关" }}</el-tag>
             </div>
             <div class="setting-row">
               <span>单选:</span>
-              <el-tag :type="checkStrictlySingle ? 'warning' : 'info'" size="small">{{ checkStrictlySingle ? '开' : '关' }}</el-tag>
+              <el-tag :type="checkStrictlySingle ? 'warning' : 'info'" size="small">{{
+                checkStrictlySingle ? "开" : "关"
+              }}</el-tag>
+            </div>
+            <div class="setting-row">
+              <span>搜索级联:</span>
+              <el-tag :type="searchCascadeEnabled ? 'success' : 'info'" size="small">{{
+                searchCascadeEnabled ? "开" : "关"
+              }}</el-tag>
+            </div>
+            <div class="setting-row">
+              <span>点击展开:</span>
+              <el-tag :type="expandOnClickEnabled ? 'success' : 'info'" size="small">{{
+                expandOnClickEnabled ? "开" : "关"
+              }}</el-tag>
             </div>
           </div>
         </div>
@@ -118,32 +140,29 @@ const checkEnabled = ref(true);
 const cascadeEnabled = ref(true);
 const clickCheckEnabled = ref(false);
 const checkStrictlySingle = ref(false);
+const searchCascadeEnabled = ref(false);
+const expandOnClickEnabled = ref(false);
 
-const checkedKeys = ref<string[]>([]);
-const halfCheckedKeys = ref<string[]>([]);
+const checkedKeys = ref<(string | number)[]>(["102", "103"]);
+const halfCheckedKeys = ref<(string | number)[]>([]);
+
 const checkedNodes = ref<any[]>([]);
 
-const onCheckedKeysChange = (keys: string[] | number[]): void => {
-  checkedKeys.value = keys as string[];
-  const treeRef = demoTreeRef.value?.getTreeRef();
-  if (treeRef) {
-    halfCheckedKeys.value = treeRef.getHalfCheckedKeys() as string[];
-    checkedNodes.value = treeRef.getCheckedNodes();
-  }
-};
+watch(checkedKeys, () => {
+  checkedNodes.value = (demoTreeRef.value?.treeRef?.getCheckedNodes() ?? []) as any[];
+});
 
 const clearChecked = (): void => {
-  const treeRef = demoTreeRef.value?.getTreeRef();
-  if (treeRef) {
-    treeRef.setCheckedKeys([]);
-    checkedKeys.value = [];
-    halfCheckedKeys.value = [];
-    checkedNodes.value = [];
-  }
+  demoTreeRef.value?.checkClear();
 };
 
-// 初始选中 "技术部" 和 "产品部"
-const initCheckedKeys = ref(["102", "103"]);
+const onCheckAll = (): void => {
+  demoTreeRef.value?.checkAll();
+};
+
+const onCheckClear = (): void => {
+  demoTreeRef.value?.checkClear();
+};
 
 const treeData = [
   {
@@ -192,7 +211,6 @@ const treeData = [
   },
 ];
 
-// 切换单选模式时清空已选
 watch(checkStrictlySingle, () => {
   clearChecked();
 });
@@ -266,9 +284,16 @@ watch(checkStrictlySingle, () => {
   flex-shrink: 0;
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
   padding: 8px 12px;
   border-bottom: 1px solid var(--el-border-color-extra-light);
+}
+
+.control-btns {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
 }
 
 .tree-area {

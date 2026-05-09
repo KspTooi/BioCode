@@ -23,21 +23,22 @@
             svc.modalTreeRef.value = el;
           }
         "
+        v-model:checked-nks="modalCheckedKeys"
+        v-model:checked-half-nks="modalHalfCheckedKeys"
         :data="svc.modalTreeData.value"
         :check="true"
         :check-cascade="svc.modalCascadeCheck.value"
         :check-multiple="true"
         :check-on-node-click="true"
-        :model-value-check="svc.modalCheckedKeys.value"
         :loading="svc.modalLoading.value"
         nk="id"
         nt="name"
         nc="children"
         ni="icon"
         search
+        search-cascade
         search-placeholder="请输入菜单名称"
         :expand-on-click="true"
-        @update:model-value-check="svc.onCheckedKeysChange"
       >
         <template #label="{ data: nodeData }">
           <span v-if="nodeData.hide == 0">{{ nodeData.name }}</span>
@@ -70,6 +71,8 @@ const emit = defineEmits<{
 }>();
 
 const svc = PackMenuModalService.usePackMenuModal(props, emit);
+
+const { modalCheckedKeys, modalHalfCheckedKeys } = svc;
 
 const onClose = (): void => {
   emit("close");
