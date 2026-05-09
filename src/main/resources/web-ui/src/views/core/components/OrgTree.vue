@@ -123,7 +123,8 @@ const isNodeDisabled = (data: GetOrgTreeVo): boolean => {
     return data.kind !== 1;
   }
   if (props.selectKind === "dept") {
-    return data.kind === 1;
+    // return data.kind === 1;
+    return data.kind !== 2;
   }
   return false;
 };
