@@ -7,11 +7,6 @@
     destroy-on-close
     @close="onClose"
   >
-    <!-- <div class="tip-bar">
-      <el-icon class="tip-icon"><InfoFilled /></el-icon>
-      <span>勾选后点击保存生效，父级目录会随子项一同绑定</span>
-    </div> -->
-
     <div class="warn-bar">
       <el-icon class="warn-icon"><WarningFilled /></el-icon>
       <span>修改此用户组的菜单绑定将立即对所有已登录的组内用户生效</span>
@@ -33,21 +28,22 @@
             svc.modalTreeRef.value = el;
           }
         "
+        v-model:checked-nks="modalCheckedKeys"
+        v-model:checked-half-nks="modalHalfCheckedKeys"
         :data="svc.modalTreeData.value"
         :check="true"
         :check-cascade="svc.modalCascadeCheck.value"
         :check-multiple="true"
         :check-on-node-click="true"
-        :model-value-check="svc.modalCheckedKeys.value"
         :loading="svc.modalLoading.value"
         nk="id"
         nt="name"
         nc="children"
         ni="icon"
         search
+        search-cascade
         search-placeholder="请输入菜单名称"
         :expand-on-click="true"
-        @update:model-value-check="svc.onCheckedKeysChange"
       >
         <template #label="{ data: nodeData }">
           <span v-if="nodeData.hide == 0">{{ nodeData.name }}</span>
@@ -81,6 +77,8 @@ const emit = defineEmits<{
 }>();
 
 const svc = GroupMenuModalService.useGroupMenuModal(props, emit);
+
+const { modalCheckedKeys, modalHalfCheckedKeys } = svc;
 
 const onClose = (): void => {
   emit("close");
