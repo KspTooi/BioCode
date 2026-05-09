@@ -3,8 +3,10 @@ package com.ksptool.bio.biz.core.service;
 import com.ksptool.assembly.entity.exception.AuthException;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
+import com.ksptool.bio.biz.auth.repository.GroupRepository;
 import com.ksptool.bio.biz.auth.repository.PermissionRepository;
 import com.ksptool.bio.biz.auth.service.SessionService;
+import com.ksptool.bio.biz.core.common.SuperEntities;
 import com.ksptool.bio.biz.core.common.TreeBuilder;
 import com.ksptool.bio.biz.core.model.menu.MenuPo;
 import com.ksptool.bio.biz.core.model.menu.dto.AddMenuDto;
@@ -13,6 +15,7 @@ import com.ksptool.bio.biz.core.model.menu.dto.GetMenuTreeDto;
 import com.ksptool.bio.biz.core.model.menu.vo.GetMenuDetailsVo;
 import com.ksptool.bio.biz.core.model.menu.vo.GetMenuTreeVo;
 import com.ksptool.bio.biz.core.model.menu.vo.GetUserMenuTreeVo;
+import com.ksptool.bio.biz.core.repository.CoreRootRepository;
 import com.ksptool.bio.biz.core.repository.MenuPackRepository;
 import com.ksptool.bio.biz.core.repository.MenuRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,13 +39,16 @@ import static com.ksptool.entities.Entities.assign;
 public class MenuService {
 
     @Autowired
-    private PermissionRepository permissionRepository;
+    private PermissionRepository pRepository;
 
     @Autowired
-    private MenuPackRepository menuPackRepository;
+    private MenuPackRepository mpRepository;
 
     @Autowired
-    private MenuRepository menuRepository;
+    private MenuRepository mRepository;
+
+    @Autowired
+    private CoreRootRepository rRepository;
 
     /**
      * 获取用户菜单与按钮树(该函数带有缓存)
@@ -54,29 +60,32 @@ public class MenuService {
     @Cacheable(cacheNames = "menuTree", key = "'userMenuTree:' + #uid")
     public List<GetUserMenuTreeVo> getUserMenuTree(Long uid) throws BizException, AuthException {
 
-        var allMenuPos = menuRepository.getUserMenuTree();
-        var flatVos = new ArrayList<GetUserMenuTreeVo>();
-
-        var authorities = SessionService.authorities();
-
-        //将list转换为平面vo
-        for (MenuPo po : allMenuPos) {
-
-            //在此过滤当前用户无权限访问的菜单
-            if (!po.hasPermission(authorities)) {
-                continue;
-            }
-
-            var vo = as(po, GetUserMenuTreeVo.class);
-            vo.setChildren(new ArrayList<>());
-            vo.setParentId(null);
-            if (po.getParentId() != null) {
-                vo.setParentId(po.getParentId());
-            }
-            flatVos.add(vo);
+        //SA直接返回全部菜单
+        if(SessionService.hasSuperCode()){
+            var pos = mRepository.getUserMenuTree();
+            var flatVos = as(pos, GetUserMenuTreeVo.class);
+            var treeVos = TreeBuilder.build(flatVos);
+            pruneEmptyDirectories(treeVos);
+            return treeVos;
         }
 
-        List<GetUserMenuTreeVo> treeVos = TreeBuilder.build(flatVos);
+        var session = SessionService.session();
+        var rid = session.getRootId();
+
+        //如果当前用户是租管 则计算该租户拥有的菜单包 规则 U -- R -- RP -- PM
+        if(rRepository.isAdminOfRoot(rid, uid)){
+            var pos = mRepository.getMenusByGrantedPack(rid);
+            var flatVos = as(pos, GetUserMenuTreeVo.class);
+            var treeVos = TreeBuilder.build(flatVos);
+            pruneEmptyDirectories(treeVos);
+            return treeVos;
+        }
+
+
+        //无SA + 普通用户 直接计算组上面的挂的菜单
+        var pos = mRepository.getGrantedMenus(SuperEntities.ROOT.getId(), uid);
+        var flatVos = as(pos, GetUserMenuTreeVo.class);
+        var treeVos = TreeBuilder.build(flatVos);
         pruneEmptyDirectories(treeVos);
         return treeVos;
     }
@@ -91,29 +100,26 @@ public class MenuService {
      */
     public List<GetMenuTreeVo> getMenuTree(GetMenuTreeDto dto) throws Exception {
 
-        List<MenuPo> pos = menuRepository.getMenuTree(dto);
-
-        /*//普通用户查询可授予菜单
-        if (!SessionService.hasSuperCode()) {
-
-            var uid = SessionService.session().getUserId();
-
-            //如果是查询可授予菜单，则只查当前用户拥有的菜单(通过GM派生)
-            if (dto.getGrantable().isOn()) {
-
-                //普通租户也要查询为-1租户的菜单、在系统里这个租户的菜单是全局菜单
-                pos = menuRepository.getGrantedMenus(SuperEntities.ROOT.getId(), uid);
-
-            }
-
-        }
-
-        //超级用户查询所有菜单
+        //SA直接返回全部菜单
         if(SessionService.hasSuperCode()){
-            pos = menuRepository.getMenuTree(dto);
+            var pos = mRepository.getMenuTree(dto);
+            var flatVos = as(pos, GetMenuTreeVo.class);
+            return TreeBuilder.build(flatVos);
         }
-*/
-        //将list转换为平面vo
+
+        var session = SessionService.session();
+        var rid = session.getRootId();
+        var uid = session.getUserId();
+
+        //如果当前用户是租管 则计算该租户拥有的菜单包 规则 U -- R -- RP -- PM
+        if(rRepository.isAdminOfRoot(rid, uid)){
+            var pos = mRepository.getMenusByGrantedPack(rid);
+            var flatVos = as(pos, GetMenuTreeVo.class);
+            return TreeBuilder.build(flatVos);
+        }
+
+        //无SA + 普通用户 直接计算组上面的挂的菜单
+        var pos = mRepository.getGrantedMenus(SuperEntities.ROOT.getId(), uid);
         var flatVos = as(pos, GetMenuTreeVo.class);
         return TreeBuilder.build(flatVos);
     }
@@ -134,7 +140,7 @@ public class MenuService {
         //如果父级id不为空，查询父级菜单
         if (dto.getParentId() != null) {
 
-            MenuPo parent = menuRepository.findById(dto.getParentId()).orElseThrow(() -> new BizException("新增失败,父级菜单不存在."));
+            MenuPo parent = mRepository.findById(dto.getParentId()).orElseThrow(() -> new BizException("新增失败,父级菜单不存在."));
 
             //校验父级菜单可达性 0:目录 1:菜单 2:按钮
             if (dto.getKind() == 0) {
@@ -161,7 +167,7 @@ public class MenuService {
             menuPo.setParentId(parent.getId());
         }
 
-        menuRepository.save(menuPo);
+        mRepository.save(menuPo);
     }
 
     /**
@@ -174,12 +180,12 @@ public class MenuService {
     @Transactional(rollbackFor = Exception.class)
     public void editMenu(EditMenuDto dto) throws BizException {
 
-        MenuPo menuPo = menuRepository.findById(dto.getId()).orElseThrow(() -> new BizException("编辑失败,数据不存在或无权限访问."));
+        MenuPo menuPo = mRepository.findById(dto.getId()).orElseThrow(() -> new BizException("编辑失败,数据不存在或无权限访问."));
         assign(dto, menuPo);
 
         //如果父级id不为空，查询父级资源
         if (dto.getParentId() != null) {
-            MenuPo parent = menuRepository.findById(dto.getParentId()).orElseThrow(() -> new BizException("新增失败,父级菜单不存在."));
+            MenuPo parent = mRepository.findById(dto.getParentId()).orElseThrow(() -> new BizException("新增失败,父级菜单不存在."));
 
             //校验父级菜单可达性 0:目录 1:菜单 2:按钮
             if (dto.getKind() == 0) {
@@ -211,7 +217,7 @@ public class MenuService {
             menuPo.setParentId(parent.getId());
         }
 
-        menuRepository.save(menuPo);
+        mRepository.save(menuPo);
     }
 
     /**
@@ -223,7 +229,7 @@ public class MenuService {
      */
     public GetMenuDetailsVo getMenuDetails(CommonIdDto dto) throws BizException {
 
-        MenuPo menuPo = menuRepository.findById(dto.getId()).orElseThrow(() -> new BizException("获取详情失败,数据不存在或无权限访问."));
+        MenuPo menuPo = mRepository.findById(dto.getId()).orElseThrow(() -> new BizException("获取详情失败,数据不存在或无权限访问."));
         GetMenuDetailsVo vo = as(menuPo, GetMenuDetailsVo.class);
         if (menuPo.getParentId() != null) {
             vo.setParentId(menuPo.getParentId());
@@ -243,27 +249,27 @@ public class MenuService {
 
         //删除单个菜单与按钮
         if (!dto.isBatch()) {
-            MenuPo po = menuRepository.findById(dto.getId()).orElseThrow(() -> new BizException("删除失败,数据不存在."));
+            MenuPo po = mRepository.findById(dto.getId()).orElseThrow(() -> new BizException("删除失败,数据不存在."));
 
-            if (menuRepository.getMenuChildrenCount(po.getId()) > 0) {
+            if (mRepository.getMenuChildrenCount(po.getId()) > 0) {
                 throw new BizException("无法移除: " + po.getName() + " ,请先移除子项.");
             }
 
-            menuRepository.deleteById(po.getId());
-            menuPackRepository.removeByMid(po.getId());
+            mRepository.deleteById(po.getId());
+            mpRepository.removeByMid(po.getId());
             return;
         }
 
         //如果删除多个菜单与按钮，则需要判断是否有子资源
         for (Long id : dto.getIds()) {
-            MenuPo po = menuRepository.findById(id).orElseThrow(() -> new BizException("删除失败,数据不存在."));
+            MenuPo po = mRepository.findById(id).orElseThrow(() -> new BizException("删除失败,数据不存在."));
 
-            if (menuRepository.getMenuChildrenCount(id) > 0) {
+            if (mRepository.getMenuChildrenCount(id) > 0) {
                 throw new BizException("无法移除: " + po.getName() + " ,请先移除子项.");
             }
 
-            menuRepository.deleteById(id);
-            menuPackRepository.removeByMid(id);
+            mRepository.deleteById(id);
+            mpRepository.removeByMid(id);
         }
 
     }

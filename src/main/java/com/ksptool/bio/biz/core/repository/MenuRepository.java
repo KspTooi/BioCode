@@ -44,6 +44,28 @@ public interface MenuRepository extends JpaRepository<MenuPo, Long> {
             """)
     List<MenuPo> getMenuTree(@Param("po") GetMenuTreeDto po);
 
+
+    /**
+     * 根据租户的ID获取该租户拥有的菜单列表(菜单包)
+     *
+     * @param rid 租户ID
+     * @return 租户根菜单列表
+     */
+    @Query("""
+        SELECT m FROM MenuPo m
+        WHERE m.rootId = -1
+          AND m.id IN (
+              SELECT mp.menuId FROM MenuPackPo mp
+              WHERE mp.packId IN (
+                  SELECT rp.packId FROM RootPackPo rp
+                  WHERE rp.rootId = :rid
+              )
+          )
+        ORDER BY m.seq ASC, m.createTime DESC
+        """)
+    List<MenuPo> getMenusByGrantedPack(@Param("rid") Long rid);
+
+
     /**
      * 按关键字查询菜单列表（用于权限分配视图）
      *
@@ -89,7 +111,7 @@ public interface MenuRepository extends JpaRepository<MenuPo, Long> {
     @Query("""
             SELECT t FROM MenuPo t
             WHERE t.id IN (
-                SELECT gm.menuId FROM GroupMenuPo gm
+                SELECT DISTINCT gm.menuId FROM GroupMenuPo gm
                 WHERE gm.groupId IN (
                     SELECT ug.groupId FROM UserGroupPo ug
                     WHERE ug.userId = :uid
