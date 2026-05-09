@@ -1,5 +1,8 @@
 package com.ksptool.bio.biz.core.model.menu.dto;
 
+import com.ksptool.bio.biz.auth.common.CheatPermission;
+import com.ksptool.bio.biz.auth.common.PermissionCode;
+import com.ksptool.bio.biz.core.common.aop.DtoCustomValidator;
 import com.ksptool.bio.commons.dataprocess.Str;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -13,7 +16,7 @@ import java.util.Set;
 
 @Getter
 @Setter
-public class AddMenuDto {
+public class AddMenuDto implements DtoCustomValidator{
 
     @Schema(description = "父级ID null:根节点")
     private Long parentId;
@@ -59,7 +62,26 @@ public class AddMenuDto {
      *
      * @return 错误信息 无错误返回null
      */
+    @Override
     public String validate() {
+
+        //菜单中不能配CheatPermission中的权限码
+        if(permissionCode != null){
+
+            if (permissionCode.size() > 10) {
+                return "一个菜单最多只能增加10个权限";
+            }
+
+            for(var cCode : CheatPermission.values()){
+                for(var mCode : permissionCode){
+                    if(mCode.equalsIgnoreCase(cCode.getCode())){
+                        return "权限码[" + cCode.getName() + "]不允许在菜单中使用！";
+                    }
+                }
+            }
+
+        }
+
 
         if (kind == 0) { //0:目录 1:菜单 2:按钮
 

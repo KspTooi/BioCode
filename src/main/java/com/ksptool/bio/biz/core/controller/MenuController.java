@@ -58,11 +58,6 @@ public class MenuController {
     @CacheEvict(cacheNames = {"userSession", "userProfile", "menuTree"}, allEntries = true)
     public Result<String> addMenu(@RequestBody @Valid AddMenuDto dto) throws Exception {
 
-        //验证输入参数
-        if (dto.validate() != null) {
-            return Result.error(dto.validate());
-        }
-
         //检查当前用户是否在超级租户里面
         if (!SessionService.isSuperRoot()) {
             throw new BizException("您所在的租户不是超级租户，无法新增菜单。");
@@ -77,11 +72,6 @@ public class MenuController {
     @Operation(summary = "编辑菜单与按钮")
     @CacheEvict(cacheNames = {"userSession", "userProfile", "menuTree"}, allEntries = true)
     public Result<String> editMenu(@RequestBody @Valid EditMenuDto dto) throws Exception {
-
-        //验证输入参数
-        if (dto.validate() != null) {
-            return Result.error(dto.validate());
-        }
 
         //检查当前用户是否在超级租户里面
         if (!SessionService.isSuperRoot()) {
