@@ -17,7 +17,18 @@
             <el-timeline-item
               v-for="(record, idx) in records"
               :key="idx"
-              :timestamp="record.finTime || '待处理'"
+              :timestamp="
+                record.finTime ||
+                (record.status === 0
+                  ? '待处理'
+                  : record.status === 1
+                    ? '已处理'
+                    : record.status === 10
+                      ? '已作废'
+                      : record.action === 0
+                        ? '同意'
+                        : '—')
+              "
               placement="top"
               :type="record.status === 0 ? 'primary' : record.action === 0 ? 'success' : 'danger'"
             >
@@ -25,6 +36,8 @@
                 <div class="record-header">
                   <span class="record-node">{{ record.nodeName }}</span>
                   <el-tag v-if="record.status === 0" type="primary" size="small" effect="plain"> 待处理 </el-tag>
+                  <el-tag v-else-if="record.status === 1" type="info" size="small" effect="plain"> 已处理 </el-tag>
+                  <el-tag v-else-if="record.status === 10" type="danger" size="small" effect="plain"> 已作废 </el-tag>
                   <el-tag v-else-if="record.action === 0" type="success" size="small" effect="plain"> 同意 </el-tag>
                   <el-tag v-else type="danger" size="small" effect="plain"> 驳回 </el-tag>
                 </div>
