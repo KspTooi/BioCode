@@ -5,6 +5,7 @@ import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.bio.biz.core.common.TupleMapper;
+import com.ksptool.bio.biz.core.model.user.UserPo;
 import com.ksptool.bio.biz.core.repository.UserRepository;
 import com.ksptool.bio.biz.qf.commons.QfMemberKinds;
 import com.ksptool.bio.biz.qf.commons.util.Flowable8NodeUtil;
@@ -14,6 +15,7 @@ import com.ksptool.bio.biz.qf.model.qftodo.dto.AddQfTodoDto;
 import com.ksptool.bio.biz.qf.model.qftodo.dto.ApproveQfTodoDto;
 import com.ksptool.bio.biz.qf.model.qftodo.dto.EditQfTodoDto;
 import com.ksptool.bio.biz.qf.model.qftodo.dto.GetQfTodoListDto;
+import com.ksptool.bio.biz.qf.model.qftodo.dto.CancelQfTodoDto;
 import com.ksptool.bio.biz.qf.model.qftodo.vo.GetQfTodoDetailsVo;
 import com.ksptool.bio.biz.qf.model.qftodo.vo.ApproveFlowRecordVo;
 import com.ksptool.bio.biz.qf.model.qftodo.vo.GetQfTodoListVo;
@@ -22,16 +24,20 @@ import jakarta.persistence.Tuple;
 import jakarta.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.engine.IdentityService;
+import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static com.ksptool.bio.biz.auth.service.SessionService.session;
 import static com.ksptool.entities.Entities.as;
@@ -50,6 +56,7 @@ import static com.ksptool.entities.Entities.assign;
  * 未经事先书面许可，严禁任何形式的复制或分发。
  * @since 2026-04-17
  */
+@Slf4j
 @Service
 public class QfTodoService {
 
@@ -58,6 +65,9 @@ public class QfTodoService {
 
     @Autowired
     private TaskService ftService;
+
+    @Autowired
+    private RuntimeService runtimeService;
 
     @Autowired
     private QfMemberService qfMemberService;
@@ -146,6 +156,84 @@ public class QfTodoService {
     }
 
     /**
+     * 取消/作废待办事项
+     *
+     * @param dto 取消条件
+     * @throws BizException 业务异常
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void cancelQfTodo(CancelQfTodoDto dto) throws BizException {
+        QfTodoPo po = repository.findById(dto.getId()).orElse(null);
+        if (po == null) {
+            throw new BizException("待办不存在或无权限访问.");
+        }
+        if (po.getStatus() != 0) {
+            throw new BizException("只能取消待办状态的记录");
+        }
+        String engTaskId = po.getEngTaskId();
+        String engProcId = po.getEngProcId();
+        if (StringUtils.isNotBlank(engTaskId)) {
+            try {
+                var task = ftService.createTaskQuery().taskId(engTaskId).singleResult();
+                if (task != null) {
+                    ftService.deleteTask(engTaskId);
+                }
+            } catch (Exception e) {
+                log.error("[cancelQfTodo] 删除Flowable任务失败, taskId: {}", engTaskId, e);
+            }
+        }
+        if (StringUtils.isNotBlank(engProcId)) {
+            try {
+                runtimeService.deleteProcessInstance(engProcId, dto.getReason());
+            } catch (Exception e) {
+                log.error("[cancelQfTodo] 终止Flowable流程实例失败, processInstanceId: {}", engProcId, e);
+            }
+        }
+        po.setStatus(10);
+        po.setComment(dto.getReason());
+        repository.save(po);
+    }
+
+    /**
+     * 根据表名和数据ID批量取消待办事项
+     *
+     * @param tableName 表名
+     * @param dataId   数据ID
+     * @param reason   取消原因
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void cancelQfTodoByData(String tableName, Long dataId, String reason) {
+        List<QfTodoPo> todoList = repository.findByTableNameAndDataId(tableName, dataId);
+        for (QfTodoPo po : todoList) {
+            if (po.getStatus() != 0) {
+                continue;
+            }
+            String engTaskId = po.getEngTaskId();
+            String engProcId = po.getEngProcId();
+            if (StringUtils.isNotBlank(engTaskId)) {
+                try {
+                    var task = ftService.createTaskQuery().taskId(engTaskId).singleResult();
+                    if (task != null) {
+                        ftService.deleteTask(engTaskId);
+                    }
+                } catch (Exception e) {
+                    log.error("[cancelQfTodoByData] 删除Flowable任务失败, taskId: {}", engTaskId, e);
+                }
+            }
+            if (StringUtils.isNotBlank(engProcId)) {
+                try {
+                    runtimeService.deleteProcessInstance(engProcId, reason);
+                } catch (Exception e) {
+                    log.error("[cancelQfTodoByData] 终止Flowable流程实例失败, processInstanceId: {}", engProcId, e);
+                }
+            }
+            po.setStatus(10);
+            po.setComment(reason);
+            repository.save(po);
+        }
+    }
+
+    /**
      * 删除待办事项
      *
      * @param dto 删除条件
@@ -153,6 +241,35 @@ public class QfTodoService {
      */
     @Transactional(rollbackFor = Exception.class)
     public void removeQfTodo(CommonIdDto dto) throws BizException {
+        List<Long> ids = dto.isBatch() ? dto.getIds() : List.of(dto.getId());
+        for (Long id : ids) {
+            QfTodoPo po = repository.findById(id).orElse(null);
+            if (po == null) {
+                continue;
+            }
+            if (po.getStatus() != 0) {
+                throw new BizException("只能删除待办状态的记录");
+            }
+            String engTaskId = po.getEngTaskId();
+            String engProcId = po.getEngProcId();
+            if (StringUtils.isNotBlank(engTaskId)) {
+                try {
+                    var task = ftService.createTaskQuery().taskId(engTaskId).singleResult();
+                    if (task != null) {
+                        ftService.deleteTask(engTaskId);
+                    }
+                } catch (Exception e) {
+                    log.error("[removeQfTodo] 删除Flowable任务失败, taskId: {}", engTaskId, e);
+                }
+            }
+            if (StringUtils.isNotBlank(engProcId)) {
+                try {
+                    runtimeService.deleteProcessInstance(engProcId, "待办已删除");
+                } catch (Exception e) {
+                    log.error("[removeQfTodo] 终止Flowable流程实例失败, processInstanceId: {}", engProcId, e);
+                }
+            }
+        }
         if (dto.isBatch()) {
             repository.deleteAllById(dto.getIds());
             return;
@@ -268,10 +385,20 @@ public class QfTodoService {
         // 通过流程ID查询该流程所有待办，即为流转记录
         List<QfTodoPo> todoList = repository.findAllByEngProcIdOrderByCreateTimeAsc(po.getEngProcId());
 
+        //获取所有人的用户信息
+        //获取代办的信息
+        List<QfTodoPo> waitingList = todoList.stream().filter(todo -> (todo.getStatus() == 0 || todo.getStatus() == 10)).toList();
+        Map<Long, UserPo> userMap;
+        if(!waitingList.isEmpty()) {
+            List<UserPo> userList = userRepository.findAllById(waitingList.stream().map(QfTodoPo::getMemberId).toList());
+            userMap = userList.stream().collect(Collectors.toMap(UserPo::getId, user -> user));
+        } else {
+            userMap = new HashMap<>();
+        }
         return todoList.stream().map(todo -> {
             ApproveFlowRecordVo vo = new ApproveFlowRecordVo();
             vo.setNodeName(todo.getNodeName());
-            vo.setFinMemberName(todo.getFinMemberName());
+            vo.setFinMemberName(StringUtils.isNoneBlank(todo.getFinMemberName()) ? todo.getFinMemberName() : userMap.get(todo.getMemberId()).getNickname());
             vo.setFinTime(todo.getFinTime());
             vo.setAction(todo.getAction());
             vo.setComment(todo.getComment());

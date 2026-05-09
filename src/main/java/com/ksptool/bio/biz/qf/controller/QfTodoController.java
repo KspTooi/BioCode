@@ -5,6 +5,7 @@ import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.assembly.entity.web.Result;
 import com.ksptool.bio.biz.qf.model.qftodo.dto.ApproveQfTodoDto;
 import com.ksptool.bio.biz.qf.model.qftodo.dto.GetQfTodoListDto;
+import com.ksptool.bio.biz.qf.model.qftodo.dto.CancelQfTodoDto;
 import com.ksptool.bio.biz.qf.model.qftodo.vo.GetQfTodoDetailsVo;
 import com.ksptool.bio.biz.qf.model.qftodo.vo.ApproveFlowRecordVo;
 import com.ksptool.bio.biz.qf.model.qftodo.vo.GetQfTodoListVo;
@@ -75,6 +76,14 @@ public class QfTodoController {
     @PostMapping("/approveQfTodo")
     public Result<String> approveQfTodo(@RequestBody @Valid ApproveQfTodoDto dto) throws Exception {
         qfTodoService.approveQfTodo(dto);
+        return Result.success("操作成功");
+    }
+
+    @PreAuthorize("@auth.hasCode('qf:todo:cancel')")
+    @Operation(summary = "取消/作废待办事项")
+    @PostMapping("/cancelQfTodo")
+    public Result<String> cancelQfTodo(@RequestBody @Valid CancelQfTodoDto dto) throws Exception {
+        qfTodoService.cancelQfTodo(dto);
         return Result.success("操作成功");
     }
 

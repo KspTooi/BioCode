@@ -90,4 +90,18 @@ public interface QfTodoRepository extends JpaRepository<QfTodoPo, Long> {
             AND u.status = 0
             """)
     long countActiveTodyByBizFormId(@Param("bizFormId") Long bizFormId);
+
+    /**
+     * 根据表名和数据ID查询待办列表
+     *
+     * @param tableName 表名
+     * @param dataId   数据ID
+     * @return 待办列表
+     */
+    @Query("""
+            SELECT u FROM QfTodoPo u
+            WHERE u.tableName = :tableName
+            AND u.dataId = :dataId
+            """)
+    List<QfTodoPo> findByTableNameAndDataId(@Param("tableName") String tableName, @Param("dataId") Long dataId);
 }
