@@ -92,6 +92,7 @@ import type { GetCurrentUserProfile } from "@/soa/com-series/api/AuthApi.ts";
 import AuthApi from "@/soa/com-series/api/AuthApi.ts";
 import ComPasswordReset from "@/soa/com-series/sfc_private/ComPasswordReset.vue";
 import UserAuthService from "@/views/auth/service/UserAuthService.ts";
+import { Result } from "@/commons/model/Result.ts";
 
 const authStore = UserAuthService.AuthStore();
 
@@ -107,23 +108,31 @@ const loadUserProfile = async (): Promise<void> => {
 };
 
 const onLogout = async (): Promise<void> => {
-  try {
-    await ElMessageBox.confirm("确定要注销登录吗？", "提示", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+  await ElMessageBox.confirm("确定要注销登录吗？", "提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  });
 
-    await AuthApi.logout();
+  const ret = await AuthApi.logout();
+
+  if (Result.isSuccess(ret)) {
     ElMessage.success("注销成功");
-    // 刷新页面或跳转到登录页
     window.location.href = "/login";
-  } catch (error) {
-    if (error === "cancel") {
-      return;
-    }
-    ElMessage.error("注销失败: " + (error as Error).message);
+    return;
   }
+
+  //业务错误
+  if (ret.code === 1) {
+    // 会话不存在退出登录，需要把sessionIds删掉，然后回退到登录页
+    UserAuthService.AuthStore().setSessionId(null);
+    ElMessage.success("注销成功");
+    window.location.href = "/login";
+    return;
+  }
+
+  //网络错误
+  ElMessage.error("注销失败: " + ret.message);
 };
 
 const onChangePassword = (): void => {

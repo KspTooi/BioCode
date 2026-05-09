@@ -37,12 +37,8 @@ export default {
   /**
    * 用户注销
    */
-  logout: async (): Promise<void> => {
-    const result = await Http.postEntity<Result<string>>("/auth/logout", {});
-    if (result.code == 0) {
-      return;
-    }
-    throw new Error(result.message);
+  logout: async (): Promise<Result<string>> => {
+    return await Http.postRaw<string>("/auth/logout", {});
   },
 
   /**
