@@ -2,6 +2,7 @@ package com.ksptool.bio.biz.auth.service;
 
 import com.ksptool.bio.biz.auth.common.PermissionBucket;
 import com.ksptool.bio.biz.auth.common.RsCalculator;
+import com.ksptool.bio.biz.auth.common.exception.AuthUnavailableException;
 import com.ksptool.bio.biz.auth.common.exception.RootUnavailableException;
 import com.ksptool.bio.biz.auth.model.auth.AuthUserSession;
 import com.ksptool.bio.biz.auth.model.group.GroupPo;
@@ -178,7 +179,8 @@ public class AuthUserDetailsService implements UserDetailsService {
 
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            throw e;
+            //出现内部错误时抛出认证不可用异常
+            throw new AuthUnavailableException("当前认证系统暂时不可用,请稍后再试!");
         }
     }
 
