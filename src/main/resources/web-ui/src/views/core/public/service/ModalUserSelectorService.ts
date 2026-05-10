@@ -66,7 +66,6 @@ export default {
         listTotal.value = result.total;
 
         //同步已勾选用户IDS到表格
-        console.log("同步已勾选用户IDS到表格", modalCheckedUserIds.value.length);
         syncChecked();
       }
 
@@ -88,13 +87,15 @@ export default {
 
     /**
      * 用户列表勾选
-     * @param rows 当前所有已选行
+     * @param rows 当前所有已选行（含 reserve-selection 跨页保留的行）
      */
     const onListCheck = (rows: GetUserListVo[]): void => {
-      console.log("触发用户列表勾选", rows.length);
-
       if (props.checkMultiple) {
-        modalCheckedUserIds.value = rows.map((row) => row.id);
+        //跨页合并：当前页内的勾选以 rows 为准，当前页外的已选 id 原样保留
+        const currentPageIds = new Set(listData.value.map((user) => user.id));
+        const selectedInPage = rows.filter((row) => currentPageIds.has(row.id)).map((row) => row.id);
+        const keptOutOfPage = modalCheckedUserIds.value.filter((id) => !currentPageIds.has(id));
+        modalCheckedUserIds.value = [...keptOutOfPage, ...selectedInPage];
         return;
       }
       if (rows.length === 0) {
