@@ -24,7 +24,7 @@ importers:
         specifier: ~2.0.10
         version: 2.0.10(vue-demi@0.14.10(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3))
       '@vueuse/core':
-        specifier: ^14.3.0
+        specifier: ~14.3.0
         version: 14.3.0(vue@3.5.33(typescript@6.0.3))
       axios:
         specifier: ~1.15.2
@@ -77,6 +77,9 @@ importers:
       vue:
         specifier: ~3.5.33
         version: 3.5.33(typescript@6.0.3)
+      vue-cropper:
+        specifier: ^1.1.4
+        version: 1.1.4
       vue-demi:
         specifier: ~0.14.10
         version: 0.14.10(vue@3.5.33(typescript@6.0.3))
@@ -2782,6 +2785,9 @@ packages:
   vue-component-type-helpers@3.2.7:
     resolution: {integrity: sha512-+gPp5YGmhfsj1IN+xUo7y0fb4clfnOiiUA39y07yW1VzCRjzVgwLbtmdWlghh7mXrPsEaYc7rrIir/HT6C8vYQ==}
 
+  vue-cropper@1.1.4:
+    resolution: {integrity: sha512-5m98vBsCEI9rbS4JxELxXidtAui3qNyTHLHg67Qbn7g8cg+E6LcnC+hh3SM/p94x6mFh6KRxT1ttnta+wCYqWA==}
+
   vue-demi@0.14.10:
     resolution: {integrity: sha512-nMZBOwuzabUO0nLgIcc6rycZEebF6eeUfaiQx9+WSk8e29IbLvPU9feI6tqW4kTo3hvoYAJkMh8n8D0fuISphg==}
     engines: {node: '>=12'}
@@ -5356,6 +5362,8 @@ snapshots:
   vscode-uri@3.1.0: {}
 
   vue-component-type-helpers@3.2.7: {}
+
+  vue-cropper@1.1.4: {}
 
   vue-demi@0.14.10(vue@3.5.33(typescript@6.0.3)):
     dependencies:
