@@ -20,6 +20,7 @@ export interface ModalUserSelectorProps {
 
 export interface ModalUserSelectorEmits {
   (e: "on-submit", data: string[]): void;
+  (e: "on-submit-entity", data: GetUserListVo[]): void;
   (e: "on-close"): void;
 }
 
@@ -50,6 +51,7 @@ export default {
     const listTotal = ref(0);
     const listLoading = ref(false);
     const displayValue = ref("");
+    const checkedUsersRows = ref<GetUserListVo[]>([]);
 
     /**
      * 加载用户列表
@@ -93,24 +95,29 @@ export default {
       if (props.checkMultiple) {
         //跨页合并：当前页内的勾选以 rows 为准，当前页外的已选 id 原样保留
         const currentPageIds = new Set(listData.value.map((user) => user.id));
-        const selectedInPage = rows.filter((row) => currentPageIds.has(row.id)).map((row) => row.id);
-        const keptOutOfPage = modalCheckedUserIds.value.filter((id) => !currentPageIds.has(id));
-        modalCheckedUserIds.value = [...keptOutOfPage, ...selectedInPage];
+        const selectedInPage = rows.filter((row) => currentPageIds.has(row.id));
+        const keptOutOfPage = checkedUsersRows.value.filter((u) => !currentPageIds.has(u.id));
+        checkedUsersRows.value = [...keptOutOfPage, ...selectedInPage];
+        modalCheckedUserIds.value = checkedUsersRows.value.map((u) => u.id);
         return;
       }
       if (rows.length === 0) {
         modalCheckedUserIds.value = [];
+        checkedUsersRows.value = [];
         return;
       }
       const last = rows[rows.length - 1];
       rows.slice(0, -1).forEach((row) => listRef.value?.toggleRowSelection(row, false));
       modalCheckedUserIds.value = [last.id];
+      checkedUsersRows.value = [last];
     };
 
     /**
      * 模态框打开
      */
     const onModalOpen = (): void => {
+      checkedUsersRows.value = [];
+
       //重置查询表单
       listForm.value.pageNum = 1;
       listForm.value.pageSize = 20;
@@ -136,6 +143,7 @@ export default {
     const onModalSubmit = (): void => {
       modalVisible.value = false;
       emit("on-submit", modalCheckedUserIds.value);
+      emit("on-submit-entity", checkedUsersRows.value);
     };
 
     /**
@@ -153,10 +161,16 @@ export default {
           return;
         }
 
-        //直接恢复选中
+        //直接恢复选中，并将当前页已命中的VO补充进checkedUsersRows
+        const existingIds = new Set(checkedUsersRows.value.map((u) => u.id));
         listData.value.forEach((user) => {
-          if (modalCheckedUserIds.value.includes(user.id)) {
-            listRef.value?.toggleRowSelection(user, true);
+          if (!modalCheckedUserIds.value.includes(user.id)) {
+            return;
+          }
+          listRef.value?.toggleRowSelection(user, true);
+          if (!existingIds.has(user.id)) {
+            checkedUsersRows.value = [...checkedUsersRows.value, user];
+            existingIds.add(user.id);
           }
         });
       }
