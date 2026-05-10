@@ -266,6 +266,12 @@ export default {
         halfCheckedNodes: any[];
       }
     ): void => {
+      if (!props.check) {
+        checkedNks.value = [];
+        checkedHalfNks.value = [];
+        return;
+      }
+
       let keys = checkInfo.checkedKeys;
 
       if (!props.checkMultiple && keys.length > 1) {
