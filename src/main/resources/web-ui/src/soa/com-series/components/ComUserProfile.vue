@@ -108,6 +108,8 @@ import ComPasswordReset from "@/soa/com-series/components/ComPasswordReset.vue";
 import ComModalAvatarCropper from "@/soa/com-series/components/ComModalAvatarCropper.vue";
 import UserAuthService from "@/views/auth/service/UserAuthService.js";
 import { Result } from "@/commons/model/Result.js";
+import ComTabService from "@/soa/com-series/service/ComTabService.ts";
+import { useThrottleFn } from "@vueuse/core";
 
 const authStore = UserAuthService.AuthStore();
 
@@ -118,6 +120,9 @@ const fileInputRef = ref<HTMLInputElement>();
 const refreshing = ref(false);
 const avatarVersion = ref(0);
 
+//多标签服务打包
+const { refreshCounter } = ComTabService.useRouterTabService();
+
 const loadUserProfile = async (): Promise<void> => {
   try {
     profile.value = await AuthApi.getUserProfile();
@@ -127,18 +132,23 @@ const loadUserProfile = async (): Promise<void> => {
   }
 };
 
-const onRefreshProfile = async (): Promise<void> => {
+const onRefreshProfile = useThrottleFn(async (): Promise<void> => {
   refreshing.value = true;
   try {
     profile.value = await AuthApi.getUserProfile({ forceUpdate: 1 });
     avatarVersion.value++;
     ElMessage.success("用户信息已刷新");
+
+    //1秒后刷新标签
+    setTimeout(() => {
+      refreshCounter.value++;
+    }, 1000);
   } catch (error: any) {
     ElMessage.error(error.message || "刷新用户信息失败");
   } finally {
     refreshing.value = false;
   }
-};
+}, 1000);
 
 const onLogout = async (): Promise<void> => {
   await ElMessageBox.confirm("确定要注销登录吗？", "提示", {
