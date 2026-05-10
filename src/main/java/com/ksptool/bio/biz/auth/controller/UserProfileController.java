@@ -4,6 +4,7 @@ import com.ksptool.assembly.entity.exception.AuthException;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.Result;
 import com.ksptool.bio.biz.auth.model.profile.dto.ChangePasswordDto;
+import com.ksptool.bio.biz.auth.model.profile.dto.GetUserProfileDto;
 import com.ksptool.bio.biz.auth.model.profile.vo.GetCurrentUserProfileVo;
 import com.ksptool.bio.biz.auth.service.UserProfileService;
 import com.ksptool.bio.biz.core.service.MenuService;
@@ -40,26 +41,21 @@ public class UserProfileController {
     private CacheManager cacheManager;
 
     @Operation(summary = "获取当前用户信息")
-    @PostMapping("/getCurrentUserProfile")
+    @PostMapping("/getUserProfile")
     @ResponseBody
-    public Result<GetCurrentUserProfileVo> getCurrentUserProfile() throws AuthException {
-        return Result.success(profileService.getUserProfile(session().getUserId()));
-    }
-
-    @Operation(summary = "刷新当前用户档案（失效缓存后重新查询）")
-    @PostMapping("/refreshUserProfile")
-    @ResponseBody
-    public Result<GetCurrentUserProfileVo> refreshUserProfile() throws AuthException {
+    public Result<GetCurrentUserProfileVo> getUserProfile(@RequestBody GetUserProfileDto dto) throws AuthException {
         Long userId = session().getUserId();
 
-        var profileCache = cacheManager.getCache("userProfile");
-        if (profileCache != null) {
-            profileCache.evict(userId);
+        if (dto.getForceUpdate() != null && dto.getForceUpdate() == 1) {
+            var profileCache = cacheManager.getCache("userProfile");
+            if (profileCache != null) {
+                profileCache.evict(userId);
+            }
+
+            userService.increaseDv(List.of(userId));
+
+            menuService.clearUserMenuTreeCacheByUserId(userId);
         }
-
-        userService.increaseDv(List.of(userId));
-
-        menuService.clearUserMenuTreeCacheByUserId(userId);
 
         return Result.success(profileService.getUserProfile(userId));
     }

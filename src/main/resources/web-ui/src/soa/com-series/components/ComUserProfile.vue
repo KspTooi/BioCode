@@ -17,7 +17,19 @@
     <div class="profile-drop-menu">
       <div class="modal-gradient-bar"></div>
       <div class="profile-header">
-        <el-avatar :size="64" :src="avatarUrl" shape="square" />
+        <div class="avatar-uploader" @click="onAvatarClick">
+          <el-avatar :size="64" :src="avatarUrl" shape="square" />
+          <div class="avatar-mask">
+            <span class="avatar-mask-text">修改头像</span>
+          </div>
+        </div>
+        <input
+          ref="fileInputRef"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          hidden
+          @change="onFileChange"
+        />
         <div class="header-info">
           <div class="nickname">{{ profile?.nickname || "未设置昵称" }}</div>
           <div class="username">@{{ profile?.username }}</div>
@@ -80,6 +92,8 @@
 
       <!-- 修改密码弹窗 -->
       <com-password-reset ref="changePasswordModalRef" />
+      <!-- 头像裁剪弹窗 -->
+      <com-modal-avatar-cropper ref="avatarCropperRef" @confirm="handleAvatarConfirm" />
     </div>
   </el-popover>
 </template>
@@ -91,6 +105,7 @@ import { Message, Phone, User, Operation, Key, Calendar, Clock, SwitchButton } f
 import type { GetCurrentUserProfile } from "@/soa/com-series/api/AuthApi.js";
 import AuthApi from "@/soa/com-series/api/AuthApi.js";
 import ComPasswordReset from "@/soa/com-series/components/ComPasswordReset.vue";
+import ComModalAvatarCropper from "@/soa/com-series/components/ComModalAvatarCropper.vue";
 import UserAuthService from "@/views/auth/service/UserAuthService.js";
 import { Result } from "@/commons/model/Result.js";
 
@@ -98,10 +113,12 @@ const authStore = UserAuthService.AuthStore();
 
 const profile = ref<GetCurrentUserProfile | null>(null);
 const changePasswordModalRef = ref();
+const avatarCropperRef = ref<InstanceType<typeof ComModalAvatarCropper>>();
+const fileInputRef = ref<HTMLInputElement>();
 
 const loadUserProfile = async (): Promise<void> => {
   try {
-    profile.value = await AuthApi.getCurrentUserProfile();
+    profile.value = await AuthApi.getUserProfile();
   } catch (error: any) {
     console.error("加载用户信息失败:", error);
   }
@@ -138,6 +155,48 @@ const onLogout = async (): Promise<void> => {
 const onChangePassword = (): void => {
   if (changePasswordModalRef.value) {
     changePasswordModalRef.value.openModal();
+  }
+};
+
+const onAvatarClick = (): void => {
+  fileInputRef.value?.click();
+};
+
+const onFileChange = (e: Event): void => {
+  const input = e.target as HTMLInputElement;
+  const file = input.files?.[0];
+  input.value = "";
+
+  if (!file) {
+    return;
+  }
+
+  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+  if (!allowedTypes.includes(file.type)) {
+    ElMessage.error("仅支持 JPG、PNG、WEBP 格式的图片");
+    return;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    ElMessage.error("图片大小不能超过 5MB");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const dataUrl = ev.target?.result as string;
+    avatarCropperRef.value?.openModal(dataUrl);
+  };
+  reader.readAsDataURL(file);
+};
+
+const handleAvatarConfirm = async (file: File): Promise<void> => {
+  try {
+    await AuthApi.updateUserAvatar(file);
+    profile.value = await AuthApi.getUserProfile({ forceUpdate: 1 });
+    ElMessage.success("头像已更新");
+  } catch (error: any) {
+    ElMessage.error(error.message || "头像更新失败");
   }
 };
 
@@ -210,6 +269,35 @@ onMounted(() => {
   align-items: center;
   gap: 16px;
   border-bottom: 1px solid #f0f0f0;
+}
+
+.avatar-uploader {
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.avatar-mask {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.avatar-uploader:hover .avatar-mask {
+  opacity: 1;
+}
+
+.avatar-mask-text {
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  user-select: none;
 }
 
 .header-info {

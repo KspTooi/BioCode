@@ -1,5 +1,6 @@
 import Http from "@/commons/Http.ts";
 import type Result from "@/commons/model/Result.ts";
+import type { AxiosResponse } from "axios";
 
 export interface GetCurrentUserProfilePermissionVo {
   code: string; // 权限代码
@@ -22,12 +23,19 @@ export interface GetCurrentUserProfile {
   permissions: GetCurrentUserProfilePermissionVo[]; // 用户权限列表
 }
 
+/**
+ * 获取用户信息DTO
+ */
+export interface GetUserProfileDto {
+  forceUpdate?: number; // 是否强制刷新缓存 0:否 1:是
+}
+
 export default {
   /**
    * 获取当前用户信息
    */
-  getCurrentUserProfile: async (): Promise<GetCurrentUserProfile> => {
-    const result = await Http.postEntity<Result<GetCurrentUserProfile>>("/profile/getCurrentUserProfile", {});
+  getUserProfile: async (dto: GetUserProfileDto = {}): Promise<GetCurrentUserProfile> => {
+    const result = await Http.postEntity<Result<GetCurrentUserProfile>>("/profile/getUserProfile", dto);
     if (result.code == 0) {
       return result.data;
     }
@@ -39,6 +47,22 @@ export default {
    */
   logout: async (): Promise<Result<string>> => {
     return await Http.postRaw<string>("/auth/logout", {});
+  },
+
+  /**
+   * 更新当前用户头像
+   */
+  updateUserAvatar: async (file: File): Promise<void> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response: AxiosResponse = await Http.axios().post("/profile/updateUserAvatar", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+      responseType: "blob",
+    });
+    if (response.status === 200) {
+      return;
+    }
+    throw new Error("头像上传失败");
   },
 
   /**
