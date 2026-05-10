@@ -64,6 +64,9 @@ export default {
       if (Result.isSuccess(result)) {
         listData.value = result.data;
         listTotal.value = result.total;
+
+        //同步已勾选用户IDS到表格
+        console.log("同步已勾选用户IDS到表格", modalCheckedUserIds.value.length);
         syncChecked();
       }
 
@@ -88,6 +91,8 @@ export default {
      * @param rows 当前所有已选行
      */
     const onListCheck = (rows: GetUserListVo[]): void => {
+      console.log("触发用户列表勾选", rows.length);
+
       if (props.checkMultiple) {
         modalCheckedUserIds.value = rows.map((row) => row.id);
         return;

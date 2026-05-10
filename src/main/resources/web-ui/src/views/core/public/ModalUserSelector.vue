@@ -8,6 +8,7 @@
     destroy-on-close
     class="core-user-select-modal"
     @opened="onModalOpen"
+    @close="onModalClose"
   >
     <div v-loading="listLoading" class="modal-body">
       <splitpanes class="custom-theme">
@@ -132,7 +133,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick } from "vue";
+import { ref } from "vue";
 import { Splitpanes, Pane } from "splitpanes";
 import type { ElTable } from "element-plus";
 import "splitpanes/dist/splitpanes.css";
@@ -143,7 +144,6 @@ import ModalUserSelectorService, {
   type ModalUserSelectorEmits,
   type ModalUserSelectorProps,
 } from "@/views/core/public/service/ModalUserSelectorService.ts";
-import type { GetOrgTreeVo } from "@/views/core/api/OrgApi";
 import type { GetUserListVo } from "@/views/core/api/UserApi";
 
 const props = withDefaults(defineProps<ModalUserSelectorProps>(), {
