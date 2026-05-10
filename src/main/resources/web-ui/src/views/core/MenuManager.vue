@@ -65,7 +65,7 @@
       <!-- 右侧详情面板 -->
       <pane size="75">
         <div class="right-pane">
-          <el-skeleton :loading="panelLoading" :rows="14" animated class="panel-skeleton" :throttle="350">
+          <el-skeleton v-if="panelVisible" :loading="panelLoading" :rows="14" animated class="panel-skeleton" :throttle="350">
             <div>
               <!-- 顶部装饰线 -->
               <div class="panel-accent-bar" :class="`accent-${panelForm.kind}`" />
