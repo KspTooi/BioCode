@@ -3,8 +3,17 @@
     <splitpanes class="custom-theme">
       <!-- 左侧树形列表：占满整个左侧 -->
       <pane size="20" min-size="10" max-size="40">
-        <div class="pt-2 px-1" style="height: 100%; box-sizing: border-box">
-          <OrgTree @on-select="onSelectOrg" />
+        <div class="" style="height: 100%; box-sizing: border-box">
+          <OrgTree
+            v-model="currentOrgId"
+            :search="true"
+            :nr="true"
+            nr-title="全部组织机构"
+            nr-icon="ep:office-building"
+            :nr-value="null"
+            @on-select="onSelectOrg"
+            @on-root-select="onSelectOrg(null)"
+          />
         </div>
       </pane>
 
@@ -31,8 +40,8 @@
                 </el-form-item>
               </div>
               <el-form-item>
-                <el-button type="primary" :disabled="listLoading" @click="loadList(orgId)">查询</el-button>
-                <el-button :disabled="listLoading" @click="resetList(orgId)">重置</el-button>
+                <el-button type="primary" :disabled="listLoading" @click="loadList(currentOrgId)">查询</el-button>
+                <el-button :disabled="listLoading" @click="resetList(currentOrgId)">重置</el-button>
               </el-form-item>
             </el-form>
           </StdListAreaQuery>
@@ -84,7 +93,7 @@
                   <span v-else>-</span>
                 </template>
               </el-table-column>
-              <el-table-column prop="orgName" label="企业" min-width="160" :v-show="orgId == null" show-overflow-tooltip>
+              <el-table-column prop="orgName" label="企业" min-width="160" show-overflow-tooltip>
                 <template #default="scope">
                   <span v-if="scope.row.orgName">{{ scope.row.orgName }}</span>
                   <span v-else>-</span>
@@ -142,13 +151,13 @@
                 @size-change="
                   (val: number) => {
                     listForm.pageSize = val;
-                    loadList(orgId);
+                    loadList(currentOrgId);
                   }
                 "
                 @current-change="
                   (val: number) => {
                     listForm.pageNum = val;
-                    loadList(orgId);
+                    loadList(currentOrgId);
                   }
                 "
               />
@@ -178,7 +187,7 @@
       :close-on-click-modal="false"
       @close="
         resetModal();
-        loadList(orgId);
+        loadList(currentOrgId);
       "
     >
       <el-form
@@ -284,14 +293,14 @@ import type { FormInstance } from "element-plus";
 import { Splitpanes, Pane } from "splitpanes";
 import "splitpanes/dist/splitpanes.css";
 import UserManagerService from "@/views/core/service/UserManagerService.ts";
-import OrgTree from "@/views/core/components/OrgTree.vue";
+import OrgTree from "@/views/core/public/OrgTree.vue";
 import type { GetOrgTreeVo } from "@/views/core/api/OrgApi";
 import ImportWizardModal from "@/soa/com-series/ImportWizardModal.vue";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
 import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
 import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";
 import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
-import CoreOrgDeptSelectModal from "@/views/core/components/public/CoreOrgDeptSelectModal.vue";
+import CoreOrgDeptSelectModal from "@/views/core/public/ModalOrgTree.vue";
 import UserAuthService from "@/views/auth/service/UserAuthService";
 
 //按钮级权限打包
@@ -304,26 +313,22 @@ const UploadIcon = markRaw(Upload);
 
 const importWizardRef = ref<InstanceType<typeof ImportWizardModal>>();
 
+//当前选中组织ID
+const currentOrgId = ref<string | null>(null);
+
 /**
  * 选择组织
  * @param org 组织
  */
-const onSelectOrg = (org: GetOrgTreeVo | null): void => {
-  loadList(org?.id ?? null);
-  orgId.value = org?.id ?? null;
+const onSelectOrg = (_org: GetOrgTreeVo | null): void => {
+  loadList(currentOrgId.value);
 };
-
-const orgId = ref<string | null>(null);
 
 // 列表打包
 const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } = UserManagerService.useUserList();
 
 // 模态框表单引用
 const modalFormRef = ref<FormInstance>();
-
-const _loadList = (): void => {
-  loadList(orgId.value);
-};
 
 // 模态框打包
 const {
@@ -339,7 +344,7 @@ const {
   resetModal,
   submitModal,
   orgTreeOptions,
-} = UserManagerService.useUserModal(modalFormRef, _loadList, orgId);
+} = UserManagerService.useUserModal(modalFormRef, () => loadList(currentOrgId.value), currentOrgId);
 
 // 部门选择器逻辑
 const deptSelectModalRef = ref<InstanceType<typeof CoreOrgDeptSelectModal>>();
@@ -347,7 +352,7 @@ const deptSelectVisible = ref(false);
 
 // 批量操作打包
 const { onBatchAction, onSelectionChange, canBatchAction, batchCount } = UserManagerService.useBatchAction(
-  _loadList,
+  () => loadList(currentOrgId.value),
   deptSelectModalRef
 );
 </script>

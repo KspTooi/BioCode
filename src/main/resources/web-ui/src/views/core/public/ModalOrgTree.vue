@@ -11,23 +11,12 @@
   >
     <div v-loading="loading" class="modal-body">
       <div class="tree-container">
-        <!-- 改为全部节点都可以选择（select-kind="all"） -->
-        <OrgTree
-          ref="orgTreeRef"
-          :multiple="multiple"
-          :show-header="!multiple"
-          :select-kind="type === 'all' ? 'all' : 'dept'"
-          @on-select="onSelect"
-          @on-check="onCheck"
-        />
+        <OrgTree ref="orgTreeRef" @on-select="onSelect" @on-check="onCheck" />
       </div>
     </div>
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="onCancel">取消</el-button>
-        <!--         <el-button type="primary" @click="onConfirm" :disabled="multiple ? validDeptCount === 0 : !selectedNode">
-          确定{{ multiple && validDeptCount > 0 ? `(${validDeptCount})` : "" }}
-        </el-button> -->
         <el-button type="primary" @click="onConfirm">
           确定{{ multiple && validDeptCount > 0 ? `(${validDeptCount})` : "" }}
         </el-button>
@@ -38,7 +27,7 @@
 
 <script setup lang="ts">
 import { ref, watch, nextTick, computed } from "vue";
-import OrgTree from "@/views/core/components/OrgTree.vue";
+import OrgTree from "@/views/core/public/OrgTree.vue";
 import CoreOrgDeptSelectModalService from "@/views/core/service/CoreOrgDeptSelectModalService";
 import type { GetOrgTreeVo } from "@/views/core/api/OrgApi";
 

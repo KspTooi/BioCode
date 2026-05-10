@@ -213,26 +213,7 @@ export default {
       gender: [{ required: true, message: "请选择性别", trigger: "change" }],
       phone: [{ max: 64, message: "手机号长度不能超过64个字符", trigger: "blur" }],
     };
-    /**
-     * 查找组织架构树中的组织项
-     * @param orgTreeOptions 组织架构树
-     * @param orgId 组织ID
-     * @returns 组织项
-     */
-    const findOrgItem = (orgTreeOptions: any[], orgId: string | null): any | null => {
-      for (let i = 0; i < orgTreeOptions.length; i++) {
-        if (orgTreeOptions[i].id === orgId) {
-          return orgTreeOptions[i];
-        }
-        if (orgTreeOptions[i].children) {
-          const item = findOrgItem(orgTreeOptions[i].children, orgId);
-          if (item) {
-            return item;
-          }
-        }
-      }
-      return null;
-    };
+
     /**
      * 打开模态框
      * @param mode 模式
@@ -292,11 +273,7 @@ export default {
         groupOptions.value = [];
         //侧边栏如果选中组织，则新增默认选中组织
         if (orgTreeOptions.value.length > 0) {
-          const org = findOrgItem(orgTreeOptions.value, orgId?.value);
-
-          if (org?.kind === 0 && orgId?.value) {
-            modalForm.orgId = orgId?.value;
-          }
+          modalForm.orgId = orgId.value;
         }
 
         groups.data.forEach((group) => {
