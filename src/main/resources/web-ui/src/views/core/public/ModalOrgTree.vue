@@ -47,7 +47,7 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-  (e: "submit", checkedOrgIds: string[]): void;
+  (e: "on-submit", checkedOrgIds: string[]): void;
 }>();
 
 const modalVisible = defineModel<boolean>("visible", { default: false });
@@ -58,7 +58,7 @@ const modalCheckedOrgIds = defineModel<string[]>("checkedOrgIds", { default: () 
 
 const onSubmit = (): void => {
   modalVisible.value = false;
-  emit("submit", modalCheckedOrgIds.value);
+  emit("on-submit", modalCheckedOrgIds.value);
 };
 </script>
 
