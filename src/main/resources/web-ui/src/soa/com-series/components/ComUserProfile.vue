@@ -123,6 +123,9 @@ const avatarVersion = ref(0);
 //多标签服务打包
 const { refreshCounter } = ComTabService.useRouterTabService();
 
+/**
+ * 加载用户信息
+ */
 const loadUserProfile = async (): Promise<void> => {
   try {
     profile.value = await AuthApi.getUserProfile();
@@ -132,6 +135,9 @@ const loadUserProfile = async (): Promise<void> => {
   }
 };
 
+/**
+ * 刷新用户信息
+ */
 const onRefreshProfile = useThrottleFn(async (): Promise<void> => {
   refreshing.value = true;
   try {
@@ -150,6 +156,9 @@ const onRefreshProfile = useThrottleFn(async (): Promise<void> => {
   }
 }, 1000);
 
+/**
+ * 注销登录
+ */
 const onLogout = async (): Promise<void> => {
   await ElMessageBox.confirm("确定要注销登录吗？", "提示", {
     confirmButtonText: "确定",
@@ -178,16 +187,25 @@ const onLogout = async (): Promise<void> => {
   ElMessage.error("注销失败: " + ret.message);
 };
 
+/**
+ * 修改密码
+ */
 const onChangePassword = (): void => {
   if (changePasswordModalRef.value) {
     changePasswordModalRef.value.openModal();
   }
 };
 
+/**
+ * 点击头像
+ */
 const onAvatarClick = (): void => {
   fileInputRef.value?.click();
 };
 
+/**
+ * 文件变化
+ */
 const onFileChange = (e: Event): void => {
   const input = e.target as HTMLInputElement;
   const file = input.files?.[0];
@@ -216,6 +234,9 @@ const onFileChange = (e: Event): void => {
   reader.readAsDataURL(file);
 };
 
+/**
+ * 确认头像
+ */
 const handleAvatarConfirm = async (file: File): Promise<void> => {
   try {
     await AuthApi.updateUserAvatar(file);
@@ -227,6 +248,9 @@ const handleAvatarConfirm = async (file: File): Promise<void> => {
   }
 };
 
+/**
+ * 头像URL
+ */
 const avatarUrl = computed(() => {
   let token = "";
 
