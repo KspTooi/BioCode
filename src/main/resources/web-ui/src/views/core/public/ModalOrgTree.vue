@@ -12,7 +12,7 @@
     append-to-body
     destroy-on-close
     class="core-org-dept-select-modal"
-    @close="modalCheckedOrgIds = []"
+    @close="onClose"
   >
     <div v-loading="loading" class="modal-body">
       <div class="tree-container">
@@ -48,6 +48,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   (e: "on-submit", checkedOrgIds: string[]): void;
+  (e: "on-close"): void;
 }>();
 
 const modalVisible = defineModel<boolean>("visible", { default: false });
@@ -59,6 +60,11 @@ const modalCheckedOrgIds = defineModel<string[]>("checkedOrgIds", { default: () 
 const onSubmit = (): void => {
   modalVisible.value = false;
   emit("on-submit", modalCheckedOrgIds.value);
+};
+
+const onClose = (): void => {
+  modalVisible.value = false;
+  emit("on-close");
 };
 </script>
 
