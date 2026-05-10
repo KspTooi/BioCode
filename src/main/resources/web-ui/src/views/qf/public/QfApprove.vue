@@ -5,7 +5,7 @@
       <el-tab-pane label="流程表单" name="form">
         <div class="form-scroll-area">
           <component :is="formComponent" v-if="formComponent && details?.dataId" :id="details.dataId" mode="view" />
-          <el-empty v-if="!formComponent && !detailsLoading" description="流程表单组件未找到" />
+          <el-empty v-if="!formComponent && !detailsLoading" description="流程表单组件未发布或已下线，请联系管理员处理。" />
         </div>
       </el-tab-pane>
 
@@ -275,9 +275,7 @@ onMounted(async () => {
   const comp = resolvePublicComp(details.value.routePc);
 
   if (!comp) {
-    ElMessage.error("未找到流程表单组件：" + details.value.routePc);
-    closeTab(activeTabId.value);
-    return;
+    ElMessage.warning("流程表单组件未发布或已下线，请联系管理员处理。");
   }
 
   formComponent.value = comp;
