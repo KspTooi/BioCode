@@ -157,7 +157,6 @@ export default {
       ],
       remark: [],
       seq: [{ required: true, message: "请输入排序号", trigger: "blur" }],
-      isSystem: [{ required: true, message: "请选择是否为系统权限", trigger: "blur" }],
     };
 
     /**
@@ -228,7 +227,6 @@ export default {
             code: modalForm.code,
             remark: modalForm.remark,
             seq: modalForm.seq,
-            isSystem: modalForm.isSystem,
           };
           const result = await AdminPermissionApi.addPermission(addDto);
           if (Result.isSuccess(result)) {
@@ -249,7 +247,6 @@ export default {
             code: modalForm.code,
             remark: modalForm.remark,
             seq: modalForm.seq,
-            isSystem: modalForm.isSystem,
           };
           const result = await AdminPermissionApi.editPermission(editDto);
           if (Result.isSuccess(result)) {

@@ -191,12 +191,6 @@
       <el-form-item label="排序号" prop="seq">
         <el-input-number v-model="modalForm.seq" :min="0" />
       </el-form-item>
-      <el-form-item v-if="modalMode === 'add'" label="系统权限" prop="isSystem">
-        <el-radio-group v-model="modalForm.isSystem">
-          <el-radio :value="0">否</el-radio>
-          <el-radio :value="1">是</el-radio>
-        </el-radio-group>
-      </el-form-item>
     </el-form>
     <template #footer>
       <div class="dialog-footer">

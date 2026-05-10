@@ -42,7 +42,6 @@ export interface AddPermissionDto {
   code: string; // 权限代码
   remark?: string | null; // 权限描述
   seq: number; // 排序号
-  isSystem: number; // 系统内置权限 0:否 1:是
 }
 
 export interface EditPermissionDto {
@@ -51,7 +50,6 @@ export interface EditPermissionDto {
   code: string; // 权限代码
   remark?: string | null; // 权限描述
   seq: number; // 排序号
-  isSystem: number; // 系统内置权限 0:否 1:是
 }
 
 export default {
