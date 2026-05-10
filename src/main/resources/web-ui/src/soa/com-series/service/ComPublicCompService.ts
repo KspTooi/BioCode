@@ -11,9 +11,7 @@ export interface PublicCompEntry {
  * 构建期扫描 views/<biz>/public/*.vue，key = "biz:name"（全小写）。
  * 单层 * 严格对齐 §8，不会扫到 views/<biz>/components/public/ 等历史遗留位置。
  */
-const publicCompModules = import.meta.glob<{ default: Component }>(
-  "/src/main/resources/web-ui/src/views/*/public/*.vue"
-);
+const publicCompModules = import.meta.glob<{ default: Component }>("/src/views/*/public/*.vue");
 
 /** 从 path 解析 biz 与 name（均转小写） */
 const parsePath = (path: string): { biz: string; name: string } => {
@@ -55,9 +53,7 @@ const buildRegistry = (): {
   }
 
   if (conflictLines.length > 0) {
-    console.warn(
-      `[ComPublicCompService] 以下组件因跨域重名被跳过，不会注册：\n${conflictLines.join("\n")}`
-    );
+    console.warn(`[ComPublicCompService] 以下组件因跨域重名被跳过，不会注册：\n${conflictLines.join("\n")}`);
   }
 
   return { registry, entries };

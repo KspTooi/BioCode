@@ -1,11 +1,5 @@
 <template>
-  <el-dialog
-    v-model="modalVisible"
-    title="选择公共组件"
-    width="860px"
-    :close-on-click-modal="false"
-    @close="onCancel"
-  >
+  <el-dialog v-model="modalVisible" title="选择公共组件" width="860px" :close-on-click-modal="false" @close="onCancel">
     <div class="comp-choose-container">
       <el-input
         v-model="searchKeyword"
@@ -38,8 +32,8 @@
 
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="onCancel">退出</el-button>
-        <el-button type="primary" :disabled="!selectedRow" @click="onConfirm">选择指定</el-button>
+        <el-button @click="onCancel">关闭</el-button>
+        <el-button type="primary" :disabled="!selectedRow" @click="onConfirm">保存</el-button>
       </div>
     </template>
   </el-dialog>
@@ -64,8 +58,13 @@ const tableRef = useTemplateRef<TableInstance>("tableRef");
 const syncingSelection = ref(false);
 const selectingAll = ref(false);
 
-const { selectedRow, filteredCompList, restoreSelection, clearSelection, searchKeyword: serviceKw } =
-  ComPublicCompChooseModalService.useComPublicCompChooseModal();
+const {
+  selectedRow,
+  filteredCompList,
+  restoreSelection,
+  clearSelection,
+  searchKeyword: serviceKw,
+} = ComPublicCompChooseModalService.useComPublicCompChooseModal();
 
 /** 同步 v-model:search-keyword ↔ service 内部 searchKeyword */
 watch(
@@ -86,16 +85,13 @@ watch(serviceKw, (val) => {
   searchKeyword.value = val;
 });
 
-/** 打开时用外部 selectedKey 回填选中行 */
+/** 打开时用外部 selectedKey 回填选中行；无论是否命中都同步表格视觉状态 */
 watch(modalVisible, (visible) => {
   if (!visible) {
     return;
   }
   nextTick(() => {
     restoreSelection(selectedKey.value);
-    if (!selectedRow.value) {
-      return;
-    }
     applySingleSelection(selectedRow.value);
   });
 });

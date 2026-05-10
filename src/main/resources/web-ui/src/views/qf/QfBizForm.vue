@@ -126,8 +126,18 @@
         <el-form-item label="物理表名" prop="tableName">
           <el-input v-model="modalForm.tableName" placeholder="请输入物理表名" clearable :maxlength="200" show-word-limit />
         </el-form-item>
-        <el-form-item label="PC端路由名" prop="routePc">
-          <el-input v-model="modalForm.routePc" placeholder="请输入PC端路由名" clearable :maxlength="512" show-word-limit />
+        <el-form-item label="PC端组件" prop="routePc">
+          <el-input
+            v-model="modalForm.routePc"
+            placeholder="手动输入或使用组件选择器"
+            clearable
+            maxlength="512"
+            show-word-limit
+          >
+            <template #append>
+              <el-button @click="cpcmVisible = true">组件选择器</el-button>
+            </template>
+          </el-input>
         </el-form-item>
         <el-form-item label="移动端路由名" prop="routeMobile">
           <el-input
@@ -158,6 +168,13 @@
       </template>
     </el-dialog>
   </StdListContainer>
+
+  <!-- 公共组件选择器 -->
+  <ComPublicCompChooseModal
+    v-model="modalForm.routePc"
+    v-model:modal-visible="cpcmVisible"
+    v-model:search-keyword="cpcmQuery"
+  />
 </template>
 
 <script setup lang="ts">
@@ -170,6 +187,7 @@ import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
 import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";
 import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
 import StdIconPicker from "@/soa/std-series/StdIconPicker.vue";
+import ComPublicCompChooseModal from "@/soa/com-series/ComPublicCompChooseModal.vue";
 
 // 使用markRaw包装图标组件，防止被Vue响应式系统处理
 const EditIcon = markRaw(Edit);
@@ -184,6 +202,9 @@ const modalFormRef = ref<FormInstance>();
 // 模态框打包
 const { modalVisible, modalLoading, modalMode, modalForm, modalRules, openModal, resetModal, submitModal } =
   QfBizFormService.useQfBizFormModal(modalFormRef, loadList);
+
+const cpcmVisible = ref(false);
+const cpcmQuery = ref("");
 </script>
 
 <style scoped></style>
