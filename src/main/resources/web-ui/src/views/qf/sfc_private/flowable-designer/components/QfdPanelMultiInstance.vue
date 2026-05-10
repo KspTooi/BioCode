@@ -151,19 +151,20 @@
       </template>
     </el-form>
 
-    <CoreUserSelectModal
+    <ModalUserSelector
       v-model="userModalVisible"
+      v-model:checked-user-ids="defaultUserIds"
       title="选择用户"
-      :multiple="approvalMultiMode !== 'none'"
-      :default-selected="defaultUserIds"
-      @confirm="onUsersConfirmed"
+      :check-multiple="approvalMultiMode !== 'none'"
+      @on-submit-entity="onUsersConfirmed"
+      @on-close="onUserModalClose"
     />
   </div>
 </template>
 
 <script setup lang="ts">
 import { InfoFilled } from "@element-plus/icons-vue";
-import CoreUserSelectModal from "@/views/core/components/public/CoreUserSelectModal.vue";
+import ModalUserSelector from "@/views/core/public/ModalUserSelector.vue";
 import QfdPanelMultiInstanceService from "@/views/qf/sfc_private/flowable-designer/service/QfdPanelMultiInstanceService";
 
 const props = defineProps<{
@@ -186,6 +187,7 @@ const {
   onApprovalMultiModeChange,
   openUserModal,
   onUsersConfirmed,
+  onUserModalClose,
   onSelectedGroupIdsChange,
   onSelectedDeptIdChange,
   removeUser,

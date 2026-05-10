@@ -59,7 +59,8 @@ export type QfdMultiInstanceApi = {
   onAssigneeKindChange: () => void;
   onApprovalMultiModeChange: () => void;
   openUserModal: () => void;
-  onUsersConfirmed: (data: GetUserListVo | GetUserListVo[]) => void;
+  onUsersConfirmed: (data: GetUserListVo[]) => void;
+  onUserModalClose: () => void;
   onSelectedGroupIdsChange: () => void;
   onSelectedDeptIdChange: () => void;
   removeUser: (id: string) => void;
@@ -280,7 +281,7 @@ export default {
     });
 
     const userModalVisible = ref(false);
-    const defaultUserIds = computed(() => selectedUsers.value.map((u) => u.id));
+    const defaultUserIds = ref<string[]>([]);
 
     let stackOff: (() => void) | null = null;
 
@@ -518,11 +519,16 @@ export default {
     }
 
     function openUserModal(): void {
+      defaultUserIds.value = selectedUsers.value.map((u) => u.id);
       userModalVisible.value = true;
     }
 
-    function onUsersConfirmed(data: GetUserListVo | GetUserListVo[]): void {
-      const list = Array.isArray(data) ? data : [data];
+    function onUserModalClose(): void {
+      defaultUserIds.value = [];
+    }
+
+    function onUsersConfirmed(data: GetUserListVo[]): void {
+      const list = data;
       if (approvalMultiMode.value === "none") {
         const row = list[0];
         if (row) {
@@ -769,6 +775,7 @@ export default {
       onApprovalMultiModeChange,
       openUserModal,
       onUsersConfirmed,
+      onUserModalClose,
       onSelectedGroupIdsChange,
       onSelectedDeptIdChange,
       removeUser,
