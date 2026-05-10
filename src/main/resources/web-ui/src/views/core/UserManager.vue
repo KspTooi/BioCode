@@ -269,10 +269,6 @@
             <el-radio :value="0" :disabled="modalMode === 'edit' && modalForm.isSystem === 1">封禁</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item v-if="modalMode === 'edit'" label="系统用户">
-          <el-tag v-if="modalForm.isSystem === 1" type="warning">是</el-tag>
-          <span v-if="modalForm.isSystem === 0">否</span>
-        </el-form-item>
         <el-form-item label="所属用户组" prop="groupIds">
           <el-select
             v-model="selectedGroupIds"
@@ -280,6 +276,7 @@
             multiple
             placeholder="请选择用户组"
             style="width: 100%"
+            filterable
           >
             <el-option v-for="group in groupOptions" :key="group.id" :label="group.name" :value="group.id" />
           </el-select>
