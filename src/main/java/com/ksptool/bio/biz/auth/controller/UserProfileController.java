@@ -6,14 +6,19 @@ import com.ksptool.assembly.entity.web.Result;
 import com.ksptool.bio.biz.auth.model.profile.dto.ChangePasswordDto;
 import com.ksptool.bio.biz.auth.model.profile.vo.GetCurrentUserProfileVo;
 import com.ksptool.bio.biz.auth.service.UserProfileService;
+import com.ksptool.bio.biz.core.service.MenuService;
+import com.ksptool.bio.biz.core.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 import static com.ksptool.bio.biz.auth.service.SessionService.session;
 
@@ -25,11 +30,38 @@ public class UserProfileController {
     @Autowired
     private UserProfileService profileService;
 
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private MenuService menuService;
+
+    @Autowired
+    private CacheManager cacheManager;
+
     @Operation(summary = "获取当前用户信息")
     @PostMapping("/getCurrentUserProfile")
     @ResponseBody
     public Result<GetCurrentUserProfileVo> getCurrentUserProfile() throws AuthException {
         return Result.success(profileService.getUserProfile(session().getUserId()));
+    }
+
+    @Operation(summary = "刷新当前用户档案（失效缓存后重新查询）")
+    @PostMapping("/refreshUserProfile")
+    @ResponseBody
+    public Result<GetCurrentUserProfileVo> refreshUserProfile() throws AuthException {
+        Long userId = session().getUserId();
+
+        var profileCache = cacheManager.getCache("userProfile");
+        if (profileCache != null) {
+            profileCache.evict(userId);
+        }
+
+        userService.increaseDv(List.of(userId));
+
+        menuService.clearUserMenuTreeCacheByUserId(userId);
+
+        return Result.success(profileService.getUserProfile(userId));
     }
 
     @Operation(summary = "获取当前用户头像")
