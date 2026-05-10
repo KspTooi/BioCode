@@ -4,6 +4,11 @@ import type { PublicCompEntry } from "@/soa/com-series/service/ComPublicCompServ
 
 export type { PublicCompEntry };
 
+/**
+ * 公共组件选择模态框服务
+ * 提供组件列表过滤、当前选中行管理，以及根据外部 key 回填选中状态。
+ * @since 1.6.25(Y).23
+ */
 export default {
   /**
    * 公共组件选择模态框状态管理
@@ -28,10 +33,7 @@ export default {
         return compList.value;
       }
       return compList.value.filter(
-        (row) =>
-          row.biz.toLowerCase().includes(kw) ||
-          row.name.toLowerCase().includes(kw) ||
-          row.key.toLowerCase().includes(kw)
+        (row) => row.biz.toLowerCase().includes(kw) || row.name.toLowerCase().includes(kw) || row.key.toLowerCase().includes(kw)
       );
     });
 

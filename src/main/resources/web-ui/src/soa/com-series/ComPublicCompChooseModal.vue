@@ -1,3 +1,7 @@
+<!--
+ * 公共组件选择模态框
+ * @since 1.6.25(Y).23
+-->
 <template>
   <el-dialog v-model="modalVisible" title="选择公共组件" width="860px" :close-on-click-modal="false" @close="onCancel">
     <div class="comp-choose-container">

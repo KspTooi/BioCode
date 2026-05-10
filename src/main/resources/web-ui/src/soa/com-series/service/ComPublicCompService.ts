@@ -61,6 +61,10 @@ const buildRegistry = (): {
 
 const { registry, entries } = buildRegistry();
 
+/**
+ * 公共组件服务
+ * @since 1.6.25(Y).23
+ */
 export default {
   /**
    * 公共组件动态扫描器
