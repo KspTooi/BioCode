@@ -77,7 +77,7 @@
         <div class="action-row">
           <el-button class="action-btn" type="primary" plain @click="onRefreshProfile" :loading="refreshing">
             <el-icon><Refresh /></el-icon>
-            更新用户信息
+            更新权限信息
           </el-button>
           <el-button class="action-btn" type="primary" plain @click="onChangePassword">
             <el-icon><Key /></el-icon>
