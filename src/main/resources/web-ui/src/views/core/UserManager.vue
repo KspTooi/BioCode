@@ -58,7 +58,7 @@
                   <el-dropdown-item command="enable" icon="Check">批量启用</el-dropdown-item>
                   <el-dropdown-item command="disable" icon="Close">批量封禁</el-dropdown-item>
                   <el-dropdown-item command="remove" icon="Delete">批量删除</el-dropdown-item>
-                  <el-dropdown-item command="changeDept" icon="ArrowRight">变更部门</el-dropdown-item>
+                  <el-dropdown-item command="changeDept" icon="ArrowRight">变更组织机构</el-dropdown-item>
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
@@ -177,7 +177,15 @@
     />
 
     <!-- 部门选择器 (用于批量变更部门等操作) -->
-    <CoreOrgDeptSelectModal ref="deptSelectModalRef" v-model="deptSelectVisible" title="选择目标部门" />
+    <ModalOrgTree
+      v-model:visible="modalOrgTreeVisible"
+      :search="true"
+      search-placeholder="请输入组织机构"
+      :check="true"
+      :check-multiple="false"
+      title="选择目标组织机构"
+      @on-submit="onSubmitChangeOrg"
+    />
 
     <!-- 用户编辑/创建模态框 -->
     <el-dialog
@@ -300,7 +308,7 @@ import StdListContainer from "@/soa/std-series/StdListContainer.vue";
 import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
 import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";
 import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
-import CoreOrgDeptSelectModal from "@/views/core/public/ModalOrgTree.vue";
+import ModalOrgTree from "@/views/core/public/ModalOrgTree.vue";
 import UserAuthService from "@/views/auth/service/UserAuthService";
 
 //按钮级权限打包
@@ -346,15 +354,9 @@ const {
   orgTreeOptions,
 } = UserManagerService.useUserModal(modalFormRef, () => loadList(currentOrgId.value), currentOrgId);
 
-// 部门选择器逻辑
-const deptSelectModalRef = ref<InstanceType<typeof CoreOrgDeptSelectModal>>();
-const deptSelectVisible = ref(false);
-
 // 批量操作打包
-const { onBatchAction, onSelectionChange, canBatchAction, batchCount } = UserManagerService.useBatchAction(
-  () => loadList(currentOrgId.value),
-  deptSelectModalRef
-);
+const { onBatchAction, onSelectionChange, modalOrgTreeVisible, onSubmitChangeOrg, canBatchAction, batchCount } =
+  UserManagerService.useBatchAction(() => loadList(currentOrgId.value));
 </script>
 
 <style scoped>
