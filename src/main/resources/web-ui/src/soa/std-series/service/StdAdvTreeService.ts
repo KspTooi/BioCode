@@ -21,8 +21,8 @@ export interface StdAdvTreeProps {
   //禁用选中的节点key
   checkDisableNks?: (string | number)[];
 
-  //禁用节点方法
-  checkDisableMethod?: (node: any) => boolean;
+  //禁用节点方法 如果返回false则标记禁用
+  checkEnableMethod?: (node: any) => boolean;
 
   //是否显示搜索框
   search?: boolean;
@@ -144,13 +144,13 @@ export default {
     });
 
     /**
-     * 树数据：根据 checkDisableNks 与 checkDisableMethod 标记禁用
+     * 树数据：根据 checkDisableNks 与 checkDisableMethod(如果返回false则标记禁用) 标记禁用
      */
     const treeData = computed(() => {
       const disableNks = props.checkDisableNks ?? [];
-      const disableMethod = props.checkDisableMethod;
+      const enableMethod = props.checkEnableMethod;
       const hasNks = disableNks.length > 0;
-      const hasMethod = typeof disableMethod === "function";
+      const hasMethod = typeof enableMethod === "function";
 
       //没有任何禁用规则，直接返回原始数据
       if (!hasNks && !hasMethod) {
@@ -161,7 +161,8 @@ export default {
         if (hasNks && disableNks.includes(node[props.nk])) {
           return true;
         }
-        if (hasMethod && disableMethod(node)) {
+        //checkEnableMethod 返回 false 表示禁用
+        if (hasMethod && !enableMethod(node)) {
           return true;
         }
         return false;
