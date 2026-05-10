@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import Http from "@/commons/Http.ts";
+import Http from "@/commons/Http.js";
 import { nextTick, onBeforeUnmount, ref } from "vue";
 
 declare global {

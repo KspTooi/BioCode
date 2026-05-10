@@ -48,4 +48,19 @@ public interface CoreRootRepository extends JpaRepository<CoreRootPo, Long> {
             """)
     int countByNameExcludeId(@Param("name") String name, @Param("id") Long id);
 
+
+    /**
+     * 判断指定用户在指定租户下是否为租管
+     */
+    @Query("""
+        SELECT CASE WHEN COUNT(r) > 0 THEN TRUE ELSE FALSE END
+        FROM CoreRootPo r
+        WHERE r.id = :rid
+          AND r.adminGroupId IN (
+              SELECT ug.groupId FROM UserGroupPo ug
+              WHERE ug.userId = :uid
+          )
+        """)
+    boolean isAdminOfRoot(@Param("rid") Long rid, @Param("uid") Long uid);
+
 }

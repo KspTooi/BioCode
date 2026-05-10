@@ -4,16 +4,22 @@ import com.ksptool.assembly.entity.exception.AuthException;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.Result;
 import com.ksptool.bio.biz.auth.model.profile.dto.ChangePasswordDto;
+import com.ksptool.bio.biz.auth.model.profile.dto.GetUserProfileDto;
 import com.ksptool.bio.biz.auth.model.profile.vo.GetCurrentUserProfileVo;
 import com.ksptool.bio.biz.auth.service.UserProfileService;
+import com.ksptool.bio.biz.core.service.MenuService;
+import com.ksptool.bio.biz.core.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 import static com.ksptool.bio.biz.auth.service.SessionService.session;
 
@@ -25,23 +31,46 @@ public class UserProfileController {
     @Autowired
     private UserProfileService profileService;
 
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private MenuService menuService;
+
+    @Autowired
+    private CacheManager cacheManager;
+
     @Operation(summary = "获取当前用户信息")
-    @PostMapping("/getCurrentUserProfile")
+    @PostMapping("/getUserProfile")
     @ResponseBody
-    public Result<GetCurrentUserProfileVo> getCurrentUserProfile() throws AuthException {
-        return Result.success(profileService.getUserProfile(session().getUserId()));
+    public Result<GetCurrentUserProfileVo> getUserProfile(@RequestBody GetUserProfileDto dto) throws AuthException {
+        Long userId = session().getUserId();
+
+        if (dto.getForceUpdate() != null && dto.getForceUpdate() == 1) {
+            var profileCache = cacheManager.getCache("userProfile");
+
+            if (profileCache != null) {
+                profileCache.evict(userId);
+            }
+
+            userService.increaseDv(List.of(userId));
+            menuService.clearUserMenuTreeCacheByUserId(userId);
+        }
+
+        return Result.success(profileService.getUserProfile(userId));
     }
 
     @Operation(summary = "获取当前用户头像")
     @GetMapping("/getUserAvatar")
     public ResponseEntity<Resource> getUserAvatar() throws AuthException {
-        return profileService.getUserAvatar();
+        Long uid = session().getUserId();
+        return profileService.getUserAvatar(uid);
     }
 
     @Operation(summary = "更新当前用户头像")
     @PostMapping("/updateUserAvatar")
     public ResponseEntity<Resource> updateUserAvatar(@RequestParam("file") MultipartFile file) throws AuthException {
-        return profileService.updateUserAvatar(file);
+        return profileService.updateUserAvatar(file, session().getUserId());
     }
 
     @Operation(summary = "用户更改密码")

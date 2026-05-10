@@ -40,7 +40,7 @@ public interface QfModelRepository extends JpaRepository<QfModelPo, Long> {
             AND (:#{#dto.code} IS NULL OR u.code LIKE CONCAT('%', :#{#dto.code}, '%'))
             AND (:#{#dto.groupName} IS NULL OR g.name LIKE CONCAT('%', :#{#dto.groupName}, '%'))
             AND (:#{#dto.status} IS NULL OR u.status IN :#{#dto.status})
-            ORDER BY u.seq ASC, u.createTime DESC
+            ORDER BY g.name,u.seq ASC, u.createTime DESC
             """)
     Page<GetQfModelListVo> getQfModelList(@Param("dto") GetQfModelListDto dto, Pageable pageable);
 

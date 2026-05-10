@@ -15,7 +15,9 @@ import com.ksptool.bio.biz.core.repository.UserRepository;
 import com.ksptool.bio.biz.core.service.AttachService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -60,6 +62,9 @@ public class UserProfileService {
     @Autowired
     private GroupMenuRepository gmRepository;
 
+    @Lazy
+    @Autowired
+    private UserProfileService userProfileService;
 
     /**
      * 获取当前用户信息
@@ -142,7 +147,8 @@ public class UserProfileService {
      *
      * @return 用户头像
      */
-    public ResponseEntity<Resource> getUserAvatar() throws AuthException {
+    @Cacheable(cacheNames = "userProfile", key = "'avatar:' + #uid")
+    public ResponseEntity<Resource> getUserAvatar(Long uid) throws AuthException {
 
         var userPo = sessionService.requireUser();
         var avatarAttach = userPo.getAvatarAttach();
@@ -173,7 +179,8 @@ public class UserProfileService {
      * @param file 头像文件
      * @return 更新后的头像
      */
-    public ResponseEntity<Resource> updateUserAvatar(MultipartFile file) throws AuthException {
+    @CacheEvict(cacheNames = "userProfile", key = "'avatar:' + #uid")
+    public ResponseEntity<Resource> updateUserAvatar(MultipartFile file, Long uid) throws AuthException {
 
         var userPo = sessionService.requireUser();
 
@@ -190,7 +197,7 @@ public class UserProfileService {
             var attachPo = attachService.requireAttach(attachId);
             userPo.setAvatarAttach(attachPo);
             userRepository.save(userPo);
-            return getUserAvatar();
+            return userProfileService.getUserAvatar(userPo.getId());
         } catch (BizException e) {
             throw new AuthException(e.getMessage());
         }

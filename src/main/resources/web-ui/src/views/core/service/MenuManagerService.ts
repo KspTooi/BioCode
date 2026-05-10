@@ -70,13 +70,10 @@ export default {
      */
     const loadTree = async (): Promise<void> => {
       treeLoading.value = true;
-
       try {
         const result = await MenuApi.getMenuTree({});
-
         //加载权限代码列表
         const permissionCodes = await PermissionApi.getPermissionDefinition();
-
         if (Result.isSuccess(result)) {
           treeData.value = result.data;
           treeStore.panelPermissionCodes = permissionCodes;
@@ -453,8 +450,7 @@ export default {
         }
       } catch (error: any) {
         ElMessage.error(error.message);
-        //保存失败
-        treeStore.resetSelected();
+
         return;
       } finally {
         panelLoading.value = false;

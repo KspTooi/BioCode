@@ -26,7 +26,7 @@
 
     <!-- 操作按钮区域 -->
     <StdListAreaAction class="flex gap-2">
-      <el-button type="success" @click="openModal('add', null)">新增菜单包</el-button>
+      <el-button type="success" @click="openModal('add', null)">创建菜单包</el-button>
     </StdListAreaAction>
 
     <!-- 列表表格区域 -->
@@ -40,7 +40,7 @@
         <el-table-column prop="status" label="状态" min-width="80" align="center">
           <template #default="scope">
             <el-tag :type="scope.row.status === 1 ? 'success' : 'danger'">
-              {{ scope.row.status === 1 ? '启用' : '禁用' }}
+              {{ scope.row.status === 1 ? "启用" : "禁用" }}
             </el-tag>
           </template>
         </el-table-column>
@@ -105,7 +105,7 @@
     <!-- 新增/编辑模态框 -->
     <el-dialog
       v-model="modalVisible"
-      :title="modalMode === 'edit' ? '编辑菜单包' : '新增菜单包'"
+      :title="modalMode === 'edit' ? '编辑菜单包' : '创建菜单包'"
       width="600px"
       :close-on-click-modal="false"
       @close="
@@ -125,7 +125,14 @@
           <el-input v-model="modalForm.name" placeholder="请输入菜单包名" clearable :maxlength="40" show-word-limit />
         </el-form-item>
         <el-form-item label="菜单包编码" prop="code">
-          <el-input v-model="modalForm.code" placeholder="请输入菜单包编码" clearable :maxlength="16" show-word-limit :disabled="modalMode === 'edit'" />
+          <el-input
+            v-model="modalForm.code"
+            placeholder="请输入菜单包编码"
+            clearable
+            :maxlength="16"
+            show-word-limit
+            :disabled="modalMode === 'edit'"
+          />
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="modalForm.status">
@@ -137,12 +144,19 @@
           <el-input-number v-model="modalForm.seq" :min="0" :max="9999" />
         </el-form-item>
         <el-form-item label="备注" prop="remark">
-          <el-input v-model="modalForm.remark" type="textarea" :rows="3" placeholder="请输入备注" :maxlength="200" show-word-limit />
+          <el-input
+            v-model="modalForm.remark"
+            type="textarea"
+            :rows="3"
+            placeholder="请输入备注"
+            :maxlength="200"
+            show-word-limit
+          />
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="modalVisible = false">取消</el-button>
+          <el-button @click="modalVisible = false">关闭</el-button>
           <el-button type="primary" @click="submitModal" :loading="modalLoading">
             {{ modalMode === "add" ? "创建" : "保存" }}
           </el-button>

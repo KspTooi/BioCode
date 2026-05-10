@@ -1,4 +1,4 @@
-import { onMounted, reactive, ref, watch, type Ref } from "vue";
+import { computed, onMounted, reactive, ref, watch, type Ref } from "vue";
 import type { FormInstance, FormRules } from "element-plus";
 import type {
   GetNoticeListDto,
@@ -11,13 +11,11 @@ import NoticeApi from "@/views/core/api/NoticeApi.ts";
 import { Result } from "@/commons/model/Result.ts";
 import { ElMessage, ElMessageBox } from "element-plus";
 import QueryPersistService from "@/commons/service/QueryPersistService.ts";
-import type { GetOrgTreeVo } from "@/views/core/api/OrgApi";
-import type { GetUserListVo } from "@/views/core/api/UserApi";
 
 /**
  * 模态框模式类型
  */
-type ModalMode = "add" | "edit";
+type ModalMode = "add" | "edit" | "view";
 
 export default {
   /**
@@ -121,6 +119,7 @@ export default {
     const modalVisible = ref(false);
     const modalLoading = ref(false);
     const modalMode = ref<ModalMode>("add");
+    const modalFormDisabled = computed(() => modalMode.value === "view");
     const modalForm = reactive<GetNoticeDetailsVo>({
       id: "", // 主键ID
       title: "", // 标题
@@ -136,6 +135,15 @@ export default {
       createTime: "", // 创建时间
       _targetIds: [], // 接收对象ID列表
     });
+
+    //当前已勾选的用户/部门IDS
+    const modalTargetIds = ref<string[]>([]);
+
+    //模态框部门选择器可见性
+    const modalTargetDeptVisible = ref(false);
+
+    //模态框用户选择器可见性
+    const modalTargetUserVisible = ref(false);
 
     /**
      * 表单验证规则
@@ -158,7 +166,7 @@ export default {
         { required: true, message: "接收对象类型不能为空", trigger: "blur" },
         { type: "number", min: 0, max: 2, message: "接收对象类型只能在0-2之间", trigger: "blur" },
       ],
-      targetIds: [
+      _targetIds: [
         {
           validator: (rule: any, value: any, callback: any) => {
             if (modalForm.targetKind === 0) {
@@ -197,9 +205,9 @@ export default {
         return;
       }
 
-      if (mode === "edit") {
+      if (mode === "edit" || mode === "view") {
         if (!row) {
-          ElMessage.error("未选择要编辑的数据");
+          ElMessage.error("未选择要操作的数据");
           return;
         }
 
@@ -308,24 +316,32 @@ export default {
     };
 
     /**
-     * 选择部门
+     * 选择接收对象模态框打开
      */
-    const onDeptSelect = (depts: GetOrgTreeVo[]): void => {
-      if (modalForm.targetKind !== 1) {
-        return;
+    const onModalTargetOpen = (): void => {
+      if (modalForm.targetKind === 1) {
+        modalTargetDeptVisible.value = true;
       }
-
-      modalForm._targetIds = depts.map((dept) => dept.id);
+      if (modalForm.targetKind === 2) {
+        modalTargetUserVisible.value = true;
+      }
+      //已选数据填入选择器
+      modalTargetIds.value = modalForm._targetIds;
     };
 
     /**
-     * 选择用户
+     * 选择接收对象模态框提交
      */
-    const onUserSelect = (users: GetUserListVo[]): void => {
-      if (modalForm.targetKind !== 2) {
-        return;
+    const onModalTargetSubmit = (checkedIds: string[]): void => {
+      //当前选择的是部门
+      if (modalForm.targetKind === 1) {
+        modalForm._targetIds = checkedIds;
       }
-      modalForm._targetIds = users.map((user) => user.id);
+
+      //当前选择的是用户
+      if (modalForm.targetKind === 2) {
+        modalForm._targetIds = checkedIds;
+      }
     };
 
     //处理接收对象类型变化时清空接收对象ID列表
@@ -333,6 +349,7 @@ export default {
       () => modalForm.targetKind,
       (): void => {
         modalForm._targetIds = [];
+        modalTargetIds.value = [];
       }
     );
 
@@ -340,13 +357,17 @@ export default {
       modalVisible,
       modalLoading,
       modalMode,
+      modalFormDisabled,
       modalForm,
+      modalTargetIds,
       modalRules,
+      modalTargetDeptVisible,
+      modalTargetUserVisible,
       openModal,
       resetModal,
       submitModal,
-      onDeptSelect,
-      onUserSelect,
+      onModalTargetOpen,
+      onModalTargetSubmit,
     };
   },
 };

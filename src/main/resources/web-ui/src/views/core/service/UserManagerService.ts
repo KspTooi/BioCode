@@ -213,26 +213,7 @@ export default {
       gender: [{ required: true, message: "请选择性别", trigger: "change" }],
       phone: [{ max: 64, message: "手机号长度不能超过64个字符", trigger: "blur" }],
     };
-    /**
-     * 查找组织架构树中的组织项
-     * @param orgTreeOptions 组织架构树
-     * @param orgId 组织ID
-     * @returns 组织项
-     */
-    const findOrgItem = (orgTreeOptions: any[], orgId: string | null): any | null => {
-      for (let i = 0; i < orgTreeOptions.length; i++) {
-        if (orgTreeOptions[i].id === orgId) {
-          return orgTreeOptions[i];
-        }
-        if (orgTreeOptions[i].children) {
-          const item = findOrgItem(orgTreeOptions[i].children, orgId);
-          if (item) {
-            return item;
-          }
-        }
-      }
-      return null;
-    };
+
     /**
      * 打开模态框
      * @param mode 模式
@@ -292,11 +273,7 @@ export default {
         groupOptions.value = [];
         //侧边栏如果选中组织，则新增默认选中组织
         if (orgTreeOptions.value.length > 0) {
-          const org = findOrgItem(orgTreeOptions.value, orgId?.value);
-
-          if (org?.kind === 0 && orgId?.value) {
-            modalForm.orgId = orgId?.value;
-          }
+          modalForm.orgId = orgId.value;
         }
 
         groups.data.forEach((group) => {
@@ -438,13 +415,50 @@ export default {
    * @param loadList 列表加载函数
    * @param deptSelectModalRef 部门选择器 ref
    */
-  useBatchAction(loadList: () => void, deptSelectModalRef: Ref<any>) {
+  useBatchAction(loadList: () => void) {
+    //组织机构选择器
+    const motVisible = ref(false);
+    const motValues = ref<string[]>([]);
+
     const selectedRows = ref<GetUserListVo[]>([]);
     const batchCount = ref(0);
 
     const onSelectionChange = (rows: GetUserListVo[]): void => {
       selectedRows.value = rows;
       batchCount.value = rows.length;
+    };
+
+    /**
+     * 提交组织机构选择器
+     * @param values 已勾选的组织机构ID列表
+     */
+    const motSubmit = async (values: string[]): Promise<void> => {
+      //获取选中的用户ID列表
+      const ids = selectedRows.value.map((row) => row.id);
+
+      if (ids.length < 1 || values.length < 1) {
+        ElMessage.error("未选择用户或组织机构");
+        return;
+      }
+      try {
+        const res = await AdminUserApi.batchEditUser({ ids, kind: 3, orgId: values[0] });
+        if (Result.isError(res)) {
+          ElMessage.error(res.message);
+          return;
+        }
+        ElMessage.success("批量操作成功");
+        loadList();
+      } catch (error) {
+        ElMessage.error(error.message);
+        return;
+      }
+    };
+
+    /**
+     * 组织机构选择器关闭
+     */
+    const motClosed = (): void => {
+      motValues.value = [];
     };
 
     /**
@@ -458,24 +472,12 @@ export default {
       }
 
       let kind = 0;
-      let orgId = null; // 将deptId转成了orgId
+      const orgId = null; // 将deptId转成了orgId
 
       // 处理变更部门：需要先选择部门
       if (command === "changeDept") {
-        kind = 3;
-        try {
-          const dept = await deptSelectModalRef.value?.select();
-          if (!dept) {
-            return;
-          }
-          if (Array.isArray(dept)) {
-            return;
-          }
-          orgId = dept.id;
-        } catch {
-          // 用户取消选择
-          return;
-        }
+        motVisible.value = true;
+        return;
       }
 
       // 处理批量启用：需要确认
@@ -540,6 +542,10 @@ export default {
     return {
       onBatchAction,
       onSelectionChange,
+      motClosed,
+      motSubmit,
+      motVisible,
+      motValues,
       canBatchAction: computed(() => batchCount.value > 0),
       batchCount,
     };

@@ -3,6 +3,7 @@ package com.ksptool.bio.biz.core.service;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
+import com.ksptool.bio.biz.auth.common.CheatPermission;
 import com.ksptool.bio.biz.auth.common.RowScopes;
 import com.ksptool.bio.biz.auth.model.GroupPermissionPo;
 import com.ksptool.bio.biz.auth.model.UserGroupPo;
@@ -15,6 +16,8 @@ import com.ksptool.bio.biz.auth.service.SessionService;
 import com.ksptool.bio.biz.core.common.IdsDiff;
 import com.ksptool.bio.biz.core.common.SuperEntities;
 import com.ksptool.bio.biz.core.common.Switch;
+import com.ksptool.bio.biz.core.service.MenuService;
+import com.ksptool.bio.biz.core.service.UserService;
 import com.ksptool.bio.biz.core.model.pack.RootPackPo;
 import com.ksptool.bio.biz.core.model.root.CoreRootPo;
 import com.ksptool.bio.biz.core.model.root.dto.AddCoreRootDto;
@@ -78,6 +81,12 @@ public class CoreRootService {
     @Autowired
     private PackRepository packRepository;
 
+    @Autowired
+    private MenuService mService;
+
+    @Autowired
+    private UserService uService;
+
     /**
      * 查询租户列表
      *
@@ -115,6 +124,7 @@ public class CoreRootService {
         //先创建租户 这样才可以拿到租户ID
         CoreRootPo insertPo = as(dto, CoreRootPo.class);
         insertPo.setAdminUserId(-1L);
+        insertPo.setAdminGroupId(-1L);
         insertPo.setIsSystem(Switch.no());
         insertPo = repository.save(insertPo);
 
@@ -122,7 +132,7 @@ public class CoreRootService {
         var u = new UserPo();
         u.setUsername(dto.getAdminUsername());
         u.setPassword(passwordEncoder.encode(dto.getAdminPassword()));
-        u.setNickname(dto.getName() + "-租户管理员");
+        u.setNickname(dto.getName() + "-管理员");
         u.setGender(2);
         u.setPhone(null);
         u.setEmail(null);
@@ -133,22 +143,25 @@ public class CoreRootService {
         u.setDataVersion(0L);
         u = userRepository.save(u);
 
-        //修改租户 设置管理账号ID
+        //修改租户 设置UID
         insertPo.setAdminUserId(u.getId());
-        repository.save(insertPo);
 
         //为该租户创建固定角色
         var g = new GroupPo();
         g.setRootId(insertPo.getId());
         g.setOrgId(null);
         g.setCode("root_admin");
-        g.setName("租户管理员");
+        g.setName(dto.getName() + "-管理组");
         g.setRemark("自动创建的角色，该角色拥有本租户下的的全部权限。");
         g.setStatus(Switch.on());
         g.setSeq(0);
         g.setRowScope(RowScopes.ALL);
         g.setIsSystem(Switch.yes());
-        groupRepository.save(g);
+        g = groupRepository.save(g);
+
+        //修改租户 设置GID
+        insertPo.setAdminGroupId(g.getId());
+        repository.save(insertPo);
 
         //给新创建的管理员账号分配为租户管理员
         var ug = new UserGroupPo();
@@ -156,16 +169,17 @@ public class CoreRootService {
         ug.setGroupId(g.getId());
         ugRepository.save(ug);
 
-        //查找超级权限
-        var superPermission = pRepository.getByCode(SuperEntities.PERMISSION.getCode());
-        if (superPermission == null) {
-            throw new BizException("创建租户时，超级权限不存在，请检查系统内置权限码是否完整!");
+        //查询透视权限
+        var perspPermission = pRepository.getByCode(CheatPermission.PERSP.getCode());
+
+        if (perspPermission == null) {
+            throw new BizException("创建租户时，透视权限不存在，请检查系统内置权限码是否完整!");
         }
 
-        //给新创建的管理员账号分配超级权限
+        //给新创建的管理员账号分配透视权限
         var gp = new GroupPermissionPo();
         gp.setGroupId(g.getId());
-        gp.setPermissionId(superPermission.getId());
+        gp.setPermissionId(perspPermission.getId());
         gpRepository.save(gp);
     }
 
@@ -287,6 +301,12 @@ public class CoreRootService {
         if (rpIdsDiff.hasRemove()) {
             rpRepository.removeByRidAndPids(dto.getRootId(), rpIdsDiff.getRemoveIds());
         }
+
+        //给该租户下的用户加版本 用户下次请求时重新计算权限
+        uService.increaseDvByRootId(dto.getRootId());
+
+        //清菜单缓存
+        mService.clearUserMenuTreeCache();
     }
 
 }

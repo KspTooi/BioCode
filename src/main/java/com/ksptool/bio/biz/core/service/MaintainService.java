@@ -360,9 +360,10 @@ public class MaintainService {
             gRepository.save(superGroup);
         }
 
-        //超级租户的管理员账户指向超级用户
+        //超级租户的管理员账户、管理角色指向超级用户和超级组
         if (superRoot != null) {
             superRoot.setAdminUserId(sUserId);
+            superRoot.setAdminGroupId(sGroupId);
             superRoot.setIsSystem(Switch.yes());
             rRepository.save(superRoot);
         }

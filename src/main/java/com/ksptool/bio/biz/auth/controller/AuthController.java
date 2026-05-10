@@ -9,6 +9,7 @@ import com.ksptool.assembly.entity.exception.AuthException;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.Result;
 import com.ksptool.bio.BioRunner;
+import com.ksptool.bio.biz.auth.common.exception.AuthUnavailableException;
 import com.ksptool.bio.biz.auth.common.exception.RootUnavailableException;
 import com.ksptool.bio.biz.auth.model.auth.AuthUserSession;
 import com.ksptool.bio.biz.auth.model.auth.dto.UserLoginDto;
@@ -93,6 +94,12 @@ public class AuthController {
 
             //如果异常是用户被禁用异常 返回具体异常信息
             if (e.getCause() instanceof DisabledException) {
+                aep.publishEvent(new AuthenticationFailureServiceExceptionEvent(new UsernamePasswordAuthenticationToken(dto.getUsername(), dto.getPassword()), e));
+                return Result.error(e.getMessage());
+            }
+
+            //如果异常是认证不可用异常，则返回认证不可用异常信息
+            if (e.getCause() instanceof AuthUnavailableException) {
                 aep.publishEvent(new AuthenticationFailureServiceExceptionEvent(new UsernamePasswordAuthenticationToken(dto.getUsername(), dto.getPassword()), e));
                 return Result.error(e.getMessage());
             }

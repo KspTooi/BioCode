@@ -41,8 +41,11 @@ public class CoreRootPo {
     @Column(name = "status", nullable = false, comment = "状态 0:正常 1:禁用")
     private Integer status;
 
-    @Column(name = "admin_user_id", comment = "管理账号ID")
+    @Column(name = "admin_user_id", nullable = false, comment = "租户管理账号UID")
     private Long adminUserId;
+
+    @Column(name = "admin_group_id", nullable = false, comment = "租户管理角色GID")
+    private Long adminGroupId;
 
     @Column(name = "is_system", columnDefinition = "TINYINT", nullable = false, comment = "内置租户 0:否 1:是")
     private Integer isSystem;

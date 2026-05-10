@@ -17,24 +17,9 @@ export default {
     const modalTreeRef = ref<InstanceType<typeof StdAdvTree>>();
     const modalTreeData = ref<GetMenuTreeVo[]>([]);
     const modalCheckedKeys = ref<(string | number)[]>([]);
+    const modalHalfCheckedKeys = ref<(string | number)[]>([]);
     const modalCascadeCheck = ref(false);
     const modalLoading = ref(false);
-
-    /**
-     * 递归收集树中所有节点的 id
-     */
-    const collectAllKeys = (nodes: GetMenuTreeVo[]): string[] => {
-      const keys: string[] = [];
-      for (const node of nodes) {
-        if (node.id) {
-          keys.push(String(node.id));
-        }
-        if (node.children?.length) {
-          keys.push(...collectAllKeys(node.children));
-        }
-      }
-      return keys;
-    };
 
     /**
      * 加载菜单树及组已绑定的菜单
@@ -65,35 +50,17 @@ export default {
     };
 
     /**
-     * 勾选状态变化回调
-     */
-    const onCheckedKeysChange = (keys: (string | number)[]): void => {
-      modalCheckedKeys.value = keys;
-    };
-
-    /**
      * 全选所有菜单节点
      */
     const selectAll = (): void => {
-      const innerTree = modalTreeRef.value?.getTreeRef();
-      if (!innerTree) {
-        return;
-      }
-      const allKeys = collectAllKeys(modalTreeData.value);
-      innerTree.setCheckedKeys(allKeys);
-      modalCheckedKeys.value = allKeys;
+      modalTreeRef.value?.checkAll();
     };
 
     /**
      * 取消全选
      */
     const deselectAll = (): void => {
-      const innerTree = modalTreeRef.value?.getTreeRef();
-      if (!innerTree) {
-        return;
-      }
-      innerTree.setCheckedKeys([]);
-      modalCheckedKeys.value = [];
+      modalTreeRef.value?.checkClear();
     };
 
     /**
@@ -127,6 +94,7 @@ export default {
     const resetModal = (): void => {
       modalTreeData.value = [];
       modalCheckedKeys.value = [];
+      modalHalfCheckedKeys.value = [];
       modalCascadeCheck.value = false;
       modalLoading.value = false;
     };
@@ -146,9 +114,9 @@ export default {
       modalTreeRef,
       modalTreeData,
       modalCheckedKeys,
+      modalHalfCheckedKeys,
       modalCascadeCheck,
       modalLoading,
-      onCheckedKeysChange,
       selectAll,
       deselectAll,
       submitModal,

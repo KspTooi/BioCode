@@ -1,5 +1,6 @@
 package com.ksptool.bio.biz.qf.commons.listener;
 
+import com.ksptool.bio.biz.qf.commons.event.QfTaskCancelledEvent;
 import com.ksptool.bio.biz.qf.repository.QfTodoRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
@@ -8,11 +9,14 @@ import org.flowable.engine.delegate.event.AbstractFlowableEngineEventListener;
 import org.flowable.engine.delegate.event.FlowableActivityCancelledEvent;
 import org.flowable.task.api.Task;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Set;
+
+import static com.ksptool.entities.Entities.assign;
 
 /**
  * 任务取消监听器
@@ -41,6 +45,10 @@ public class QfTaskCancelledListener extends AbstractFlowableEngineEventListener
     @Autowired
     private TaskService taskService;
 
+    @Lazy
+    @Autowired
+    private ApplicationEventPublisher aep;
+
     public QfTaskCancelledListener() {
         super(Set.of(FlowableEngineEventType.ACTIVITY_CANCELLED));
     }
@@ -66,6 +74,11 @@ public class QfTaskCancelledListener extends AbstractFlowableEngineEventListener
             }
             po.setStatus(10);
             qfTodoRepository.save(po);
+            //发布任务取消事件
+            QfTaskCancelledEvent fireEvent = new QfTaskCancelledEvent(this);
+            assign(po, fireEvent);
+            fireEvent.setReason("流程取消");
+            aep.publishEvent(fireEvent);
             log.debug("[QfTaskCancelledListener] 待办已标记为已作废, todoId: {}, taskId: {}", po.getId(), task.getId());
         }
     }

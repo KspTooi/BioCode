@@ -3,7 +3,7 @@
     <splitpanes class="custom-theme">
       <!-- 左侧树形列表 -->
       <pane max-size="55" style="min-width: 375px">
-        <div class="h-full pt-2 px-1">
+        <div class="h-full">
           <StdAdvTree
             :data="nodeTreeData"
             :loading="nodeTreeLoading"

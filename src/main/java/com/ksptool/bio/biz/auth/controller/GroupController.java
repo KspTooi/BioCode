@@ -49,7 +49,6 @@ public class GroupController {
         return service.getGroupList(dto);
     }
 
-
     @PreAuthorize("@auth.hasCode('auth:group:add')")
     @Operation(summary = "新增用户组")
     @PostMapping("addGroup")
@@ -97,8 +96,6 @@ public class GroupController {
         return Result.success("删除成功");
     }
 
-
-    @PreAuthorize("@auth.hasCode('*:*:*')")
     @Operation(summary = "更新组权限(GP)")
     @PostMapping("updateGroupGp")
     @CacheEvict(cacheNames = {"userSession", "userProfile", "menuTree"}, allEntries = true)

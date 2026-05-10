@@ -3,8 +3,6 @@ package com.ksptool.bio.biz.auth.model.permission.dto;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.validator.constraints.Range;
-
 @Getter
 @Setter
 public class AddPermissionDto {
@@ -35,11 +33,4 @@ public class AddPermissionDto {
     @NotNull(message = "排序号不能为空")
     @Min(value = 0, message = "排序号不能小于0")
     private Integer seq;
-
-    /**
-     * 系统内置权限 0:否 1:是
-     */
-    @NotNull(message = "系统内置权限标识不能为空")
-    @Range(min = 0, max = 1, message = "系统内置权限标识必须为0或1")
-    private Integer isSystem;
 }

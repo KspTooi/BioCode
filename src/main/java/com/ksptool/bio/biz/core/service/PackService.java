@@ -3,6 +3,7 @@ package com.ksptool.bio.biz.core.service;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
+import com.ksptool.bio.biz.auth.service.SessionService;
 import com.ksptool.bio.biz.core.common.IdsDiff;
 import com.ksptool.bio.biz.core.model.pack.MenuPackPo;
 import com.ksptool.bio.biz.core.model.pack.PackPo;
@@ -45,6 +46,12 @@ public class PackService {
     @Autowired
     private CoreRootRepository coreRootRepository;
 
+    @Autowired
+    private UserService uService;
+
+    @Autowired
+    private MenuService mService;
+
     /**
      * 查询菜单包列表
      *
@@ -84,6 +91,21 @@ public class PackService {
 
         assign(dto, updatePo);
         repository.save(updatePo);
+
+
+        //查询该菜包是否被租户使用
+        var boundRootIds = rootPackRepository.getRidsByPid(dto.getId());
+
+        if(!boundRootIds.isEmpty()){
+
+            //给这些租户下的用户加版本 用户下次请求时重新计算权限
+            for(var rootId : boundRootIds){
+                uService.increaseDvByRootId(rootId);
+            }
+
+            //清菜单缓存
+            mService.clearUserMenuTreeCache();
+        }
     }
 
     /**

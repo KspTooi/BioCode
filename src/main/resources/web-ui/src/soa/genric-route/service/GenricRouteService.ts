@@ -56,6 +56,29 @@ const vueRouter = createRouter({
   ],
 });
 
+//保存原始的写方法 GRS内部走这两个引用
+const rawAddRoute = vueRouter.addRoute.bind(vueRouter);
+const rawRemoveRoute = vueRouter.removeRoute.bind(vueRouter);
+
+//防止外部绕过GRS直接操作Vue路由,这会导致路由管理混乱出现不同步问题。
+const buildForbiddenFn = (methodName: string) => {
+  return () => {
+    throw new Error(`Vue路由管理器不支持直接调用, router.${methodName} 请通过 GenricRouteService(GRS) 进行路由管理`);
+  };
+};
+
+Object.defineProperty(vueRouter, "addRoute", {
+  value: buildForbiddenFn("addRoute"),
+  writable: false,
+  configurable: false,
+});
+
+Object.defineProperty(vueRouter, "removeRoute", {
+  value: buildForbiddenFn("removeRoute"),
+  writable: false,
+  configurable: false,
+});
+
 // 路由守卫
 vueRouter.beforeEach((to, from) => {
   // 仅在访问根路径时尝试恢复标签页，其他路径直接放行
@@ -145,7 +168,7 @@ export default {
         //查找同名路由
         if (route.name === entry.name) {
           //删除Vue路由
-          vueRouter.removeRoute(route.name);
+          rawRemoveRoute(route.name);
 
           //更新路由条目
           route.biz = entry.biz;
@@ -166,7 +189,7 @@ export default {
         routes.value.push(entry);
 
         //添加Vue路由
-        vueRouter.addRoute({
+        rawAddRoute({
           path: entry.buildPath(),
           name: entry.name,
           component: entry.component,
@@ -180,7 +203,7 @@ export default {
 
       //路由有名称冲突 只更新Vue路由,不更新内置路由表
       if (hasConflict) {
-        vueRouter.addRoute({
+        rawAddRoute({
           path: entry.buildPath(),
           name: entry.name,
           component: entry.component,
@@ -206,7 +229,7 @@ export default {
      * @param name 路由名称
      */
     const removeRoute = (name: string): void => {
-      vueRouter.removeRoute(name);
+      rawRemoveRoute(name);
       routes.value = routes.value.filter((route) => route.name !== name);
     };
 

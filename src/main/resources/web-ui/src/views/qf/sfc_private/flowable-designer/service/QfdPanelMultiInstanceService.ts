@@ -90,7 +90,17 @@ function readFormalBody(expr: unknown): string {
 }
 
 function normExpr(s: string): string {
-  return s.replace(/\s+/g, "");
+  return s.replace(/\s+/g, "").replace(/^\$\{/, "").replace(/\}$/, "");
+}
+
+function wrapEl(s: string): string {
+  if (!s) {
+    return s;
+  }
+  if (s.startsWith("${") && s.endsWith("}")) {
+    return s;
+  }
+  return "${" + s + "}";
 }
 
 function inferApprovalMode(loop: Record<string, unknown> | undefined): ApprovalMultiMode {
@@ -207,10 +217,7 @@ const CLEAR_ASSIGNEE_META = {
 } as const;
 
 export default {
-  useQfdPanelMultiInstance(
-    modelerGetter: () => unknown,
-    elementGetter: () => unknown | null | undefined
-  ): QfdMultiInstanceApi {
+  useQfdPanelMultiInstance(modelerGetter: () => unknown, elementGetter: () => unknown | null | undefined): QfdMultiInstanceApi {
     const assigneeKind = ref<AssigneeKind>("user");
     const approvalMultiMode = ref<ApprovalMultiMode>("none");
     const selectedUsers = ref<PickUser[]>([]);
@@ -567,7 +574,7 @@ export default {
         modeling.updateModdleProperties(diagramEl, loop, { completionCondition: undefined });
       }
       if (compText) {
-        const comp = moddle.create("bpmn:FormalExpression", { body: compText });
+        const comp = moddle.create("bpmn:FormalExpression", { body: wrapEl(compText) });
         modeling.updateModdleProperties(diagramEl, loop, { completionCondition: comp });
       }
       const cardText = customLoop.loopCardinality?.trim();
@@ -575,7 +582,8 @@ export default {
         modeling.updateModdleProperties(diagramEl, loop, { loopCardinality: undefined });
         return;
       }
-      const cardExpr = moddle.create("bpmn:FormalExpression", { body: cardText });
+      const cardBody = /^\d+$/.test(cardText) ? cardText : wrapEl(cardText);
+      const cardExpr = moddle.create("bpmn:FormalExpression", { body: cardBody });
       modeling.updateModdleProperties(diagramEl, loop, { loopCardinality: cardExpr });
     }
 
@@ -590,7 +598,7 @@ export default {
       const useGroupCollection = kind === "dept" || kind === "group";
       const coll = useGroupCollection ? MI_GROUP_COLLECTION : MI_USER_COLLECTION;
       const elem = useGroupCollection ? MI_GROUP_ELEM : MI_USER_ELEM;
-      const compBody = mode === "orSign" ? "nrOfCompletedInstances > 0" : "nrOfCompletedInstances == nrOfInstances";
+      const compBody = mode === "orSign" ? "${nrOfCompletedInstances > 0}" : "${nrOfCompletedInstances == nrOfInstances}";
       let loop = bo.loopCharacteristics as Record<string, unknown> | undefined;
       if (!loop || loop.$type !== "bpmn:MultiInstanceLoopCharacteristics") {
         loop = moddle.create("bpmn:MultiInstanceLoopCharacteristics", { isSequential: false });
@@ -668,12 +676,7 @@ export default {
       applyLoop(ctx, approvalMultiMode.value, "user");
     }
 
-    function commitGroupKind(
-      ctx: CommitCtx,
-      kind: "dept" | "group",
-      ids: string[],
-      nameCsv: string
-    ): void {
+    function commitGroupKind(ctx: CommitCtx, kind: "dept" | "group", ids: string[], nameCsv: string): void {
       if (ids.length === 0) {
         ctx.modeling.updateProperties(ctx.diagramEl, {
           assignee: undefined,

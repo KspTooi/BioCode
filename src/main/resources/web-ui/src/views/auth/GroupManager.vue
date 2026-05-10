@@ -68,7 +68,7 @@
             </span>
           </template>
         </el-table-column>
-        <el-table-column v-has-super prop="gpCount" label="权限总数" min-width="100" />
+        <el-table-column v-if="hasSuper()" prop="gpCount" label="权限总数" min-width="100" />
         <el-table-column prop="rowScope" label="数据权限" min-width="100" show-overflow-tooltip>
           <template #default="scope">
             <el-tag v-if="scope.row.rowScope === 0" type="primary">全集团</el-tag>
@@ -105,7 +105,14 @@
             <el-button link type="primary" size="small" :icon="EditIcon" @click="openModal('edit', scope.row)">
               编辑
             </el-button>
-            <el-button link type="primary" size="small" :icon="EditIcon" @click="openMenuModal(scope.row)">
+            <el-button
+              link
+              type="primary"
+              :disabled="scope.row.isSystem === 1"
+              size="small"
+              :icon="EditIcon"
+              @click="openMenuModal(scope.row)"
+            >
               管理菜单
             </el-button>
             <el-button v-has-super link type="primary" size="small" :icon="EditIcon" @click="openGpModal(scope.row)">
@@ -154,12 +161,17 @@
 
   <GroupGpModal :visible="gpModalVisible" :data="gpModalRow" @close="gpModalVisible = false" @success="loadList" />
 
-  <CoreOrgDeptSelectModal
-    v-model="deptSelectModalVisible"
-    multiple
-    type="all"
-    :default-selected="modalForm.deptIds"
-    @confirm="onDeptSelectConfirm"
+  <ModalOrgTree
+    v-model="modalOrgTreeVisible"
+    v-model:checked-org-ids="modalOrgTreeCheckedOrgIds"
+    :search="true"
+    :search-cascade="true"
+    :check="true"
+    :check-multiple="true"
+    :check-cascade="false"
+    search-placeholder="请输入组织机构"
+    title="指定组织机构"
+    @on-submit="onModalOrgTreeSubmit"
   />
 
   <!-- 用户组编辑/创建模态框 -->
@@ -247,7 +259,7 @@
             </el-form-item>
             <el-form-item v-if="modalForm.rowScope === 60" label="指定组织" prop="deptIds">
               <div class="flex items-center">
-                <el-button type="primary" size="small" @click="openDeptSelect">选择组织</el-button>
+                <el-button type="primary" size="small" @click="openModalOrgTree">选择组织</el-button>
                 <span class="ml-2 text-gray-500">已选择 {{ modalForm.deptIds?.length || 0 }} 个组织</span>
               </div>
             </el-form-item>
@@ -274,7 +286,7 @@ import type { FormInstance } from "element-plus";
 import type { GetGroupListVo, EditGroupDto, GetGroupDetailsVo } from "@/views/auth/api/GroupApi.ts";
 import AdminGroupApi from "@/views/auth/api/GroupApi.ts";
 import UserGroupService from "@/views/auth/service/UserGroupService.ts";
-import CoreOrgDeptSelectModal from "@/views/core/components/public/CoreOrgDeptSelectModal.vue";
+import ModalOrgTree from "@/views/core/public/ModalOrgTree.vue";
 import StdListLayout from "@/soa/std-series/StdListLayout.vue";
 import ComSeqFixer from "@/soa/com-series/ComSeqFixer.vue";
 import RsSimulationModal from "@/views/auth/components/RsSimulationModal.vue";
@@ -282,7 +294,7 @@ import GroupMenuModal from "@/views/auth/components/GroupMenuModal.vue";
 import GroupGpModal from "@/views/auth/components/GroupGpModal.vue";
 import UserAuthService from "@/views/auth/service/UserAuthService.ts";
 
-const { vHasSuper } = UserAuthService.usePreAuthorize();
+const { vHasSuper, hasSuper } = UserAuthService.usePreAuthorize();
 
 const EditIcon = markRaw(Edit);
 const DeleteIcon = markRaw(Delete);
@@ -309,9 +321,10 @@ const {
   openModal,
   resetModal,
   submitModal,
-  deptSelectModalVisible,
-  openDeptSelect,
-  onDeptSelectConfirm,
+  modalOrgTreeVisible,
+  modalOrgTreeCheckedOrgIds,
+  openModalOrgTree,
+  onModalOrgTreeSubmit,
 } = UserGroupService.useUserGroupModal(modalFormRef, loadList);
 
 /**

@@ -17,7 +17,13 @@
     <div class="profile-drop-menu">
       <div class="modal-gradient-bar"></div>
       <div class="profile-header">
-        <el-avatar :size="64" :src="avatarUrl" shape="square" />
+        <div class="avatar-uploader" @click="onAvatarClick">
+          <el-avatar :size="64" :src="avatarUrl" shape="square" />
+          <div class="avatar-mask">
+            <span class="avatar-mask-text">修改头像</span>
+          </div>
+        </div>
+        <input ref="fileInputRef" type="file" accept="image/jpeg,image/png,image/webp" hidden @change="onFileChange" />
         <div class="header-info">
           <div class="nickname">{{ profile?.nickname || "未设置昵称" }}</div>
           <div class="username">@{{ profile?.username }}</div>
@@ -68,10 +74,16 @@
       </div>
 
       <div class="profile-actions">
-        <el-button class="action-btn" type="primary" plain @click="onChangePassword">
-          <el-icon><Key /></el-icon>
-          修改密码
-        </el-button>
+        <div class="action-row">
+          <el-button class="action-btn" type="primary" plain @click="onRefreshProfile" :loading="refreshing">
+            <el-icon><Refresh /></el-icon>
+            更新权限信息
+          </el-button>
+          <el-button class="action-btn" type="primary" plain @click="onChangePassword">
+            <el-icon><Key /></el-icon>
+            修改密码
+          </el-button>
+        </div>
         <el-button class="action-btn" type="danger" plain @click="onLogout">
           <el-icon><SwitchButton /></el-icon>
           退出登录
@@ -80,6 +92,8 @@
 
       <!-- 修改密码弹窗 -->
       <com-password-reset ref="changePasswordModalRef" />
+      <!-- 头像裁剪弹窗 -->
+      <com-modal-avatar-cropper ref="avatarCropperRef" @confirm="handleAvatarConfirm" />
     </div>
   </el-popover>
 </template>
@@ -87,51 +101,156 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import { ElAvatar, ElTag, ElIcon, ElButton, ElMessage, ElMessageBox, ElPopover } from "element-plus";
-import { Message, Phone, User, Operation, Key, Calendar, Clock, SwitchButton } from "@element-plus/icons-vue";
-import type { GetCurrentUserProfile } from "@/soa/com-series/api/AuthApi.ts";
-import AuthApi from "@/soa/com-series/api/AuthApi.ts";
-import ComPasswordReset from "@/soa/com-series/sfc_private/ComPasswordReset.vue";
-import UserAuthService from "@/views/auth/service/UserAuthService.ts";
+import { Message, Phone, User, Operation, Key, Calendar, Clock, SwitchButton, Refresh } from "@element-plus/icons-vue";
+import type { GetCurrentUserProfile } from "@/soa/com-series/api/AuthApi.js";
+import AuthApi from "@/soa/com-series/api/AuthApi.js";
+import ComPasswordReset from "@/soa/com-series/components/ComPasswordReset.vue";
+import ComModalAvatarCropper from "@/soa/com-series/components/ComModalAvatarCropper.vue";
+import UserAuthService from "@/views/auth/service/UserAuthService.js";
+import { Result } from "@/commons/model/Result.js";
+import ComTabService from "@/soa/com-series/service/ComTabService.ts";
+import { useThrottleFn } from "@vueuse/core";
 
 const authStore = UserAuthService.AuthStore();
 
 const profile = ref<GetCurrentUserProfile | null>(null);
 const changePasswordModalRef = ref();
+const avatarCropperRef = ref<InstanceType<typeof ComModalAvatarCropper>>();
+const fileInputRef = ref<HTMLInputElement>();
+const refreshing = ref(false);
+const avatarVersion = ref(0);
 
+//多标签服务打包
+const { refreshCounter } = ComTabService.useRouterTabService();
+
+/**
+ * 加载用户信息
+ */
 const loadUserProfile = async (): Promise<void> => {
   try {
-    profile.value = await AuthApi.getCurrentUserProfile();
+    profile.value = await AuthApi.getUserProfile();
+    avatarVersion.value++;
   } catch (error: any) {
     console.error("加载用户信息失败:", error);
   }
 };
 
-const onLogout = async (): Promise<void> => {
+/**
+ * 刷新用户信息
+ */
+const onRefreshProfile = useThrottleFn(async (): Promise<void> => {
+  refreshing.value = true;
   try {
-    await ElMessageBox.confirm("确定要注销登录吗？", "提示", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    profile.value = await AuthApi.getUserProfile({ forceUpdate: 1 });
+    avatarVersion.value++;
+    ElMessage.success("用户信息已刷新");
 
-    await AuthApi.logout();
-    ElMessage.success("注销成功");
-    // 刷新页面或跳转到登录页
-    window.location.href = "/login";
-  } catch (error) {
-    if (error === "cancel") {
-      return;
-    }
-    ElMessage.error("注销失败: " + (error as Error).message);
+    //1秒后刷新标签
+    setTimeout(() => {
+      refreshCounter.value++;
+    }, 1000);
+  } catch (error: any) {
+    ElMessage.error(error.message || "刷新用户信息失败");
+  } finally {
+    refreshing.value = false;
   }
+}, 1000);
+
+/**
+ * 注销登录
+ */
+const onLogout = async (): Promise<void> => {
+  await ElMessageBox.confirm("确定要注销登录吗？", "提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  });
+
+  const ret = await AuthApi.logout();
+
+  if (Result.isSuccess(ret)) {
+    ElMessage.success("注销成功");
+    window.location.href = "/login";
+    return;
+  }
+
+  //业务错误
+  if (ret.code === 1) {
+    // 会话不存在退出登录，需要把sessionIds删掉，然后回退到登录页
+    UserAuthService.AuthStore().setSessionId(null);
+    ElMessage.success("注销成功");
+    window.location.href = "/login";
+    return;
+  }
+
+  //网络错误
+  ElMessage.error("注销失败: " + ret.message);
 };
 
+/**
+ * 修改密码
+ */
 const onChangePassword = (): void => {
   if (changePasswordModalRef.value) {
     changePasswordModalRef.value.openModal();
   }
 };
 
+/**
+ * 点击头像
+ */
+const onAvatarClick = (): void => {
+  fileInputRef.value?.click();
+};
+
+/**
+ * 文件变化
+ */
+const onFileChange = (e: Event): void => {
+  const input = e.target as HTMLInputElement;
+  const file = input.files?.[0];
+  input.value = "";
+
+  if (!file) {
+    return;
+  }
+
+  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+  if (!allowedTypes.includes(file.type)) {
+    ElMessage.error("仅支持 JPG、PNG、WEBP 格式的图片");
+    return;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    ElMessage.error("图片大小不能超过 5MB");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const dataUrl = ev.target?.result as string;
+    avatarCropperRef.value?.openModal(dataUrl);
+  };
+  reader.readAsDataURL(file);
+};
+
+/**
+ * 确认头像
+ */
+const handleAvatarConfirm = async (file: File): Promise<void> => {
+  try {
+    await AuthApi.updateUserAvatar(file);
+    profile.value = await AuthApi.getUserProfile({ forceUpdate: 1 });
+    avatarVersion.value++;
+    ElMessage.success("头像已更新");
+  } catch (error: any) {
+    ElMessage.error(error.message || "头像更新失败");
+  }
+};
+
+/**
+ * 头像URL
+ */
 const avatarUrl = computed(() => {
   let token = "";
 
@@ -139,10 +258,7 @@ const avatarUrl = computed(() => {
     token = authStore.getSessionId;
   }
 
-  if (profile.value?.avatarAttachId) {
-    return `/getAttach?id=${profile.value.avatarAttachId}&token=${token}`;
-  }
-  return `/api/profile/getUserAvatar?token=${token}`;
+  return `/api/profile/getUserAvatar?token=${token}&v=${avatarVersion.value}`;
 });
 
 const genderText = computed(() => {
@@ -201,6 +317,35 @@ onMounted(() => {
   align-items: center;
   gap: 16px;
   border-bottom: 1px solid #f0f0f0;
+}
+
+.avatar-uploader {
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.avatar-mask {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.avatar-uploader:hover .avatar-mask {
+  opacity: 1;
+}
+
+.avatar-mask-text {
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  user-select: none;
 }
 
 .header-info {
@@ -269,6 +414,15 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.action-row {
+  display: flex;
+  gap: 8px;
+}
+
+.action-row .action-btn {
+  flex: 1;
 }
 
 .action-btn {

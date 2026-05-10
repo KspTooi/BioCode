@@ -35,7 +35,7 @@
 import { ref, reactive } from "vue";
 import { ElMessage } from "element-plus";
 import type { FormInstance, FormRules } from "element-plus";
-import AuthApi from "@/soa/com-series/api/AuthApi.ts";
+import AuthApi from "@/soa/com-series/api/AuthApi.js";
 
 const visible = ref(false);
 const loading = ref(false);

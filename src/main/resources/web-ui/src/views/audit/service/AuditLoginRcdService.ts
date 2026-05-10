@@ -1,9 +1,11 @@
-import { onMounted, ref } from "vue";
-import type { GetAuditLoginListDto, GetAuditLoginListVo } from "@/views/audit/api/AuditLoginApi.ts";
+import { onMounted, reactive, ref } from "vue";
+import type { GetAuditLoginListDto, GetAuditLoginListVo, GetAuditLoginDetailsVo } from "@/views/audit/api/AuditLoginApi.ts";
 import AuditLoginApi from "@/views/audit/api/AuditLoginApi.ts";
 import { Result } from "@/commons/model/Result";
 import { ElMessage, ElMessageBox } from "element-plus";
 import QueryPersistService from "@/commons/service/QueryPersistService.ts";
+
+type ModalMode = "view";
 
 export default {
   /**
@@ -119,6 +121,61 @@ export default {
       resetList,
       removeList,
       removeListBatch,
+    };
+  },
+
+  /**
+   * 登录日志查看模态框
+   */
+  useAuditLoginModal() {
+    const modalVisible = ref(false);
+    const modalMode = ref<ModalMode>("view");
+    const modalForm = reactive<GetAuditLoginDetailsVo>({
+      id: "",
+      userId: 0,
+      username: "",
+      loginKind: 0,
+      ipAddr: "",
+      location: "",
+      browser: "",
+      os: "",
+      status: 0,
+      message: "",
+      createTime: "",
+    });
+
+    const openModal = async (mode: ModalMode, row: GetAuditLoginListVo | null): Promise<void> => {
+      modalMode.value = mode;
+
+      if (!row) {
+        ElMessage.error("未选择要查看的数据");
+        return;
+      }
+
+      try {
+        const details = await AuditLoginApi.getAuditLoginDetails({ id: row.id });
+        modalForm.id = details.id;
+        modalForm.userId = details.userId;
+        modalForm.username = details.username;
+        modalForm.loginKind = details.loginKind;
+        modalForm.ipAddr = details.ipAddr;
+        modalForm.location = details.location;
+        modalForm.browser = details.browser;
+        modalForm.os = details.os;
+        modalForm.status = details.status;
+        modalForm.message = details.message;
+        modalForm.createTime = details.createTime;
+        modalVisible.value = true;
+      } catch (error: any) {
+        ElMessage.error(error.message);
+      }
+    };
+
+    return {
+      modalVisible,
+      modalMode,
+      modalForm,
+      openModal,
     };
   },
 };

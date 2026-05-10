@@ -95,10 +95,13 @@
             <span v-if="scope.row.targetKind === 2"> 指定用户 </span>
           </template>
         </el-table-column>
-        <el-table-column prop="targetCount" label="接收人数" width="90" />
+        <el-table-column prop="targetCount" label="预计接收人数" width="110" />
         <el-table-column prop="createTime" label="创建时间" width="200" />
-        <el-table-column label="操作" fixed="right" width="150" align="center">
+        <el-table-column label="操作" fixed="right" width="190" align="center">
           <template #default="scope">
+            <el-button link type="primary" size="small" :icon="ViewIcon" @click="openModal('view', scope.row)">
+              查看
+            </el-button>
             <el-button link type="primary" size="small" :icon="EditIcon" @click="openModal('edit', scope.row)">
               编辑
             </el-button>
@@ -133,28 +136,34 @@
 
     <template #modal>
       <!-- 部门选择器 -->
-      <CoreOrgDeptSelectModal
-        v-model="deptSelectVisible"
-        :default-selected="modalForm._targetIds"
+      <ModalOrgTree
+        v-model="modalTargetDeptVisible"
+        v-model:checked-org-ids="modalTargetIds"
+        :check-enable-method="(vo: GetOrgTreeVo) => vo.kind === 2"
+        :search="true"
+        search-placeholder="请输入部门名"
+        :check="true"
+        :check-multiple="true"
+        :check-cascade="false"
         title="选择接收部门"
-        multiple
-        type="dept"
-        @confirm="onDeptSelect"
+        @on-submit="onModalTargetSubmit"
+        @on-close="modalTargetIds = []"
       />
 
       <!-- 用户选择器 -->
-      <CoreUserSelectModal
-        v-model="userSelectVisible"
-        :default-selected="modalForm._targetIds"
+      <ModalUserSelector
+        v-model="modalTargetUserVisible"
+        v-model:checked-user-ids="modalTargetIds"
+        :check-multiple="true"
         title="选择接收用户"
-        multiple
-        @confirm="onUserSelect"
+        @on-submit="onModalTargetSubmit"
+        @on-close="modalTargetIds = []"
       />
 
       <!-- 创建/编辑模态框 -->
       <el-dialog
         v-model="modalVisible"
-        :title="modalMode === 'edit' ? '编辑消息' : '创建消息'"
+        :title="modalMode === 'edit' ? '编辑消息' : modalMode === 'view' ? '查看消息' : '创建消息'"
         width="600px"
         :close-on-click-modal="false"
         @close="
@@ -171,30 +180,60 @@
           :validate-on-rule-change="false"
         >
           <el-form-item label="标题" prop="title">
-            <el-input v-model="modalForm.title" placeholder="请输入标题" maxlength="32" show-word-limit clearable />
+            <el-input
+              v-model="modalForm.title"
+              placeholder="请输入标题"
+              maxlength="32"
+              show-word-limit
+              clearable
+              :disabled="modalFormDisabled"
+            />
           </el-form-item>
           <el-form-item label="种类" prop="kind">
-            <el-select v-model="modalForm.kind" placeholder="请选择种类" style="width: 100%">
+            <el-select v-model="modalForm.kind" placeholder="请选择种类" style="width: 100%" :disabled="modalFormDisabled">
               <el-option label="公告" :value="0" />
               <el-option label="业务提醒" :value="1" />
               <el-option label="私信" :value="2" />
             </el-select>
           </el-form-item>
           <el-form-item label="通知内容" prop="content">
-            <el-input v-model="modalForm.content" type="textarea" :rows="4" placeholder="请输入通知内容" clearable />
+            <el-input
+              v-model="modalForm.content"
+              type="textarea"
+              :rows="4"
+              placeholder="请输入通知内容"
+              clearable
+              :disabled="modalFormDisabled"
+            />
           </el-form-item>
           <el-form-item label="优先级" prop="priority">
-            <el-select v-model="modalForm.priority" placeholder="请选择优先级" style="width: 100%">
+            <el-select
+              v-model="modalForm.priority"
+              placeholder="请选择优先级"
+              style="width: 100%"
+              :disabled="modalFormDisabled"
+            >
               <el-option label="低" :value="0" />
               <el-option label="中" :value="1" />
               <el-option label="高" :value="2" />
             </el-select>
           </el-form-item>
           <el-form-item label="业务类型" prop="category">
-            <el-input v-model="modalForm.category" placeholder="请输入业务类型" maxlength="32" show-word-limit clearable />
+            <el-input
+              v-model="modalForm.category"
+              placeholder="请输入业务类型"
+              maxlength="32"
+              show-word-limit
+              clearable
+              :disabled="modalFormDisabled"
+            />
           </el-form-item>
           <el-form-item label="接收对象类型" prop="targetKind">
-            <el-radio-group v-model="modalForm.targetKind" style="width: 100%" :disabled="modalMode === 'edit'">
+            <el-radio-group
+              v-model="modalForm.targetKind"
+              style="width: 100%"
+              :disabled="modalMode === 'edit' || modalMode === 'view'"
+            >
               <el-radio label="全员" :value="0" />
               <el-radio label="指定部门" :value="1" />
               <el-radio label="指定用户" :value="2" />
@@ -203,13 +242,13 @@
 
           <el-form-item v-if="modalForm.targetKind === 1 && modalMode === 'add'" label="选择接收部门" prop="targetIds">
             <div class="flex items-center gap-4 text-cyan-600 ml-4">
-              <el-button type="primary" size="small" @click="deptSelectVisible = true">选择接收部门</el-button>
+              <el-button type="primary" size="small" @click="onModalTargetOpen">选择接收部门</el-button>
               <span>已选择 {{ modalForm._targetIds.length }} 个部门</span>
             </div>
           </el-form-item>
           <el-form-item v-if="modalForm.targetKind === 2 && modalMode === 'add'" label="选择接收用户" prop="targetIds">
             <div class="flex items-center gap-4 text-cyan-600 ml-4">
-              <el-button type="primary" size="small" @click="userSelectVisible = true">选择接收用户</el-button>
+              <el-button type="primary" size="small" @click="onModalTargetOpen">选择接收用户</el-button>
               <span>已选择 {{ modalForm._targetIds.length }} 位用户</span>
             </div>
           </el-form-item>
@@ -217,7 +256,7 @@
         <template #footer>
           <div class="dialog-footer">
             <el-button @click="modalVisible = false">关闭</el-button>
-            <el-button type="primary" :loading="modalLoading" @click="submitModal">
+            <el-button v-if="modalMode !== 'view'" type="primary" :loading="modalLoading" @click="submitModal">
               {{ modalMode === "add" ? "创建" : "保存" }}
             </el-button>
           </div>
@@ -229,20 +268,16 @@
 
 <script setup lang="ts">
 import { ref, markRaw, reactive } from "vue";
-import { Edit, Delete } from "@element-plus/icons-vue";
+import { Edit, Delete, View } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
 import NoticeService from "@/views/core/service/NoticeService.ts";
-import CoreUserSelectModal from "@/views/core/components/public/CoreUserSelectModal.vue";
+import ModalUserSelector from "@/views/core/public/ModalUserSelector.vue";
 import StdListLayout from "@/soa/std-series/StdListLayout.vue";
-import CoreOrgDeptSelectModal from "@/views/core/components/public/CoreOrgDeptSelectModal.vue";
-
-// 部门选择器引用
-const deptSelectVisible = ref(false);
-
-// 用户选择器引用
-const userSelectVisible = ref(false);
+import ModalOrgTree from "@/views/core/public/ModalOrgTree.vue";
+import type { GetOrgTreeVo } from "@/views/core/api/OrgApi";
 
 // 使用markRaw包装图标组件，防止被Vue响应式系统处理
+const ViewIcon = markRaw(View);
 const EditIcon = markRaw(Edit);
 const DeleteIcon = markRaw(Delete);
 
@@ -262,13 +297,17 @@ const {
   modalVisible,
   modalLoading,
   modalMode,
+  modalFormDisabled,
   modalForm,
   modalRules,
+  modalTargetIds,
+  modalTargetDeptVisible,
+  modalTargetUserVisible,
   openModal,
   resetModal,
   submitModal,
-  onDeptSelect,
-  onUserSelect,
+  onModalTargetOpen,
+  onModalTargetSubmit,
 } = NoticeService.useNoticeModal(modalFormRef, loadList);
 </script>
 

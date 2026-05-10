@@ -45,8 +45,8 @@ public class OrgService {
     /**
      * 查询组织架构树
      *
-     * @param dto
-     * @return
+     * @param dto 查询条件
+     * @return 组织架构树
      */
     public List<GetOrgTreeVo> getOrgTree(GetOrgTreeDto dto) {
 
@@ -93,7 +93,7 @@ public class OrgService {
     /**
      * 获取组织机构列表
      *
-     * @param dto
+     * @param dto 查询条件
      * @return
      */
     public PageResult<GetOrgListVo> getOrgList(GetOrgListDto dto) {
@@ -151,6 +151,11 @@ public class OrgService {
         var parentPo = repository.findById(dto.getParentId())
                 .orElseThrow(() -> new BizException("未能找到上级组织 ID: " + dto.getParentId()));
 
+        //部门下只能放置部门
+        if (parentPo.getKind() == 2 && dto.getKind() != 2) {
+            throw new BizException("部门下只能放置部门");
+        }
+
         //校验层级是否超过限制
         if (parentPo.getLevel() >= 16) {
             throw new BizException("组织架构层级超过限制! 最大层级为16");
@@ -194,7 +199,7 @@ public class OrgService {
     /**
      * 编辑组织机构
      *
-     * @param dto
+     * @param dto 编辑条件
      * @throws BizException
      */
     @Transactional(rollbackFor = Exception.class)
@@ -229,6 +234,11 @@ public class OrgService {
         //查询上级组织
         var parentPo = repository.findById(dto.getParentId())
                 .orElseThrow(() -> new BizException("无法处理编辑请求,上级组织不存在. ID: " + dto.getParentId()));
+
+        //部门下只能放置部门
+        if (parentPo.getKind() == 2 && updatePo.getKind() != 2) {
+            throw new BizException("部门下只能放置部门");
+        }
 
         //上级组织不能是自身
         if (Objects.equals(updatePo.getId(), parentPo.getId())) {
@@ -297,7 +307,7 @@ public class OrgService {
     /**
      * 获取组织机构详情
      *
-     * @param dto
+     * @param dto 查询条件
      * @return
      * @throws BizException
      */
@@ -310,7 +320,7 @@ public class OrgService {
     /**
      * 删除组织机构
      *
-     * @param dto
+     * @param dto 删除条件
      * @throws BizException
      */
     @Transactional(rollbackFor = Exception.class)

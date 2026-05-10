@@ -1,8 +1,8 @@
 <template>
   <el-dropdown trigger="click" class="notice-dropdown" @visible-change="onVisibleChange">
-    <div class="flex items-center justify-center px-3 h-full w-full cursor-pointer transition-colors hover:bg-black/5">
+    <div class="flex items-center justify-center h-full w-full cursor-pointer transition-colors hover:bg-black/5">
       <el-badge :value="processedCount" :hidden="count === 0" :max="99">
-        <el-icon :size="20" class="text-gray-600">
+        <el-icon title="通知中心" class="control-btn">
           <Bell />
         </el-icon>
       </el-badge>
@@ -225,5 +225,16 @@ onMounted(() => {
 .kind-message {
   background-color: var(--el-color-success-light-8);
   color: var(--el-color-success);
+}
+.control-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  height: 100%;
+  color: var(--com-tab-text);
 }
 </style>

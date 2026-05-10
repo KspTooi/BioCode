@@ -117,8 +117,8 @@
 import { onMounted } from "vue";
 import { ElMenu, ElMenuItem, ElSubMenu, ElIcon, ElAside } from "element-plus";
 import logoUrl from "@/assets/EAS_CROWN.png";
-import ComMenuService from "@/soa/com-series/service/ComMenuService.ts";
-import ComIconService from "@/soa/com-series/service/ComIconService.ts";
+import ComMenuService from "@/soa/com-series/service/ComMenuService.js";
+import ComIconService from "@/soa/com-series/service/ComIconService.js";
 
 // 使用菜单服务
 const { menuTree, loading, menuOpened, activeMenuId, loadMenus, expandMenu, openMenu, filterDirectoryMenu, filterItemMenu } =

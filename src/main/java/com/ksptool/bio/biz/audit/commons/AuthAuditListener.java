@@ -1,6 +1,7 @@
 package com.ksptool.bio.biz.audit.commons;
 
 import com.ksptool.bio.biz.audit.service.AuditLoginService;
+import com.ksptool.bio.biz.auth.common.exception.AuthUnavailableException;
 import com.ksptool.bio.biz.auth.common.exception.RootUnavailableException;
 import com.ksptool.bio.biz.auth.model.auth.AuthUserSession;
 import com.ksptool.bio.biz.core.repository.UserRepository;
@@ -107,6 +108,11 @@ public class AuthAuditListener {
 
         //如果异常是租户不可用异常，则返回租户不可用异常信息
         if (event.getException().getCause() instanceof RootUnavailableException) {
+            message = event.getException().getMessage();
+        }
+
+        //如果异常是认证不可用异常，则返回认证不可用异常信息
+        if (event.getException().getCause() instanceof AuthUnavailableException) {
             message = event.getException().getMessage();
         }
 

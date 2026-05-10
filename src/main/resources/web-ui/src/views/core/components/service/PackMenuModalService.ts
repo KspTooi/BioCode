@@ -20,21 +20,9 @@ export default {
     const modalTreeRef = ref<InstanceType<typeof StdAdvTree>>();
     const modalTreeData = ref<GetMenuTreeVo[]>([]);
     const modalCheckedKeys = ref<(string | number)[]>([]);
+    const modalHalfCheckedKeys = ref<(string | number)[]>([]);
     const modalCascadeCheck = ref(false);
     const modalLoading = ref(false);
-
-    const collectAllKeys = (nodes: GetMenuTreeVo[]): string[] => {
-      const keys: string[] = [];
-      for (const node of nodes) {
-        if (node.id) {
-          keys.push(String(node.id));
-        }
-        if (node.children?.length) {
-          keys.push(...collectAllKeys(node.children));
-        }
-      }
-      return keys;
-    };
 
     const openModal = async (): Promise<void> => {
       if (!props.data?.id) {
@@ -61,27 +49,12 @@ export default {
       }
     };
 
-    const onCheckedKeysChange = (keys: (string | number)[]): void => {
-      modalCheckedKeys.value = keys;
-    };
-
     const selectAll = (): void => {
-      const innerTree = modalTreeRef.value?.getTreeRef();
-      if (!innerTree) {
-        return;
-      }
-      const allKeys = collectAllKeys(modalTreeData.value);
-      innerTree.setCheckedKeys(allKeys);
-      modalCheckedKeys.value = allKeys;
+      modalTreeRef.value?.checkAll();
     };
 
     const deselectAll = (): void => {
-      const innerTree = modalTreeRef.value?.getTreeRef();
-      if (!innerTree) {
-        return;
-      }
-      innerTree.setCheckedKeys([]);
-      modalCheckedKeys.value = [];
+      modalTreeRef.value?.checkClear();
     };
 
     const submitModal = async (): Promise<void> => {
@@ -105,6 +78,7 @@ export default {
     const resetModal = (): void => {
       modalTreeData.value = [];
       modalCheckedKeys.value = [];
+      modalHalfCheckedKeys.value = [];
       modalCascadeCheck.value = false;
       modalLoading.value = false;
     };
@@ -124,9 +98,9 @@ export default {
       modalTreeRef,
       modalTreeData,
       modalCheckedKeys,
+      modalHalfCheckedKeys,
       modalCascadeCheck,
       modalLoading,
-      onCheckedKeysChange,
       selectAll,
       deselectAll,
       submitModal,

@@ -221,13 +221,6 @@ public class UserService {
 
         UserPo user = userRepository.findById(dto.getId()).orElseThrow(() -> new BizException("用户不存在"));
 
-        if (StringUtils.isNotBlank(dto.getPassword())) {
-            dto.setPassword(passwordEncoder.encode(dto.getPassword()));
-        }
-        if (StringUtils.isBlank(dto.getPassword())) {
-            dto.setPassword(user.getPassword());
-        }
-
         //处理系统内置用户的更新逻辑
         if (user.isSystem()) {
 
@@ -251,7 +244,14 @@ public class UserService {
 
         }
 
+        //内置账户不能改密，所以这一段代码迁移到下面
+        if (StringUtils.isNotBlank(dto.getPassword())) {
+            dto.setPassword(passwordEncoder.encode(dto.getPassword()));
+        }
 
+        if (StringUtils.isBlank(dto.getPassword())) {
+            dto.setPassword(user.getPassword());
+        }
         //合并同类项
         assign(dto, user);
 

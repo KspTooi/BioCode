@@ -8,26 +8,25 @@
     <div v-if="search || searchRefresh" class="filter-wrapper">
       <el-input
         v-if="search"
-        v-model="filterText"
+        v-model="searchText"
         :placeholder="searchPlaceholder || '搜索'"
         clearable
         :prefix-icon="SearchIcon"
         size="small"
-        @input="onFilterInput"
       />
       <el-button
         v-if="searchRefresh"
         :class="['refresh-btn', { 'refresh-btn--full': !search }]"
         size="small"
         :icon="RefreshIcon"
-        @click="emit('on-refresh', filterText)"
+        @click="emit('on-refresh', searchText)"
       >
         刷新
       </el-button>
     </div>
 
     <el-scrollbar class="tree-wrapper">
-      <div v-if="nr" class="root-node" :class="{ 'is-active': isRootSelected }" @click="onRootClick">
+      <div v-if="nr" class="root-node" :class="{ 'is-active': rootSelected }" @click="onRootClick">
         <span class="root-node-left flex items-center min-w-0">
           <el-icon v-if="nrIcon" class="node-pre-icon">
             <component :is="resolveIcon(nrIcon)" />
@@ -41,19 +40,20 @@
 
       <el-tree
         ref="treeRef"
-        :data="data"
-        :props="defaultProps"
+        :data="treeData"
+        :props="{ children: nc, label: nt }"
         :filter-node-method="filterNode"
-        :expand-on-click-node="expandOnClick"
-        :node-key="nk ?? 'id'"
+        :expand-on-click-node="effectiveClickExpand"
+        :node-key="nk"
         highlight-current
         :default-expand-all="expandOnDefault"
-        :show-checkbox="showCheckbox"
-        :check-strictly="checkStrictly"
-        :check-on-click-node="checkOnClickNode"
+        :show-checkbox="check"
+        :check-strictly="!effectiveCascade"
+        :check-on-click-node="checkOnNodeClick"
+        :check-on-click-leaf="checkOnNodeClick"
         class="custom-tree"
         @node-click="onNodeClick"
-        @check="onCheck"
+        @check="onNodeCheck"
       >
         <template #default="{ node, data: nodeData }">
           <span class="custom-tree-node flex-1 flex items-center justify-between pr-2 text-[13px]">
@@ -91,59 +91,83 @@
 </template>
 
 <script setup lang="ts">
-import { markRaw } from "vue";
+import { markRaw, ref } from "vue";
 import { Search, Refresh } from "@element-plus/icons-vue";
-import type { StdAdvTreeProps, StdAdvTreeEmits } from "@/soa/std-series/service/StdAdvTree";
-import StdAdvTreeService from "@/soa/std-series/service/StdAdvTree";
+import type { StdAdvTreeProps, StdAdvTreeEmits } from "@/soa/std-series/service/StdAdvTreeService";
+import StdAdvTreeService from "@/soa/std-series/service/StdAdvTreeService";
 import ComIconService from "@/soa/com-series/service/ComIconService";
+import type { ElTree } from "element-plus";
 
 const SearchIcon = markRaw(Search);
 const RefreshIcon = markRaw(Refresh);
 const { resolveIcon } = ComIconService.useIconService();
 
 const props = withDefaults(defineProps<StdAdvTreeProps>(), {
-  modelValue: null,
-  initValue: undefined,
   data: () => [],
+
+  check: false,
+  checkMultiple: true,
+  checkCascade: true,
+  checkOnNodeClick: true,
+  checkDisableNks: () => [],
+  checkDisableMethod: undefined,
+
   search: false,
   searchPlaceholder: "搜索",
+  searchFields: () => ["name"],
+  searchCascade: false,
   searchRefresh: false,
+  filterMethod: undefined,
+
   nr: false,
   nrTitle: "全部",
-  nrIcon: undefined,
+  nrIcon: null,
   nrValue: "-1",
+
   ni: undefined,
   nk: "id",
   nt: "name",
   nc: "children",
+
   loading: false,
   expandOnDefault: true,
   expandOnClick: false,
+
   action: false,
   actionMode: () => ["add", "edit", "remove"],
 });
 
+//双向绑定的选中节点 key（对应 nk 字段的值）
+const selectedNk = defineModel<string | number>({ default: null });
+
+//双向绑定的勾选节点 keys
+const checkedNks = defineModel<(string | number)[]>("checkedNks", { default: () => [] });
+
+//双向绑定的半勾节点 keys
+const checkedHalfNks = defineModel<(string | number)[]>("checkedHalfNks", { default: () => [] });
+
 const emit = defineEmits<StdAdvTreeEmits>();
 
+const treeRef = ref<InstanceType<typeof ElTree>>();
+
+//高级树基础功能打包
 const {
-  treeRef,
-  filterText,
-  isRootSelected,
-  defaultProps,
-  showCheckbox,
-  checkStrictly,
-  checkOnClickNode,
+  searchText,
+  treeData,
+  rootSelected,
+  effectiveCascade,
+  effectiveClickExpand,
   filterNode,
-  onFilterInput,
-  onNodeClick,
-  onCheck,
-  onRootClick,
   reset,
   filter,
-  getTreeRef,
-} = StdAdvTreeService.useStdAdvTree(props, emit);
+  checkAll,
+  checkClear,
+  onNodeClick,
+  onRootClick,
+  onNodeCheck,
+} = StdAdvTreeService.useStdAdvTree(props, emit, treeRef, selectedNk, checkedNks, checkedHalfNks);
 
-defineExpose({ reset, filter, getTreeRef });
+defineExpose({ reset, filter, checkAll, checkClear, treeRef });
 </script>
 
 <style scoped>
@@ -163,6 +187,7 @@ defineExpose({ reset, filter, getTreeRef });
   display: flex;
   align-items: center;
   gap: 6px;
+  margin-bottom: 5px;
 }
 
 .filter-wrapper .el-input {
@@ -213,7 +238,7 @@ defineExpose({ reset, filter, getTreeRef });
 .tree-wrapper {
   flex: 1;
   min-height: 0;
-  padding: 6px 4px;
+  /* padding: 6px 4px; */
 }
 
 .custom-tree {
@@ -223,7 +248,7 @@ defineExpose({ reset, filter, getTreeRef });
 /* ── 节点行 ── */
 :deep(.el-tree-node__content) {
   height: 32px;
-  margin-bottom: 2px;
+  /* margin-bottom: 2px; */
   transition: background-color 0.15s;
 }
 
@@ -248,7 +273,7 @@ defineExpose({ reset, filter, getTreeRef });
   left: 0px;
   right: 0px;
   height: 1.5px;
-  background: linear-gradient(90deg, var(--el-color-primary) 0%, var(--el-color-primary-light-5) 100%);
+  background: linear-gradient(90deg, var(--el-color-primary) 0%, var(--el-color-primary-light-5) 80%);
 }
 
 :deep(.el-tree-node__content) {
@@ -278,8 +303,8 @@ defineExpose({ reset, filter, getTreeRef });
   justify-content: space-between;
   height: 32px;
   padding: 0 8px 0 11px;
-  border-radius: 3px;
-  margin-bottom: 2px;
+  /* border-radius: 3px; */
+  /* margin-bottom: 2px; */
   cursor: pointer;
   font-size: 13px;
   transition: background-color 0.15s;

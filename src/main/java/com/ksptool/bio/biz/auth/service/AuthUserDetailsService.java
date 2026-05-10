@@ -2,6 +2,7 @@ package com.ksptool.bio.biz.auth.service;
 
 import com.ksptool.bio.biz.auth.common.PermissionBucket;
 import com.ksptool.bio.biz.auth.common.RsCalculator;
+import com.ksptool.bio.biz.auth.common.exception.AuthUnavailableException;
 import com.ksptool.bio.biz.auth.common.exception.RootUnavailableException;
 import com.ksptool.bio.biz.auth.model.auth.AuthUserSession;
 import com.ksptool.bio.biz.auth.model.group.GroupPo;
@@ -11,6 +12,8 @@ import com.ksptool.bio.biz.auth.repository.GroupRepository;
 import com.ksptool.bio.biz.auth.repository.PermissionRepository;
 import com.ksptool.bio.biz.core.common.Switch;
 import com.ksptool.bio.biz.core.repository.CoreRootRepository;
+import com.ksptool.bio.biz.core.repository.MenuPackRepository;
+import com.ksptool.bio.biz.core.repository.MenuRepository;
 import com.ksptool.bio.biz.core.repository.OrgRepository;
 import com.ksptool.bio.biz.core.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -58,6 +61,8 @@ public class AuthUserDetailsService implements UserDetailsService {
     @Autowired
     private GroupMenuRepository gmRepository;
 
+    @Autowired
+    private MenuRepository mRepository;
 
     @NullMarked
     @Override
@@ -100,6 +105,14 @@ public class AuthUserDetailsService implements UserDetailsService {
 
             //通过菜单衍生的权限码
             var menusCodes = new HashSet<String>();
+
+            //如果用户是租管,还需要获取租户上的菜包，这些菜包里面也有权限码，也要合并到权限码中
+            if(rRepository.isAdminOfRoot(user.getRootId(), user.getId())){
+                var mPos = mRepository.getMenusByGrantedPack(user.getRootId());
+                for (var menu : mPos) {
+                    menusCodes.addAll(menu.getPermissionCode());
+                }
+            }
 
             //获取组上的全部菜单，并合并权限码
             if (!groups.isEmpty()) {
@@ -166,7 +179,8 @@ public class AuthUserDetailsService implements UserDetailsService {
 
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            throw e;
+            //出现内部错误时抛出认证不可用异常
+            throw new AuthUnavailableException("当前认证系统暂时不可用,请稍后再试!");
         }
     }
 

@@ -308,12 +308,12 @@ public class GroupService {
     public void updateGroupGp(UpdateGroupGpDto dto) throws BizException {
         var g = repository.findById(dto.getGroupId()).orElseThrow(() -> new BizException("用户组不存在"));
 
-        //系统组不能把SA权限去除
-        if (g.isSystem()) {
+        //系统组不能把SA权限去除 (系统组指的是 ID:-1 且isSystem:1 的组)
+        if (g.isSystem() && g.getId() == -1) {
 
             var sa = pRepository.getByCode(SuperEntities.PERMISSION.getCode());
 
-            //检测dto里面是否把超级操作权限去除了 以避免用户解除超级组的SA权限导致超级组报废
+            //检测前端传参是否把超级操作权限去除了 以避免用户解除超级组的SA权限导致超级组报废
             if (!dto.getPermissionIds().contains(sa.getId())) {
                 throw new BizException("系统内置组不允许去除超级操作权限(SA)");
             }
@@ -346,6 +346,10 @@ public class GroupService {
     public void updateGroupGm(UpdateGroupGmDto dto) throws BizException {
 
         var g = repository.findById(dto.getGroupId()).orElseThrow(() -> new BizException("用户组不存在"));
+
+        if(g.isSystem()){
+            throw new BizException("系统内置组不允许更新菜单(GM)");
+        }
 
         //对比GM关系的差异
         var gmIdsDiff = new IdsDiff(gmRepository.getMidsByGid(g.getId()), dto.getMenuIds());

@@ -47,10 +47,14 @@ export default {
           ElMessage.error(result.message);
         }
 
+        // 回显勾选逻辑：根据boundIds中的包ID回显勾选表格中对应的行
         await nextTick();
         if (tableRef.value) {
+          // 复制一份boundIds.value用于回显，避免在toggleRowSelection过程中被onSelectionChange影响
+          const echoBoundIds = new Set(boundIds.value);
           packList.value.forEach((row) => {
-            tableRef.value.toggleRowSelection(row, boundIds.value.has(String(row.id)));
+            // 只用echoBoundIds做回显判断，避免受副作用影响
+            tableRef.value.toggleRowSelection(row, echoBoundIds.has(String(row.id)));
           });
         }
       } finally {

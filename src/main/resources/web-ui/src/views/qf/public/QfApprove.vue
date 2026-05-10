@@ -5,7 +5,7 @@
       <el-tab-pane label="流程表单" name="form">
         <div class="form-scroll-area">
           <component :is="formComponent" v-if="formComponent && details?.dataId" :id="details.dataId" mode="view" />
-          <el-empty v-if="!formComponent && !detailsLoading" description="流程表单组件未找到" />
+          <el-empty v-if="!formComponent && !detailsLoading" description="流程表单组件未发布或已下线，请联系管理员处理。" />
         </div>
       </el-tab-pane>
 
@@ -17,7 +17,18 @@
             <el-timeline-item
               v-for="(record, idx) in records"
               :key="idx"
-              :timestamp="record.finTime || '待处理'"
+              :timestamp="
+                record.finTime ||
+                (record.status === 0
+                  ? '待处理'
+                  : record.status === 1
+                    ? '已处理'
+                    : record.status === 10
+                      ? '已作废'
+                      : record.action === 0
+                        ? '同意'
+                        : '—')
+              "
               placement="top"
               :type="record.status === 0 ? 'primary' : record.action === 0 ? 'success' : 'danger'"
             >
@@ -25,6 +36,8 @@
                 <div class="record-header">
                   <span class="record-node">{{ record.nodeName }}</span>
                   <el-tag v-if="record.status === 0" type="primary" size="small" effect="plain"> 待处理 </el-tag>
+                  <el-tag v-else-if="record.status === 1" type="info" size="small" effect="plain"> 已处理 </el-tag>
+                  <el-tag v-else-if="record.status === 10" type="danger" size="small" effect="plain"> 已作废 </el-tag>
                   <el-tag v-else-if="record.action === 0" type="success" size="small" effect="plain"> 同意 </el-tag>
                   <el-tag v-else type="danger" size="small" effect="plain"> 驳回 </el-tag>
                 </div>
@@ -107,7 +120,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineAsyncComponent, nextTick, onMounted, ref, shallowRef, type Component } from "vue";
+import { nextTick, onMounted, ref, shallowRef, type Component } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { User, ChatLineRound, CircleCheck, CircleClose, EditPen } from "@element-plus/icons-vue";
 import ComDirectRouteContext from "@/soa/com-series/service/ComDirectRouteContext";
@@ -116,6 +129,7 @@ import QfTodoApi from "@/views/qf/api/QfTodoApi.ts";
 import type { ApproveFlowRecordVo, GetQfTodoDetailsVo, GetQfTodoListVo } from "@/views/qf/api/QfTodoApi.ts";
 import { useFlowableModeler } from "@/views/qf/sfc_private/flowable-designer/UseFlowableModeler";
 import ComOneTimeRouteContext from "@/soa/com-series/service/ComOneTimeRouteContext";
+import ComPublicCompService from "@/soa/com-series/service/ComPublicCompService";
 
 const { getCdrcQuery } = ComDirectRouteContext.useDirectRouteContext();
 const row = getCdrcQuery(false) as GetQfTodoListVo;
@@ -147,24 +161,9 @@ let diagramInitialized = false;
 /**
  * 只读模式的 bpmn-js viewer，复用项目已有的 useFlowableModeler
  */
-const { init: initViewer, importXml, zoomFit, modeler } = useFlowableModeler(diagramContainer, true);
+const { init: initViewer, importXml, zoomFit } = useFlowableModeler(diagramContainer, true);
 
-/**
- * import.meta.glob 在构建期收集 src/views 下全部 .vue 文件的懒加载 loader
- * key 形如 "../qf/forms/QfLeaveForm.vue"（相对于本文件的路径）
- */
-const viewModules = import.meta.glob("../../**/public/*.vue");
-
-/** 按文件名（去掉 .vue 后缀）匹配 componentName，返回对应的异步 loader */
-const resolveComponentLoader = (componentName: string): (() => Promise<Component>) | null => {
-  for (const path in viewModules) {
-    const fileName = path.substring(path.lastIndexOf("/") + 1, path.lastIndexOf("."));
-    if (fileName === componentName) {
-      return viewModules[path] as () => Promise<Component>;
-    }
-  }
-  return null;
-};
+const { resolvePublicComp } = ComPublicCompService.usePublicComp();
 
 const loadDetails = async (): Promise<GetQfTodoDetailsVo | null> => {
   try {
@@ -272,16 +271,14 @@ onMounted(async () => {
     return;
   }
 
-  const loader = resolveComponentLoader(details.value.routePc);
+  //解析公共组件
+  const comp = resolvePublicComp(details.value.routePc);
 
-  if (!loader) {
-    ElMessage.error("未找到流程表单组件：" + details.value.routePc);
-    closeTab(activeTabId.value);
-    return;
+  if (!comp) {
+    ElMessage.warning("流程表单组件未发布或已下线，请联系管理员处理。");
   }
 
-  /** defineAsyncComponent 包裹 loader，支持懒加载与内置的 loading/error 状态处理 */
-  formComponent.value = defineAsyncComponent(loader);
+  formComponent.value = comp;
 });
 </script>
 

@@ -50,7 +50,7 @@
         </el-table-column>
         <el-table-column label="操作" fixed="right" min-width="180">
           <template #default="scope">
-            <el-button link type="primary" size="small" :icon="ViewIcon" @click="openModal(scope.row)"> 详情 </el-button>
+            <el-button link type="primary" size="small" :icon="ViewIcon" @click="openModal(scope.row)">查看</el-button>
             <el-button link type="danger" size="small" :icon="CloseIcon" @click="onCloseSession(scope.row)">
               关闭会话
             </el-button>
