@@ -7,6 +7,7 @@
           <OrgTree
             v-model="currentOrgId"
             :search="true"
+            :search-cascade="true"
             :nr="true"
             nr-title="全部组织机构"
             nr-icon="ep:office-building"
