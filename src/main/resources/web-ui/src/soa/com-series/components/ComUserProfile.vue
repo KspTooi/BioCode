@@ -23,13 +23,7 @@
             <span class="avatar-mask-text">修改头像</span>
           </div>
         </div>
-        <input
-          ref="fileInputRef"
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          hidden
-          @change="onFileChange"
-        />
+        <input ref="fileInputRef" type="file" accept="image/jpeg,image/png,image/webp" hidden @change="onFileChange" />
         <div class="header-info">
           <div class="nickname">{{ profile?.nickname || "未设置昵称" }}</div>
           <div class="username">@{{ profile?.username }}</div>
@@ -80,10 +74,16 @@
       </div>
 
       <div class="profile-actions">
-        <el-button class="action-btn" type="primary" plain @click="onChangePassword">
-          <el-icon><Key /></el-icon>
-          修改密码
-        </el-button>
+        <div class="action-row">
+          <el-button class="action-btn" type="primary" plain @click="onRefreshProfile" :loading="refreshing">
+            <el-icon><Refresh /></el-icon>
+            更新用户信息
+          </el-button>
+          <el-button class="action-btn" type="primary" plain @click="onChangePassword">
+            <el-icon><Key /></el-icon>
+            修改密码
+          </el-button>
+        </div>
         <el-button class="action-btn" type="danger" plain @click="onLogout">
           <el-icon><SwitchButton /></el-icon>
           退出登录
@@ -101,7 +101,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import { ElAvatar, ElTag, ElIcon, ElButton, ElMessage, ElMessageBox, ElPopover } from "element-plus";
-import { Message, Phone, User, Operation, Key, Calendar, Clock, SwitchButton } from "@element-plus/icons-vue";
+import { Message, Phone, User, Operation, Key, Calendar, Clock, SwitchButton, Refresh } from "@element-plus/icons-vue";
 import type { GetCurrentUserProfile } from "@/soa/com-series/api/AuthApi.js";
 import AuthApi from "@/soa/com-series/api/AuthApi.js";
 import ComPasswordReset from "@/soa/com-series/components/ComPasswordReset.vue";
@@ -115,12 +115,25 @@ const profile = ref<GetCurrentUserProfile | null>(null);
 const changePasswordModalRef = ref();
 const avatarCropperRef = ref<InstanceType<typeof ComModalAvatarCropper>>();
 const fileInputRef = ref<HTMLInputElement>();
+const refreshing = ref(false);
 
 const loadUserProfile = async (): Promise<void> => {
   try {
     profile.value = await AuthApi.getUserProfile();
   } catch (error: any) {
     console.error("加载用户信息失败:", error);
+  }
+};
+
+const onRefreshProfile = async (): Promise<void> => {
+  refreshing.value = true;
+  try {
+    profile.value = await AuthApi.getUserProfile({ forceUpdate: 1 });
+    ElMessage.success("用户信息已刷新");
+  } catch (error: any) {
+    ElMessage.error(error.message || "刷新用户信息失败");
+  } finally {
+    refreshing.value = false;
   }
 };
 
@@ -207,9 +220,6 @@ const avatarUrl = computed(() => {
     token = authStore.getSessionId;
   }
 
-  if (profile.value?.avatarAttachId) {
-    return `/getAttach?id=${profile.value.avatarAttachId}&token=${token}`;
-  }
   return `/api/profile/getUserAvatar?token=${token}`;
 });
 
@@ -366,6 +376,15 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.action-row {
+  display: flex;
+  gap: 8px;
+}
+
+.action-row .action-btn {
+  flex: 1;
 }
 
 .action-btn {

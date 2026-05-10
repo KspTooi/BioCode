@@ -48,12 +48,12 @@ public class UserProfileController {
 
         if (dto.getForceUpdate() != null && dto.getForceUpdate() == 1) {
             var profileCache = cacheManager.getCache("userProfile");
+
             if (profileCache != null) {
                 profileCache.evict(userId);
             }
 
             userService.increaseDv(List.of(userId));
-
             menuService.clearUserMenuTreeCacheByUserId(userId);
         }
 
@@ -63,13 +63,14 @@ public class UserProfileController {
     @Operation(summary = "获取当前用户头像")
     @GetMapping("/getUserAvatar")
     public ResponseEntity<Resource> getUserAvatar() throws AuthException {
-        return profileService.getUserAvatar();
+        Long uid = session().getUserId();
+        return profileService.getUserAvatar(uid);
     }
 
     @Operation(summary = "更新当前用户头像")
     @PostMapping("/updateUserAvatar")
     public ResponseEntity<Resource> updateUserAvatar(@RequestParam("file") MultipartFile file) throws AuthException {
-        return profileService.updateUserAvatar(file);
+        return profileService.updateUserAvatar(file, session().getUserId());
     }
 
     @Operation(summary = "用户更改密码")
