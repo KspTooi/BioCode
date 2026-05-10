@@ -9,6 +9,20 @@
         prefix-icon="Search"
       />
 
+      <el-alert
+        title="开发说明"
+        type="info"
+        :closable="false"
+        show-icon
+        style="margin-bottom: 12px"
+      >
+        <template #default>
+          若组件未出现在列表中，请将其放置于对应业务域的
+          <code>views/&lt;域&gt;/public/</code> 目录下，并以域名大驼峰作为文件名前缀（例如
+          <code>views/qf/public/QfMyForm.vue</code>）。同名组件跨域冲突时两者均不注册。
+        </template>
+      </el-alert>
+
       <div class="comp-list">
         <el-table
           ref="tableRef"

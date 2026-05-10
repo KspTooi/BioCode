@@ -271,6 +271,7 @@ onMounted(async () => {
     return;
   }
 
+  //解析公共组件
   const comp = resolvePublicComp(details.value.routePc);
 
   if (!comp) {
