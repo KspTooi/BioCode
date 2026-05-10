@@ -65,167 +65,176 @@
       <!-- 右侧详情面板 -->
       <pane size="75">
         <div class="right-pane">
-          <el-skeleton v-show="panelLoading" :rows="14" animated class="panel-skeleton" />
+          <el-skeleton :loading="panelLoading" :rows="14" animated class="panel-skeleton" :throttle="350">
+            <div>
+              <!-- 顶部装饰线 -->
+              <div class="panel-accent-bar" :class="`accent-${panelForm.kind}`" />
 
-          <div v-show="!panelLoading && panelVisible">
-            <!-- 顶部装饰线 -->
-            <div class="panel-accent-bar" :class="`accent-${panelForm.kind}`" />
-
-            <!-- 顶部标题条 -->
-            <div class="panel-header">
-              <div class="panel-header-left">
-                <div class="panel-header-icon-shell" :class="`icon-${panelForm.kind}`">
-                  <el-icon class="panel-header-icon">
-                    <component :is="resolveIcon(panelForm.icon || 'ep:menu')" />
-                  </el-icon>
-                </div>
-                <div class="panel-header-titles">
-                  <div class="panel-title">
-                    {{
-                      panelMode === "edit"
-                        ? "编辑" + panelFormLabel
-                        : panelMode === "add"
-                          ? "创建" + panelFormLabel
-                          : "创建子项" + panelFormLabel
-                    }}
-                    <span v-if="panelMode === 'edit' && panelForm.name" class="panel-title-name"> · {{ panelForm.name }} </span>
+              <!-- 顶部标题条 -->
+              <div class="panel-header">
+                <div class="panel-header-left">
+                  <div class="panel-header-icon-shell" :class="`icon-${panelForm.kind}`">
+                    <el-icon class="panel-header-icon">
+                      <component :is="resolveIcon(panelForm.icon || 'ep:menu')" />
+                    </el-icon>
                   </div>
-                  <div class="panel-breadcrumb">{{ panelBreadcrumb.join(" / ") }}</div>
+                  <div class="panel-header-titles">
+                    <div class="panel-title">
+                      {{
+                        panelMode === "edit"
+                          ? "编辑" + panelFormLabel
+                          : panelMode === "add"
+                            ? "创建" + panelFormLabel
+                            : "创建子项" + panelFormLabel
+                      }}
+                      <span v-if="panelMode === 'edit' && panelForm.name" class="panel-title-name">
+                        · {{ panelForm.name }}
+                      </span>
+                    </div>
+                    <div class="panel-breadcrumb">{{ panelBreadcrumb.join(" / ") }}</div>
+                  </div>
+                </div>
+                <div class="panel-header-right">
+                  <el-button @click="closePanel">关闭</el-button>
+                  <el-button type="primary" :loading="panelLoading" @click="submitPanel">
+                    {{ panelMode === "edit" ? "保存" : "创建" }}
+                  </el-button>
                 </div>
               </div>
-              <div class="panel-header-right">
-                <el-button @click="closePanel">关闭</el-button>
-                <el-button type="primary" :loading="panelLoading" @click="submitPanel">
-                  {{ panelMode === "edit" ? "保存" : "创建" }}
-                </el-button>
-              </div>
-            </div>
 
-            <!-- 表单内容区 -->
-            <el-scrollbar class="panel-body">
-              <el-form
-                ref="panelFormRef"
-                :model="panelForm"
-                :rules="panelRules"
-                label-width="90px"
-                :validate-on-rule-change="false"
-                class="panel-form"
-              >
-                <section class="panel-section">
-                  <div class="panel-section-title">{{ panelMode === "edit" ? "编辑" : "创建" }}{{ panelFormLabel }}</div>
-                  <el-form-item label="父级菜单" prop="parentId">
-                    <el-tree-select
-                      v-model="panelForm.parentId"
-                      :data="panelParentMenuTree"
-                      node-key="id"
-                      :props="{ value: 'id', label: 'name', children: 'children' }"
-                      check-strictly
-                      placeholder="请选择父级菜单"
-                      clearable
-                      default-expand-all
-                    />
-                  </el-form-item>
-                  <el-row :gutter="20">
-                    <el-col :span="12">
-                      <el-form-item :label="panelFormLabel + '名称'" prop="name">
-                        <el-input
-                          v-model="panelForm.name"
-                          placeholder="请输入菜单名称"
-                          clearable
-                          maxlength="40"
-                          show-word-limit
-                        />
-                      </el-form-item>
-                    </el-col>
-                    <el-col :span="12">
-                      <el-form-item label="菜单类型" prop="kind">
-                        <el-select
-                          v-model="panelForm.kind"
-                          placeholder="请选择菜单类型"
-                          clearable
-                          :disabled="panelMode === 'edit'"
-                        >
-                          <el-option
-                            label="目录"
-                            :value="0"
-                            :disabled="panelMode === 'add-item' && panelCurrentRow?.kind == 1"
-                          />
-                          <el-option
-                            label="菜单"
-                            :value="1"
-                            :disabled="panelMode === 'add-item' && panelCurrentRow?.kind == 1"
-                          />
-                          <el-option
-                            label="按钮"
-                            :value="2"
-                            :disabled="panelMode === 'add-item' && panelCurrentRow?.kind == 0"
-                          />
-                        </el-select>
-                      </el-form-item>
-                    </el-col>
-                  </el-row>
-                  <el-form-item v-if="panelForm.kind == 1" :label="panelFormLabel + '路径'" prop="path">
-                    <el-input v-model="panelForm.path" placeholder="请输入菜单路径" clearable maxlength="512" show-word-limit>
-                      <template #append>
-                        <el-button @click="openGRCM">选择路由</el-button>
-                      </template>
-                    </el-input>
-                  </el-form-item>
-                  <el-form-item v-if="panelForm.kind == 1 || panelForm.kind == 2" label="所需权限" prop="permissionCode">
-                    <el-select
-                      v-model="panelForm.permissionCode"
-                      multiple
-                      filterable
-                      allow-create
-                      default-first-option
-                      placeholder="请选择或输入所需权限"
-                      clearable
-                    >
-                      <el-option
-                        v-for="item in panelPermissionCodes"
-                        :key="item.code"
-                        :label="`${item.name} (${item.code})`"
-                        :value="item.code"
+              <!-- 表单内容区 -->
+              <el-scrollbar class="panel-body">
+                <el-form
+                  ref="panelFormRef"
+                  :model="panelForm"
+                  :rules="panelRules"
+                  label-width="90px"
+                  :validate-on-rule-change="false"
+                  class="panel-form"
+                >
+                  <section class="panel-section">
+                    <div class="panel-section-title">{{ panelMode === "edit" ? "编辑" : "创建" }}{{ panelFormLabel }}</div>
+                    <el-form-item label="父级菜单" prop="parentId">
+                      <el-tree-select
+                        v-model="panelForm.parentId"
+                        :data="panelParentMenuTree"
+                        node-key="id"
+                        :props="{ value: 'id', label: 'name', children: 'children' }"
+                        check-strictly
+                        placeholder="请选择父级菜单"
+                        clearable
+                        default-expand-all
                       />
-                    </el-select>
-                    <div class="panel-permission-hint">菜单中的权限码发生变更后，已拥有该菜单的用户组需重新登录方可生效。</div>
-                  </el-form-item>
-                  <el-form-item v-if="panelForm.kind == 0 || panelForm.kind == 1" :label="panelFormLabel + '图标'" prop="icon">
-                    <StdIconPicker v-model="panelForm.icon" />
-                  </el-form-item>
-                  <div v-if="panelForm.kind == 2" class="panel-section-empty">按钮类型无需配置路径与图标</div>
-                  <el-row :gutter="20">
-                    <el-col :span="12">
-                      <el-form-item label="状态" prop="hide">
-                        <el-radio-group v-model="panelForm.hide" :disabled="panelForm.kind === 2">
-                          <el-radio :value="0">正常</el-radio>
-                          <el-radio :value="1">隐藏</el-radio>
-                        </el-radio-group>
-                      </el-form-item>
-                    </el-col>
-                    <el-col :span="12">
-                      <el-form-item label="排序" prop="seq">
-                        <el-input-number v-model.number="panelForm.seq" :min="0" placeholder="请输入排序" clearable />
-                      </el-form-item>
-                    </el-col>
-                  </el-row>
-                  <el-form-item label="备注" prop="remark">
-                    <el-input
-                      v-model="panelForm.remark"
-                      type="textarea"
-                      :rows="3"
-                      placeholder="请输入备注"
-                      clearable
-                      maxlength="200"
-                      show-word-limit
-                    />
-                  </el-form-item>
-                </section>
-              </el-form>
-            </el-scrollbar>
-          </div>
+                    </el-form-item>
+                    <el-row :gutter="20">
+                      <el-col :span="12">
+                        <el-form-item :label="panelFormLabel + '名称'" prop="name">
+                          <el-input
+                            v-model="panelForm.name"
+                            placeholder="请输入菜单名称"
+                            clearable
+                            maxlength="40"
+                            show-word-limit
+                          />
+                        </el-form-item>
+                      </el-col>
+                      <el-col :span="12">
+                        <el-form-item label="菜单类型" prop="kind">
+                          <el-select
+                            v-model="panelForm.kind"
+                            placeholder="请选择菜单类型"
+                            clearable
+                            :disabled="panelMode === 'edit'"
+                          >
+                            <el-option
+                              label="目录"
+                              :value="0"
+                              :disabled="panelMode === 'add-item' && panelCurrentRow?.kind == 1"
+                            />
+                            <el-option
+                              label="菜单"
+                              :value="1"
+                              :disabled="panelMode === 'add-item' && panelCurrentRow?.kind == 1"
+                            />
+                            <el-option
+                              label="按钮"
+                              :value="2"
+                              :disabled="panelMode === 'add-item' && panelCurrentRow?.kind == 0"
+                            />
+                          </el-select>
+                        </el-form-item>
+                      </el-col>
+                    </el-row>
+                    <el-form-item v-if="panelForm.kind == 1" :label="panelFormLabel + '路径'" prop="path">
+                      <el-input v-model="panelForm.path" placeholder="请输入菜单路径" clearable maxlength="512" show-word-limit>
+                        <template #append>
+                          <el-button @click="openGRCM">选择路由</el-button>
+                        </template>
+                      </el-input>
+                    </el-form-item>
+                    <el-form-item v-if="panelForm.kind == 1 || panelForm.kind == 2" label="所需权限" prop="permissionCode">
+                      <el-select
+                        v-model="panelForm.permissionCode"
+                        multiple
+                        filterable
+                        allow-create
+                        default-first-option
+                        placeholder="请选择或输入所需权限"
+                        clearable
+                      >
+                        <el-option
+                          v-for="item in panelPermissionCodes"
+                          :key="item.code"
+                          :label="`${item.name} (${item.code})`"
+                          :value="item.code"
+                        />
+                      </el-select>
+                      <div class="panel-permission-hint">
+                        菜单中的权限码发生变更后，已拥有该菜单的用户组需重新登录方可生效。
+                      </div>
+                    </el-form-item>
+                    <el-form-item
+                      v-if="panelForm.kind == 0 || panelForm.kind == 1"
+                      :label="panelFormLabel + '图标'"
+                      prop="icon"
+                    >
+                      <StdIconPicker v-model="panelForm.icon" />
+                    </el-form-item>
+                    <div v-if="panelForm.kind == 2" class="panel-section-empty">按钮类型无需配置路径与图标</div>
+                    <el-row :gutter="20">
+                      <el-col :span="12">
+                        <el-form-item label="状态" prop="hide">
+                          <el-radio-group v-model="panelForm.hide" :disabled="panelForm.kind === 2">
+                            <el-radio :value="0">正常</el-radio>
+                            <el-radio :value="1">隐藏</el-radio>
+                          </el-radio-group>
+                        </el-form-item>
+                      </el-col>
+                      <el-col :span="12">
+                        <el-form-item label="排序" prop="seq">
+                          <el-input-number v-model.number="panelForm.seq" :min="0" placeholder="请输入排序" clearable />
+                        </el-form-item>
+                      </el-col>
+                    </el-row>
+                    <el-form-item label="备注" prop="remark">
+                      <el-input
+                        v-model="panelForm.remark"
+                        type="textarea"
+                        :rows="3"
+                        placeholder="请输入备注"
+                        clearable
+                        maxlength="200"
+                        show-word-limit
+                      />
+                    </el-form-item>
+                  </section>
+                </el-form>
+              </el-scrollbar>
+            </div>
+          </el-skeleton>
+          <!-- v-show="!panelLoading && panelVisible" -->
 
-          <div v-show="!panelVisible" class="panel-empty">
+          <div v-show="!panelLoading && !panelVisible" class="panel-empty">
             <el-icon class="panel-empty-icon"><Menu /></el-icon>
             <p class="panel-empty-title">暂无选中菜单</p>
             <p class="panel-empty-desc">在左侧选择菜单查看详情，或点击下方按钮快速创建</p>
