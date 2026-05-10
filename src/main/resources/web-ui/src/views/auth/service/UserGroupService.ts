@@ -184,20 +184,21 @@ export default {
       ],
     };
 
-    // 部门选择相关
-    const deptSelectModalVisible = ref(false);
+    // 组织选择相关
+    const modalOrgTreeVisible = ref(false);
+    const modalOrgTreeCheckedOrgIds = ref<string[]>([]);
 
-    const openDeptSelect = (): void => {
-      deptSelectModalVisible.value = true;
+    const openModalOrgTree = (): void => {
+      modalOrgTreeVisible.value = true;
+      //给选择组织的模态框设置已选组织
+      modalOrgTreeCheckedOrgIds.value = modalForm.deptIds || [];
     };
 
-    const onDeptSelectConfirm = (depts: GetOrgTreeVo | GetOrgTreeVo[]): void => {
-      if (Array.isArray(depts)) {
-        modalForm.deptIds = depts.map((d) => d.id);
-        // 触发表单验证，清除错误提示
-        if (modalFormRef.value) {
-          modalFormRef.value.validateField("deptIds");
-        }
+    const onModalOrgTreeSubmit = (depts: string[]): void => {
+      modalForm.deptIds = depts;
+      // 触发表单验证，清除错误提示
+      if (modalFormRef.value) {
+        modalFormRef.value.validateField("deptIds");
       }
     };
 
@@ -346,9 +347,10 @@ export default {
       isSystemGroup,
       modalForm,
       modalRules,
-      deptSelectModalVisible,
-      openDeptSelect,
-      onDeptSelectConfirm,
+      modalOrgTreeVisible,
+      modalOrgTreeCheckedOrgIds,
+      openModalOrgTree,
+      onModalOrgTreeSubmit,
       openModal,
       resetModal,
       submitModal,

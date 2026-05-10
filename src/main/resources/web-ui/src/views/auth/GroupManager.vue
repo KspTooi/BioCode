@@ -161,13 +161,17 @@
 
   <GroupGpModal :visible="gpModalVisible" :data="gpModalRow" @close="gpModalVisible = false" @success="loadList" />
 
-  <CoreOrgDeptSelectModal
-    v-model="deptSelectModalVisible"
-    multiple
-    type="all"
-    title="指定组织"
-    :default-selected="modalForm.deptIds"
-    @confirm="onDeptSelectConfirm"
+  <ModalOrgTree
+    v-model="modalOrgTreeVisible"
+    v-model:checked-org-ids="modalOrgTreeCheckedOrgIds"
+    :search="true"
+    :search-cascade="true"
+    :check="true"
+    :check-multiple="true"
+    :check-cascade="false"
+    search-placeholder="请输入组织机构"
+    title="指定组织机构"
+    @on-submit="onModalOrgTreeSubmit"
   />
 
   <!-- 用户组编辑/创建模态框 -->
@@ -255,7 +259,7 @@
             </el-form-item>
             <el-form-item v-if="modalForm.rowScope === 60" label="指定组织" prop="deptIds">
               <div class="flex items-center">
-                <el-button type="primary" size="small" @click="openDeptSelect">选择组织</el-button>
+                <el-button type="primary" size="small" @click="openModalOrgTree">选择组织</el-button>
                 <span class="ml-2 text-gray-500">已选择 {{ modalForm.deptIds?.length || 0 }} 个组织</span>
               </div>
             </el-form-item>
@@ -282,7 +286,7 @@ import type { FormInstance } from "element-plus";
 import type { GetGroupListVo, EditGroupDto, GetGroupDetailsVo } from "@/views/auth/api/GroupApi.ts";
 import AdminGroupApi from "@/views/auth/api/GroupApi.ts";
 import UserGroupService from "@/views/auth/service/UserGroupService.ts";
-import CoreOrgDeptSelectModal from "@/views/core/components/public/CoreOrgDeptSelectModal.vue";
+import ModalOrgTree from "@/views/core/public/ModalOrgTree.vue";
 import StdListLayout from "@/soa/std-series/StdListLayout.vue";
 import ComSeqFixer from "@/soa/com-series/ComSeqFixer.vue";
 import RsSimulationModal from "@/views/auth/components/RsSimulationModal.vue";
@@ -317,9 +321,10 @@ const {
   openModal,
   resetModal,
   submitModal,
-  deptSelectModalVisible,
-  openDeptSelect,
-  onDeptSelectConfirm,
+  modalOrgTreeVisible,
+  modalOrgTreeCheckedOrgIds,
+  openModalOrgTree,
+  onModalOrgTreeSubmit,
 } = UserGroupService.useUserGroupModal(modalFormRef, loadList);
 
 /**
