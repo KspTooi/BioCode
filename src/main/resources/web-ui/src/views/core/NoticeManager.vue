@@ -95,7 +95,7 @@
             <span v-if="scope.row.targetKind === 2"> 指定用户 </span>
           </template>
         </el-table-column>
-        <el-table-column prop="targetCount" label="接收人数" width="90" />
+        <el-table-column prop="targetCount" label="预计接收人数" width="110" />
         <el-table-column prop="createTime" label="创建时间" width="200" />
         <el-table-column label="操作" fixed="right" width="190" align="center">
           <template #default="scope">
