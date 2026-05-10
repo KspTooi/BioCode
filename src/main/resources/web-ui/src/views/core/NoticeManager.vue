@@ -133,13 +133,16 @@
 
     <template #modal>
       <!-- 部门选择器 -->
-      <CoreOrgDeptSelectModal
+      <ModalOrgTree
         v-model="deptSelectVisible"
-        :default-selected="modalForm._targetIds"
+        v-model:checked-org-ids="modalForm._targetIds"
+        :search="true"
+        search-placeholder="请输入部门名"
+        :check="true"
+        :check-multiple="true"
+        :check-cascade="false"
         title="选择接收部门"
-        multiple
-        type="dept"
-        @confirm="onDeptSelect"
+        @on-submit="onDeptSelect"
       />
 
       <!-- 用户选择器 -->
@@ -234,7 +237,7 @@ import type { FormInstance } from "element-plus";
 import NoticeService from "@/views/core/service/NoticeService.ts";
 import CoreUserSelectModal from "@/views/core/components/public/CoreUserSelectModal.vue";
 import StdListLayout from "@/soa/std-series/StdListLayout.vue";
-import CoreOrgDeptSelectModal from "@/views/core/components/public/CoreOrgDeptSelectModal.vue";
+import ModalOrgTree from "@/views/core/public/ModalOrgTree.vue";
 
 // 部门选择器引用
 const deptSelectVisible = ref(false);

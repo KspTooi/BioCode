@@ -158,7 +158,7 @@ export default {
         { required: true, message: "接收对象类型不能为空", trigger: "blur" },
         { type: "number", min: 0, max: 2, message: "接收对象类型只能在0-2之间", trigger: "blur" },
       ],
-      targetIds: [
+      _targetIds: [
         {
           validator: (rule: any, value: any, callback: any) => {
             if (modalForm.targetKind === 0) {
@@ -310,12 +310,12 @@ export default {
     /**
      * 选择部门
      */
-    const onDeptSelect = (depts: GetOrgTreeVo[]): void => {
+    const onDeptSelect = (checkedOrgIds: string[]): void => {
       if (modalForm.targetKind !== 1) {
         return;
       }
 
-      modalForm._targetIds = depts.map((dept) => dept.id);
+      modalForm._targetIds = checkedOrgIds;
     };
 
     /**

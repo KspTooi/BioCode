@@ -178,13 +178,15 @@
 
     <!-- 部门选择器 (用于批量变更部门等操作) -->
     <ModalOrgTree
-      v-model:visible="modalOrgTreeVisible"
+      v-model="motVisible"
+      v-model:checked-org-ids="motValues"
       :search="true"
       search-placeholder="请输入组织机构"
       :check="true"
       :check-multiple="false"
       title="选择目标组织机构"
-      @on-submit="onSubmitChangeOrg"
+      @on-submit="motSubmit"
+      @on-close="motClosed"
     />
 
     <!-- 用户编辑/创建模态框 -->
@@ -355,7 +357,7 @@ const {
 } = UserManagerService.useUserModal(modalFormRef, () => loadList(currentOrgId.value), currentOrgId);
 
 // 批量操作打包
-const { onBatchAction, onSelectionChange, modalOrgTreeVisible, onSubmitChangeOrg, canBatchAction, batchCount } =
+const { onBatchAction, onSelectionChange, motClosed, motSubmit, motVisible, motValues, canBatchAction, batchCount } =
   UserManagerService.useBatchAction(() => loadList(currentOrgId.value));
 </script>
 

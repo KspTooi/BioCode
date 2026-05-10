@@ -417,8 +417,8 @@ export default {
    */
   useBatchAction(loadList: () => void) {
     //组织机构选择器
-    const modalOrgTreeVisible = ref(false);
-    const modalOrgTreeValues = ref<GetOrgTreeVo[]>([]);
+    const motVisible = ref(false);
+    const motValues = ref<string[]>([]);
 
     const selectedRows = ref<GetUserListVo[]>([]);
     const batchCount = ref(0);
@@ -430,18 +430,18 @@ export default {
 
     /**
      * 提交组织机构选择器
-     * @param checkedOrgIds 已勾选的组织机构ID列表
+     * @param values 已勾选的组织机构ID列表
      */
-    const onSubmitChangeOrg = async (checkedOrgIds: string[]): Promise<void> => {
+    const motSubmit = async (values: string[]): Promise<void> => {
       //获取选中的用户ID列表
       const ids = selectedRows.value.map((row) => row.id);
 
-      if (ids.length < 1 || checkedOrgIds.length < 1) {
+      if (ids.length < 1 || values.length < 1) {
         ElMessage.error("未选择用户或组织机构");
         return;
       }
       try {
-        const res = await AdminUserApi.batchEditUser({ ids, kind: 3, orgId: checkedOrgIds[0] });
+        const res = await AdminUserApi.batchEditUser({ ids, kind: 3, orgId: values[0] });
         if (Result.isError(res)) {
           ElMessage.error(res.message);
           return;
@@ -452,6 +452,13 @@ export default {
         ElMessage.error(error.message);
         return;
       }
+    };
+
+    /**
+     * 组织机构选择器关闭
+     */
+    const motClosed = (): void => {
+      motValues.value = [];
     };
 
     /**
@@ -469,7 +476,7 @@ export default {
 
       // 处理变更部门：需要先选择部门
       if (command === "changeDept") {
-        modalOrgTreeVisible.value = true;
+        motVisible.value = true;
         return;
       }
 
@@ -535,9 +542,10 @@ export default {
     return {
       onBatchAction,
       onSelectionChange,
-      onSubmitChangeOrg,
-      modalOrgTreeVisible,
-      modalOrgTreeValues,
+      motClosed,
+      motSubmit,
+      motVisible,
+      motValues,
       canBatchAction: computed(() => batchCount.value > 0),
       batchCount,
     };

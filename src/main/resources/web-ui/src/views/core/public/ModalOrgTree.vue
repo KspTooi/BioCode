@@ -51,7 +51,7 @@ const emit = defineEmits<{
   (e: "on-close"): void;
 }>();
 
-const modalVisible = defineModel<boolean>("visible", { default: false });
+const modalVisible = defineModel<boolean>({ default: false });
 const loading = ref(false);
 
 //已勾选的组织机构ID列表
@@ -85,7 +85,6 @@ const onClose = (): void => {
 .tree-container {
   flex: 1;
   overflow: hidden;
-  padding: 10px;
 }
 
 .dialog-footer {

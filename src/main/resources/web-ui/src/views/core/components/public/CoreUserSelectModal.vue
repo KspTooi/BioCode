@@ -124,7 +124,7 @@ import { ref, watch, nextTick } from "vue";
 import { Splitpanes, Pane } from "splitpanes";
 import type { ElTable } from "element-plus";
 import "splitpanes/dist/splitpanes.css";
-import OrgTree from "@/views/core/components/OrgTree.vue";
+import OrgTree from "@/views/core/public/OrgTree.vue";
 import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
 import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
 import CoreUserSelectInputService from "@/views/core/service/CoreUserSelectInputService";
