@@ -116,10 +116,12 @@ const changePasswordModalRef = ref();
 const avatarCropperRef = ref<InstanceType<typeof ComModalAvatarCropper>>();
 const fileInputRef = ref<HTMLInputElement>();
 const refreshing = ref(false);
+const avatarVersion = ref(0);
 
 const loadUserProfile = async (): Promise<void> => {
   try {
     profile.value = await AuthApi.getUserProfile();
+    avatarVersion.value++;
   } catch (error: any) {
     console.error("加载用户信息失败:", error);
   }
@@ -129,6 +131,7 @@ const onRefreshProfile = async (): Promise<void> => {
   refreshing.value = true;
   try {
     profile.value = await AuthApi.getUserProfile({ forceUpdate: 1 });
+    avatarVersion.value++;
     ElMessage.success("用户信息已刷新");
   } catch (error: any) {
     ElMessage.error(error.message || "刷新用户信息失败");
@@ -207,6 +210,7 @@ const handleAvatarConfirm = async (file: File): Promise<void> => {
   try {
     await AuthApi.updateUserAvatar(file);
     profile.value = await AuthApi.getUserProfile({ forceUpdate: 1 });
+    avatarVersion.value++;
     ElMessage.success("头像已更新");
   } catch (error: any) {
     ElMessage.error(error.message || "头像更新失败");
@@ -220,7 +224,7 @@ const avatarUrl = computed(() => {
     token = authStore.getSessionId;
   }
 
-  return `/api/profile/getUserAvatar?token=${token}`;
+  return `/api/profile/getUserAvatar?token=${token}&v=${avatarVersion.value}`;
 });
 
 const genderText = computed(() => {
