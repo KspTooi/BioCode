@@ -136,6 +136,7 @@
       <ModalOrgTree
         v-model="deptSelectVisible"
         v-model:checked-org-ids="modalForm._targetIds"
+        :check-enable-method="(vo: GetOrgTreeVo) => vo.kind === 2"
         :search="true"
         search-placeholder="请输入部门名"
         :check="true"
@@ -146,7 +147,7 @@
       />
 
       <!-- 用户选择器 -->
-      <CoreUserSelectModal
+      <ModalUserSelector
         v-model="userSelectVisible"
         :default-selected="modalForm._targetIds"
         title="选择接收用户"
@@ -235,9 +236,10 @@ import { ref, markRaw, reactive } from "vue";
 import { Edit, Delete } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
 import NoticeService from "@/views/core/service/NoticeService.ts";
-import CoreUserSelectModal from "@/views/core/components/public/CoreUserSelectModal.vue";
+import ModalUserSelector from "@/views/core/public/ModalUserSelector.vue";
 import StdListLayout from "@/soa/std-series/StdListLayout.vue";
 import ModalOrgTree from "@/views/core/public/ModalOrgTree.vue";
+import type { GetOrgTreeVo } from "@/views/core/api/OrgApi";
 
 // 部门选择器引用
 const deptSelectVisible = ref(false);

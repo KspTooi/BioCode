@@ -127,7 +127,7 @@ import "splitpanes/dist/splitpanes.css";
 import OrgTree from "@/views/core/public/OrgTree.vue";
 import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
 import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
-import CoreUserSelectInputService from "@/views/core/service/CoreUserSelectInputService";
+import ModalUserSelectorService from "@/views/core/public/service/ModalUserSelectorService.ts";
 import type { GetOrgTreeVo } from "@/views/core/api/OrgApi";
 import type { GetUserListVo } from "@/views/core/api/UserApi";
 
@@ -160,7 +160,7 @@ const selectedUsers = ref<GetUserListVo[]>([]);
 const tableRef = ref<InstanceType<typeof ElTable>>();
 
 const { listForm, listData, listTotal, listLoading, loadList, resetList, selectedUser } =
-  CoreUserSelectInputService.useUserSelect(null, props.multiple);
+  ModalUserSelectorService.useUserSelect(null, props.multiple);
 
 // 用于 Promise 式调用的状态
 let promiseResolve: (value: GetUserListVo | GetUserListVo[]) => void;
