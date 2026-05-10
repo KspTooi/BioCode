@@ -43,8 +43,8 @@ import { ref, onMounted, onBeforeUnmount } from "vue";
 import draggable from "vuedraggable";
 import { ElIcon } from "element-plus";
 import { Refresh, Close } from "@element-plus/icons-vue";
-import ComTabService, { type Tab } from "@/soa/com-series/service/ComTabService.ts";
-import ComIconService from "@/soa/com-series/service/ComIconService.ts";
+import ComTabService, { type Tab } from "@/soa/com-series/service/ComTabService.js";
+import ComIconService from "@/soa/com-series/service/ComIconService.js";
 //使用图标服务
 const { resolveIcon } = ComIconService.useIconService();
 
