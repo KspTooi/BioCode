@@ -1,8 +1,0 @@
----
-description: 
-globs: *.java
-alwaysApply: false
----
-
-1.代码中短路优先,使用 if-reurn、if-contunue、if-throw 2.不使用 switch、else
-2.统一使用ApacheCommonLang库的StringUtils判断字符串

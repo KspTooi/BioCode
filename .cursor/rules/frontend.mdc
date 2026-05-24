@@ -1,9 +1,0 @@
----
-description: 
-globs: *.ts, *.js, *.vue
-alwaysApply: false
----
-
-1.代码中短路优先,使用 if-reurn、if-contunue、if-throw 
-2.不使用 switch、else 3.对于所有 id 字段(后端可能会返回 Long)前端必须定义为 string 以防止精度丢失
-3.禁止使用相对路径导入,需要使用@导入 因为"@": fileURLToPath(new URL("./src", import.meta.url)),
