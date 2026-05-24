@@ -49,7 +49,7 @@
 
     <!-- 操作按钮区域 -->
     <template #actions>
-      <el-button type="success" @click="openModal('add', null)">创建通知模板</el-button>
+      <el-button type="primary" @click="openModal('add', null)">创建通知模板</el-button>
     </template>
 
     <!-- 列表表格区域 -->
@@ -131,7 +131,7 @@
             <el-input
               v-model="modalForm.content"
               type="textarea"
-              :rows="4"
+              :autosize="{ minRows: 4 }"
               maxlength="10000"
               show-word-limit
               placeholder="请输入模板内容 (含占位符)"
@@ -148,6 +148,7 @@
             <el-input
               v-model="modalForm.remark"
               type="textarea"
+              :autosize="{ minRows: 3 }"
               maxlength="1000"
               show-word-limit
               placeholder="请输入备注"
