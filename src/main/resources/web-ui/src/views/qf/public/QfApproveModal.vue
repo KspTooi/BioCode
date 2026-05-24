@@ -35,7 +35,7 @@
           <el-input
             v-model="service.comment.value"
             type="textarea"
-            :rows="4"
+            :autosize="{ minRows: 4 }"
             :placeholder="service.action.value === 0 ? '请输入同意意见（可选）' : '请输入驳回原因'"
             maxlength="500"
             show-word-limit

@@ -21,25 +21,40 @@
                 record.finTime ||
                 (record.status === 0
                   ? '待处理'
-                  : record.status === 1
-                    ? '已处理'
-                    : record.status === 10
-                      ? '已作废'
-                      : record.action === 0
-                        ? '同意'
-                        : '—')
+                  : record.action === 0
+                    ? '同意'
+                    : record.action === 1
+                      ? '驳回'
+                      : record.status === 10
+                        ? '已作废'
+                        : record.status === 1
+                          ? '已处理'
+                          : '—')
               "
               placement="top"
-              :type="record.status === 0 ? 'primary' : record.action === 0 ? 'success' : 'danger'"
+              :color="
+                record.status === 0
+                  ? '#409EFF'
+                  : record.action === 0
+                    ? '#67C23A'
+                    : record.action === 1
+                      ? '#f57c00'
+                      : record.status === 10
+                        ? '#c62828'
+                        : record.status === 1
+                          ? '#3f51b5'
+                          : '#C0C4CC'
+              "
             >
               <el-card class="record-card" shadow="never">
                 <div class="record-header">
                   <span class="record-node">{{ record.nodeName }}</span>
                   <el-tag v-if="record.status === 0" type="primary" size="small" effect="plain"> 待处理 </el-tag>
-                  <el-tag v-else-if="record.status === 1" type="info" size="small" effect="plain"> 已处理 </el-tag>
-                  <el-tag v-else-if="record.status === 10" type="danger" size="small" effect="plain"> 已作废 </el-tag>
                   <el-tag v-else-if="record.action === 0" type="success" size="small" effect="plain"> 同意 </el-tag>
-                  <el-tag v-else type="danger" size="small" effect="plain"> 驳回 </el-tag>
+                  <el-tag v-else-if="record.action === 1" type="warning" size="small" effect="plain"> 驳回 </el-tag>
+                  <el-tag v-else-if="record.status === 1" type="indigo" size="small" effect="plain"> 已处理 </el-tag>
+                  <el-tag v-else-if="record.status === 10" type="danger" size="small" effect="plain"> 已作废 </el-tag>
+                  <el-tag v-else type="default" size="small" effect="plain"> — </el-tag>
                 </div>
                 <div class="record-meta">
                   <el-icon><User /></el-icon>
@@ -100,7 +115,7 @@
         <el-input
           v-model="approveComment"
           type="textarea"
-          :rows="3"
+          :autosize="{ minRows: 3 }"
           placeholder="请输入审批意见（可选）"
           maxlength="255"
           show-word-limit
@@ -108,6 +123,7 @@
         />
       </div>
       <div class="approve-footer">
+        <el-button size="large" type="primary" :icon="CircleClose" :loading="submitLoading" @click="onBack()"> 返回 </el-button>
         <el-button size="large" type="danger" :icon="CircleClose" :loading="submitLoading" @click="onApprove(1)">
           审批驳回
         </el-button>
@@ -143,6 +159,12 @@ const detailsLoading = ref(false);
 const records = ref<ApproveFlowRecordVo[]>([]);
 
 const activeTab = ref("form");
+
+/** 回退 */
+const onBack = (): void => {
+  closeTab(activeTabId.value);
+  redirect("qfTodo");
+};
 
 /** 审批区域状态 */
 const approveComment = ref("");
