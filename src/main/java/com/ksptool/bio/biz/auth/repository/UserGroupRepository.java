@@ -15,6 +15,18 @@ public interface UserGroupRepository extends JpaRepository<UserGroupPo, UserGrou
 
 
     /**
+     * 批量查询用户组下的用户ID
+     *
+     * @param groupIds 用户组ID列表
+     * @return 用户组关联实体列表
+     */
+    @Query("""
+            SELECT ug FROM UserGroupPo ug
+            WHERE ug.groupId IN :groupIds
+            """)
+    List<UserGroupPo> findAllByGroupIds(@Param("groupIds") List<Long> groupIds);
+
+    /**
      * 根据用户组ID统计用户数量
      *
      * @param groupId 用户组ID
