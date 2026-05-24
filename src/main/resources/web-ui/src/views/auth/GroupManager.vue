@@ -1,6 +1,6 @@
 <template>
-  <StdListLayout>
-    <template #query>
+  <StdListContainer>
+    <StdListAreaQuery>
       <el-form :model="listForm">
         <el-row>
           <el-col :span="5" :offset="1">
@@ -28,10 +28,10 @@
           </el-col>
         </el-row>
       </el-form>
-    </template>
+    </StdListAreaQuery>
 
-    <template #actions>
-      <el-button type="success" @click="openModal('add', null)">创建用户组</el-button>
+    <StdListAreaAction>
+      <el-button type="primary" @click="openModal('add', null)">创建用户组</el-button>
       <el-button
         type="danger"
         :disabled="listSelected.length === 0"
@@ -40,9 +40,9 @@
       >
         批量删除
       </el-button>
-    </template>
+    </StdListAreaAction>
 
-    <template #table>
+    <StdListAreaTable v-model:list-form="listForm" :list-total="listTotal" :load-list="loadList">
       <el-table
         v-loading="listLoading"
         :data="listData"
@@ -131,31 +131,7 @@
           </template>
         </el-table-column>
       </el-table>
-    </template>
-
-    <template #pagination>
-      <el-pagination
-        v-model:current-page="listForm.pageNum"
-        v-model:page-size="listForm.pageSize"
-        :page-sizes="[10, 20, 50, 100]"
-        layout="total, sizes, prev, pager, next, jumper"
-        :total="listTotal"
-        background
-        @size-change="
-          (val: number) => {
-            listForm.pageSize = val;
-            loadList();
-          }
-        "
-        @current-change="
-          (val: number) => {
-            listForm.pageNum = val;
-            loadList();
-          }
-        "
-      />
-    </template>
-  </StdListLayout>
+    </StdListAreaTable>
 
   <GroupMenuModal :visible="menuModalVisible" :data="menuModalRow" @close="menuModalVisible = false" @success="loadList" />
 
@@ -202,15 +178,15 @@
             <el-form-item label="用户组编码" prop="code" label-for="group-code">
               <el-input
                 id="group-code"
+                v-model="modalForm.code"
                 show-word-limit
                 :maxlength="32"
-                v-model="modalForm.code"
                 :disabled="modalMode === 'edit' && isSystemGroup"
                 :placeholder="modalMode === 'edit' && isSystemGroup ? '系统用户组不可修改编码' : '请输入组编码'"
               />
             </el-form-item>
             <el-form-item label="用户组名称" prop="name" label-for="group-name">
-              <el-input id="group-name" show-word-limit :maxlength="80" v-model="modalForm.name" placeholder="请输入组名称" />
+              <el-input id="group-name" v-model="modalForm.name" show-word-limit :maxlength="80" placeholder="请输入组名称" />
             </el-form-item>
             <el-form-item label="排序号" prop="seq">
               <el-input-number v-model="modalForm.seq" :min="0" :max="655350" class="w-full" />
@@ -223,12 +199,12 @@
             </el-form-item>
             <el-form-item label="用户组描述" prop="remark" label-for="group-remark">
               <el-input
-                show-word-limit
-                :maxlength="200"
                 id="group-remark"
                 v-model="modalForm.remark"
+                show-word-limit
+                :maxlength="200"
                 type="textarea"
-                :rows="4"
+                :autosize="{ minRows: 4 }"
                 placeholder="请输入描述"
               />
             </el-form-item>
@@ -252,9 +228,9 @@
                   <el-option :value="50" label="仅本人" />
                   <el-option :value="60" label="指定组织" />
                 </el-select>
-                <el-button type="primary" size="small" style="margin-left: 5px" @click="openRsSimulationModal"
-                  >数据权限模拟器</el-button
-                >
+                <el-button type="primary" size="small" style="margin-left: 5px" @click="openRsSimulationModal">
+                  数据权限模拟器
+                </el-button>
               </div>
             </el-form-item>
             <el-form-item v-if="modalForm.rowScope === 60" label="指定组织" prop="deptIds">
@@ -277,6 +253,7 @@
     </template>
   </el-dialog>
   <RsSimulationModal :visible="rsSimulationModalVisible" @close="rsSimulationModalVisible = false" />
+  </StdListContainer>
 </template>
 
 <script setup lang="ts">
@@ -287,7 +264,10 @@ import type { GetGroupListVo, EditGroupDto, GetGroupDetailsVo } from "@/views/au
 import AdminGroupApi from "@/views/auth/api/GroupApi.ts";
 import UserGroupService from "@/views/auth/service/UserGroupService.ts";
 import ModalOrgTree from "@/views/core/public/ModalOrgTree.vue";
-import StdListLayout from "@/soa/std-series/StdListLayout.vue";
+import StdListContainer from "@/soa/std-series/StdListContainer.vue";
+import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
+import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";
+import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
 import ComSeqFixer from "@/soa/com-series/ComSeqFixer.vue";
 import RsSimulationModal from "@/views/auth/components/RsSimulationModal.vue";
 import GroupMenuModal from "@/views/auth/components/GroupMenuModal.vue";
