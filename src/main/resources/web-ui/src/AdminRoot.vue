@@ -1,21 +1,9 @@
 <template>
-  <router-view v-if="isBlankLayout" />
-  <com-framework v-if="!isBlankLayout" />
+  <com-layout-provider />
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
-import { useRoute } from "vue-router";
-import ComFramework from "@/soa/com-series/ComFramework.vue";
-
-const route = useRoute();
-
-const isBlankLayout = computed(() => {
-  if (route.meta?.layout === "blank") {
-    return true;
-  }
-  return false;
-});
+import ComLayoutProvider from "@/soa/com-series/ComLayoutProvider.vue";
 </script>
 
 <style>
