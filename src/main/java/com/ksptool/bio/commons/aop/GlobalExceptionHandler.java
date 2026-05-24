@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -212,5 +213,36 @@ public class GlobalExceptionHandler {
         return Result.error(ResultCode.REQUIRE_ROOT.getCode(), ResultCode.REQUIRE_ROOT.getMessage());
     }
 
+    /**
+     * 处理数据完整性约束违反异常
+     * Spring会将SQLException包装成此异常，需要在SQLIntegrityConstraintViolationException之前处理
+     */
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public Result<Object> handleDataIntegrityViolationException(org.springframework.dao.DataIntegrityViolationException ex, HttpServletRequest request) {
+        if (recordErrorRcd) {
+            // 审计模块记录系统错误记录
+            var session = sessionWithNullable();
+            var userId = 0L;
+            var userName = "无法获取";
+            var errorCode = auditErrorRcdService.nextErrorCode("PARAM");
+
+            if (session != null) {
+                userId = session.getUserId();
+                userName = session.getNickname();
+            }
+            auditErrorRcdService.addAuditErrorRcdAsync(errorCode, request.getRequestURI(), userId, userName, ex);
+        }
+        Throwable rootCause = ex.getRootCause();
+        if (rootCause instanceof SQLIntegrityConstraintViolationException) {
+            String message = rootCause.getMessage();
+            if (StringUtils.isNotBlank(message)) {
+                if (message.contains("dept_id") && message.contains("cannot be null")) {
+                    return Result.error("用户部门没有维护，请联系管理员");
+                }
+            }
+        }
+
+        return Result.error("数据完整性约束违反，请联系管理员");
+    }
 
 }
