@@ -8,8 +8,9 @@ import lombok.Setter;
 @Setter
 public class GetOrgTreeDto {
 
-    @Schema(description = "组织机构名称")
-    private Long rootId;
+
+    @Schema(description = "企业id")
+    private Long orgId;
 
     @Schema(description = "组织机构名称")
     private String name;

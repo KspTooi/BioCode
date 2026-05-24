@@ -1,6 +1,7 @@
 package com.ksptool.bio.biz.core.repository;
 
 import com.ksptool.bio.biz.core.model.org.OrgPo;
+import com.ksptool.bio.biz.core.model.org.dto.GetOrgListDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -99,15 +100,11 @@ public interface OrgRepository extends JpaRepository<OrgPo, Long> {
     @Query("""
             SELECT u FROM OrgPo u
             WHERE
-            (:#{#po.id} IS NULL OR u.id  = :#{#po.id} )
-            AND (:#{#po.rootId} IS NULL OR u.rootId  = :#{#po.rootId} )
-            AND (:#{#po.parentId} IS NULL OR u.parentId  = :#{#po.parentId} )
-            AND (:#{#po.kind} IS NULL OR u.kind  = :#{#po.kind} )
-            AND (:#{#po.name} IS NULL OR u.name  LIKE CONCAT('%', :#{#po.name}, '%') )
-            AND (:#{#po.principalId} IS NULL OR u.principalId  = :#{#po.principalId} )
+           
+             (:#{#po.orgIds} IS NULL OR u.id in  :#{#po.orgIds} )            
             ORDER BY u.updateTime DESC
             """)
-    Page<OrgPo> getOrgList(@Param("po") OrgPo po, Pageable pageable);
+    Page<OrgPo> getOrgList(@Param("po") GetOrgListDto po, Pageable pageable);
 
 
     /**
@@ -260,4 +257,12 @@ public interface OrgRepository extends JpaRepository<OrgPo, Long> {
             order by d.seq asc
             """)
     List<OrgPo> getAllByRootId(@Param("rootId") Long rootId);
+
+    @Query("""
+            SELECT d FROM OrgPo d
+            WHERE d.orgId = :orgId
+            order by d.seq asc
+            """)
+    List<OrgPo> getAllByOrgId(@Param("orgId") Long orgId);
+
 }

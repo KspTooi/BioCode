@@ -1,12 +1,15 @@
 package com.ksptool.bio.biz.core.controller;
 
 import com.ksptool.assembly.entity.web.CommonIdDto;
+import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.assembly.entity.web.Result;
 import com.ksptool.bio.biz.auth.common.aop.RowScope;
 import com.ksptool.bio.biz.core.model.org.dto.AddOrgDto;
 import com.ksptool.bio.biz.core.model.org.dto.EditOrgDto;
+import com.ksptool.bio.biz.core.model.org.dto.GetOrgListDto;
 import com.ksptool.bio.biz.core.model.org.dto.GetOrgTreeDto;
 import com.ksptool.bio.biz.core.model.org.vo.GetOrgDetailsVo;
+import com.ksptool.bio.biz.core.model.org.vo.GetOrgListVo;
 import com.ksptool.bio.biz.core.model.org.vo.GetOrgTreeVo;
 import com.ksptool.bio.biz.core.service.OrgService;
 import com.ksptool.bio.biz.core.service.UserService;
@@ -43,6 +46,12 @@ public class OrgController {
     public Result<List<GetOrgTreeVo>> getOrgTree(@RequestBody @Valid GetOrgTreeDto dto) throws Exception {
         List<GetOrgTreeVo> list = orgService.getOrgTree(dto);
         return Result.success(list);
+    }
+
+    @PostMapping("/getOrgList")
+    @Operation(summary = "查询组织机构树列表")
+    public PageResult<GetOrgListVo> getOrgList(@RequestBody @Valid GetOrgListDto dto) throws Exception {
+       return orgService.getOrgList(dto);
     }
 
     @PreAuthorize("@auth.hasCode('core:org:add')")

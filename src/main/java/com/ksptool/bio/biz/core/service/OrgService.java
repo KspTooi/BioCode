@@ -51,19 +51,20 @@ public class OrgService {
     public List<GetOrgTreeVo> getOrgTree(GetOrgTreeDto dto) {
 
         //全量查询组织 按排序排序
-        List<OrgPo> pos;
-        if (dto.getRootId() == null) {
+        List<OrgPo> pos = new ArrayList<>();
+        if (dto.getOrgId() == null) {
             pos = repository.findAll(Sort.by(Sort.Direction.ASC, "seq"));
         } else {
-            pos = repository.getAllByRootId(dto.getRootId());
+            pos = repository.getAllByOrgId(dto.getOrgId());
+        }
+
+
+        List<GetOrgTreeVo> treeVos = new ArrayList<>();
+        if (pos.isEmpty()) {
+            return treeVos;
         }
 
         List<GetOrgTreeVo> flatTreeVos = as(pos, GetOrgTreeVo.class);
-        List<GetOrgTreeVo> treeVos = new ArrayList<>();
-
-        if (flatTreeVos.isEmpty()) {
-            return treeVos;
-        }
 
         Map<Long, GetOrgTreeVo> voMap = new HashMap<>();
         for (GetOrgTreeVo vo : flatTreeVos) {
@@ -97,10 +98,8 @@ public class OrgService {
      * @return
      */
     public PageResult<GetOrgListVo> getOrgList(GetOrgListDto dto) {
-        OrgPo query = new OrgPo();
-        assign(dto, query);
 
-        Page<OrgPo> page = repository.getOrgList(query, dto.pageRequest());
+        Page<OrgPo> page = repository.getOrgList(dto, dto.pageRequest());
         if (page.isEmpty()) {
             return PageResult.successWithEmpty();
         }

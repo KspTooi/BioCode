@@ -33,5 +33,8 @@ public class GetOrgTreeVo {
 
     @Schema(description = "子组织")
     private List<GetOrgTreeVo> children;
+
+    @Schema(description = "顶级组织ID")
+    private Long orgId;
 }
 

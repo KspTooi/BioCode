@@ -2,56 +2,19 @@ package com.ksptool.bio.biz.core.model.org.dto;
 
 import com.ksptool.assembly.entity.web.PageQuery;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Getter
 @Setter
 public class GetOrgListDto extends PageQuery {
 
-
-    @Schema(description = "主键id")
-    private Long id;
-
-    @Schema(description = "一级组织ID")
-    private Long rootId;
-
-    @Schema(description = "上级组织ID NULL顶级组织")
-    private Long parentId;
-
-    @Schema(description = "0:企业(租户) 1:子企业 2:部门 3:班组")
-    private Integer kind;
-
-    @Schema(description = "组织机构名称")
-    private String name;
-
-    @Schema(description = "行业标识ID")
-    private Long industryId;
-
-    @Schema(description = "行业标识名称")
-    private String industryName;
-
-    @Schema(description = "主管ID")
-    private Long principalId;
-
-    @Schema(description = "主管名称")
-    private String principalName;
-
-    @Schema(description = "创建时间")
-    private LocalDateTime createTime;
-
-    @Schema(description = "创建人id")
-    private Long creatorId;
-
-    @Schema(description = "更新时间")
-    private LocalDateTime updateTime;
-
-    @Schema(description = "更新人id")
-    private Long updaterId;
-
-    @Schema(description = "删除时间 NULL未删除")
-    private LocalDateTime deleteTime;
+    @NotNull(message = "组织集合不能为空")
+    @Schema(description = "组织ID集合")
+    private Set<Long> orgIds;
 }
 
