@@ -9,6 +9,7 @@ import com.ksptool.bio.biz.audit.model.auditerrorrcd.vo.GetAuditErrorRcdDetailsV
 import com.ksptool.bio.biz.audit.model.auditerrorrcd.vo.GetAuditErrorRcdListVo;
 import com.ksptool.bio.biz.audit.repository.AuditErrorRcdRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -16,6 +17,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,22 +35,25 @@ import static com.ksptool.entities.Entities.assign;
 public class AuditErrorRcdService {
 
     private final Map<String, AtomicLong> errorCodeMap = new ConcurrentHashMap<>();
+
     @Autowired
     private AuditErrorRcdRepository repository;
 
     /**
      * 获取下一个错误代码
+     * 格式: CATEGORY-两位日期-四位时间-递增序列号，例如 PARAM-22-1055-1
      *
      * @param category 错误分类
      * @return 错误代码
      */
     public String nextErrorCode(String category) {
+        LocalDateTime now = LocalDateTime.now();
+        String datePart = String.format("%02d", now.getDayOfMonth());
+        String timePart = String.format("%02d%02d", now.getHour(), now.getMinute());
+        String bucketKey = category + "-" + datePart + "-" + timePart;
 
-        AtomicLong errorCode = errorCodeMap.computeIfAbsent(category, k -> {
-            return new AtomicLong(0);
-        });
-
-        return "ERR-" + category + "-" + errorCode.incrementAndGet();
+        AtomicLong seq = errorCodeMap.computeIfAbsent(bucketKey, k -> new AtomicLong(0));
+        return category + "-" + datePart + "-" + timePart + "-" + seq.incrementAndGet();
     }
 
     /**
@@ -88,6 +93,11 @@ public class AuditErrorRcdService {
             po.setErrorType(e.getClass().getName());
             po.setErrorMessage(e.getMessage());
             po.setErrorStackTrace(ExceptionUtils.getStackTrace(e));
+
+            if(StringUtils.isBlank(po.getErrorMessage())){
+                po.setErrorMessage("获取失败");
+            }
+
             repository.save(po);
 
         } catch (Exception ex) {
