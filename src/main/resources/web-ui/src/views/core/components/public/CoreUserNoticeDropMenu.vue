@@ -195,6 +195,7 @@ const onViewAll = (): void => {
     icon: null,
     title: "个人消息中心",
     path: "/core/notice-rcd",
+    kind: "normal",
   });
 };
 

@@ -216,6 +216,7 @@ export default {
                 title: entry.name,
                 path: fullPath,
                 closable: true,
+                kind: "normal",
               },
               getActiveTabIndex() + 1
             );

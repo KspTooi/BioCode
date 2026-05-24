@@ -26,7 +26,6 @@ import QfRouteRegister from "@/views/qf/route/QfRouteRegister.ts";
 import ComTabService from "@/soa/com-series/service/ComTabService.ts";
 import ComFramework from "@/soa/com-series/ComFramework.vue";
 import ComLayoutProviderService from "@/soa/com-series/service/ComLayoutProviderService.ts";
-import QlcFramework from "@/soa/layout-series-qlc/QlcFramework.vue";
 import AssemblyRouteRegister from "@/views/assembly/route/AssemblyRouteRegister";
 import PlayGroundRouteRegister from "@/views/playground/route/PlayGroundRouteRegister";
 

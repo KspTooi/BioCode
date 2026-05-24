@@ -282,8 +282,7 @@ defineExpose({ reset, filter, checkAll, checkClear, treeRef });
 
 :deep(.el-tree--highlight-current .el-tree-node.is-current > .el-tree-node__content) {
   background: var(--el-color-primary-light-8);
-  /* 暂时注释掉，因为不需要这个渐变背景色，改为纯色 */
-  /* background: linear-gradient(90deg, var(--el-color-primary-light-7) 0%, var(--el-color-primary-light-9) 100%); */
+  background: linear-gradient(90deg, var(--el-color-primary-light-7) 0%, var(--el-color-primary-light-9) 100%);
   font-weight: 600;
 }
 
@@ -291,8 +290,7 @@ defineExpose({ reset, filter, checkAll, checkClear, treeRef });
   color: var(--el-color-primary);
 }
 
-/* 选中行顶部主题色横线 --暂时注释掉，因为不需要这个横线*/
-/* :deep(.el-tree-node.is-current > .el-tree-node__content)::before {
+:deep(.el-tree-node.is-current > .el-tree-node__content)::before {
   content: "";
   position: absolute;
   top: 0;
@@ -300,7 +298,7 @@ defineExpose({ reset, filter, checkAll, checkClear, treeRef });
   right: 0px;
   height: 1.5px;
   background: linear-gradient(90deg, var(--el-color-primary) 0%, var(--el-color-primary-light-5) 80%);
-} */
+}
 
 :deep(.el-tree-node__content) {
   position: relative;
