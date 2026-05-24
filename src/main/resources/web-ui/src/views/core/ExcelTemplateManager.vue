@@ -1,6 +1,6 @@
 <template>
-  <StdListLayout>
-    <template #query>
+  <StdListContainer>
+    <StdListAreaQuery>
       <el-form :model="listForm">
         <el-row>
           <el-col :span="5" :offset="1">
@@ -29,16 +29,16 @@
           </el-col>
         </el-row>
       </el-form>
-    </template>
+    </StdListAreaQuery>
 
-    <template #actions>
-      <el-button type="success" @click="openUploadDialog">上传模板</el-button>
+    <StdListAreaAction>
+      <el-button type="primary" @click="openUploadDialog">上传模板</el-button>
       <el-button type="danger" :disabled="listSelected.length === 0" :loading="listLoading" @click="removeTemplateBatch">
         批量删除
       </el-button>
-    </template>
+    </StdListAreaAction>
 
-    <template #table>
+    <StdListAreaTable v-model:list-form="listForm" :list-total="listTotal" :load-list="loadList">
       <el-table
         v-loading="listLoading"
         :data="listData"
@@ -104,31 +104,7 @@
           </template>
         </el-table-column>
       </el-table>
-    </template>
-
-    <template #pagination>
-      <el-pagination
-        v-model:current-page="listForm.pageNum"
-        v-model:page-size="listForm.pageSize"
-        :page-sizes="[10, 20, 50, 100]"
-        layout="total, sizes, prev, pager, next, jumper"
-        :total="listTotal"
-        background
-        @size-change="
-          (val: number) => {
-            listForm.pageSize = val;
-            loadList();
-          }
-        "
-        @current-change="
-          (val: number) => {
-            listForm.pageNum = val;
-            loadList();
-          }
-        "
-      />
-    </template>
-  </StdListLayout>
+    </StdListAreaTable>
 
   <!-- 上传模板对话框 -->
   <el-dialog
@@ -220,7 +196,7 @@
         <el-input v-model="editForm.code" placeholder="请输入模板标识" />
       </el-form-item>
       <el-form-item label="模板备注" prop="remark">
-        <el-input v-model="editForm.remark" type="textarea" :rows="3" placeholder="请输入模板备注" />
+        <el-input v-model="editForm.remark" type="textarea" :autosize="{ minRows: 3 }" placeholder="请输入模板备注" />
       </el-form-item>
       <el-form-item label="状态" prop="status">
         <el-radio-group v-model="editForm.status">
@@ -236,6 +212,7 @@
       </div>
     </template>
   </el-dialog>
+</StdListContainer>
 </template>
 
 <script setup lang="ts">
@@ -250,7 +227,10 @@ import ExcelTemplateApi, {
   type EditExcelTemplateDto,
 } from "@/views/core/api/ExcelTemplateApi.ts";
 import { Result } from "@/commons/model/Result.ts";
-import StdListLayout from "@/soa/std-series/StdListLayout.vue";
+import StdListContainer from "@/soa/std-series/StdListContainer.vue";
+import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
+import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";
+import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
 
 const listForm = reactive<GetExcelTemplateListDto>({
   name: null,
