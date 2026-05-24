@@ -4,6 +4,7 @@ import com.ksptool.assembly.entity.exception.AuthException;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
+import com.ksptool.bio.biz.auth.repository.UserGroupRepository;
 import com.ksptool.bio.biz.core.common.TupleMapper;
 import com.ksptool.bio.biz.core.model.user.UserPo;
 import com.ksptool.bio.biz.core.repository.UserRepository;
@@ -33,10 +34,12 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.ksptool.bio.biz.auth.service.SessionService.session;
@@ -83,6 +86,9 @@ public class QfTodoService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private UserGroupRepository userGroupRepository;
 
     /**
      * 查询待办事项列表
@@ -170,18 +176,7 @@ public class QfTodoService {
         if (po.getStatus() != 0) {
             throw new BizException("只能取消待办状态的记录");
         }
-        String engTaskId = po.getEngTaskId();
         String engProcId = po.getEngProcId();
-        if (StringUtils.isNotBlank(engTaskId)) {
-            try {
-                var task = ftService.createTaskQuery().taskId(engTaskId).singleResult();
-                if (task != null) {
-                    ftService.deleteTask(engTaskId);
-                }
-            } catch (Exception e) {
-                log.error("[cancelQfTodo] 删除Flowable任务失败, taskId: {}", engTaskId, e);
-            }
-        }
         if (StringUtils.isNotBlank(engProcId)) {
             try {
                 runtimeService.deleteProcessInstance(engProcId, dto.getReason());
@@ -204,25 +199,16 @@ public class QfTodoService {
     @Transactional(rollbackFor = Exception.class)
     public void cancelQfTodoByData(String tableName, Long dataId, String reason) {
         List<QfTodoPo> todoList = repository.findByTableNameAndDataId(tableName, dataId);
+        Set<String> deletedProcIds = new java.util.HashSet<>();
         for (QfTodoPo po : todoList) {
             if (po.getStatus() != 0) {
                 continue;
             }
-            String engTaskId = po.getEngTaskId();
             String engProcId = po.getEngProcId();
-            if (StringUtils.isNotBlank(engTaskId)) {
-                try {
-                    var task = ftService.createTaskQuery().taskId(engTaskId).singleResult();
-                    if (task != null) {
-                        ftService.deleteTask(engTaskId);
-                    }
-                } catch (Exception e) {
-                    log.error("[cancelQfTodoByData] 删除Flowable任务失败, taskId: {}", engTaskId, e);
-                }
-            }
-            if (StringUtils.isNotBlank(engProcId)) {
+            if (StringUtils.isNotBlank(engProcId) && !deletedProcIds.contains(engProcId)) {
                 try {
                     runtimeService.deleteProcessInstance(engProcId, reason);
+                    deletedProcIds.add(engProcId);
                 } catch (Exception e) {
                     log.error("[cancelQfTodoByData] 终止Flowable流程实例失败, processInstanceId: {}", engProcId, e);
                 }
@@ -242,6 +228,7 @@ public class QfTodoService {
     @Transactional(rollbackFor = Exception.class)
     public void removeQfTodo(CommonIdDto dto) throws BizException {
         List<Long> ids = dto.isBatch() ? dto.getIds() : List.of(dto.getId());
+        Set<String> deletedProcIds = new java.util.HashSet<>();
         for (Long id : ids) {
             QfTodoPo po = repository.findById(id).orElse(null);
             if (po == null) {
@@ -250,21 +237,13 @@ public class QfTodoService {
             if (po.getStatus() != 0) {
                 throw new BizException("只能删除待办状态的记录");
             }
-            String engTaskId = po.getEngTaskId();
+
+            //todo 这里估计要和帅龙讨论一下 删除代办要不要终止流程
             String engProcId = po.getEngProcId();
-            if (StringUtils.isNotBlank(engTaskId)) {
-                try {
-                    var task = ftService.createTaskQuery().taskId(engTaskId).singleResult();
-                    if (task != null) {
-                        ftService.deleteTask(engTaskId);
-                    }
-                } catch (Exception e) {
-                    log.error("[removeQfTodo] 删除Flowable任务失败, taskId: {}", engTaskId, e);
-                }
-            }
-            if (StringUtils.isNotBlank(engProcId)) {
+            if (StringUtils.isNotBlank(engProcId) && !deletedProcIds.contains(engProcId)) {
                 try {
                     runtimeService.deleteProcessInstance(engProcId, "待办已删除");
+                    deletedProcIds.add(engProcId);
                 } catch (Exception e) {
                     log.error("[removeQfTodo] 终止Flowable流程实例失败, processInstanceId: {}", engProcId, e);
                 }
@@ -405,5 +384,32 @@ public class QfTodoService {
             vo.setStatus(todo.getStatus());
             return vo;
         }).toList();
+    }
+
+    public Map<Long,List<Long>> getQfTodoListByIds(List<Long> dataIds) {
+        Map<Long,List<Long>> user = new HashMap<>();
+        List<QfTodoPo> qfTodoPos =  repository.getAllByDataIdAndStatus(dataIds,0);
+        List<QfTodoPo> qfTodoPosGroup = qfTodoPos.stream().filter(v -> v.getMemberType() == 1).toList();
+        List<QfTodoPo> qfTodoPosUser = qfTodoPos.stream().filter(v -> v.getMemberType() == 0).toList();
+        //如果是用户人，直接按dataId分组添加
+        for (QfTodoPo todo : qfTodoPosUser) {
+            user.computeIfAbsent(todo.getDataId(), k -> new ArrayList<>()).add(todo.getMemberId());
+        }
+        //批量查询所有用户组的成员，在内存中按groupId分组
+        if (!qfTodoPosGroup.isEmpty()) {
+            List<Long> groupIds = qfTodoPosGroup.stream().map(QfTodoPo::getMemberId).distinct().toList();
+            Map<Long, List<Long>> groupUserMap = new HashMap<>();
+            userGroupRepository.findAllByGroupIds(groupIds).forEach(ug ->
+                    groupUserMap.computeIfAbsent(ug.getGroupId(), k -> new ArrayList<>()).add(ug.getUserId())
+            );
+            //遍历用户组待办，从内存Map中取用户ID
+            for (QfTodoPo todo : qfTodoPosGroup) {
+                List<Long> userIds = groupUserMap.get(todo.getMemberId());
+                if (userIds != null && !userIds.isEmpty()) {
+                    user.computeIfAbsent(todo.getDataId(), k -> new ArrayList<>()).addAll(userIds);
+                }
+            }
+        }
+        return user;
     }
 }

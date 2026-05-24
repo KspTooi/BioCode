@@ -3,6 +3,7 @@ package com.ksptool.bio.biz.qf.commons.config;
 import com.ksptool.bio.biz.qf.commons.QfSnowflakeIdGenerator;
 import com.ksptool.bio.biz.qf.commons.listener.QfMiRenameParseHandler;
 import com.ksptool.bio.biz.qf.commons.listener.QfProcFinishedListener;
+import com.ksptool.bio.biz.qf.commons.listener.QfTaskAssignedListener;
 import com.ksptool.bio.biz.qf.commons.listener.QfTaskCancelledListener;
 import com.ksptool.bio.biz.qf.commons.listener.QfTaskCreatedListener;
 import com.ksptool.bio.biz.qf.commons.listener.QfTaskFinishedListener;
@@ -51,6 +52,9 @@ public class QfFlowableConfig implements EngineConfigurationConfigurer<SpringPro
     @Autowired
     private QfProcFinishedListener qfProcFinishedListener;
 
+    @Autowired
+    private QfTaskAssignedListener qfTaskAssignedListener;
+
     @Override
     public void configure(SpringProcessEngineConfiguration cfg) {
 
@@ -61,6 +65,12 @@ public class QfFlowableConfig implements EngineConfigurationConfigurer<SpringPro
         typedListeners.put(
                 FlowableEngineEventType.TASK_CREATED.name(),
                 mergeListeners(existTypes, FlowableEngineEventType.TASK_CREATED, qfTaskCreatedListener)
+        );
+
+        //任务分配监听器
+        typedListeners.put(
+                FlowableEngineEventType.TASK_ASSIGNED.name(),
+                mergeListeners(existTypes, FlowableEngineEventType.TASK_ASSIGNED, qfTaskAssignedListener)
         );
 
         //任务完成监听器

@@ -104,4 +104,13 @@ public interface QfTodoRepository extends JpaRepository<QfTodoPo, Long> {
             AND u.dataId = :dataId
             """)
     List<QfTodoPo> findByTableNameAndDataId(@Param("tableName") String tableName, @Param("dataId") Long dataId);
+
+    @Query("""
+    SELECT u FROM QfTodoPo u
+            WHERE u.status = :status
+            AND u.dataId in :dataId
+
+""" )
+    List<QfTodoPo> getAllByDataIdAndStatus(@Param("dataId") List<Long> dataIds,@Param("status") Integer status);
+
 }
