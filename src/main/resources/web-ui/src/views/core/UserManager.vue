@@ -48,7 +48,7 @@
           </StdListAreaQuery>
 
           <StdListAreaAction class="flex gap-3">
-            <el-button v-hasCode="['core:user:add']" type="success" @click="openModal('add', null)">创建用户</el-button>
+            <el-button v-hasCode="['core:user:add']" type="primary" @click="openModal('add', null)">创建用户</el-button>
             <el-dropdown @command="onBatchAction">
               <el-button v-hasCode="['core:user:batch_edit']" type="primary" :disabled="!canBatchAction">
                 批量操作<template v-if="canBatchAction">({{ batchCount }})</template>
@@ -68,7 +68,7 @@
             </el-button>
           </StdListAreaAction>
 
-          <StdListAreaTable>
+          <StdListAreaTable v-model:list-form="listForm" :list-total="listTotal" :load-list="() => loadList(currentOrgId)">
             <el-table
               v-loading="listLoading"
               :data="listData"
@@ -140,29 +140,6 @@
                 </template>
               </el-table-column>
             </el-table>
-
-            <template #pagination>
-              <el-pagination
-                v-model:current-page="listForm.pageNum"
-                v-model:page-size="listForm.pageSize"
-                :page-sizes="[10, 20, 50, 100]"
-                layout="total, sizes, prev, pager, next, jumper"
-                :total="listTotal"
-                background
-                @size-change="
-                  (val: number) => {
-                    listForm.pageSize = val;
-                    loadList(currentOrgId);
-                  }
-                "
-                @current-change="
-                  (val: number) => {
-                    listForm.pageNum = val;
-                    loadList(currentOrgId);
-                  }
-                "
-              />
-            </template>
           </StdListAreaTable>
         </StdListContainer>
       </pane>
@@ -211,9 +188,9 @@
       >
         <el-form-item label="用户名" prop="username">
           <el-input
+            v-model="modalForm.username"
             show-word-limit
             :maxlength="20"
-            v-model="modalForm.username"
             :disabled="modalMode === 'edit'"
             placeholder="请输入用户名"
           />
@@ -258,10 +235,10 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="手机号" prop="phone">
-          <el-input show-word-limit :maxlength="64" v-model="modalForm.phone" placeholder="请输入手机号" />
+          <el-input v-model="modalForm.phone" show-word-limit :maxlength="64" placeholder="请输入手机号" />
         </el-form-item>
         <el-form-item label="邮箱" prop="email">
-          <el-input show-word-limit :maxlength="64" v-model="modalForm.email" placeholder="请输入邮箱" />
+          <el-input v-model="modalForm.email" show-word-limit :maxlength="64" placeholder="请输入邮箱" />
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="modalForm.status" placeholder="请选择状态">
@@ -310,6 +287,7 @@ import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";
 import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
 import ModalOrgTree from "@/views/core/public/ModalOrgTree.vue";
 import UserAuthService from "@/views/auth/service/UserAuthService";
+import StdAdvTree from "@/soa/std-series/StdAdvTree.vue";
 
 //按钮级权限打包
 const { vHasCode, vHasSuper } = UserAuthService.usePreAuthorize();
