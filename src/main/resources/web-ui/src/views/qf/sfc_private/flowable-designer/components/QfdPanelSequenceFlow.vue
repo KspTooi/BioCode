@@ -11,7 +11,7 @@
     <el-input
       v-model="form.conditionExpression"
       type="textarea"
-      :rows="2"
+      :autosize="{ minRows: 2 }"
       :disabled="form.conditionPreset !== 'custom'"
       placeholder="${approved == true}"
       @change="commitCondition"

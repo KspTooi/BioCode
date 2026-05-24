@@ -33,7 +33,7 @@
           </el-select>
         </el-form-item>
         <el-form-item :label="implLabel">
-          <el-input v-model="form.implText" type="textarea" :rows="2" />
+          <el-input v-model="form.implText" type="textarea" :autosize="{ minRows: 2 }" />
         </el-form-item>
       </el-form>
       <template #footer>

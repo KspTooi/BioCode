@@ -22,7 +22,7 @@
           <el-input v-model="form.name" />
         </el-form-item>
         <el-form-item label="值">
-          <el-input v-model="form.value" type="textarea" :rows="2" />
+          <el-input v-model="form.value" type="textarea" :autosize="{ minRows: 2 }" />
         </el-form-item>
       </el-form>
       <template #footer>

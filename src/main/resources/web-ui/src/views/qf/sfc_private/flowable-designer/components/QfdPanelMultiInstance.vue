@@ -138,7 +138,7 @@
               <el-input
                 v-model="customLoop.completionCondition"
                 type="textarea"
-                :rows="2"
+                :autosize="{ minRows: 2 }"
                 placeholder="如 ${nrOfCompletedInstances >= nrOfInstances}"
                 @change="commit"
               />
