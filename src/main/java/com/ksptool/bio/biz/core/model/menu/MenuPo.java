@@ -47,7 +47,7 @@ public class MenuPo {
     @Column(name = "name", nullable = false, length = 40, comment = "菜单项名")
     private String name;
 
-    @Column(name = "kind", nullable = false,columnDefinition = "TINYINT", comment = "菜单项类型 0:目录 1:菜单 2:按钮")
+    @Column(name = "kind", nullable = false,columnDefinition = "TINYINT", comment = "菜单项类型  0:目录 1:菜单 2:按钮 ,3:外链嵌套,4:外链跳转")
     private Integer kind;
 
     @Column(name = "path", length = 512, comment = "指向路径")

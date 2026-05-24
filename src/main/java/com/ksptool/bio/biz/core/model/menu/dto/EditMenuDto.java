@@ -30,8 +30,8 @@ public class EditMenuDto implements DtoCustomValidator{
     private String name;
 
     @NotNull(message = "菜单类型不能为空")
-    @Range(min = 0, max = 2, message = "菜单类型只能在0-2之间")
-    @Schema(description = "菜单类型 0:目录 1:菜单 2:按钮")
+    @Range(min = 0, max = 4, message = "菜单类型只能在0-4之间")
+    @Schema(description = "菜单类型 0:目录 1:菜单 2:按钮 ,3:外链嵌套,4:外链跳转")
     private Integer kind;
 
     @Length(max = 512, message = "菜单路径长度不能超过512个字符")

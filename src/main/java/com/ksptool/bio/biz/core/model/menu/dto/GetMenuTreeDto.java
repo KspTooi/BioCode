@@ -16,7 +16,7 @@ public class GetMenuTreeDto {
     @Schema(description = "菜单名称(模糊)")
     private String name;
 
-    @Schema(description = "菜单类型 0:目录 1:菜单 2:按钮")
+    @Schema(description = "菜单类型 0:目录 1:菜单 2:按钮 ,3:外链嵌套,4:外链跳转")
     private Integer kind;
 
     @Schema(description = "权限码")

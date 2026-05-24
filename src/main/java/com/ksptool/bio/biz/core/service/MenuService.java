@@ -157,6 +157,20 @@ public class MenuService {
                 }
             }
 
+            if (dto.getKind() == 3) {
+                //菜单只能放置于目录之下
+                if (parent.getKind() != 0) {
+                    throw new BizException("新增失败,外链嵌套只能放置于目录之下.");
+                }
+            }
+
+            if (dto.getKind() == 4) {
+                //菜单只能放置于目录之下
+                if (parent.getKind() != 0) {
+                    throw new BizException("新增失败,外链跳转只能放置于目录之下.");
+                }
+            }
+
             if (dto.getKind() == 2) {
                 //按钮只能放置于菜单之下
                 if (parent.getKind() != 1) {
@@ -208,7 +222,19 @@ public class MenuService {
                     throw new BizException("编辑失败,按钮只能放置于菜单之下.");
                 }
             }
+            if (dto.getKind() == 3) {
+                //菜单只能放置于目录之下
+                if (parent.getKind() != 0) {
+                    throw new BizException("新增失败,外链嵌套只能放置于目录之下.");
+                }
+            }
 
+            if (dto.getKind() == 4) {
+                //菜单只能放置于目录之下
+                if (parent.getKind() != 0) {
+                    throw new BizException("新增失败,外链跳转只能放置于目录之下.");
+                }
+            }
             //校验父级资源不能是自身
             if (parent.getId().equals(menuPo.getId())) {
                 throw new BizException("编辑失败,父级资源不能是自身.");
