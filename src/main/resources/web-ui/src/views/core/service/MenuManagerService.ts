@@ -172,6 +172,12 @@ export default {
       if (treeStore.panelForm.kind == 2) {
         return "按钮";
       }
+      if (treeStore.panelForm.kind == 3) {
+        return "外链";
+      }
+      if (treeStore.panelForm.kind == 4) {
+        return "外链";
+      }
       return "";
     });
 
@@ -224,8 +230,11 @@ export default {
             if (treeStore.panelForm.kind === 0 && item.kind !== 0) {
               disabled = true;
             }
-            // 菜单：父级只能是目录
-            if (treeStore.panelForm.kind === 1 && item.kind !== 0) {
+            // 菜单(外链嵌套+外链跳转)：父级只能是目录
+            if (
+              (treeStore.panelForm.kind === 1 || treeStore.panelForm.kind === 3 || treeStore.panelForm.kind === 4) &&
+              item.kind !== 0
+            ) {
               disabled = true;
             }
             // 按钮：父级只能是菜单
@@ -248,8 +257,8 @@ export default {
           });
       };
 
-      // 菜单和按钮不能直接挂在根节点下
-      const rootDisabled = treeStore.panelForm.kind === 1 || treeStore.panelForm.kind === 2;
+      //按钮不能直接挂在根节点下 其他类型可以
+      const rootDisabled = treeStore.panelForm.kind === 2;
       return [{ id: "", name: "根节点", disabled: rootDisabled, children: filter(treeData.value) }];
     });
 
