@@ -24,27 +24,6 @@ export default class CoreRouteRegister extends GenricRouteRegister {
       }),
       RouteEntryPo.build({
         biz: "core",
-        path: "group-manager",
-        name: "group-manager",
-        component: () => import("@/views/auth/GroupManager.vue"),
-        meta: { breadcrumb: "用户组" },
-      }),
-      RouteEntryPo.build({
-        biz: "core",
-        path: "permission-manager",
-        name: "permission-manager",
-        component: () => import("@/views/auth/PermissionManager.vue"),
-        meta: { breadcrumb: "权限管理" },
-      }),
-      RouteEntryPo.build({
-        biz: "core",
-        path: "session-manager",
-        name: "session-manager",
-        component: () => import("@/views/auth/SessionManager.vue"),
-        meta: { breadcrumb: "会话管理" },
-      }),
-      RouteEntryPo.build({
-        biz: "core",
         path: "application-maintain",
         name: "application-maintain",
         component: () => import("@/views/core/MaintainManager.vue"),
