@@ -24,7 +24,7 @@
     </StdListAreaAction>
 
     <!-- 列表表格区域 -->
-    <StdListAreaTable>
+    <StdListAreaTable v-model:list-form="listForm" :list-total="listTotal" :load-list="loadList">
       <el-table v-loading="listLoading" :data="listData" stripe border height="100%">
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
         <el-table-column prop="name" label="组名称" min-width="120" show-overflow-tooltip />
@@ -40,29 +40,6 @@
           </template>
         </el-table-column>
       </el-table>
-
-      <template #pagination>
-        <el-pagination
-          v-model:current-page="listForm.pageNum"
-          v-model:page-size="listForm.pageSize"
-          :page-sizes="[10, 20, 50, 100]"
-          layout="total, sizes, prev, pager, next, jumper"
-          :total="listTotal"
-          background
-          @size-change="
-            (val: number) => {
-              listForm.pageSize = val;
-              loadList();
-            }
-          "
-          @current-change="
-            (val: number) => {
-              listForm.pageNum = val;
-              loadList();
-            }
-          "
-        />
-      </template>
     </StdListAreaTable>
 
     <!-- 创建/编辑模态框 -->

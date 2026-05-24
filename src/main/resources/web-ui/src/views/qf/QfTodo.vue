@@ -21,11 +21,8 @@
       </el-form>
     </StdListAreaQuery>
 
-    <!-- 操作按钮区域 -->
-    <StdListAreaAction class="flex gap-2" />
-
     <!-- 列表表格区域 -->
-    <StdListAreaTable>
+    <StdListAreaTable v-model:list-form="listForm" :list-total="listTotal" :load-list="loadList">
       <el-table v-loading="listLoading" :data="listData" stripe border height="100%">
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
         <el-table-column prop="nodeName" label="当前节点" min-width="120" show-overflow-tooltip />
@@ -66,29 +63,6 @@
           </template>
         </el-table-column>
       </el-table>
-
-      <template #pagination>
-        <el-pagination
-          v-model:current-page="listForm.pageNum"
-          v-model:page-size="listForm.pageSize"
-          :page-sizes="[10, 20, 50, 100]"
-          layout="total, sizes, prev, pager, next, jumper"
-          :total="listTotal"
-          background
-          @size-change="
-            (val: number) => {
-              listForm.pageSize = val;
-              loadList();
-            }
-          "
-          @current-change="
-            (val: number) => {
-              listForm.pageNum = val;
-              loadList();
-            }
-          "
-        />
-      </template>
     </StdListAreaTable>
 
     <!-- 审批模态框 -->
@@ -102,7 +76,6 @@ import { Edit, Delete } from "@element-plus/icons-vue";
 import QfTodoService from "@/views/qf/service/QfTodoService.ts";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
 import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
-import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";
 import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
 import type { GetQfTodoListVo } from "@/views/qf/api/QfTodoApi.ts";
 import QfApproveModal from "@/views/qf/public/QfApproveModal.vue";
