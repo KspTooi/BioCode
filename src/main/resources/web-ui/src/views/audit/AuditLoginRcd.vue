@@ -1,6 +1,6 @@
 <template>
-  <StdListLayout>
-    <template #query>
+  <StdListContainer>
+    <StdListAreaQuery>
       <el-form :model="listForm" inline class="flex justify-between">
         <div>
           <el-form-item label="用户名">
@@ -18,9 +18,9 @@
           <el-button :disabled="listLoading" @click="resetList">重置</el-button>
         </el-form-item>
       </el-form>
-    </template>
+    </StdListAreaQuery>
 
-    <template #actions>
+    <StdListAreaAction>
       <el-button
         type="danger"
         :disabled="listSelected.length === 0"
@@ -29,9 +29,9 @@
       >
         批量删除
       </el-button>
-    </template>
+    </StdListAreaAction>
 
-    <template #table>
+    <StdListAreaTable v-model:list-form="listForm" :list-total="listTotal" :load-list="loadList">
       <el-table
         v-loading="listLoading"
         :data="listData"
@@ -42,10 +42,10 @@
       >
         <el-table-column type="selection" width="40" />
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
-        <el-table-column prop="username" label="用户名" min-width="120" />
+        <el-table-column prop="username" label="登录账号" min-width="120" />
         <el-table-column label="登录方式" min-width="120">
           <template #default="scope">
-            <span v-if="scope.row.loginKind === 0">用户名密码</span>
+            <span v-if="scope.row.loginKind === 0">登录账号密码</span>
             <span v-else>未知</span>
           </template>
         </el-table-column>
@@ -70,109 +70,80 @@
           </template>
         </el-table-column>
       </el-table>
-    </template>
+    </StdListAreaTable>
 
-    <template #pagination>
-      <el-pagination
-        v-model:current-page="listForm.pageNum"
-        v-model:page-size="listForm.pageSize"
-        :page-sizes="[10, 20, 50, 100]"
-        layout="total, sizes, prev, pager, next, jumper"
-        :total="listTotal"
-        background
-        @size-change="
-          (val: number) => {
-            listForm.pageSize = val;
-            loadList();
-          }
-        "
-        @current-change="
-          (val: number) => {
-            listForm.pageNum = val;
-            loadList();
-          }
-        "
-      />
-    </template>
-  </StdListLayout>
+    <!-- 查看模态框 -->
+    <el-dialog v-model="modalVisible" :title="modalDialogTitle" width="700px" :close-on-click-modal="false" @close="loadList()">
+      <el-form v-if="modalVisible" ref="modalFormRef" :model="modalForm" label-width="100px">
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="用户名">
+              <el-input v-model="modalForm.username" readonly />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="用户ID">
+              <el-input v-model="modalForm.userId" readonly />
+            </el-form-item>
+          </el-col>
+        </el-row>
 
-  <!-- 查看模态框 -->
-  <el-dialog
-    v-model="modalVisible"
-    :title="modalDialogTitle"
-    width="700px"
-    :close-on-click-modal="false"
-    @close="loadList()"
-  >
-    <el-form v-if="modalVisible" ref="modalFormRef" :model="modalForm" label-width="100px">
-      <el-row>
-        <el-col :span="12">
-          <el-form-item label="用户名">
-            <el-input v-model="modalForm.username" readonly />
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="用户ID">
-            <el-input v-model="modalForm.userId" readonly />
-          </el-form-item>
-        </el-col>
-      </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="登录方式">
+              <el-input :model-value="modalForm.loginKind === 0 ? '用户名密码' : '未知'" readonly />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="状态">
+              <el-tag :type="modalForm.status === 0 ? 'success' : 'danger'" size="small">
+                {{ modalForm.status === 0 ? "成功" : "失败" }}
+              </el-tag>
+            </el-form-item>
+          </el-col>
+        </el-row>
 
-      <el-row>
-        <el-col :span="12">
-          <el-form-item label="登录方式">
-            <el-input :model-value="modalForm.loginKind === 0 ? '用户名密码' : '未知'" readonly />
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="状态">
-            <el-tag :type="modalForm.status === 0 ? 'success' : 'danger'" size="small">
-              {{ modalForm.status === 0 ? "成功" : "失败" }}
-            </el-tag>
-          </el-form-item>
-        </el-col>
-      </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="IP地址">
+              <el-input v-model="modalForm.ipAddr" readonly />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="归属地">
+              <el-input v-model="modalForm.location" readonly />
+            </el-form-item>
+          </el-col>
+        </el-row>
 
-      <el-row>
-        <el-col :span="12">
-          <el-form-item label="IP地址">
-            <el-input v-model="modalForm.ipAddr" readonly />
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="归属地">
-            <el-input v-model="modalForm.location" readonly />
-          </el-form-item>
-        </el-col>
-      </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="浏览器">
+              <el-input v-model="modalForm.browser" readonly />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="操作系统">
+              <el-input v-model="modalForm.os" readonly />
+            </el-form-item>
+          </el-col>
+        </el-row>
 
-      <el-row>
-        <el-col :span="12">
-          <el-form-item label="浏览器">
-            <el-input v-model="modalForm.browser" readonly />
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="操作系统">
-            <el-input v-model="modalForm.os" readonly />
-          </el-form-item>
-        </el-col>
-      </el-row>
+        <el-form-item label="提示消息">
+          <el-input v-model="modalForm.message" type="textarea" :autosize="{ minRows: 3 }" readonly />
+        </el-form-item>
 
-      <el-form-item label="提示消息">
-        <el-input v-model="modalForm.message" type="textarea" :rows="3" readonly />
-      </el-form-item>
-
-      <el-form-item label="登录时间">
-        <el-input v-model="modalForm.createTime" readonly />
-      </el-form-item>
-    </el-form>
-    <template #footer>
-      <div class="dialog-footer">
-        <el-button @click="modalVisible = false">关闭</el-button>
-      </div>
-    </template>
-  </el-dialog>
+        <el-form-item label="登录时间">
+          <el-input v-model="modalForm.createTime" readonly />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="modalVisible = false">关闭</el-button>
+        </div>
+      </template>
+    </el-dialog>
+  </StdListContainer>
 </template>
 
 <script setup lang="ts">
@@ -181,7 +152,10 @@ import { View, Delete } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
 import type { GetAuditLoginListVo } from "@/views/audit/api/AuditLoginApi.ts";
 import AuditLoginRcdService from "@/views/audit/service/AuditLoginRcdService.ts";
-import StdListLayout from "@/soa/std-series/StdListLayout.vue";
+import StdListContainer from "@/soa/std-series/StdListContainer.vue";
+import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
+import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";
+import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
 
 const ViewIcon = markRaw(View);
 const DeleteIcon = markRaw(Delete);

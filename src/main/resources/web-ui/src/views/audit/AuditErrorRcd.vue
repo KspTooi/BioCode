@@ -1,7 +1,6 @@
 <template>
-  <StdListLayout>
-    <!-- 查询条件区域 -->
-    <template #query>
+  <StdListContainer>
+    <StdListAreaQuery>
       <el-form :model="listForm">
         <el-row>
           <el-col :span="4" :offset="1">
@@ -42,10 +41,9 @@
           </el-row>
         </template>
       </el-form>
-    </template>
+    </StdListAreaQuery>
 
-    <!-- 操作按钮区域 -->
-    <template #actions>
+    <StdListAreaAction>
       <el-button
         type="danger"
         :disabled="listSelected.length === 0"
@@ -54,10 +52,9 @@
       >
         批量删除
       </el-button>
-    </template>
+    </StdListAreaAction>
 
-    <!-- 列表表格区域 -->
-    <template #table>
+    <StdListAreaTable v-model:list-form="listForm" :list-total="listTotal" :load-list="loadList">
       <el-table
         v-loading="listLoading"
         :data="listData"
@@ -70,7 +67,6 @@
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
         <el-table-column prop="errorCode" label="错误代码" min-width="50" show-overflow-tooltip />
         <el-table-column prop="requestUri" label="请求地址" min-width="120" show-overflow-tooltip />
-
         <el-table-column prop="errorType" label="异常类型" min-width="120" show-overflow-tooltip />
         <el-table-column prop="createTime" label="发生时间" min-width="120" show-overflow-tooltip />
         <el-table-column label="操作" fixed="right" width="180">
@@ -82,40 +78,11 @@
           </template>
         </el-table-column>
       </el-table>
-    </template>
+    </StdListAreaTable>
 
-    <template #pagination>
-      <el-pagination
-        v-model:current-page="listForm.pageNum"
-        v-model:page-size="listForm.pageSize"
-        :page-sizes="[10, 20, 50, 100]"
-        layout="total, sizes, prev, pager, next, jumper"
-        :total="listTotal"
-        background
-        @size-change="
-          (val: number) => {
-            listForm.pageSize = val;
-            loadList();
-          }
-        "
-        @current-change="
-          (val: number) => {
-            listForm.pageNum = val;
-            loadList();
-          }
-        "
-      />
-    </template>
-
-    <template #modal>
-      <!-- 查看/新增/编辑模态框 -->
-      <el-dialog
-        v-model="modalVisible"
-        :title="modalDialogTitle"
-        width="800px"
-        :close-on-click-modal="false"
-        @close="loadList()"
-      >
+    <!-- 查看/新增/编辑模态框 -->
+    <el-dialog v-model="modalVisible" :title="modalDialogTitle" width="800px" :close-on-click-modal="false" @close="loadList()">
+      <el-scrollbar max-height="65vh">
         <el-form v-if="modalVisible" ref="modalFormRef" :model="modalForm" label-width="120px" :validate-on-rule-change="false">
           <el-row>
             <el-col :span="12">
@@ -180,7 +147,7 @@
             <el-input
               v-model="modalForm.errorMessage"
               type="textarea"
-              :rows="3"
+              :autosize="{ minRows: 3 }"
               :readonly="modalMode === 'view'"
               placeholder="请输入异常简述"
             />
@@ -190,20 +157,20 @@
             <el-input
               v-model="modalForm.errorStackTrace"
               type="textarea"
-              :rows="12"
+              :autosize="{ minRows: 12, maxRows: 20 }"
               :readonly="modalMode === 'view'"
               placeholder="请输入完整堆栈信息"
             />
           </el-form-item>
         </el-form>
-        <template #footer>
-          <div class="dialog-footer">
-            <el-button @click="modalVisible = false">关闭</el-button>
-          </div>
-        </template>
-      </el-dialog>
-    </template>
-  </StdListLayout>
+      </el-scrollbar>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="modalVisible = false">关闭</el-button>
+        </div>
+      </template>
+    </el-dialog>
+  </StdListContainer>
 </template>
 
 <script setup lang="ts">
@@ -212,7 +179,10 @@ import { View, Delete } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
 import AuditErrorRcdService from "@/views/audit/service/AuditErrorRcdService.ts";
 import type { GetAuditErrorRcdListVo } from "@/views/audit/api/AuditErrorRcdApi.ts";
-import StdListLayout from "@/soa/std-series/StdListLayout.vue";
+import StdListContainer from "@/soa/std-series/StdListContainer.vue";
+import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
+import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";
+import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
 
 // 使用markRaw包装图标组件，防止被Vue响应式系统处理
 const ViewIcon = markRaw(View);
