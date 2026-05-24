@@ -36,13 +36,13 @@
 
     <!-- 操作按钮区域 -->
     <StdListAreaAction>
-      <el-button type="success" @click="openModal('add', null)">创建任务调度</el-button>
+      <el-button type="primary" @click="openModal('add', null)">创建任务调度</el-button>
       <el-button type="danger" :disabled="listSelected.length === 0" @click="removeListBatch">批量删除</el-button>
       <el-button type="primary" :icon="UploadIcon" @click="importWizardRef?.openModal()">导入任务</el-button>
     </StdListAreaAction>
 
     <!-- 列表表格区域 -->
-    <StdListAreaTable>
+    <StdListAreaTable v-model:list-form="listForm" :list-total="listTotal" :load-list="loadList">
       <el-table v-loading="listLoading" :data="listData" stripe border height="100%" @selection-change="onSelectionChange">
         <el-table-column type="selection" width="40" />
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
@@ -111,29 +111,6 @@
           </template>
         </el-table-column>
       </el-table>
-
-      <template #pagination>
-        <el-pagination
-          v-model:current-page="listForm.pageNum"
-          v-model:page-size="listForm.pageSize"
-          :page-sizes="[10, 20, 50, 100]"
-          layout="total, sizes, prev, pager, next, jumper"
-          :total="listTotal"
-          background
-          @size-change="
-            (val: number) => {
-              listForm.pageSize = val;
-              loadList();
-            }
-          "
-          @current-change="
-            (val: number) => {
-              listForm.pageNum = val;
-              loadList();
-            }
-          "
-        />
-      </template>
     </StdListAreaTable>
 
     <!-- 立即执行任务模态框 -->
@@ -168,10 +145,10 @@
         <el-form-item label="一次性参数 (JSON)" prop="targetParam">
           <el-input
             v-model="execModalForm.targetParam"
-            placeholder="请输入 JSON 格式参数，例如: {&quot;key&quot;: &quot;value&quot;}"
+            placeholder='请输入 JSON 格式参数，例如: {"key": "value"}'
             clearable
             type="textarea"
-            :rows="6"
+            :autosize="{ minRows: 6 }"
           />
         </el-form-item>
       </el-form>
@@ -399,7 +376,13 @@
         <el-row>
           <el-col :span="24">
             <el-form-item label="调用参数JSON" prop="targetParam">
-              <el-input v-model="modalForm.targetParam" placeholder="请输入调用参数JSON" clearable type="textarea" :rows="3" />
+              <el-input
+                v-model="modalForm.targetParam"
+                placeholder="请输入调用参数JSON"
+                clearable
+                type="textarea"
+                :autosize="{ minRows: 3 }"
+              />
             </el-form-item>
           </el-col>
         </el-row>
