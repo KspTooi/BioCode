@@ -24,6 +24,12 @@ export interface StdAdvTreeProps {
   //禁用节点方法 如果返回false则标记禁用
   checkEnableMethod?: (node: any) => boolean;
 
+  //排除的节点Keys
+  excludeNks?: (string | number)[];
+
+  //排除节点方法 如果返回false则排除该节点
+  excludeNodeMethod?: (node: any) => boolean;
+
   //是否显示搜索框
   search?: boolean;
 
@@ -38,9 +44,6 @@ export interface StdAdvTreeProps {
 
   //是否在搜索旁显示刷新按钮
   searchRefresh?: boolean;
-
-  //过滤节点方法
-  filterMethod?: (value: string, data: any, node?: any) => boolean;
 
   //是否显示根节点(NodeRoot)
   nr?: boolean;
@@ -80,6 +83,12 @@ export interface StdAdvTreeProps {
 
   //显示哪些操作按钮，不传则全部显示；可选值：'add' | 'edit' | 'remove'
   actionMode?: Array<"add" | "edit" | "remove">;
+
+  //是否总是显示操作按钮 不悬浮显示
+  actionAlwaysShow?: boolean;
+
+  //是否只读模式
+  readonly?: boolean;
 }
 
 export interface StdAdvTreeEmits {
@@ -93,6 +102,62 @@ export interface StdAdvTreeEmits {
 }
 
 export default {
+  /**
+   * 高级树搜索功能打包
+   */
+  useStdAdvTreeSearch(props: StdAdvTreeProps, emit: StdAdvTreeEmits, treeRef: Ref<InstanceType<typeof ElTree> | undefined>) {
+    const draftSearchText = ref("");
+
+    /**
+     * 当ElTree想要搜索时，触发这个函数，返回 false 则表示这个节点会被隐藏
+     * value: 搜索值
+     * data: 节点数据
+     * node: 节点
+     */
+    const onElTreeSearch = (value: string, data: any, node?: any): boolean => {
+      if (!value) {
+        return true;
+      }
+
+      const fields = props.searchFields?.length ? props.searchFields : [props.nt ?? "name"];
+      const matchData = (d: any): boolean => fields.some((field) => String(d[field] ?? "").includes(value));
+
+      if (matchData(data)) {
+        return true;
+      }
+
+      //级联搜索：祖先命中时，后代节点也保留可见
+      if (!props.searchCascade || !node) {
+        return false;
+      }
+      let parent = node.parent;
+      while (parent && parent.level > 0 && parent.data) {
+        if (matchData(parent.data)) {
+          return true;
+        }
+        parent = parent.parent;
+      }
+      return false;
+    };
+
+    /**
+     * 监听搜索文本变化
+     */
+    watchDebounced(
+      draftSearchText,
+      (val) => {
+        treeRef.value?.filter(val);
+        emit("on-search", val);
+      },
+      { debounce: 300 }
+    );
+
+    return {
+      draftSearchText,
+      onElTreeSearch,
+    };
+  },
+
   /**
    * 高级树基础功能打包
    */
@@ -144,84 +209,74 @@ export default {
     });
 
     /**
-     * 树数据：根据 checkDisableNks 与 checkDisableMethod(如果返回false则标记禁用) 标记禁用
+     * 树数据：先排除节点，再标记禁用节点
      */
     const treeData = computed(() => {
       const disableNks = props.checkDisableNks ?? [];
       const enableMethod = props.checkEnableMethod;
-      const hasNks = disableNks.length > 0;
-      const hasMethod = typeof enableMethod === "function";
+      const hasDisableNks = disableNks.length > 0;
+      const hasEnableMethod = typeof enableMethod === "function";
 
-      //没有任何禁用规则，直接返回原始数据
-      if (!hasNks && !hasMethod) {
-        return props.data;
-      }
+      const excludeNks = props.excludeNks ?? [];
+      const excludeNodeMethod = props.excludeNodeMethod;
+      const hasExcludeNks = excludeNks.length > 0;
+      const hasExcludeMethod = typeof excludeNodeMethod === "function";
 
+      /**
+       * 判断节点是否被排除
+       */
+      const isNodeExcluded = (node: any): boolean => {
+        if (hasExcludeNks && excludeNks.includes(node[props.nk])) {
+          return true;
+        }
+        //excludeNodeMethod 返回 false 表示排除
+        if (hasExcludeMethod && !excludeNodeMethod(node)) {
+          return true;
+        }
+        return false;
+      };
+
+      /**
+       * 判断节点是否禁用
+       */
       const isNodeDisabled = (node: any): boolean => {
-        if (hasNks && disableNks.includes(node[props.nk])) {
+        if (hasDisableNks && disableNks.includes(node[props.nk])) {
           return true;
         }
         //checkEnableMethod 返回 false 表示禁用
-        if (hasMethod && !enableMethod(node)) {
+        if (hasEnableMethod && !enableMethod(node)) {
           return true;
         }
         return false;
       };
 
-      const markDisabled = (nodes: any[]): any[] => {
-        return nodes.map((node) => {
-          const children = node[props.nc];
-          const nextChildren = Array.isArray(children) ? markDisabled(children) : children;
-          if (isNodeDisabled(node)) {
-            return { ...node, disabled: true, [props.nc]: nextChildren };
+      /**
+       * 递归处理节点：先过滤排除节点，再标记禁用
+       */
+      const processNodes = (nodes: any[]): any[] => {
+        const result: any[] = [];
+        for (const node of nodes) {
+          if (isNodeExcluded(node)) {
+            continue;
           }
-          return { ...node, [props.nc]: nextChildren };
-        });
+          const children = node[props.nc];
+          const nextChildren = Array.isArray(children) ? processNodes(children) : children;
+          if (isNodeDisabled(node)) {
+            result.push({ ...node, disabled: true, [props.nc]: nextChildren });
+            continue;
+          }
+          result.push({ ...node, [props.nc]: nextChildren });
+        }
+        return result;
       };
 
-      return markDisabled(props.data);
+      //没有任何规则，直接返回原始数据
+      if (!hasDisableNks && !hasEnableMethod && !hasExcludeNks && !hasExcludeMethod) {
+        return props.data;
+      }
+
+      return processNodes(props.data);
     });
-
-    /**
-     * 过滤节点
-     */
-    const filterNode = (value: string, data: any, node?: any): boolean => {
-      // 外部 filterMethod 优先，搜索文字与外部过滤同时满足才显示
-      const passExternal = props.filterMethod ? props.filterMethod(value, data, node) : true;
-
-      if (!value) {
-        return passExternal;
-      }
-
-      const fields = props.searchFields?.length ? props.searchFields : [props.nt ?? "name"];
-      const matchData = (d: any): boolean => fields.some((field) => String(d[field] ?? "").includes(value));
-
-      if (matchData(data)) {
-        return passExternal;
-      }
-
-      //级联搜索：祖先命中时，后代节点也保留可见
-      if (!props.searchCascade || !node) {
-        return false;
-      }
-      let parent = node.parent;
-      while (parent && parent.level > 0 && parent.data) {
-        if (matchData(parent.data)) {
-          return passExternal;
-        }
-        parent = parent.parent;
-      }
-      return false;
-    };
-
-    watchDebounced(
-      searchText,
-      (val) => {
-        treeRef.value?.filter(val);
-        emit("on-search", val);
-      },
-      { debounce: 300 }
-    );
 
     //同步选中节点高亮：selectedNk 或 data 或 treeRef 变化时同步
     watch(
@@ -329,6 +384,11 @@ export default {
      * 全选所有节点
      */
     const checkAll = (): void => {
+      //只读模式不进行全选
+      if (props.readonly) {
+        return;
+      }
+
       if (!props.check || !props.checkMultiple) {
         return;
       }
@@ -339,6 +399,11 @@ export default {
     };
 
     const checkClear = (): void => {
+      //只读模式不进行清空
+      if (props.readonly) {
+        return;
+      }
+
       treeRef.value?.setCheckedKeys([]);
       checkedNks.value = [];
       checkedHalfNks.value = [];
@@ -365,7 +430,6 @@ export default {
       rootSelected,
       effectiveCascade,
       effectiveClickExpand,
-      filterNode,
       reset,
       filter,
       checkAll,

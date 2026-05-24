@@ -8,7 +8,7 @@
     <div v-if="search || searchRefresh" class="filter-wrapper">
       <el-input
         v-if="search"
-        v-model="searchText"
+        v-model="draftSearchText"
         :placeholder="searchPlaceholder || '搜索'"
         clearable
         :prefix-icon="SearchIcon"
@@ -19,30 +19,37 @@
         :class="['refresh-btn', { 'refresh-btn--full': !search }]"
         size="small"
         :icon="RefreshIcon"
-        @click="emit('on-refresh', searchText)"
+        @click="emit('on-refresh', draftSearchText)"
       >
         刷新
       </el-button>
     </div>
 
     <el-scrollbar class="tree-wrapper">
-      <div v-if="nr" class="root-node" :class="{ 'is-active': rootSelected }" @click="onRootClick">
-        <span class="root-node-left flex items-center min-w-0">
-          <el-icon v-if="nrIcon" class="node-pre-icon">
-            <component :is="resolveIcon(nrIcon)" />
-          </el-icon>
-          <span class="node-label">{{ nrTitle || "全部" }}</span>
-        </span>
-        <span class="adv-tree-actions flex items-center" @click.stop>
-          <slot name="root-actions" />
-        </span>
-      </div>
+      <slot v-if="nr" name="root-node" :selected="rootSelected" :readonly="readonly" :on-click="onRootClick">
+        <div class="root-node" :class="{ 'is-active': rootSelected, 'is-readonly': readonly }" @click="onRootClick">
+          <span class="root-node-left flex items-center min-w-0">
+            <el-icon v-if="nrIcon" class="node-pre-icon">
+              <component :is="resolveIcon(nrIcon)" />
+            </el-icon>
+            <span class="node-label">{{ nrTitle || "全部" }}</span>
+          </span>
+          <span
+            class="adv-tree-actions flex items-center"
+            :class="{ 'adv-tree-actions--always': actionAlwaysShow }"
+            @click.stop
+          >
+            <slot name="root-actions" />
+          </span>
+        </div>
+      </slot>
 
       <el-tree
         ref="treeRef"
+        :style="{ pointerEvents: readonly ? 'none' : 'auto' }"
         :data="treeData"
         :props="{ children: nc, label: nt }"
-        :filter-node-method="filterNode"
+        :filter-node-method="onElTreeSearch"
         :expand-on-click-node="effectiveClickExpand"
         :node-key="nk"
         highlight-current
@@ -51,7 +58,7 @@
         :check-strictly="!effectiveCascade"
         :check-on-click-node="checkOnNodeClick"
         :check-on-click-leaf="checkOnNodeClick"
-        class="custom-tree"
+        :class="['custom-tree', { 'is-readonly': readonly }]"
         @node-click="onNodeClick"
         @check="onNodeCheck"
       >
@@ -68,7 +75,11 @@
               </span>
               <slot name="append" :node="node" :data="nodeData" />
             </span>
-            <span class="adv-tree-actions flex items-center" @click.stop>
+            <span
+              class="adv-tree-actions flex items-center"
+              :class="{ 'adv-tree-actions--always': actionAlwaysShow }"
+              @click.stop
+            >
               <slot name="actions" :node="node" :data="nodeData">
                 <template v-if="action">
                   <el-icon v-if="actionMode?.includes('add')" @click="emit('on-add', nodeData)">
@@ -110,7 +121,7 @@ const props = withDefaults(defineProps<StdAdvTreeProps>(), {
   checkCascade: true,
   checkOnNodeClick: true,
   checkDisableNks: () => [],
-  checkDisableMethod: undefined,
+  checkEnableMethod: undefined,
 
   search: false,
   searchPlaceholder: "搜索",
@@ -135,6 +146,9 @@ const props = withDefaults(defineProps<StdAdvTreeProps>(), {
 
   action: false,
   actionMode: () => ["add", "edit", "remove"],
+  actionAlwaysShow: false,
+
+  readonly: false,
 });
 
 //双向绑定的选中节点 key（对应 nk 字段的值）
@@ -152,12 +166,10 @@ const treeRef = ref<InstanceType<typeof ElTree>>();
 
 //高级树基础功能打包
 const {
-  searchText,
   treeData,
   rootSelected,
   effectiveCascade,
   effectiveClickExpand,
-  filterNode,
   reset,
   filter,
   checkAll,
@@ -167,10 +179,22 @@ const {
   onNodeCheck,
 } = StdAdvTreeService.useStdAdvTree(props, emit, treeRef, selectedNk, checkedNks, checkedHalfNks);
 
+//高级树搜索功能打包
+const { draftSearchText, onElTreeSearch } = StdAdvTreeService.useStdAdvTreeSearch(props, emit, treeRef);
+
 defineExpose({ reset, filter, checkAll, checkClear, treeRef });
 </script>
 
 <style scoped>
+/* 处理label过长时，label超出显示不全问题 */
+.el-tree-node__content {
+  display: flex;
+}
+.custom-tree-node {
+  flex: 1;
+  overflow: auto;
+}
+/* 处理label过长时，超出显示不全问题 */
 .adv-tree-container {
   display: flex;
   flex-direction: column;
@@ -257,7 +281,9 @@ defineExpose({ reset, filter, checkAll, checkClear, treeRef });
 }
 
 :deep(.el-tree--highlight-current .el-tree-node.is-current > .el-tree-node__content) {
-  background: linear-gradient(90deg, var(--el-color-primary-light-7) 0%, var(--el-color-primary-light-9) 100%);
+  background: var(--el-color-primary-light-8);
+  /* 暂时注释掉，因为不需要这个渐变背景色，改为纯色 */
+  /* background: linear-gradient(90deg, var(--el-color-primary-light-7) 0%, var(--el-color-primary-light-9) 100%); */
   font-weight: 600;
 }
 
@@ -265,8 +291,8 @@ defineExpose({ reset, filter, checkAll, checkClear, treeRef });
   color: var(--el-color-primary);
 }
 
-/* 选中行顶部主题色横线 */
-:deep(.el-tree-node.is-current > .el-tree-node__content)::before {
+/* 选中行顶部主题色横线 --暂时注释掉，因为不需要这个横线*/
+/* :deep(.el-tree-node.is-current > .el-tree-node__content)::before {
   content: "";
   position: absolute;
   top: 0;
@@ -274,7 +300,7 @@ defineExpose({ reset, filter, checkAll, checkClear, treeRef });
   right: 0px;
   height: 1.5px;
   background: linear-gradient(90deg, var(--el-color-primary) 0%, var(--el-color-primary-light-5) 80%);
-}
+} */
 
 :deep(.el-tree-node__content) {
   position: relative;
@@ -375,11 +401,17 @@ defineExpose({ reset, filter, checkAll, checkClear, treeRef });
 .adv-tree-actions {
   flex-shrink: 0;
   gap: 2px;
-  visibility: hidden;
+  /* visibility: hidden; */
+  display: none;
 }
 
 :deep(.el-tree-node__content:hover) .adv-tree-actions,
-:deep(.el-tree-node.is-current > .el-tree-node__content) .adv-tree-actions {
+:deep(.el-tree-node.is-current > .el-tree-node__content) .adv-tree-actions,
+.adv-tree-actions.adv-tree-actions--always {
+  display: inline-block;
+}
+
+.root-node .adv-tree-actions.adv-tree-actions--always {
   visibility: visible;
 }
 
@@ -405,5 +437,46 @@ defineExpose({ reset, filter, checkAll, checkClear, treeRef });
 .adv-tree-actions .action-danger:hover {
   background-color: #fef2f2;
   color: #ef4444;
+}
+
+/* ── 只读模式 ── */
+.root-node.is-readonly {
+  cursor: default;
+}
+
+.root-node.is-readonly:hover {
+  background-color: transparent;
+}
+
+:deep(.is-readonly .el-tree-node__content) {
+  cursor: default;
+}
+
+:deep(.is-readonly .el-tree-node__content:hover) {
+  background-color: transparent;
+}
+
+:deep(.is-readonly .el-checkbox__inner) {
+  border-color: var(--el-border-color) !important;
+  background-color: var(--el-fill-color) !important;
+  cursor: not-allowed;
+}
+
+:deep(.is-readonly .el-checkbox.is-checked .el-checkbox__inner) {
+  border-color: var(--el-color-primary-light-5) !important;
+  background-color: var(--el-color-primary-light-5) !important;
+}
+
+:deep(.is-readonly .el-checkbox__input) {
+  cursor: not-allowed;
+}
+
+:deep(.is-readonly.el-tree--highlight-current .el-tree-node.is-current > .el-tree-node__content) {
+  background: transparent;
+  font-weight: normal;
+}
+
+:deep(.is-readonly.el-tree--highlight-current .el-tree-node.is-current > .el-tree-node__content .node-label) {
+  color: var(--el-text-color-regular);
 }
 </style>
