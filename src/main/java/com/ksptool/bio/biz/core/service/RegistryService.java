@@ -13,7 +13,7 @@ import com.ksptool.bio.biz.core.model.registry.vo.GetRegistryDetailsVo;
 import com.ksptool.bio.biz.core.model.registry.vo.GetRegistryEntryListVo;
 import com.ksptool.bio.biz.core.model.registry.vo.GetRegistryNodeTreeVo;
 import com.ksptool.bio.biz.core.repository.RegistryRepository;
-import com.ksptool.bio.commons.dataprocess.Str;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -301,47 +301,23 @@ public class RegistryService {
                 continue;
             }
 
-            if (Str.isNotIn(dto.getNvalueKind(), "字串", "整数", "浮点", "日期")) {
+            // nvalueKind和status已由RegistryDictConverter自动转换
+            if (dto.getNvalueKind() == null || dto.getNvalueKind() < 0 || dto.getNvalueKind() > 3) {
                 throw new BizException("导入失败,数据类型不支持: " + dto.getNvalueKind());
             }
 
-            var nValueKind = -1;
-
-            if (dto.getNvalueKind().equals("字串")) {
-                nValueKind = 0;
-            }
-            if (dto.getNvalueKind().equals("整数")) {
-                nValueKind = 1;
-            }
-            if (dto.getNvalueKind().equals("浮点")) {
-                nValueKind = 2;
-            }
-            if (dto.getNvalueKind().equals("日期")) {
-                nValueKind = 3;
-            }
-
-
-            insertPo.setNvalueKind(nValueKind);
+            insertPo.setNvalueKind(dto.getNvalueKind());
             insertPo.setNvalue(dto.getNvalue());
             insertPo.setLabel(dto.getLabel());
             insertPo.setRemark(dto.getRemark());
             insertPo.setMetadata(dto.getMetadata());
             insertPo.setIsSystem(0);
 
-            if (Str.isNotIn(dto.getStatus(), "正常", "停用")) {
+            if (dto.getStatus() == null || (dto.getStatus() != 0 && dto.getStatus() != 1)) {
                 throw new BizException("导入失败,状态不支持: " + dto.getStatus());
             }
 
-            var status = -1;
-
-            if (dto.getStatus().equals("正常")) {
-                status = 0;
-            }
-            if (dto.getStatus().equals("停用")) {
-                status = 1;
-            }
-
-            insertPo.setStatus(status);
+            insertPo.setStatus(dto.getStatus());
             insertPo.setSeq(Integer.parseInt(dto.getSeq()));
             importPos.add(insertPo);
         }
@@ -375,42 +351,12 @@ public class RegistryService {
         for (RegistryPo po : entryList) {
             ExportRegistryVo vo = new ExportRegistryVo();
             vo.setNkey(po.getNkey());
-
-            //处理数据类型转换 0:字串 1:整数 2:浮点 3:日期
-            String nvalueKind = "";
-            if (po.getNvalueKind() != null) {
-                if (po.getNvalueKind() == 0) {
-                    nvalueKind = "字串";
-                }
-                if (po.getNvalueKind() == 1) {
-                    nvalueKind = "整数";
-                }
-                if (po.getNvalueKind() == 2) {
-                    nvalueKind = "浮点";
-                }
-                if (po.getNvalueKind() == 3) {
-                    nvalueKind = "日期";
-                }
-            }
-            vo.setNvalueKind(nvalueKind);
-
+            vo.setNvalueKind(po.getNvalueKind());
             vo.setNvalue(po.getNvalue());
             vo.setLabel(po.getLabel());
             vo.setRemark(po.getRemark());
             vo.setMetadata(po.getMetadata());
-
-            //处理状态转换 0:正常 1:停用
-            String status = "";
-            if (po.getStatus() != null) {
-                if (po.getStatus() == 0) {
-                    status = "正常";
-                }
-                if (po.getStatus() == 1) {
-                    status = "停用";
-                }
-            }
-            vo.setStatus(status);
-
+            vo.setStatus(po.getStatus());
             vo.setSeq(po.getSeq() != null ? po.getSeq().toString() : "");
 
             exportList.add(vo);
@@ -420,4 +366,21 @@ public class RegistryService {
     }
 
 
+    public List<GetRegistryEntryListVo> getRegistryEntry(GetRegistryListDto dto) {
+        List<GetRegistryEntryListVo> result = new ArrayList<>();
+        //先根据全路径查询到节点
+        RegistryPo nodePo = repository.getRegistryNodeByKeyPath(dto.getKeyPath());
+
+        if (nodePo == null) {
+           //如果找不到可能就是找子项
+            nodePo = repository.getRegistryByKeyPath(dto.getKeyPath());
+            if(nodePo != null) {
+                result.add(as(nodePo, GetRegistryEntryListVo.class));
+            }
+            return result;
+        }
+        //查询该节点下全部子项
+        Page<RegistryPo> entryPage = repository.getRegistryEntryList(nodePo.getId(), dto, dto.pageRequest());
+        return as(entryPage.getContent(), GetRegistryEntryListVo.class);
+    }
 }

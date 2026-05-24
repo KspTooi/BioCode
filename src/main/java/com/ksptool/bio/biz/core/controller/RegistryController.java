@@ -56,6 +56,12 @@ public class RegistryController {
         return registryService.getRegistryEntryList(dto);
     }
 
+    @Operation(summary = "查询注册表信息")
+    @PostMapping("/getRegistryEntry")
+    public List<GetRegistryEntryListVo> getRegistryEntry(@RequestBody @Valid GetRegistryListDto dto)throws Exception{
+        return  registryService.getRegistryEntry(dto);
+    }
+
     @PreAuthorize("@auth.hasCode('core:registry:add')")
     @Operation(summary = "新增注册表条目")
     @PostMapping("/addRegistry")

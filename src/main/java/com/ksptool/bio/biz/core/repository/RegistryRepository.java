@@ -125,4 +125,9 @@ public interface RegistryRepository extends JpaRepository<RegistryPo, Long> {
             """)
     List<RegistryPo> getRegistryEntryListNotPage(@Param("parentId") Long parentId, @Param("dto") GetRegistryListDto dto);
 
+    @Query("""
+            SELECT u FROM RegistryPo u
+            WHERE u.keyPath = :keyPath AND u.kind = 1
+            """)
+    RegistryPo getRegistryByKeyPath(@Param("keyPath") String keyPath);
 }

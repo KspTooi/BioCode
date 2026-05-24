@@ -1,6 +1,7 @@
 package com.ksptool.bio.biz.core.service;
 
 import com.ksptool.bio.biz.core.model.registry.RegistryPo;
+import com.ksptool.bio.biz.core.model.registry.dto.GetRegistryListDto;
 import com.ksptool.bio.biz.core.repository.RegistryRepository;
 import com.ksptool.bio.commons.dataprocess.Str;
 import com.ksptool.bio.commons.utils.RegistryTool;
@@ -332,7 +333,7 @@ public class RegistrySdk {
         }
 
         //查询该节点下全部子项
-        return repository.getRegistryEntryListNotPage(nodePo.getId(), null);
+        return repository.getRegistryEntryListNotPage(nodePo.getId(), new GetRegistryListDto());
     }
 
     /**

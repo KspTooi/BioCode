@@ -3,6 +3,8 @@ package com.ksptool.bio.biz.core.model.registry.dto;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.ksptool.bio.commons.dataprocess.AbstractImportDto;
 import com.ksptool.bio.commons.dataprocess.Str;
+import com.ksptool.bio.commons.dataprocess.converter.RegistryDict;
+import com.ksptool.bio.commons.dataprocess.converter.RegistryDictConverter;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,8 +28,9 @@ public class ImportRegistryDto extends AbstractImportDto {
     @ExcelProperty(value = "*条目Key")
     private String nkey;
 
-    @ExcelProperty(value = "*数据类型")
-    private String nvalueKind;
+    @ExcelProperty(value = "*数据类型", converter = RegistryDictConverter.class)
+    @RegistryDict(keyPath = "field.core.registry.nvalueKind", fallback = "0=字串;1=整数;2=浮点;3=日期", required = true, message = "数据类型不能为空")
+    private Integer nvalueKind;
 
     @ExcelProperty(value = "*条目Value")
     private String nvalue;
@@ -41,8 +44,9 @@ public class ImportRegistryDto extends AbstractImportDto {
     @ExcelProperty(value = "元数据JSON")
     private String metadata;
 
-    @ExcelProperty(value = "*状态")
-    private String status;
+    @ExcelProperty(value = "*状态", converter = RegistryDictConverter.class)
+    @RegistryDict(keyPath = "field.core.registry.status", fallback = "0=正常;1=停用", required = true, message = "状态不能为空")
+    private Integer status;
 
     @ExcelProperty(value = "*排序")
     private String seq;
@@ -75,18 +79,22 @@ public class ImportRegistryDto extends AbstractImportDto {
             return "排序必须为整数 当前值:" + seq;
         }
 
-        // 校验数据类型
-        if (Str.isNotIn(nvalueKind, "字串", "整数", "浮点", "日期")) {
-            return "数据类型只能为字串、整数、浮点或日期 当前值:" + nvalueKind;
+        // 校验数据类型（RegistryDictConverter已转换，校验范围）
+        if (nvalueKind == null) {
+            return "数据类型不能为空";
+        }
+
+        if (nvalueKind < 0 || nvalueKind > 3) {
+            return "数据类型只能为0(字串)、1(整数)、2(浮点)或3(日期) 当前值:" + nvalueKind;
         }
 
         // 如果填写了数据类型，则必须填写Value
-        if (Str.isNotBlank(nvalueKind) && Str.isBlank(nvalue)) {
+        if (nvalueKind != null && Str.isBlank(nvalue)) {
             return "填写了数据类型时必须填写Value";
         }
 
         // 如果填写了Value，则必须填写数据类型
-        if (Str.isNotBlank(nvalue) && Str.isBlank(nvalueKind)) {
+        if (Str.isNotBlank(nvalue) && nvalueKind == null) {
             return "填写了Value时必须填写数据类型";
         }
 
@@ -96,17 +104,17 @@ public class ImportRegistryDto extends AbstractImportDto {
         }
 
         // 根据数据类型校验Value格式
-        if (Str.isNotBlank(nvalueKind) && Str.isNotBlank(nvalue)) {
+        if (nvalueKind != null && Str.isNotBlank(nvalue)) {
 
-            if (nvalueKind.equals("整数") && Str.isNotInteger(nvalue)) {
+            if (nvalueKind == 1 && Str.isNotInteger(nvalue)) {
                 return "值必须为整数 当前值:" + nvalue;
             }
 
-            if (nvalueKind.equals("浮点") && Str.isNotDouble(nvalue)) {
+            if (nvalueKind == 2 && Str.isNotDouble(nvalue)) {
                 return "值必须为浮点数 当前值:" + nvalue;
             }
 
-            if (nvalueKind.equals("日期") && Str.isNotDateTime(nvalue)) {
+            if (nvalueKind == 3 && Str.isNotDateTime(nvalue)) {
                 return "值必须为日期时间(yyyy-MM-dd HH:mm:ss) 当前值:" + nvalue;
             }
         }
@@ -126,13 +134,13 @@ public class ImportRegistryDto extends AbstractImportDto {
             metadata = "{}";
         }
 
-        // 校验状态
-        if (Str.isBlank(status)) {
+        // 校验状态（RegistryDictConverter已转换，校验范围）
+        if (status == null) {
             return "状态不能为空";
         }
 
-        if (Str.isNotIn(status, "正常", "停用")) {
-            return "状态只能为正常或停用 当前值:" + status;
+        if (status != 0 && status != 1) {
+            return "状态只能为0(正常)或1(停用) 当前值:" + status;
         }
 
         return null;
