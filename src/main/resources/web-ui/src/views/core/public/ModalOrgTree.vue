@@ -5,25 +5,44 @@
 -->
 <template>
   <el-dialog
-    v-model="modalVisible"
+    v-model="bindModalVisible"
     :title="title"
     :width="width"
     :close-on-click-modal="false"
     append-to-body
     destroy-on-close
     class="core-org-dept-select-modal"
-    @close="onClose"
   >
-    <div v-loading="loading" class="modal-body">
+    <div class="modal-body">
       <div class="tree-container">
-        <OrgTree v-if="modalVisible" :check="false" v-model:checked-nks="modalCheckedOrgIds" ref="orgTreeRef" v-bind="$attrs" />
+        <OrgTree
+          v-model:checked-nks="draftCheckedOrgIds"
+          :check="true"
+          :check-multiple="mode === 'multiple'"
+          :check-cascade="checkCascade"
+          :show-kind-tag="false"
+          :crop-org-id="cropOrgId"
+          :readonly="readonly"
+          :search="true"
+          search-placeholder="请输入组织机构"
+          :search-cascade="true"
+          :search-fields="['name']"
+          :exclude-node-method="excludeNodeMethod"
+          :check-enable-method="checkEnableMethod"
+          v-bind="$attrs"
+        />
       </div>
     </div>
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="modalVisible = false">关闭</el-button>
-        <el-button type="primary" @click="onSubmit" :disabled="modalCheckedOrgIds.length < 1"
-          >保存 ({{ modalCheckedOrgIds.length }})</el-button
+        <el-button :loading="btnLoading" :disabled="false" @click="onModalClose">关闭</el-button>
+        <el-button
+          v-if="!props.readonly"
+          type="primary"
+          :loading="btnLoading"
+          :disabled="draftCheckedOrgIds.length < 1 || isOverMax"
+          @click="onModalSubmit"
+          >保存({{ draftCheckedOrgIds.length }})</el-button
         >
       </div>
     </template>
@@ -31,41 +50,41 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick } from "vue";
 import OrgTree from "@/views/core/public/OrgTree.vue";
-import type { GetOrgTreeVo } from "@/views/core/api/OrgApi";
+import type { ModalOrgTreeEmits, ModalOrgTreeProps } from "@/views/core/public/service/ModalOrgTreeService";
+import ModalOrgTreeService from "@/views/core/public/service/ModalOrgTreeService";
 
-const props = withDefaults(
-  defineProps<{
-    title?: string;
-    width?: string | number;
-  }>(),
-  {
-    title: "选择组织机构",
-    width: "450px",
-  }
+/**
+ * 模态组织机构选择器参数
+ */
+const props = withDefaults(defineProps<ModalOrgTreeProps>(), {
+  title: "选择组织机构",
+  width: "500px",
+  mode: "single",
+  readonly: false,
+  max: null,
+  checkCascade: false,
+  excludeNodeMethod: undefined,
+});
+
+/**
+ * 模态组织机构选择器事件发射器
+ */
+const emit = defineEmits<ModalOrgTreeEmits>();
+
+//模态框显隐控制 外部用v-model绑定
+const bindModalVisible = defineModel<boolean>({ default: false });
+
+//已勾选组织机构ID数组 外部用v-model:checked-org-ids绑定
+const bindCheckedOrgIds = defineModel<string[]>("checkedOrgIds", { default: () => [] });
+
+//模态框组织机构选择器打包
+const { draftCheckedOrgIds, isOverMax, btnLoading, onModalSubmit, onModalClose } = ModalOrgTreeService.useModalOrgTree(
+  props,
+  emit,
+  bindModalVisible,
+  bindCheckedOrgIds
 );
-
-const emit = defineEmits<{
-  (e: "on-submit", checkedOrgIds: string[]): void;
-  (e: "on-close"): void;
-}>();
-
-const modalVisible = defineModel<boolean>({ default: false });
-const loading = ref(false);
-
-//已勾选的组织机构ID列表
-const modalCheckedOrgIds = defineModel<string[]>("checkedOrgIds", { default: () => [] });
-
-const onSubmit = (): void => {
-  modalVisible.value = false;
-  emit("on-submit", modalCheckedOrgIds.value);
-};
-
-const onClose = (): void => {
-  modalVisible.value = false;
-  emit("on-close");
-};
 </script>
 
 <style scoped>
