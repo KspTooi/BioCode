@@ -18,20 +18,20 @@
           </el-form-item>
         </div>
         <el-form-item>
-          <el-button type="primary" @click="loadList" :disabled="listLoading">查询</el-button>
-          <el-button @click="resetList" :disabled="listLoading">重置</el-button>
+          <el-button type="primary" :disabled="listLoading" @click="loadList">查询</el-button>
+          <el-button :disabled="listLoading" @click="resetList">重置</el-button>
         </el-form-item>
       </el-form>
     </StdListAreaQuery>
 
     <!-- 操作按钮区域 -->
     <StdListAreaAction class="flex gap-2">
-      <el-button type="success" @click="openModal('add', null)">创建菜单包</el-button>
+      <el-button type="primary" @click="openModal('add', null)">创建菜单包</el-button>
     </StdListAreaAction>
 
     <!-- 列表表格区域 -->
-    <StdListAreaTable>
-      <el-table :data="listData" stripe v-loading="listLoading" border height="100%">
+    <StdListAreaTable v-model:list-form="listForm" :list-total="listTotal" :load-list="loadList">
+      <el-table v-loading="listLoading" :data="listData" stripe border height="100%">
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
 
         <el-table-column prop="name" label="菜单包名" min-width="120" show-overflow-tooltip />
@@ -67,39 +67,17 @@
         <el-table-column prop="createTime" label="创建时间" min-width="120" show-overflow-tooltip />
         <el-table-column label="操作" fixed="right" min-width="180">
           <template #default="scope">
-            <el-button link type="primary" size="small" @click="openModal('edit', scope.row)" :icon="EditIcon">
+            <el-button link type="primary" size="small" :icon="EditIcon" @click="openModal('edit', scope.row)">
               编辑
             </el-button>
-            <el-button link type="primary" size="small" @click="openMenuModal(scope.row)" :icon="EditIcon">
+            <el-button link type="primary" size="small" :icon="EditIcon" @click="openMenuModal(scope.row)">
               管理菜单
             </el-button>
-            <el-button link type="danger" size="small" @click="removeList(scope.row)" :icon="DeleteIcon"> 删除 </el-button>
+            <el-button link type="danger" size="small" :icon="DeleteIcon" @click="removeList(scope.row)"> 删除 </el-button>
           </template>
         </el-table-column>
       </el-table>
 
-      <template #pagination>
-        <el-pagination
-          v-model:current-page="listForm.pageNum"
-          v-model:page-size="listForm.pageSize"
-          :page-sizes="[10, 20, 50, 100]"
-          layout="total, sizes, prev, pager, next, jumper"
-          :total="listTotal"
-          @size-change="
-            (val: number) => {
-              listForm.pageSize = val;
-              loadList();
-            }
-          "
-          @current-change="
-            (val: number) => {
-              listForm.pageNum = val;
-              loadList();
-            }
-          "
-          background
-        />
-      </template>
     </StdListAreaTable>
 
     <!-- 新增/编辑模态框 -->
@@ -147,7 +125,7 @@
           <el-input
             v-model="modalForm.remark"
             type="textarea"
-            :rows="3"
+            :autosize="{ minRows: 3 }"
             placeholder="请输入备注"
             :maxlength="200"
             show-word-limit
@@ -157,7 +135,7 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="modalVisible = false">关闭</el-button>
-          <el-button type="primary" @click="submitModal" :loading="modalLoading">
+          <el-button type="primary" :loading="modalLoading" @click="submitModal">
             {{ modalMode === "add" ? "创建" : "保存" }}
           </el-button>
         </div>
