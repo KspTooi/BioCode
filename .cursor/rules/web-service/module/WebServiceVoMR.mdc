@@ -1,0 +1,210 @@
+---
+description: 后端 Vo 层（*Vo.java）ModuleRule — 响应数据对象的命名、结构与字段约定
+globs: "**/vo/*Vo.java"
+alwaysApply: false
+kind: MR
+---
+
+# 后端 Vo 层编码规范（MR）
+
+> 术语以 [Glossary](../../_meta/Glossary.mdc) 为准，骨架以 [RuleSkeleton](../../_meta/RuleSkeleton.mdc) 为准。
+
+---
+
+## 1. 职责
+
+Vo 是**后端 → 前端**的响应数据载体，只描述出参字段，不含业务逻辑。
+
+1. 作为 `Result<T>` / `PageResult<T>` 的 `data` 元素类型
+2. 字段集合与前端 Api 层 `*Vo` 接口一一对应（类型映射见 Glossary）
+3. 列表 Vo 展示表格列；详情 Vo 展示表单 / 详情页全量字段
+
+**不做什么**：不做入参校验、不访问数据库、不承担 Po 持久化职责。Po → Vo 组装属于 Service（见对应 CR / MR）。
+
+---
+
+## 2. 文件骨架
+
+```
+1. package 声明     — com.ksptool.bio.biz.<域>.model.<实体>.vo
+2. import 区        — java 类型 → 项目公共类型 → lombok → swagger（导出 Vo 再加 EasyExcel 注解）
+3. 类声明           — @Getter @Setter，无 @Data / 无业务方法
+4. 字段区           — @Schema → private 字段（导出 Vo 用 @ExcelProperty 替代或补充）
+```
+
+一个 Java 文件只声明**一个** Vo 类。
+
+---
+
+## 3. 硬性规则（Must）
+
+1. 类名以 `Vo` 结尾：`GetXxxListVo`、`GetXxxDetailsVo`、`ExportXxxVo`
+2. 包路径固定 `...model.<camelCase实体>.vo`，禁止与 `dto` / `po` 混放
+3. 统一 `@Getter` `@Setter`，禁止 `@Data`、`record`、手写 getter/setter
+4. 每个字段必须有 `@Schema(description=...)`，枚举/状态字段 description 须写明取值含义
+5. 禁止在 Vo 上使用 Jakarta Validation（`@NotNull`、`@Valid` 等）
+6. 列表 Vo 只放表格展示字段；详情 Vo 放表单回显所需的完整字段（可多于列表 Vo）
+7. `GetXxxListVo` 与 `GetXxxDetailsVo` 均含 `Long id`；关联展示用 `xxxName` 冗余字段，不用嵌套 Po
+8. 禁止在 Vo 中编写业务方法；禁止引用 Repository、Service、Controller
+9. 导出 Vo 类名 `ExportXxxVo`，字段用 `@ExcelProperty`，字典列配合 `@RegistryDict` + `RegistryDictConverter`
+10. 禁止把 Vo 放在 `dto` 包或把 Dto 放在 `vo` 包
+
+---
+
+## 4. 模板（Templates）
+
+### 列表 Vo
+
+```java
+package com.ksptool.bio.biz.xxx.model.xxx.vo;
+
+import java.time.LocalDateTime;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class GetXxxListVo {
+
+    @Schema(description = "主键ID")
+    private Long id;
+
+    @Schema(description = "标题")
+    private String title;
+
+    @Schema(description = "状态 0:草稿 1:已发布")
+    private Integer status;
+
+    @Schema(description = "创建时间")
+    private LocalDateTime createTime;
+}
+```
+
+### 详情 Vo
+
+```java
+package com.ksptool.bio.biz.xxx.model.xxx.vo;
+
+import java.time.LocalDateTime;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class GetXxxDetailsVo {
+
+    @Schema(description = "主键ID")
+    private Long id;
+
+    @Schema(description = "标题")
+    private String title;
+
+    @Schema(description = "内容")
+    private String content;
+
+    @Schema(description = "状态 0:草稿 1:已发布")
+    private Integer status;
+
+    @Schema(description = "创建时间")
+    private LocalDateTime createTime;
+
+    @Schema(description = "更新时间")
+    private LocalDateTime updateTime;
+}
+```
+
+### 导出 Vo
+
+```java
+package com.ksptool.bio.biz.xxx.model.xxx.vo;
+
+import com.alibaba.excel.annotation.ExcelProperty;
+import com.ksptool.bio.commons.dataprocess.converter.RegistryDict;
+import com.ksptool.bio.commons.dataprocess.converter.RegistryDictConverter;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class ExportXxxVo {
+
+    @ExcelProperty(value = "标题")
+    private String title;
+
+    @ExcelProperty(value = "状态", converter = RegistryDictConverter.class)
+    @RegistryDict(keyPath = "field.xxx.status", fallback = "0=草稿;1=已发布")
+    private Integer status;
+}
+```
+
+### 流程 / 嵌套片段 Vo
+
+```java
+@Getter
+@Setter
+public class ProcessNodeVo {
+
+    @Schema(description = "节点名称")
+    private String nodeName;
+
+    @Schema(description = "节点序号")
+    private Integer nodeNumber;
+}
+```
+
+---
+
+## 5. 反模式（Anti-patterns）
+
+```java
+// ❌ Vo 上做入参校验
+public class GetXxxDetailsVo {
+    @NotNull private Long id;
+}
+```
+
+```java
+// ❌ Vo 直接暴露 Po 或 JPA 实体
+public class GetXxxDetailsVo {
+    private XxxPo entity;
+}
+```
+
+```java
+// ❌ 列表 Vo 塞入详情-only 大字段
+public class GetXxxListVo {
+    private String largeContentBody;
+}
+```
+
+```java
+// ❌ 类名 / 包路径与职责不符
+// 文件：dto/GetXxxListVo.java 或 类名 GetXxxListDto
+```
+
+---
+
+## 6. 速查（Cheat Sheet）
+
+| 类型 | 命名 | 用途 | 典型字段 |
+| --- | --- | --- | --- |
+| 列表行 | `GetXxxListVo` | 表格列 | `id` + 展示列 + `createTime` |
+| 详情 | `GetXxxDetailsVo` | 表单回显 | 全量业务字段 + 审计字段 |
+| 导出 | `ExportXxxVo` | EasyExcel | `@ExcelProperty` 列 |
+| 片段 | `<名词>Vo` | 嵌套列表项 | 无 `id` 或按需 |
+
+| 场景 | ListVo | DetailsVo |
+| --- | --- | --- |
+| 字段数量 | 少（表格列） | 多（表单全量） |
+| 关联 ID | 可省略，用 `xxxName` | 保留 `xxxId` + `xxxName` |
+| 校验注解 | 禁止 | 禁止 |
+| Swagger | 必须 | 必须 |
+
+| 后端 Java 类型 | 前端 TS 类型（Glossary） |
+| --- | --- |
+| `Long` | `string` |
+| `Integer` | `number` |
+| `LocalDateTime` | `string` |
+| `List<T>` | `T[]` |

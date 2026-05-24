@@ -1,0 +1,201 @@
+---
+description: 后端 Repository 层（*Repository.java）ModuleRule — JPA 数据访问与查询定义
+globs: "**/repository/*Repository.java"
+alwaysApply: false
+kind: MR
+---
+
+# 后端 Repository 层编码规范（MR）
+
+> 术语以 [Glossary](../../_meta/Glossary.mdc) 为准，骨架以 [RuleSkeleton](../../_meta/RuleSkeleton.mdc) 为准。
+
+---
+
+## 1. 职责
+
+Repository 是**数据库访问的唯一出口**，只定义查询与持久化，不含业务规则。
+
+1. 继承 `JpaRepository<Po, Long>`，承接 `save` / `findById` / `deleteById` 等标准 CRUD
+2. 用 `@Query` JPQL（优先）声明列表、统计、关联查询
+3. 返回 `Po`、`Page<Po>`、`Page<Tuple>` 或标量类型，供 Service 映射为 Vo
+
+**不做什么**：不包装 `Result`、不抛 `BizException`、不做 Dto↔Vo 映射、不被 Controller 调用；JPA 搞不定的复杂 SQL 不属于本层，由 MyBatis `Mapper` 承担（见 [Service MR](WebServiceServiceMR.mdc)）。业务编排属于 Service。
+
+---
+
+## 2. 文件骨架
+
+```
+1. package 声明     — com.ksptool.bio.biz.<域>.repository
+2. import 区        — Po / Dto（仅作查询入参）→ Tuple → spring data → @Param
+3. 接口声明         — @Repository → extends JpaRepository<XxxPo, Long>（按需 JpaSpecificationExecutor）
+4. 查询方法区       — 派生查询（find*）→ 手写 JPQL（get*）→ 写操作（@Modifying）
+```
+
+一个 Repository 对应**一张主表 Po**（从表 / 关联表可独立 Repository）。
+
+---
+
+## 3. 硬性规则（Must）
+
+1. 接口命名 `<Entity>Repository`，包路径 `...biz.<域>.repository`，拼写统一 `repository`
+2. 必须 `extends JpaRepository<XxxPo, Long>`；主键类型固定 `Long`
+3. 必须为 `interface`，加 `@Repository`；禁止实现类（无特殊说明）
+4. 自定义查询统一 `@Query` + 文本块 `""" JPQL """`；参数必须 `@Param` 命名绑定
+5. **方法命名**：无 `@Query` 的 Spring Data **派生查询**可用 `find*` / `findAll*`；凡手写 `@Query`（JPQL / `nativeQuery`）的方法名**禁止** `find` 前缀，统一 `get*`（如 `getXxxList`、`getXxxByCode`）；`count*` / `update*` / `delete*` 不受此限；继承自 `JpaRepository` 的 `findById` 等框架方法除外
+6. 列表分页方法签名包含 `Pageable`，返回 `Page<XxxPo>` 或 `Page<Tuple>`；`@Query` 列表方法与 Service 对齐，命名 `getXxxList`
+7. 动态条件用 SpEL：`(:#{#po.field} IS NULL OR u.field = :#{#po.field})`；模糊查询 `LIKE CONCAT('%', :#{#po.xxx}, '%')`
+8. 关联 / 投影查询：`SELECT 别名.xxx AS fieldName`（`AS` 与 Vo 字段 camelCase 一致），返回 `Page<Tuple>` 或 `List<Tuple>`
+9. 简单列表可直接查 `Page<Po>`，入参用 `XxxPo` 或 `GetXxxListDto` 作 `@Param("po")`
+10. `@Modifying` 仅用于 `UPDATE` / `DELETE`；禁止在 Repository 上声明 `@Transactional`，事务由 Service 承担
+11. 禁止引用 Controller / Service；禁止在 Repository 内做业务判断、组装 Vo（`SELECT new ...Vo(...)` 仅存量允许，新代码优先 Tuple + Service 映射）
+
+---
+
+## 4. 模板（Templates）
+
+### 标准 Repository + Po 列表
+
+```java
+package com.ksptool.bio.biz.xxx.repository;
+
+import com.ksptool.bio.biz.xxx.model.xxx.XxxPo;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface XxxRepository extends JpaRepository<XxxPo, Long> {
+
+    @Query("""
+            SELECT u FROM XxxPo u
+            WHERE
+            (:#{#po.title} IS NULL OR u.title LIKE CONCAT('%', :#{#po.title}, '%'))
+            AND (:#{#po.status} IS NULL OR u.status = :#{#po.status})
+            ORDER BY u.createTime DESC
+            """)
+    Page<XxxPo> getXxxList(@Param("po") XxxPo po, Pageable pageable);
+}
+```
+
+### Tuple 关联列表（供 TupleMapper）
+
+```java
+@Query("""
+        SELECT u.id AS id, o.name AS orgName, u.title AS title, u.createTime AS createTime
+        FROM XxxPo u
+        LEFT JOIN OrgPo o ON u.orgId = o.id
+        WHERE
+        (:#{#po.title} IS NULL OR u.title LIKE CONCAT('%', :#{#po.title}, '%'))
+        ORDER BY u.createTime DESC
+        """)
+Page<Tuple> getXxxList(@Param("po") GetXxxListDto po, Pageable pageable);
+```
+
+### 标量统计
+
+```java
+@Query("""
+        SELECT COUNT(u) FROM XxxPo u WHERE u.parentId = :parentId
+        """)
+Integer countByParentId(@Param("parentId") Long parentId);
+```
+
+### 派生查询（无 @Query，可用 find）
+
+```java
+// 由方法名自动生成 SQL，不加 @Query
+List<XxxPo> findByPlanId(Long planId);
+Optional<XxxPo> findByCode(String code);
+```
+
+### 手写 JPQL 单条查询（get 前缀）
+
+```java
+@Query("""
+        SELECT u FROM XxxPo u WHERE u.code = :code
+        """)
+XxxPo getXxxByCode(@Param("code") String code);
+```
+
+### 写操作（@Modifying）
+
+```java
+@Modifying(clearAutomatically = true)
+@Query("""
+        UPDATE XxxPo u SET u.status = :status WHERE u.id IN :ids
+        """)
+int updateStatusByIds(@Param("status") Integer status, @Param("ids") List<Long> ids);
+```
+
+### 原生 SQL（仅 JPQL 无法实现时）
+
+```java
+@Query(value = """
+        SELECT COUNT(1) FROM xxx_table u WHERE DATE_FORMAT(u.create_time, '%Y%m%d') = DATE_FORMAT(:day, '%Y%m%d')
+        """, nativeQuery = true)
+Integer countByDay(@Param("day") LocalDateTime day);
+```
+
+---
+
+## 5. 反模式（Anti-patterns）
+
+```java
+// ❌ Controller / Service 之外直接暴露给 Controller
+@RestController class XxxController { @Autowired XxxRepository repo; }
+```
+
+```java
+// ❌ Repository 内抛业务异常或返回 Result
+default GetXxxDetailsVo getDetails(Long id) { throw new BizException("..."); }
+```
+
+```java
+// ❌ @Modifying 无 clearAutomatically 且后续同一事务要读实体
+@Modifying
+@Query("UPDATE XxxPo u SET u.status = 1 WHERE u.id = :id")
+void updateStatus(@Param("id") Long id);
+```
+
+```java
+// ❌ 位置参数 / 字符串拼接 SQL
+@Query("SELECT u FROM XxxPo u WHERE u.title = " + title)
+```
+
+```java
+// ❌ @Query 方法使用 find 前缀
+@Query("SELECT u FROM XxxPo u WHERE u.code = :code")
+XxxPo findXxxByCode(@Param("code") String code);
+```
+
+---
+
+## 6. 速查（Cheat Sheet）
+
+| 场景         | 返回类型              | 入参                       | 备注                        |
+| ------------ | --------------------- | -------------------------- | --------------------------- |
+| 标准 CRUD    | `Po` / `Optional<Po>` | id                         | 继承 JpaRepository          |
+| 单表分页列表 | `Page<Po>`            | `Po` 或 `Dto` + `Pageable` | SpEL 动态条件               |
+| 关联列表     | `Page<Tuple>`         | `Dto` + `Pageable`         | `AS` 对齐 Vo 字段           |
+| 导出全量     | `List<Tuple>`         | `Dto`                      | 无 Pageable                 |
+| 计数         | `Integer` / `long`    | 标量 `@Param`              | `COUNT`                     |
+| 批量更新删除 | `int`                 | `@Modifying`               | Service 加 `@Transactional` |
+
+| 查询类型               | 优先选择                   |
+| ---------------------- | -------------------------- |
+| 单表条件过滤           | JPQL + `Po`/`Dto` SpEL     |
+| 多表展示列             | JPQL + `Tuple` + `AS`      |
+| 动态组合条件（极复杂） | `JpaSpecificationExecutor` |
+| 函数/方言依赖          | `nativeQuery = true`       |
+
+| 方法类型 | 是否 @Query | 命名前缀 | 示例 |
+| --- | --- | --- | --- |
+| 派生查询 | 否 | `find` / `findAll` | `findByPlanId` |
+| 手写查询 | 是 | `get` | `getXxxList`、`getXxxByCode` |
+| 统计 | 是 | `count` | `countByParentId` |
+| 更新删除 | 是 | `update` / `delete` | `updateStatusByIds` |
+| 框架继承 | — | `find`（JpaRepository） | `findById` |

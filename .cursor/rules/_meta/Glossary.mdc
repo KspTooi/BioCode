@@ -1,0 +1,94 @@
+---
+description: 术语表：本项目前后端规范中所有专有名词的统一定义
+globs:
+alwaysApply: false
+kind: meta
+---
+
+# 术语表（Glossary）
+
+本文件定义项目规范中所有专有名词的**唯一含义**。规则文件中出现下列术语时，以本表为准，不再解释。
+
+---
+
+## 通用术语
+
+| 术语             | 定义                                                                                                                     |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **WebUi**        | PC 端前端（Vue 3 + TypeScript）                                                                                          |
+| **WebService**   | Java 后端（Spring Boot）                                                                                                 |
+| **域（Domain）** | 业务模块划分单位，前后端一一对应。前端为 `views/` 下的一级目录（如 `notice/`），后端为对应的 Java 包（如 `notice` 子包） |
+
+---
+
+## 后端术语
+
+| 术语                | 定义                                                                                                                                                      |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Controller**      | Spring MVC 控制器，负责接收 HTTP 请求、参数校验、调用 Service、返回 `Result<T>`，不含任何业务逻辑                                                         |
+| **Service**         | 业务逻辑层，被 Controller 或其他 Service 调用，通常为直接 `@Service` 具体类，极少数场景才拆接口+实现                                                      |
+| **Repository**      | Spring Data JPA 数据访问层接口，只做数据查询/持久化，不含业务逻辑，只被 Service 调用                                                                      |
+| **DTO（Dto）**      | Data Transfer Object，前端 → 后端的请求参数对象，以 `Dto` 结尾（如 `AddNoticeDto`）                                                                       |
+| **VO（Vo）**        | View Object，后端 → 前端的响应数据对象，以 `Vo` 结尾（如 `GetNoticeListVo`）                                                                              |
+| **Entity (Po)**     | 与数据库表一一对应的持久化对象，项目中以 `Po`（Persistent Object）为类后缀（如 `NoticePo`）                                                               |
+| **Result\<T\>**     | 统一响应包装类，字段：`code`（0=成功，1=业务异常，2=内部错误）、`message`、`data: T`                                                                      |
+| **PageResult\<T\>** | 分页响应包装类，字段：`code`、`message`、`data: Collection<T>`、`total: Integer`。`pageNum`/`pageSize` 属于 `PageQuery`（请求基类），不在 `PageResult` 中 |
+| **CommonIdDto**     | 通用 ID 请求对象，字段：`id: Long`、`ids: List<Long>`，用于单个/批量删除及详情查询。前端按类型映射规则转为 `string`                                       |
+
+---
+
+## 前端术语
+
+| 术语                              | 定义                                                                                        |
+| --------------------------------- | ------------------------------------------------------------------------------------------- |
+| **Api 文件（XxxApi.ts）**         | 本模块的唯一数据边界，承担：① 全部类型声明；② 全部 HTTP 请求方法。`                         |
+| **Service 文件（XxxService.ts）** | 业务逻辑层，封装响应式状态与操作方法，以 `useXxx()` Composition 函数形式导出。`             |
+| **SFC（单文件组件）**             | `.vue` 文件，只做 UI 渲染与事件绑定，解构 Service 返回值，不含业务逻辑                      |
+| **Service 函数**                  | `useXxx()` 形式的函数，返回响应式状态与操作方法，由 Service 文件导出，在 SFC 中解构使用     |
+| **useXxxList**                    | 标准列表 Composition 函数，管理查询条件、列表数据、分页、删除                               |
+| **useXxxModal**                   | 标准模态框 Composition 函数，管理表单状态、校验、新增/编辑提交                              |
+| **PageQuery**                     | 分页查询基类，字段：`pageNum`、`pageSize`，所有列表查询 Dto 必须 `extends PageQuery`        |
+| **ModalMode**                     | 模态框模式类型：`"add" \| "edit"`，定义在 Api 文件顶层 部分模态框有自己独特的模式 比如 view |
+| **Http**                          | 项目封装的 HTTP 客户端（`@/commons/Http.ts`），所有请求和 URL 解析都通过它                  |
+
+---
+
+## 命名规范速查
+
+### 后端命名
+
+| 类型                | 规则                                | 示例                                    |
+| ------------------- | ----------------------------------- | --------------------------------------- |
+| Controller 类       | `<Entity>Controller`                | `NoticeController`                      |
+| Service 类          | `<Entity>Service`                   | `NoticeService`                         |
+| DTO 类              | `<动词><Entity>Dto`                 | `AddNoticeDto`、`GetNoticeListDto`      |
+| VO 类               | `<动词><Entity>Vo`                  | `GetNoticeListVo`、`GetNoticeDetailsVo` |
+| Controller 请求路径 | `/<camelCase(Entity)>/<methodName>` | `/notice/getNoticeList`                 |
+
+### 前端命名
+
+| 类型                       | 规则                   | 示例                                   |
+| -------------------------- | ---------------------- | -------------------------------------- |
+| Api 文件                   | `<Entity>Api.ts`        | `NoticeApi.ts`                         |
+| Service 文件               | `<SFC名>Service.ts`     | `NoticeManagerService.ts`              |
+| SFC 文件                   | `<Entity><角色>.vue`    | `NoticeManager.vue`、`NoticeModal.vue` |
+| Dto / Vo 类                | 与后端命名保持一致      | 见后端命名                              |
+| Service 函数               | `use<Xxx>`              | `useNoticeList`、`useNoticeModal`       |
+
+---
+
+## 类型映射
+
+后端 Java 类型到前端 TypeScript 类型的**唯一**对应关系：
+
+| 后端 Java 类型              | 前端 TS 类型 | 说明                      |
+| --------------------------- | ------------ | ------------------------- |
+| `Long` / `BigInteger`       | `string`     | 防止 JS 精度丢失          |
+| `Integer` / `int`           | `number`     |                           |
+| `String`                    | `string`     |                           |
+| `Boolean` / `boolean`       | `number`     | 项目约定：0=false，1=true |
+| `BigDecimal`                | `number`     |                           |
+| `List<T>` / `Collection<T>` | `T[]`        |                           |
+| `Date` / `LocalDateTime`    | `string`     | 已格式化的字符串          |
+| 可为空字段                  | 加 `?`       | 如 `field?: string`       |
+| ID 字段（任意类型）         | `string`     | 统一 string，防精度丢失   |

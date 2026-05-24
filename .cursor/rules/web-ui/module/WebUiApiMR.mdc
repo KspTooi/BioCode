@@ -1,0 +1,285 @@
+---
+description: 前端 Api 层（XxxApi.ts）ModuleRule — 类型声明与 HTTP 请求的唯一数据边界
+globs: **/api/*Api.ts
+alwaysApply: false
+kind: MR
+---
+
+# 前端 Api 层编码规范（MR）
+
+> 术语以 [Glossary](../_meta/Glossary.mdc) 为准，骨架以 [RuleSkeleton](../_meta/RuleSkeleton.mdc) 为准。
+
+---
+
+## 1. 职责
+
+Api 文件是本模块的**唯一数据边界**，承担两项不可拆分的职责：
+
+1. **全部类型声明**：Dto / Vo / Enum / Options 常量，禁止 Service / SFC 自行声明 `interface | enum | type`
+2. **全部 HTTP 请求方法**：该业务实体涉及的所有后端交互，禁止 Service / SFC 直接调用 `Http.postEntity`
+
+**不做什么**：不含业务逻辑、不含 UI 状态、不处理表单校验。这些属于 [Service 层](WebUIService.mdc)。
+
+> **例外**：组件的 `props` 与 `emit` 类型定义属于组件接口契约，放在对应 [Service 层](WebUIService.mdc) 中声明，不在本层声明。
+
+---
+
+## 2. 文件骨架
+
+```
+1. Import 区         — import type（类型）+ import（值），路径统一 @/
+2. 类型声明区         — Enum → Options → GetXxxListDto → GetXxxListVo → GetXxxDetailsVo → AddXxxDto → EditXxxDto → 其他
+3. 默认导出对象       — export default { method1, method2, ... }，每个方法带 JSDoc
+```
+
+一个 Api 文件对应**一个后端 Controller / 一个业务实体**。
+
+---
+
+## 3. 硬性规则（Must）
+
+1. 文件路径 `views/<域>/api/<Entity>Api.ts`，PascalCase
+2. 类型 `import type`，值 `import`，路径 `@/`，禁止相对路径
+3. 列表查询 Dto 必须 `extends PageQuery`，禁止手写 `pageNum` / `pageSize`
+4. 删除统一用 `CommonIdDto`（`{id}` 单个、`{ids}` 批量），禁止新建专用 Dto
+5. 所有请求走 `Http.postEntity`，文件下载除外
+6. ID 字段一律 `string`，Boolean 字段一律 `number`（0/1）
+7. 每个字段尾随 `// 注释`，每个 interface / method 上方有 JSDoc 块注释
+8. 禁用 `else` / `switch`，禁止 Api 方法内 `try/catch`
+9. `getXxxList` 不拆包直接返回 `PageResult`；其余方法拆 `Result`：`code === 0` 返回 data 或 message，否则 `throw new Error(result.message)`
+10. URL 格式 `/<camelCaseControllerName>/<methodName>`，与后端 Controller 完全对齐
+
+---
+
+## 4. 模板（Templates）
+
+### 标准 CRUD Api 文件
+
+```ts
+import Http from "@/commons/Http.ts";
+import type PageResult from "@/commons/model/PageResult.ts";
+import type CommonIdDto from "@/commons/model/CommonIdDto.ts";
+import type PageQuery from "@/commons/model/PageQuery.ts";
+import type Result from "@/commons/model/Result.ts";
+
+/**
+ * 查询列表DTO
+ */
+export interface GetXxxListDto extends PageQuery {
+  title?: string; // 标题筛选
+}
+
+/**
+ * 列表VO
+ */
+export interface GetXxxListVo {
+  id: string; // 主键ID
+  title: string; // 标题
+  createTime: string; // 创建时间
+}
+
+/**
+ * 详情VO
+ */
+export interface GetXxxDetailsVo {
+  id: string; // 主键ID
+  title: string; // 标题
+  content: string; // 内容
+}
+
+/**
+ * 新增DTO
+ */
+export interface AddXxxDto {
+  title: string; // 标题
+  content: string; // 内容
+}
+
+/**
+ * 编辑DTO
+ */
+export interface EditXxxDto {
+  id: string; // 主键ID
+  title: string; // 标题
+  content: string; // 内容
+}
+
+export default {
+  /**
+   * 获取Xxx列表
+   */
+  getXxxList: async (dto: GetXxxListDto): Promise<PageResult<GetXxxListVo>> => {
+    return await Http.postEntity<PageResult<GetXxxListVo>>("/xxx/getXxxList", dto);
+  },
+
+  /**
+   * 获取Xxx详情
+   */
+  getXxxDetails: async (dto: CommonIdDto): Promise<GetXxxDetailsVo> => {
+    const result = await Http.postEntity<Result<GetXxxDetailsVo>>("/xxx/getXxxDetails", dto);
+    if (result.code === 0) {
+      return result.data;
+    }
+    throw new Error(result.message);
+  },
+
+  /**
+   * 新增Xxx
+   */
+  addXxx: async (dto: AddXxxDto): Promise<string> => {
+    const result = await Http.postEntity<Result<string>>("/xxx/addXxx", dto);
+    if (result.code === 0) {
+      return result.message;
+    }
+    throw new Error(result.message);
+  },
+
+  /**
+   * 编辑Xxx
+   */
+  editXxx: async (dto: EditXxxDto): Promise<string> => {
+    const result = await Http.postEntity<Result<string>>("/xxx/editXxx", dto);
+    if (result.code === 0) {
+      return result.message;
+    }
+    throw new Error(result.message);
+  },
+
+  /**
+   * 删除Xxx
+   */
+  removeXxx: async (dto: CommonIdDto): Promise<string> => {
+    const result = await Http.postEntity<Result<string>>("/xxx/removeXxx", dto);
+    if (result.code === 0) {
+      return result.message;
+    }
+    throw new Error(result.message);
+  },
+};
+```
+
+### 文件导出（Api 层处理下载）
+
+```ts
+import axios from "axios";
+
+export default {
+  /**
+   * 导出Xxx
+   */
+  exportXxx: async (dto: GetXxxListDto): Promise<void> => {
+    const response = await Http.axios().post("/xxx/exportXxx", dto, {
+      responseType: "blob",
+      headers: { "AE-Request-With": "XHR" },
+    });
+    const contentDisposition = response.headers["content-disposition"];
+    let filename = "默认文件名.xlsx";
+    if (contentDisposition) {
+      const match = contentDisposition.match(/filename\*=UTF-8''(.+)/);
+      if (match?.[1]) {
+        filename = decodeURIComponent(match[1]);
+      }
+    }
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  },
+};
+```
+
+### 文件导出（Api 层返回 Blob，Service 层处理下载）
+
+```ts
+export default {
+  /**
+   * 导出Xxx
+   */
+  exportXxx: async (dto: GetXxxListDto): Promise<Blob> => {
+    const response = await Http.post<Blob>("/xxx/exportXxx", dto, {
+      responseType: "blob",
+    });
+    return response as unknown as Blob;
+  },
+};
+```
+
+### Enum 与 Options 常量
+
+```ts
+export enum XxxTypeEnum {
+  TYPE_A = 0, // 类型A
+  TYPE_B = 1, // 类型B
+}
+
+export const XxxTypeOptions = [
+  { label: "请选择", value: null },
+  { label: "类型A", value: XxxTypeEnum.TYPE_A },
+  { label: "类型B", value: XxxTypeEnum.TYPE_B },
+];
+```
+
+---
+
+## 5. 反模式（Anti-patterns）
+
+```ts
+// ❌ 手写分页字段（必须 extends PageQuery）
+export interface GetXxxListDto { pageNum: number; pageSize: number; }
+```
+
+```ts
+// ❌ 为删除建专用 Dto（必须用 CommonIdDto）
+export interface RemoveXxxDto { id: string; }
+```
+
+```ts
+// ❌ Api 方法内 try/catch 吞错误
+getXxxList: async (dto) => { try { return await Http.postEntity(...); } catch { return []; } }
+```
+
+```ts
+// ❌ add / edit / remove 返回 result.data 而非 result.message
+addXxx: async (dto) => { const r = await Http.postEntity(...); if (r.code === 0) return r.data; throw ...; }
+```
+
+```ts
+// ❌ Service / SFC 中声明 interface（类型必须集中在 Api 文件）
+// 在 NoticeManagerService.ts 中：
+interface LocalFormType { title: string; }
+```
+
+```ts
+// ❌ Api 文件中声明组件 props / emit 类型（属于组件接口契约，放 Service 层）
+// 在 XxxApi.ts 中：
+export interface XxxTableProps { data: GetXxxListVo[]; }
+export interface XxxFormEmits { (e: "submit", dto: AddXxxDto): void; }
+```
+
+---
+
+## 6. 速查（Cheat Sheet）
+
+| 方法 | 入参 | 返回类型 | 拆包方式 |
+| --- | --- | --- | --- |
+| `getXxxList` | `GetXxxListDto` | `PageResult<GetXxxListVo>` | 直接返回，不拆包 |
+| `getXxxDetails` | `CommonIdDto` | `GetXxxDetailsVo` | `code === 0` → `result.data` |
+| `addXxx` | `AddXxxDto` | `string` | `code === 0` → `result.message` |
+| `editXxx` | `EditXxxDto` | `string` | `code === 0` → `result.message` |
+| `removeXxx` | `CommonIdDto` | `string` | `code === 0` → `result.message` |
+| 业务方法 | 专用 Dto | 按需 | 与标准方法一致 |
+| 文件导出 | 查询 Dto | `void` 或 `Blob` | 走 `Http.axios().post` + `responseType: "blob"` |
+
+| 类型声明 | 命名 | 必须 |
+| --- | --- | --- |
+| 列表查询 Dto | `GetXxxListDto extends PageQuery` | 是 |
+| 列表行 Vo | `GetXxxListVo` | 是 |
+| 详情 Vo | `GetXxxDetailsVo` | 是 |
+| 新增 Dto | `AddXxxDto` | 是 |
+| 编辑 Dto | `EditXxxDto`（含 id） | 是 |
+| 删除 | 用 `CommonIdDto`，不新建 | — |
+| Enum / Options | 在 Api 文件中声明 | 按需 |

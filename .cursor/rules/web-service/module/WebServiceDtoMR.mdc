@@ -1,0 +1,203 @@
+---
+description: 后端 Dto 层（*Dto.java）ModuleRule — 请求参数对象的命名、结构与校验
+globs: "**/dto/*Dto.java"
+alwaysApply: false
+kind: MR
+---
+
+# 后端 Dto 层编码规范（MR）
+
+> 术语以 [Glossary](../../_meta/Glossary.mdc) 为准，骨架以 [RuleSkeleton](../../_meta/RuleSkeleton.mdc) 为准。
+
+---
+
+## 1. 职责
+
+Dto 是**前端 → 后端**的请求参数载体，只描述入参字段，不含业务逻辑。
+
+1. 承载 Controller `@RequestBody` 入参及 Service 方法入参
+2. 通过 Jakarta Validation 声明可校验的字段约束
+3. 命名与字段集合与前端 Api 层 `*Dto` 接口一一对应
+
+**不做什么**：不含业务方法、不访问数据库、不组装响应。Po 映射与 `Result` 包装属于 Controller / Service（见对应 CR / MR）。
+
+---
+
+## 2. 文件骨架
+
+```
+1. package 声明     — com.ksptool.bio.biz.<域>.model.<实体>.dto
+2. import 区        — java 类型 → 项目公共类型 → jakarta → lombok → swagger
+3. 类声明           — @Getter @Setter，无 @Data / 无业务方法
+4. 字段区           — 每个字段：校验注解（按需）→ @Schema → private 字段
+```
+
+一个 Java 文件只声明**一个** Dto 类；一个实体对应一组标准 Dto（列表查询 / 新增 / 编辑 / 业务动作）。
+
+---
+
+## 3. 硬性规则（Must）
+
+1. 类名以 `Dto` 结尾，动词前缀 + 实体名：`GetXxxListDto`、`AddXxxDto`、`EditXxxDto`
+2. 包路径固定 `...model.<camelCase实体>.dto`，禁止与 `vo` / `po` 混放
+3. 统一 `@Getter` `@Setter`，禁止 `@Data`、`record`、手写 getter/setter
+4. 每个字段必须有 `@Schema(description=...)`，枚举/状态字段 description 须写明取值含义
+5. 列表查询 Dto 必须 `extends PageQuery`，禁止在本类重复声明 `pageNum` / `pageSize`
+6. 删除 / 详情查询入参统一使用 `CommonIdDto`（`com.ksptool.assembly.entity.web`），禁止新建 `RemoveXxxDto`
+7. `AddXxxDto` 不含 `id`；`EditXxxDto` 必须含 `Long id` 且 `@NotNull`
+8. 必填 / 长度 / 范围约束写在 Dto 字段上（`@NotNull`、`@Size` 等），Controller 入参配合 `@Valid`
+9. 禁止在 Dto 中编写业务逻辑、`validate()` 以外的实例方法（导入专用基类除外）
+10. 禁止引用 Entity（Po）、Repository、Service、Controller
+
+---
+
+## 4. 模板（Templates）
+
+### 列表查询 Dto
+
+```java
+package com.ksptool.bio.biz.xxx.model.xxx.dto;
+
+import com.ksptool.assembly.entity.web.PageQuery;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class GetXxxListDto extends PageQuery {
+
+    @Schema(description = "标题筛选")
+    private String title;
+
+    @Schema(description = "状态 0:草稿 1:已发布")
+    private Integer status;
+}
+```
+
+### 新增 Dto
+
+```java
+package com.ksptool.bio.biz.xxx.model.xxx.dto;
+
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class AddXxxDto {
+
+    @NotNull(message = "标题不能为空")
+    @Size(max = 100, message = "标题长度不能超过100")
+    @Schema(description = "标题")
+    private String title;
+}
+```
+
+### 编辑 Dto
+
+```java
+package com.ksptool.bio.biz.xxx.model.xxx.dto;
+
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class EditXxxDto {
+
+    @NotNull(message = "主键ID不能为空")
+    @Schema(description = "主键ID")
+    private Long id;
+
+    @NotNull(message = "标题不能为空")
+    @Size(max = 100, message = "标题长度不能超过100")
+    @Schema(description = "标题")
+    private String title;
+}
+```
+
+### 业务动作 Dto（非 CRUD）
+
+```java
+@Getter
+@Setter
+public class CancelXxxDto {
+
+    @NotNull(message = "主键ID不能为空")
+    @Schema(description = "主键ID")
+    private Long id;
+
+    @Schema(description = "取消原因")
+    private String reason;
+}
+```
+
+### 导入 Dto
+
+```java
+@Getter
+@Setter
+public class ImportXxxDto extends AbstractImportDto {
+
+    @Schema(description = "列名")
+    private String columnA;
+
+    @Override
+    public String validate() {
+        return validateAnnotations();
+    }
+}
+```
+
+---
+
+## 5. 反模式（Anti-patterns）
+
+```java
+// ❌ 列表 Dto 手写分页字段
+public class GetXxxListDto { private Integer pageNum; private Integer pageSize; }
+```
+
+```java
+// ❌ 为删除单独建 Dto
+public class RemoveXxxDto { private Long id; }
+```
+
+```java
+// ❌ Edit 缺少 id 或 Add 携带 id
+public class EditXxxDto { private String title; }
+public class AddXxxDto { private Long id; private String title; }
+```
+
+```java
+// ❌ Dto 中调用 Service / 操作 Po
+public class AddXxxDto { public void save() { xxxService.add(this); } }
+```
+
+---
+
+## 6. 速查（Cheat Sheet）
+
+| 类型 | 命名 | 继承 / 依赖 | 含 id | 校验 |
+| --- | --- | --- | --- | --- |
+| 列表查询 | `GetXxxListDto` | `extends PageQuery` | 否 | 按需 |
+| 新增 | `AddXxxDto` | — | 否 | 必填字段 `@NotNull` 等 |
+| 编辑 | `EditXxxDto` | — | 是 `@NotNull` | 同新增 |
+| 删除 / 详情入参 | — | 用 `CommonIdDto` | — | — |
+| 业务动作 | `<动词>XxxDto` | — | 按需 | 按需 |
+| 导入 | `ImportXxxDto` | `extends AbstractImportDto` | — | `validate()` |
+
+| 字段类型 | 常用 Java 类型 |
+| --- | --- |
+| 主键 / 外键 ID | `Long` |
+| 枚举 / 状态 / 开关 | `Integer` |
+| 文本 | `String` |
+| 日期时间 | `LocalDateTime` / `LocalDate` |
+| 集合入参 | `List<Long>` 等 |

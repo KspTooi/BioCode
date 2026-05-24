@@ -1,0 +1,35 @@
+---
+alwaysApply: true
+---
+
+# 项目索引
+
+本项目是一个**前后端一体**的基础框架系统。
+
+## 后端
+
+- 语言：Java
+- 位置：`src/main/java/`
+- 根包：`com.ksptool`
+- 构建工具：Maven（`pom.xml`）
+
+## 前端
+
+- 技术栈：Vue 3 + TypeScript + Vite
+- 位置：`src/main/resources/web-ui/`
+- 源码目录：`src/main/resources/web-ui/src/`
+- 包管理：pnpm
+
+## 代码规范
+
+- 元规范：@.cursor/rules/_meta/RuleSkeleton.mdc
+- 术语表：@.cursor/rules/_meta/Glossary.mdc
+- 后端规范：@.cursor/rules/web-service/WebService.mdc
+- 后端 Dto 规范：@.cursor/rules/web-service/module/WebServiceDtoMR.mdc
+- 后端 Vo 规范：@.cursor/rules/web-service/module/WebServiceVoMR.mdc
+- 后端 Controller 规范：@.cursor/rules/web-service/module/WebServiceControllerMR.mdc
+- 后端 Service 规范：@.cursor/rules/web-service/module/WebServiceServiceMR.mdc
+- 后端 Repository 规范：@.cursor/rules/web-service/module/WebServiceRepositoryMR.mdc
+- 前端通用规范：@.cursor/rules/web-ui/WebUI.mdc
+- 前端 Api 规范：@.cursor/rules/web-ui/WebUiApi.mdc
+- 前端 Service 规范：@.cursor/rules/web-ui/WebUIService.mdc

@@ -1,0 +1,202 @@
+---
+description: 后端 Controller 层（*Controller.java）ModuleRule — HTTP 入口、权限与响应包装
+globs: "**/controller/*Controller.java"
+alwaysApply: false
+kind: MR
+---
+
+# 后端 Controller 层编码规范（MR）
+
+> 术语以 [Glossary](../../_meta/Glossary.mdc) 为准，骨架以 [RuleSkeleton](../../_meta/RuleSkeleton.mdc) 为准。
+
+---
+
+## 1. 职责
+
+Controller 是 HTTP 请求的**唯一入口**，只做接入与响应包装，不含业务逻辑。
+
+1. 接收 `@RequestBody` 入参，配合 `@Valid` 触发 Dto 校验
+2. 调用对应 Service 方法，将返回值包装为 `PageResult` / `Result`
+3. 声明 `@PreAuthorize` 权限码与 Swagger `@Operation`
+
+**不做什么**：不访问 Repository、不操作 Po、不做 Dto↔Po 映射、不写分支业务。这些属于 [Service MR](WebServiceServiceMR.mdc)。
+
+---
+
+## 2. 文件骨架
+
+```
+1. package 声明     — com.ksptool.bio.biz.<域>.controller
+2. import 区        — assembly 响应类型 → 本模块 dto/vo → service → spring → swagger → 权限/aop
+3. 类级注解         — @PrintLog（按需）→ @RestController → @RequestMapping → @Tag → @Slf4j → @RowScope/@SystemScope（按需）
+4. 字段注入         — @Autowired private XxxService xxxService;
+5. 方法区           — 标准 CRUD 方法 → 业务扩展方法 → 导出方法
+```
+
+一个 Controller 对应**一个业务实体**与一个 Service 类；类级 `@RequestMapping` 路径与前端 Api URL 第一段一致。
+
+---
+
+## 3. 硬性规则（Must）
+
+1. 类名 `<Entity>Controller`，包路径 `...biz.<域>.controller`
+2. 类级 `@RequestMapping("/<camelCase实体>")`，方法统一 `@PostMapping("/<methodName>")`，禁止 `@GetMapping` / `@DeleteMapping`（附件预览等特例除外）
+3. 入参统一 `@RequestBody @Valid`，删除/详情用 `CommonIdDto`，禁止在 Controller 声明 Po / Repository
+4. 每个接口必须有 `@Operation(summary=...)` 与 `@PreAuthorize("@auth.hasCode('...')")`
+5. 列表接口返回 `PageResult<Vo>`，直接 `return xxxService.getXxxList(dto);`
+6. 新增/编辑/删除返回 `Result<String>`，Service 执行后 `return Result.success("...")`；禁止返回 `result.data` 作为成功提示
+7. 详情接口：`Vo details = service.getXxxDetails(dto);` 为 null 时 `Result.error("无数据")`，否则 `Result.success(details)`
+8. 方法名与路径名与前端 Api 方法名完全一致：`getXxxList`、`addXxx`、`editXxx`、`getXxxDetails`、`removeXxx`
+9. 禁止 `switch` / `else`；禁止在 Controller 写业务分支（Dto 自定义 `validate()` 应在 Service 调用）
+10. 导出接口：`void` + `HttpServletResponse`，`ExportWizard<ExportXxxVo>` 包装 Service 返回的 `List<ExportXxxVo>`
+
+---
+
+## 4. 模板（Templates）
+
+### 标准 CRUD Controller
+
+```java
+package com.ksptool.bio.biz.xxx.controller;
+
+import com.ksptool.assembly.entity.web.CommonIdDto;
+import com.ksptool.assembly.entity.web.PageResult;
+import com.ksptool.assembly.entity.web.Result;
+import com.ksptool.bio.biz.xxx.model.xxx.dto.AddXxxDto;
+import com.ksptool.bio.biz.xxx.model.xxx.dto.EditXxxDto;
+import com.ksptool.bio.biz.xxx.model.xxx.dto.GetXxxListDto;
+import com.ksptool.bio.biz.xxx.model.xxx.vo.GetXxxDetailsVo;
+import com.ksptool.bio.biz.xxx.model.xxx.vo.GetXxxListVo;
+import com.ksptool.bio.biz.xxx.service.XxxService;
+import com.ksptool.bio.commons.annotation.PrintLog;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+@PrintLog
+@RestController
+@RequestMapping("/xxx")
+@Tag(name = "Xxx管理", description = "Xxx管理")
+@Slf4j
+public class XxxController {
+
+    @Autowired
+    private XxxService xxxService;
+
+    @PreAuthorize("@auth.hasCode('xxx:xxx:view')")
+    @PostMapping("/getXxxList")
+    @Operation(summary = "查询Xxx列表")
+    public PageResult<GetXxxListVo> getXxxList(@RequestBody @Valid GetXxxListDto dto) throws Exception {
+        return xxxService.getXxxList(dto);
+    }
+
+    @PreAuthorize("@auth.hasCode('xxx:xxx:add')")
+    @PostMapping("/addXxx")
+    @Operation(summary = "新增Xxx")
+    public Result<String> addXxx(@RequestBody @Valid AddXxxDto dto) throws Exception {
+        xxxService.addXxx(dto);
+        return Result.success("新增成功");
+    }
+
+    @PreAuthorize("@auth.hasCode('xxx:xxx:edit')")
+    @PostMapping("/editXxx")
+    @Operation(summary = "编辑Xxx")
+    public Result<String> editXxx(@RequestBody @Valid EditXxxDto dto) throws Exception {
+        xxxService.editXxx(dto);
+        return Result.success("修改成功");
+    }
+
+    @PreAuthorize("@auth.hasCode('xxx:xxx:view')")
+    @PostMapping("/getXxxDetails")
+    @Operation(summary = "查询Xxx详情")
+    public Result<GetXxxDetailsVo> getXxxDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {
+        GetXxxDetailsVo details = xxxService.getXxxDetails(dto);
+        if (details == null) {
+            return Result.error("无数据");
+        }
+        return Result.success(details);
+    }
+
+    @PreAuthorize("@auth.hasCode('xxx:xxx:remove')")
+    @PostMapping("/removeXxx")
+    @Operation(summary = "删除Xxx")
+    public Result<String> removeXxx(@RequestBody @Valid CommonIdDto dto) throws Exception {
+        xxxService.removeXxx(dto);
+        return Result.success("操作成功");
+    }
+}
+```
+
+### 导出接口
+
+```java
+@PreAuthorize("@auth.hasCode('xxx:xxx:export')")
+@PostMapping("/exportXxx")
+@Operation(summary = "导出Xxx")
+public void exportXxx(@RequestBody @Valid GetXxxListDto dto, HttpServletResponse response) throws Exception {
+    ExportWizard<ExportXxxVo> ew = new ExportWizard<>(xxxService.exportXxx(dto), response);
+    ew.transfer("Xxx导出");
+}
+```
+
+### 带数据权限的 Controller
+
+```java
+@PrintLog
+@RestController
+@RequestMapping("/xxx")
+@Tag(name = "Xxx", description = "Xxx")
+@Slf4j
+@RowScope(mode = RowScope.Mode.ROOT_ONLY)
+@SystemScope
+public class XxxController { /* ... */ }
+```
+
+---
+
+## 5. 反模式（Anti-patterns）
+
+```java
+// ❌ Controller 注入 Repository
+@Autowired private XxxRepository repository;
+```
+
+```java
+// ❌ Controller 内做 Po 映射或业务判断
+public Result<String> addXxx(AddXxxDto dto) {
+    XxxPo po = new XxxPo();
+    po.setTitle(dto.getTitle());
+    if (po.getStatus() == 1) { return Result.error("..."); }
+}
+```
+
+```java
+// ❌ 路径 / 方法名与前端 Api 不一致
+@PostMapping("/list")  // 应为 /getXxxList
+```
+
+```java
+// ❌ 写操作返回 data 而非 message
+return Result.success(someId);
+```
+
+---
+
+## 6. 速查（Cheat Sheet）
+
+| 方法 | 路径 | 入参 | 返回 | Controller 动作 |
+| --- | --- | --- | --- | --- |
+| `getXxxList` | `/xxx/getXxxList` | `GetXxxListDto` | `PageResult<GetXxxListVo>` | 直接 return Service |
+| `addXxx` | `/xxx/addXxx` | `AddXxxDto` | `Result<String>` | 调 Service → success 文案 |
+| `editXxx` | `/xxx/editXxx` | `EditXxxDto` | `Result<String>` | 同上 |
+| `getXxxDetails` | `/xxx/getXxxDetails` | `CommonIdDto` | `Result<GetXxxDetailsVo>` | null → error |
+| `removeXxx` | `/xxx/removeXxx` | `CommonIdDto` | `Result<String>` | 调 Service → success 文案 |
+| `exportXxx` | `/xxx/exportXxx` | `GetXxxListDto` + response | `void` | ExportWizard |
+
+| 权限码格式 | 示例 |
+| --- | --- |
+| `<域>:<实体>:<动作>` | `dbsec:hazard:view`、`core:notice:add` |

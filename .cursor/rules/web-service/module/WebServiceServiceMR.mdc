@@ -1,0 +1,224 @@
+---
+description: 后端 Service 层（*Service.java）ModuleRule — 业务逻辑、持久化与对象映射
+globs: "**/service/*Service.java"
+alwaysApply: false
+kind: MR
+---
+
+# 后端 Service 层编码规范（MR）
+
+> 术语以 [Glossary](../../_meta/Glossary.mdc) 为准，骨架以 [RuleSkeleton](../../_meta/RuleSkeleton.mdc) 为准。
+
+---
+
+## 1. 职责
+
+Service 是**业务逻辑的唯一承载层**，编排 Repository / MyBatis Mapper 与其他 Service，完成数据读写与规则校验。
+
+1. 实现增删改查及业务动作的全部逻辑
+2. Dto ↔ Po、Po / Tuple ↔ Vo 的对象映射与组装
+3. 通过 `BizException` 抛出可预期的业务错误；写操作加事务
+4. **默认 JPA** 访问数据；JPA/JPQL 搞不定的场景改用 **MyBatis**
+
+**不做什么**：不包装 `Result` / `PageResult` 以外的 HTTP 响应、不声明 `@RequestMapping`、不被前端直接调用。权限与响应包装属于 [Controller MR](WebServiceControllerMR.mdc)。
+
+---
+
+## 2. 文件骨架
+
+```
+1. package 声明     — com.ksptool.bio.biz.<域>.service
+2. import 区        — assembly 异常/分页 → Entities 工具 → 本模块 po/dto/vo → repository / mapper → 其他 service
+3. 类级注解         — @Slf4j → @Service
+4. 字段注入         — @Autowired private XxxRepository repository;（按需 XxxMapper；及其他依赖）
+5. 公开方法区       — 查询 → 写操作 → 业务扩展 → 导出
+6. 私有方法区       — 校验 / 片段逻辑
+```
+
+默认**具体类** + `@Service`；仅多实现换绑场景才拆 `interface` + `impl`。
+
+---
+
+## 3. 硬性规则（Must）
+
+1. 类名 `<Entity>Service`，与 Controller 实体一致，包路径 `...biz.<域>.service`
+2. 数据访问**默认** `JpaRepository`，查询定义见 [Repository MR](WebServiceRepositoryMR.mdc)；JPA/JPQL 无法实现或代价过高时（复杂多表、报表统计、方言函数、大批量）可注入 MyBatis `@Mapper`；禁止在 Service 使用 `EntityManager` / `SqlSession` 拼裸 SQL
+3. 写操作（add / edit / remove / 状态变更）必须 `@Transactional(rollbackFor = Exception.class)`
+4. Po 映射统一 `Entities.as` / `Entities.assign`（`import static com.ksptool.entities.Entities.*`）；Tuple 投影用 `TupleMapper.tupleAs`
+5. 列表查询：`dto.pageRequest()` 分页，空结果 `PageResult.successWithEmpty()`，有数据 `PageResult.success(vos, total)`
+6. 按 id 查单条：`findById(...).orElseThrow(() -> new BizException("..."))`，禁止返回 null 后由 Controller 判空（除非历史接口已约定）
+7. 删除：`dto.isBatch()` 走 `deleteAllById`，否则 `deleteById`；批量与单删在同一方法内用短路分支
+8. 业务校验失败 `throw new BizException("中文提示")`；字符串判空用 `StringUtils`
+9. 禁止 `switch` / `else`；禁止返回 `Result`（分页列表除外，返回 `PageResult`）
+10. 禁止引用 Controller；跨实体逻辑注入对应 Service，禁止 Controller ↔ Service 循环依赖
+11. MyBatis 仅承载 SQL 与结果映射，不含业务分支；`Mapper` 接口放 `...biz.<域>.mapper`，XML 放 `resources/mappers/<域>/`，`namespace` 为 Mapper 全限定名；同一方法禁止 JPA 与 MyBatis 混查同一张表
+
+---
+
+## 4. 模板（Templates）
+
+### 列表查询
+
+```java
+public PageResult<GetXxxListVo> getXxxList(GetXxxListDto dto) {
+    XxxPo query = new XxxPo();
+    assign(dto, query);
+    Page<XxxPo> page = repository.getXxxList(query, dto.pageRequest());
+    if (page.isEmpty()) {
+        return PageResult.successWithEmpty();
+    }
+    List<GetXxxListVo> vos = as(page.getContent(), GetXxxListVo.class);
+    return PageResult.success(vos, (int) page.getTotalElements());
+}
+```
+
+### 新增
+
+```java
+@Transactional(rollbackFor = Exception.class)
+public void addXxx(AddXxxDto dto) throws BizException {
+    XxxPo insertPo = as(dto, XxxPo.class);
+    repository.save(insertPo);
+}
+```
+
+### 编辑
+
+```java
+@Transactional(rollbackFor = Exception.class)
+public void editXxx(EditXxxDto dto) throws BizException {
+    XxxPo updatePo = repository.findById(dto.getId())
+            .orElseThrow(() -> new BizException("更新失败,数据不存在或无权限访问."));
+    assign(dto, updatePo);
+    repository.save(updatePo);
+}
+```
+
+### 详情
+
+```java
+public GetXxxDetailsVo getXxxDetails(CommonIdDto dto) throws BizException {
+    XxxPo po = repository.findById(dto.getId())
+            .orElseThrow(() -> new BizException("查询详情失败,数据不存在或无权限访问."));
+    return as(po, GetXxxDetailsVo.class);
+}
+```
+
+### 删除
+
+```java
+@Transactional(rollbackFor = Exception.class)
+public void removeXxx(CommonIdDto dto) throws BizException {
+    if (dto.isBatch()) {
+        repository.deleteAllById(dto.getIds());
+        return;
+    }
+    repository.deleteById(dto.getId());
+}
+```
+
+### Tuple 列表 + 导出
+
+```java
+public PageResult<GetXxxListVo> getXxxList(GetXxxListDto dto) {
+    Page<Tuple> page = repository.getXxxList(dto, dto.pageRequest());
+    if (page.isEmpty()) {
+        return PageResult.successWithEmpty();
+    }
+    List<GetXxxListVo> vos = TupleMapper.tupleAs(page.getContent(), GetXxxListVo.class);
+    return PageResult.success(vos, (int) page.getTotalElements());
+}
+
+public List<ExportXxxVo> exportXxx(GetXxxListDto dto) {
+    /* 查询 + as / tupleAs 转为 ExportXxxVo 列表 */
+}
+```
+
+### MyBatis 列表（JPA 无法满足时）
+
+```java
+@Autowired
+private XxxMapper xxxMapper;
+
+public PageResult<GetXxxListVo> getXxxList(GetXxxListDto dto) {
+    int total = xxxMapper.countXxxList(dto);
+    if (total == 0) {
+        return PageResult.successWithEmpty();
+    }
+    List<GetXxxListVo> vos = xxxMapper.selectXxxList(dto, dto.pageRequest());
+    return PageResult.success(vos, total);
+}
+```
+
+```java
+// XxxMapper.java — com.ksptool.bio.biz.xxx.mapper
+@Mapper
+public interface XxxMapper {
+    int countXxxList(@Param("dto") GetXxxListDto dto);
+    List<GetXxxListVo> selectXxxList(@Param("dto") GetXxxListDto dto, @Param("pageable") Pageable pageable);
+}
+```
+
+---
+
+## 5. 反模式（Anti-patterns）
+
+```java
+// ❌ Service 返回 Result 给 Controller 拆包
+public Result<String> addXxx(AddXxxDto dto) { return Result.success("ok"); }
+```
+
+```java
+// ❌ 手写逐字段拷贝替代 as/assign
+vo.setTitle(po.getTitle());
+vo.setStatus(po.getStatus());
+```
+
+```java
+// ❌ 写操作无事务
+public void addXxx(AddXxxDto dto) { repository.save(as(dto, XxxPo.class)); }
+```
+
+```java
+// ❌ findById 返回 null 让上层猜
+public GetXxxDetailsVo getXxxDetails(CommonIdDto dto) {
+    return repository.findById(dto.getId()).map(po -> as(po, GetXxxDetailsVo.class)).orElse(null);
+}
+```
+
+```java
+// ❌ 简单 CRUD 直接用 MyBatis（应走 JpaRepository）
+xxxMapper.insertXxx(as(dto, XxxPo.class));
+```
+
+```java
+// ❌ Service 内拼裸 SQL
+entityManager.createNativeQuery("SELECT ...").getResultList();
+```
+
+---
+
+## 6. 速查（Cheat Sheet）
+
+| 方法 | 入参 | 返回 | 事务 | 要点 |
+| --- | --- | --- | --- | --- |
+| `getXxxList` | `GetXxxListDto` | `PageResult<GetXxxListVo>` | 否 | 空列表 successWithEmpty |
+| `addXxx` | `AddXxxDto` | `void` | 是 | `as(dto, Po.class)` |
+| `editXxx` | `EditXxxDto` | `void` | 是 | find → assign → save |
+| `getXxxDetails` | `CommonIdDto` | `GetXxxDetailsVo` | 否 | orElseThrow |
+| `removeXxx` | `CommonIdDto` | `void` | 是 | isBatch 分支 |
+| `exportXxx` | `GetXxxListDto` | `List<ExportXxxVo>` | 否 | 供 Controller ExportWizard |
+
+| 映射场景 | 工具 |
+| --- | --- |
+| Dto → 新 Po | `as(dto, XxxPo.class)` |
+| Dto → 已有 Po | `assign(dto, po)` |
+| Po → Vo | `as(po, XxxVo.class)` |
+| Tuple → Vo | `TupleMapper.tupleAs(list, XxxVo.class)` |
+
+| 场景 | 选型 | 接入方式 |
+| --- | --- | --- |
+| 单表 CRUD、常规条件列表 | JPA Repository | `@Autowired XxxRepository` |
+| 多表关联投影、复杂统计、方言 SQL | MyBatis | `@Autowired XxxMapper` + XML |
+| 标准 Po 映射 | `Entities.as` / `assign` | JPA 路径 |
+| MyBatis 直出列表/详情 | SQL 列 alias 对齐 Vo 字段 | Mapper 返回 `Vo` / `List<Vo>` |

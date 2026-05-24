@@ -1,0 +1,181 @@
+---
+description: 元规范：所有 .cursor/rules/**/*.mdc 文件必须遵循的骨架与约定
+globs:
+alwaysApply: false
+kind: meta
+---
+
+# 规则骨架（RuleSkeleton）
+
+本文件是所有规则文件的**唯一元规范**。新建或修改任何 `.cursor/rules/**/*.mdc` 前必读。
+
+---
+
+## 1. 规则分类
+
+所有规则文件只分两种，通过 frontmatter `kind` 字段区分：
+
+| kind | 含义                    | 管什么                         |
+| ---- | ----------------------- | ------------------------------ |
+| `MR` | ModuleRule（模块规则）  | 单个文件/类/组件怎么写         |
+| `CR` | ConnectRule（聚合规则） | 多个模块之间怎么串联、边界在哪 |
+
+**判别口诀**：只看一个文件就能说清楚的规则 → `MR`；必须同时提到两个以上文件才能成立的规则 → `CR`。
+
+---
+
+## 2. 目录结构
+
+```
+.cursor/rules/
+├── _meta/
+│   ├── RuleSkeleton.mdc   ← 本文件（元规范）
+│   └── Glossary.mdc       ← 术语表
+├── Global.mdc             ← 全局通用规则
+├── web-service/           ← 后端规则（WebService）
+│   ├── *CR.mdc            ← 后端 ConnectRule（CR，直接放 web-service/ 下）
+│   └── module/            ← 后端 ModuleRule（MR）
+└── web-ui/                ← 前端规则（WebUi）
+    ├── *CR.mdc            ← 前端 ConnectRule（CR，直接放 web-ui/ 下）
+    └── module/            ← 前端 ModuleRule（MR）
+```
+
+### 文件命名规范
+
+| 类型                  | 格式                      | 示例                             |
+| --------------------- | ------------------------- | -------------------------------- |
+| web-service ModuleRule | `WebService{Module}MR.mdc` | `WebServiceControllerMR.mdc`     |
+| web-service ConnectRule | `WebService{Name}CR.mdc`  | `WebServiceControllerMapperCR.mdc` |
+| web-ui ModuleRule     | `WebUi{Module}MR.mdc`     | `WebUiApiMR.mdc`                 |
+| web-ui ConnectRule    | `WebUi{Name}CR.mdc`       | `WebUiApiServiceCR.mdc`          |
+
+- `web-service/module/*.mdc` / `web-ui/module/*.mdc`：ModuleRule（MR）
+- `web-service/*CR.mdc` / `web-ui/*CR.mdc`：ConnectRule（CR，直接放在对应目录根下）
+- `_meta/*.mdc`：元规范（不参与业务规则）
+
+---
+
+## 3. Frontmatter 必填字段
+
+```yaml
+---
+description: <一句话描述本规范管什么>
+globs: <匹配的文件 glob，CR 可留空>
+alwaysApply: false
+kind: MR | CR
+---
+```
+
+- `kind` 必填，只能是 `MR` 或 `CR`
+- `description` 必须是一句完整的中文描述
+- `alwaysApply` 统一 `false`，通过 `globs` 匹配触发
+
+---
+
+## 4. ModuleRule 骨架（MR，固定 6 节）
+
+> 适用于 `kind: MR` 的所有规则文件。章节编号与标题**逐字固定**，不得增删或改名。
+
+```markdown
+## 1. 职责
+
+## 2. 文件骨架
+
+## 3. 硬性规则（Must）
+
+## 4. 模板（Templates）
+
+## 5. 反模式（Anti-patterns）
+
+## 6. 速查（Cheat Sheet）
+```
+
+### 各节写什么
+
+**§1 职责**
+
+- 这一层存在的唯一理由，≤ 3 条
+- 明确"不做什么"，把不属于本层的职责指向对应的 ConnectRule（CR）或其他 ModuleRule（MR）
+
+**§2 文件骨架**
+
+- 列出从上到下的固定区块顺序（如：Import 区 → 类型区 → 导出区）
+- 只列结构，不放完整示例代码
+
+**§3 硬性规则（Must）**
+
+- 每条一行，编号列出
+- 违反即视为错误，无需解释为什么
+- 禁止在此节放示例代码，最多附一行内联反例
+
+**§4 模板（Templates）**
+
+- 本文件**唯一**允许放大段代码（> 5 行）的地方
+- 按"场景 → 模板代码"组织，每个场景一个 `###` 小节
+- 模板代码必须可直接复制使用，变量用 `Xxx / xxx` 占位
+
+**§5 反模式（Anti-patterns）**
+
+- 明确禁止的写法，每条配最小反例（≤ 5 行代码）
+- 与 §3 区别：§3 是约束，§5 是展示"错在哪里"
+
+**§6 速查（Cheat Sheet）**
+
+- 至少一张 Markdown 表格，覆盖 80% 的日常使用场景
+- 不放代码块，只放表格和一句话描述
+
+---
+
+## 5. ConnectRule 骨架（CR，固定 5 节）
+
+> 适用于 `kind: CR` 的所有规则文件。章节编号与标题**逐字固定**，不得增删或改名。
+
+```markdown
+## 1. 拓扑
+
+## 2. 边界契约（Must）
+
+## 3. 数据与类型流
+
+## 4. 命名对齐
+
+## 5. 反模式（Anti-patterns）
+```
+
+### 各节写什么
+
+**§1 拓扑**
+
+- 一句话说明涉及哪几层/哪几个模块
+- 一张调用/依赖方向图（用 ASCII 箭头即可）
+- 不放代码
+
+**§2 边界契约（Must）**
+
+- 跨模块的硬性约束，编号列出
+- 每条约束必须同时涉及两个以上模块，否则应移入对应 ModuleRule（MR）的 §3
+
+**§3 数据与类型流**
+
+- 类型/数据如何从一端流向另一端
+- 固定用一张表：`| 类型/数据 | 定义方 | 消费方 | 流向 |`
+- 不放代码块（ConnectRule 全文代码块 ≤ 5 行）
+
+**§4 命名对齐**
+
+- 跨模块的命名映射规则
+- 固定用对照表表达
+
+**§5 反模式（Anti-patterns）**
+
+- 跨层级的禁忌写法，每条说明"错在哪一层"
+
+---
+
+## 6. 强制约束
+
+1. ConnectRule（CR）全文代码块总行数 ≤ 5 行；超出请移入对应 ModuleRule（MR）的 §4
+2. ModuleRule（MR）的 §3 §5 §6 三节合计不得超过 30 行
+3. 每个规则文件的总行数建议控制在 200 行以内
+4. 禁止在任何规则文件中解释"为什么有这条规则"——只写规则本身
+5. 禁止在规则文件中出现"建议"、"尽量"、"最好"等模糊措辞；要么 Must（§3/§2），要么不写

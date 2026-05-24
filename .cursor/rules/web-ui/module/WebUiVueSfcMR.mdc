@@ -1,0 +1,353 @@
+---
+description: 前端 Vue SFC（.vue 单文件组件）ModuleRule — 只做 UI 渲染与事件绑定，不含业务逻辑
+globs: *.vue
+alwaysApply: false
+kind: MR
+---
+
+# 前端 Vue SFC 编码规范（MR）
+
+> 术语以 [Glossary](../../_meta/Glossary.mdc) 为准，骨架以 [RuleSkeleton](../../_meta/RuleSkeleton.mdc) 为准。
+
+---
+
+## 1. 职责
+
+SFC 是视图层的**唯一载体**，只做三件事：
+
+1. **渲染 UI**：通过 `<template>` + 布局组件（`StdListLayout` 等）构建页面结构
+2. **绑定事件**：DOM 事件 → 解构后的 Service 方法
+3. **解构 Service**：从 Service 文件解构响应式状态与方法，不自行创建业务状态
+
+**不做什么**：
+- 不含业务逻辑（数据转换、状态判断、流程控制）→ 属于 Service 层
+- 不直接调用 `Http.postEntity` → 属于 Api 层
+- 不声明 `interface | enum | type` → 属于 Api 层
+- 不自行管理表单校验规则 → 属于 Service 层
+
+---
+
+## 2. 文件骨架
+
+```
+<template>          — 布局组件 + 插槽 + Element Plus 组件 + 事件绑定
+<script setup lang="ts">  — import → 解构 Service → 本地 UI 状态 → markRaw 图标
+<style scoped>      — 仅覆盖本组件的样式，不写全局样式
+```
+
+文件位置：`views/<域>/<Entity><角色>.vue`，PascalCase。
+
+---
+
+## 3. 硬性规则（Must）
+
+1. Manager 页面根元素必须使用 `StdListLayout`，填充 `#query / #actions / #table / #pagination / #modal` 五个插槽
+2. Modal 弹窗根元素使用 `el-dialog`，通过 `v-if="modalVisible"` 控制挂载
+3. `el-dialog` 必须设置 `:close-on-click-modal="false"`，`@close` 统一为 `resetModal(); loadList();`
+4. `el-form` 必须设置 `:validate-on-rule-change="false"`
+5. Element Plus 图标必须 `markRaw()` 包裹后再使用
+6. `<script setup lang="ts">` 内只能有：`import` → `markRaw` 图标 → 本地 UI 状态 → 解构 Service
+7. 解构 Service 时 `useXxxModal` 的入参固定为 `(modalFormRef, loadList)`
+8. 禁止在 SFC 内声明 `interface | enum | type | const Options`
+9. 禁止在 SFC 内写业务判断（`if (mode === 'add')` 做不同逻辑）、数据转换
+10. 禁止在 SFC 内直接调用 `Http.postEntity` 或 `XxxApi.xxxMethod()`
+11. 禁止相对路径导入，统一 `@/` 前缀
+12. 禁用 `else` / `switch`
+
+---
+
+## 4. 模板（Templates）
+
+### Manager 页面 SFC
+
+```vue
+<template>
+  <StdListLayout>
+    <template #query>
+      <el-form :model="listForm" :inline="true">
+        <el-row :gutter="16">
+          <el-col :span="6">
+            <el-form-item label="标题" prop="title">
+              <el-input v-model="listForm.title" placeholder="请输入标题" clearable />
+            </el-form-item>
+          </el-col>
+          <!-- 其他查询字段 -->
+        </el-row>
+      </el-form>
+    </template>
+
+    <template #actions>
+      <el-button type="primary" @click="openModal('add')">新增Xxx</el-button>
+    </template>
+
+    <template #table>
+      <el-table :data="listData" v-loading="listLoading" border stripe>
+        <el-table-column type="index" label="序号" width="60" />
+        <el-table-column prop="title" label="标题" show-overflow-tooltip />
+        <!-- 其他列 -->
+        <el-table-column label="操作" width="200" fixed="right">
+          <template #default="{ row }">
+            <el-button link type="primary" :icon="ViewIcon" @click="openModal('view', row)">查看</el-button>
+            <el-button link type="primary" :icon="EditIcon" @click="openModal('edit', row)">编辑</el-button>
+            <el-button link type="danger" :icon="DeleteIcon" @click="removeList(row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </template>
+
+    <template #pagination>
+      <el-pagination
+        v-model:current-page="listForm.pageNum"
+        v-model:page-size="listForm.pageSize"
+        :total="listTotal"
+        :page-sizes="[10, 20, 50, 100]"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="loadList"
+        @current-change="loadList"
+      />
+    </template>
+
+    <template #modal>
+      <el-dialog
+        v-if="modalVisible"
+        v-model="modalVisible"
+        :title="modalMode === 'add' ? '新增Xxx' : '编辑Xxx'"
+        :close-on-click-modal="false"
+        width="700px"
+        @close="resetModal(); loadList();"
+      >
+        <el-form
+          ref="modalFormRef"
+          :model="modalForm"
+          :rules="modalRules"
+          :validate-on-rule-change="false"
+          label-width="100px"
+        >
+          <el-form-item label="标题" prop="title">
+            <el-input v-model="modalForm.title" placeholder="请输入标题" clearable />
+          </el-form-item>
+          <!-- 其他表单项 -->
+        </el-form>
+        <template #footer>
+          <el-button @click="resetModal(); loadList();">取消</el-button>
+          <el-button type="primary" @click="submitModal" :loading="modalLoading">确定</el-button>
+        </template>
+      </el-dialog>
+    </template>
+  </StdListLayout>
+</template>
+
+<script setup lang="ts">
+import { ref, markRaw, reactive } from "vue";
+import { Edit, Delete, View } from "@element-plus/icons-vue";
+import type { FormInstance } from "element-plus";
+import XxxService from "@/views/<域>/service/XxxService.ts";
+
+const ViewIcon = markRaw(View);
+const EditIcon = markRaw(Edit);
+const DeleteIcon = markRaw(Delete);
+
+const uiState = reactive({ isAdvancedSearch: false });
+
+const {
+  listForm,
+  listData,
+  listTotal,
+  listLoading,
+  loadList,
+  resetList,
+  removeList,
+} = XxxService.useXxxList();
+
+const modalFormRef = ref<FormInstance>();
+
+const {
+  modalVisible,
+  modalLoading,
+  modalMode,
+  modalForm,
+  modalRules,
+  openModal,
+  resetModal,
+  submitModal,
+} = XxxService.useXxxModal(modalFormRef, loadList);
+</script>
+
+<style scoped></style>
+```
+
+### Modal 组件 SFC
+
+```vue
+<template>
+  <el-dialog
+    v-model="visible"
+    title="选择用户"
+    :close-on-click-modal="false"
+    width="800px"
+    @close="onClose"
+  >
+    <el-form :model="queryForm" :inline="true">
+      <el-form-item label="用户名" prop="username">
+        <el-input v-model="queryForm.username" placeholder="请输入" clearable />
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" @click="loadList">查询</el-button>
+        <el-button @click="resetQuery">重置</el-button>
+      </el-form-item>
+    </el-form>
+
+    <el-table
+      :data="listData"
+      v-loading="listLoading"
+      border
+      highlight-current-row
+      @row-click="onRowClick"
+    >
+      <el-table-column prop="username" label="用户名" />
+      <!-- 其他列 -->
+    </el-table>
+
+    <el-pagination
+      v-model:current-page="queryForm.pageNum"
+      v-model:page-size="queryForm.pageSize"
+      :total="listTotal"
+      layout="prev, pager, next"
+      @current-change="loadList"
+    />
+
+    <template #footer>
+      <el-button @click="visible = false">关闭</el-button>
+    </template>
+  </el-dialog>
+</template>
+
+<script setup lang="ts">
+import { reactive, ref, watch } from "vue";
+import type { GetUserListDto, GetUserListVo } from "@/views/<域>/api/UserApi.ts";
+import UserApi from "@/views/<域>/api/UserApi.ts";
+import { Result } from "@/commons/model/Result.ts";
+import { ElMessage } from "element-plus";
+
+interface Props {
+  modelValue: boolean;
+}
+interface Emits {
+  (e: "update:modelValue", value: boolean): void;
+  (e: "onSelected", value: GetUserListVo): void;
+}
+
+const props = defineProps<Props>();
+const emit = defineEmits<Emits>();
+
+const visible = ref(false);
+const listData = ref<GetUserListVo[]>([]);
+const listTotal = ref(0);
+const listLoading = ref(false);
+const queryForm = reactive<GetUserListDto>({ pageNum: 1, pageSize: 10 });
+
+watch(() => props.modelValue, (val) => { visible.value = val; if (val) loadList(); });
+watch(visible, (val) => { emit("update:modelValue", val); });
+
+const loadList = async (): Promise<void> => {
+  listLoading.value = true;
+  const result = await UserApi.getUserList(queryForm);
+  listLoading.value = false;
+  if (Result.isSuccess(result)) {
+    listData.value = result.data.records;
+    listTotal.value = result.data.total;
+    return;
+  }
+  ElMessage.error(result.message);
+};
+
+const resetQuery = (): void => {
+  queryForm.pageNum = 1;
+  queryForm.username = "";
+  loadList();
+};
+
+const onRowClick = (row: GetUserListVo): void => {
+  emit("onSelected", row);
+  visible.value = false;
+};
+
+const onClose = (): void => {
+  resetQuery();
+};
+</script>
+
+<style scoped>
+:deep(.selectable-row) { cursor: pointer; }
+</style>
+```
+
+---
+
+## 5. 反模式（Anti-patterns）
+
+```vue
+<!-- ❌ 根元素不用 StdListLayout，自己写 div 排版 -->
+<div class="my-page"><div class="query-area">...</div></div>
+```
+
+```vue
+<!-- ❌ el-dialog 不用 v-if，导致关闭后残留校验 -->
+<el-dialog v-model="modalVisible">...</el-dialog>
+```
+
+```vue
+<!-- ❌ 图标未 markRaw -->
+<el-button :icon="Edit" />
+```
+
+```ts
+// ❌ SFC 内声明类型
+interface LocalFormType { title: string; }
+```
+
+```ts
+// ❌ SFC 内直接调 Api
+const data = await NoticeApi.getNoticeList({ pageNum: 1, pageSize: 10 });
+```
+
+```ts
+// ❌ SFC 内写业务判断
+if (mode === 'add') { doSomethingDifferent(); }
+```
+
+---
+
+## 6. 速查（Cheat Sheet）
+
+| 场景 | 组件/写法 | 必须 |
+| --- | --- | --- |
+| Manager 页面布局 | `<StdListLayout>` + 5 插槽 | 是 |
+| Modal 弹窗 | `<el-dialog>` + `v-if="modalVisible"` | 是 |
+| Modal 关闭 | `@close="resetModal(); loadList();"` | 是 |
+| 防止点击遮罩关闭 | `:close-on-click-modal="false"` | 是 |
+| 表单校验规则触发 | `:validate-on-rule-change="false"` | 是 |
+| 图标 | `const XxxIcon = markRaw(Xxx)` | 是 |
+| Service 解构 | `const { ... } = XxxService.useXxxList()` | 是 |
+| Modal Service 入参 | `useXxxModal(modalFormRef, loadList)` | 是 |
+| 表单引用 | `const modalFormRef = ref<FormInstance>()` | 是 |
+| 导入 | `import type { ... }` + `@/` 前缀 | 是 |
+
+| el-table 操作列 | 图标 | class |
+| --- | --- | --- |
+| 查看 | `<el-button link type="primary" :icon="ViewIcon">` | — |
+| 编辑 | `<el-button link type="primary" :icon="EditIcon">` | — |
+| 删除 | `<el-button link type="danger" :icon="DeleteIcon">` | — |
+
+| el-table 属性 | 值 |
+| --- | --- |
+| `border` | true |
+| `stripe` | true |
+| `v-loading` | `listLoading` |
+
+| el-pagination 属性 | 值 |
+| --- | --- |
+| `layout` | `"total, sizes, prev, pager, next, jumper"` |
+| `:page-sizes` | `[10, 20, 50, 100]` |
+| `@size-change` | `loadList` |
+| `@current-change` | `loadList` |
