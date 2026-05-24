@@ -84,7 +84,7 @@ public interface GroupRepository extends JpaRepository<GroupPo, Long>, JpaSpecif
                 OR g.name LIKE %:#{#dto.keyword}%
                 OR g.remark LIKE %:#{#dto.keyword}%)
             AND (:#{#dto.status} IS NULL OR g.status = :#{#dto.status})
-            ORDER BY g.seq ASC, g.id DESC
+            ORDER BY g.seq ASC, g.createTime DESC
             """)
     Page<Tuple> getGroupList(@Param("dto") GetGroupListDto dto, Pageable pageable);
 
