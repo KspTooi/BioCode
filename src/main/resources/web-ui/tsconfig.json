@@ -7,8 +7,8 @@
     "src/**/sfc_private/**/deprecated/**",
     "node_modules",
     "dist",
-    "**/*.js",
-    "**/public/**"
+    "**/*.js"
+    // "**/public/**" 排除出了 TypeScript 编译 导致引入ts找不到模块 注释掉
   ],
   "files": [],
 
