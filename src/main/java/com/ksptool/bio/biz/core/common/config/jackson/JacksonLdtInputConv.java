@@ -8,6 +8,8 @@ import tools.jackson.databind.ValueDeserializer;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
 
 /**
  * LocalDateTime反序列化器(JSON字符串 -> Dto)
@@ -25,6 +27,7 @@ public class JacksonLdtInputConv extends ValueDeserializer<LocalDateTime> {
      * - 2000-01-01 12:00:00
      * - 2000-01-01 12:00
      * - 2000-01-01 12
+     * - 2000-01-01（前端只传日期，不带时分秒）
      */
     private static final DateTimeFormatter[] FORMATTERS = {
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH"),
@@ -32,6 +35,13 @@ public class JacksonLdtInputConv extends ValueDeserializer<LocalDateTime> {
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"),
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"),
     };
+
+    private static final DateTimeFormatter DATE_ONLY_FORMATTER = new DateTimeFormatterBuilder()
+            .append(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+            .parseDefaulting(ChronoField.HOUR_OF_DAY, 0)
+            .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
+            .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0)
+            .toFormatter();
 
     /**
      * 反序列化JSON字符串为LocalDateTime对象 这里主要用来把前端传入的字符串转换成LDT对象
@@ -58,6 +68,12 @@ public class JacksonLdtInputConv extends ValueDeserializer<LocalDateTime> {
                 return LocalDateTime.parse(value, formatter);
             } catch (Exception ignored) {
             }
+        }
+
+        //尝试解析日期格式(前端只传日期，不带时分秒)
+        try {
+            return LocalDateTime.parse(value, DATE_ONLY_FORMATTER);
+        } catch (Exception ignored) {
         }
 
         //如果遍历所有的FORMATTERS都没有解析成功，则抛出异常
