@@ -31,11 +31,11 @@
 
     <!-- 操作按钮区域 -->
     <StdListAreaAction class="flex gap-2">
-      <el-button type="success" @click="openModal('add', null)">创建租户</el-button>
+      <el-button type="primary" @click="openModal('add', null)">创建租户</el-button>
     </StdListAreaAction>
 
     <!-- 列表表格区域 -->
-    <StdListAreaTable>
+    <StdListAreaTable v-model:list-form="listForm" :list-total="listTotal" :load-list="loadList">
       <el-table v-loading="listLoading" :data="listData" stripe border height="100%">
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
         <el-table-column prop="name" label="租户名称" min-width="120" show-overflow-tooltip />
@@ -90,28 +90,6 @@
         </el-table-column>
       </el-table>
 
-      <template #pagination>
-        <el-pagination
-          v-model:current-page="listForm.pageNum"
-          v-model:page-size="listForm.pageSize"
-          :page-sizes="[10, 20, 50, 100]"
-          layout="total, sizes, prev, pager, next, jumper"
-          :total="listTotal"
-          background
-          @size-change="
-            (val: number) => {
-              listForm.pageSize = val;
-              loadList();
-            }
-          "
-          @current-change="
-            (val: number) => {
-              listForm.pageNum = val;
-              loadList();
-            }
-          "
-        />
-      </template>
     </StdListAreaTable>
 
     <!-- 创建/编辑模态框 -->
@@ -157,8 +135,8 @@
         </el-form-item>
         <el-form-item label="管理员账号" :prop="modalMode === 'add' ? '_adminUsername' : undefined">
           <el-input
-            :maxlength="40"
             v-model="modalForm._adminUsername"
+            :maxlength="40"
             placeholder="请输入管理员账号"
             :disabled="modalMode === 'edit'"
             clearable
@@ -167,8 +145,8 @@
         </el-form-item>
         <el-form-item v-if="modalMode === 'add'" label="管理员密码" prop="_adminPassword">
           <el-input
-            :maxlength="40"
             v-model="modalForm._adminPassword"
+            :maxlength="40"
             placeholder="请输入管理员密码"
             show-password
             clearable
@@ -179,7 +157,7 @@
           <el-input
             v-model="modalForm.remark"
             type="textarea"
-            :rows="4"
+            :autosize="{ minRows: 4 }"
             maxlength="200"
             show-word-limit
             placeholder="请输入备注"
