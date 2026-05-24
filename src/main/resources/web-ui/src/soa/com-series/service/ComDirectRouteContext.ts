@@ -305,6 +305,7 @@ export default {
           title: currentActiveTab.title,
           path: currentRoutePath,
           closable: currentActiveTab.closable,
+          kind: currentActiveTab.kind,
         });
       }
     }
@@ -371,6 +372,7 @@ export default {
         title: tabName ?? tabId,
         path: tabPath,
         closable: true,
+        kind: "normal",
       });
 
       return true;
@@ -475,6 +477,7 @@ export default {
           title: currentTab.title,
           path: cdrcSource,
           closable: currentTab.closable,
+          kind: currentTab.kind,
         });
       }
 

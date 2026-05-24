@@ -30,17 +30,6 @@
           }
         "
       >
-        <!-- 备用维护中心菜单 -->
-        <!-- <el-menu-item
-          v-if="!hasMaintainCenter"
-          index="fallback-maintenance-center"
-          @click="openMenu(getMenuByPath('/core/application-maintain'))"
-        >
-          <el-icon>
-            <component :is="resolveIcon('Setting')" />
-          </el-icon>
-          <span>维护中心(备用)</span>
-        </el-menu-item> -->
         <template v-for="item in menuTree" :key="item.id">
           <!-- 菜单项 一级菜单 目录类型 -->
           <el-sub-menu v-if="item.kind === 0" :key="item.id" :index="item.id">
@@ -101,7 +90,12 @@
           </el-sub-menu>
 
           <!-- 菜单项 一级菜单 菜单项类型 -->
-          <el-menu-item v-if="item.kind === 1" :key="item.id" :index="item.id" @click="openMenu(item)">
+          <el-menu-item
+            v-if="item.kind === 1 || item.kind === 3 || item.kind === 4"
+            :key="item.id"
+            :index="item.id"
+            @click="openMenu(item)"
+          >
             <el-icon>
               <component :is="resolveIcon(item.icon)" v-if="item.icon" />
             </el-icon>
@@ -116,9 +110,9 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
 import { ElMenu, ElMenuItem, ElSubMenu, ElIcon, ElAside } from "element-plus";
-import logoUrl from "@/assets/EAS_CROWN.png";
-import ComMenuService from "@/soa/com-series/service/ComMenuService.js";
-import ComIconService from "@/soa/com-series/service/ComIconService.js";
+import logoUrl from "@/assets/logo_pic_icon.png";
+import ComMenuService from "@/soa/com-series/service/ComMenuService.ts";
+import ComIconService from "@/soa/com-series/service/ComIconService.ts";
 
 // 使用菜单服务
 const { menuTree, loading, menuOpened, activeMenuId, loadMenus, expandMenu, openMenu, filterDirectoryMenu, filterItemMenu } =

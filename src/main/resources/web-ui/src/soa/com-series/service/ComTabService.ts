@@ -1,4 +1,4 @@
-import { defineStore, storeToRefs } from "pinia";
+import { defineStore, getActivePinia, storeToRefs } from "pinia";
 import { watch } from "vue";
 import { useRouter } from "vue-router";
 
@@ -6,57 +6,82 @@ import { useRouter } from "vue-router";
  * 标签持久化对象
  */
 export interface Tab {
-  id: string; // 标签ID
+  id: string; // 标签唯一ID
   icon: string | null; // 标签图标名称
   title: string; // 标签标题
   path: string; // 标签路径
   closable?: boolean; // 是否可关闭 默认true
+  kind: "normal" | "iframe"; // 标签类型 普通 外链嵌入
 }
 
 /**
- * 在这里定义固定标签列表
+ * 固定标签列表（由入口通过 addFixedTabs 注入）
  */
-const fixedTabs: Tab[] = [
-  {
-    id: "index",
-    icon: null,
-    title: "首页",
-    path: "/index",
-    closable: false,
-  },
-];
+const fixedTabs: Tab[] = [];
 
 /**
  * 固定标签ID集合
  */
-const fixedTabIds = new Set(fixedTabs.map((t) => t.id));
+const fixedTabIds = new Set<string>();
+
+const useTabStoreDef = defineStore("tabStore", {
+  state: () => ({
+    //标签列表（含固定标签）
+    tabs: [...fixedTabs] as Tab[],
+
+    //当前激活标签ID
+    activeTabId: null as string | null,
+
+    //刷新计数器
+    refreshCounter: 0,
+  }),
+
+  //持久化标签列表和当前激活标签ID
+  persist: {
+    key: "np_soa_tabs",
+    pick: ["tabs", "activeTabId"],
+  },
+});
 
 export default {
+  /**
+   * 添加固定标签页
+   * 须在 Pinia 注册后、首次 useTabStore / useTabService 之前调用
+   * @param tabs 固定标签列表
+   */
+  addFixedTabs(incoming: Tab[]): void {
+    if (!incoming?.length) {
+      return;
+    }
+
+    for (const tab of incoming) {
+      if (!tab?.id || fixedTabIds.has(tab.id)) {
+        continue;
+      }
+      fixedTabs.push(tab);
+      fixedTabIds.add(tab.id);
+    }
+
+    const pinia = getActivePinia();
+    if (!pinia) {
+      return;
+    }
+
+    const store = useTabStoreDef(pinia);
+    for (const tab of fixedTabs) {
+      if (store.tabs.find((t) => t.id === tab.id)) {
+        continue;
+      }
+      store.tabs.unshift(tab);
+    }
+  },
+
   /**
    * 使用标签存储
    * 标签存储管理全局状态，只负责存储标签列表、当前激活标签ID和刷新计数器
    */
   useTabStore() {
-    const tabStore = defineStore("tabStore", {
-      state: () => ({
-        //标签列表（含固定标签）
-        tabs: [...fixedTabs] as Tab[],
-
-        //当前激活标签ID
-        activeTabId: null as string | null,
-
-        //刷新计数器
-        refreshCounter: 0,
-      }),
-
-      //持久化标签列表和当前激活标签ID
-      persist: {
-        key: "np_soa_tabs",
-        pick: ["tabs", "activeTabId"],
-      },
-    });
-
-    return tabStore();
+    return useTabStoreDef();
   },
 
   /**
@@ -82,6 +107,17 @@ export default {
       }
       //激活标签
       activeTabId.value = tabToActivate.id;
+
+      //如果标签是外链嵌入,
+      if (tabToActivate.kind === "iframe") {
+        router.push({
+          path: "/external-link",
+          query: {
+            url: tabToActivate.path,
+          },
+        });
+        return;
+      }
 
       //如果当前的路由路径与要激活的标签的路径不一致，才会跳转
       if (router.currentRoute.value.path !== tabToActivate.path) {

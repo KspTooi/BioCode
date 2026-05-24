@@ -8,11 +8,11 @@ export class RouteEntryPo {
   biz: string; //领域或业务代码 为null时直接使用path
   path: string; //路由路径
   name: string; //路由名称 为null时直接使用path
-  component: () => Promise<Component>; //组件路径
+  component: () => Promise<Component>; //可异步加载的组件
   meta: {
     keepAlive?: boolean; //是否缓存
     breadcrumb?: string | null; //面包屑名称 为null时直接使用path
-    layout?: string | null; //布局 为null时直接使用默认布局 blank:全局布局(不带控制台框架)
+    layout?: string | null; //布局,由布局管理器决定，null或default时使用默认布局、blank:全局布局(不带控制台框架)
   };
 
   /**
@@ -107,4 +107,21 @@ export class RouteEntryPo {
   }): RouteEntryPo {
     return new RouteEntryPo(props);
   }
+}
+
+/**
+ * 带有冲突的路由条目
+ */
+export interface RouteEntryWithConflict extends RouteEntryPo {
+  //注册业务域
+  biz: string;
+
+  //注册路径
+  path: string;
+
+  //注册组件路径
+  componentPath: string;
+
+  //冲突原因
+  reason: string;
 }

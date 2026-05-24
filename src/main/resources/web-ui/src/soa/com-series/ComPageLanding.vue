@@ -214,6 +214,7 @@ const openMessageCenter = (): void => {
     icon: null,
     title: "个人消息中心",
     path: "/core/notice-rcd",
+    kind: "normal",
   });
 };
 
@@ -223,6 +224,7 @@ const openAppStatus = (): void => {
     icon: null,
     title: "系统探针",
     path: "/core/app-status",
+    kind: "normal",
   });
 };
 

@@ -1,11 +1,9 @@
-import { createRouter, createWebHashHistory, type Router } from "vue-router";
-import { RouteEntryPo } from "@/soa/genric-route/api/RouteEntryPo";
-import { type App, ref } from "vue";
-import ComPage404 from "@/soa/com-series/ComPage404.vue";
-import ComPage401 from "@/soa/com-series/ComPage401.vue";
+import { createRouter, createWebHashHistory, type RouteRecordRaw, type Router } from "vue-router";
+import { RouteEntryPo, type RouteEntryWithConflict } from "@/soa/genric-route/api/RouteEntryPo";
+import { type App, createApp, h, ref } from "vue";
 import GenricRouteRegister from "@/soa/genric-route/service/GenricRouteRegister";
-import ComPageLanding from "@/soa/com-series/ComPageLanding.vue";
 import ComTabService from "@/soa/com-series/service/ComTabService";
+import GrConflictOverlay from "@/soa/genric-route/component/GrConflictOverlay.vue";
 
 /**
  * 全局路由服务(GRS)
@@ -25,35 +23,15 @@ const routes = ref<RouteEntryPo[]>([]);
 //路由注册器
 const routeRegistries = ref<GenricRouteRegister[]>([]);
 
+//路由冲突
+const conflicts = ref<RouteEntryWithConflict[]>([]);
+
 /**
  * Vue路由
  */
 const vueRouter = createRouter({
   history: createWebHashHistory(),
-  routes: [
-    {
-      path: "/index",
-      name: "index",
-      component: ComPageLanding,
-      meta: {},
-    },
-    {
-      path: "/:pathMatch(.*)*",
-      name: "NotFound",
-      component: ComPage404,
-      meta: {
-        layout: "blank",
-      },
-    },
-    {
-      path: "/no-permission",
-      name: "no-permission",
-      component: ComPage401,
-      meta: {
-        layout: "blank",
-      },
-    },
-  ],
+  routes: [],
 });
 
 //保存原始的写方法 GRS内部走这两个引用
@@ -103,7 +81,81 @@ vueRouter.beforeEach((to, from) => {
   if (fallbackTab && fallbackTab.path !== to.path) {
     return fallbackTab.path;
   }
+
+  //如果没有标签可用 直接跳转到首页
+  return "/index";
 });
+
+/**
+ * 获取路由冲突
+ * 冲突规则：
+ * 1. 同一个 biz 出现在两个不同的注册器中，第二个注册器中的所有路由均视为冲突
+ * 2. buildPath() 全局唯一，重复出现即冲突
+ * @param gr 路由注册器
+ * @returns 路由冲突
+ */
+const getConflicts = (gr: GenricRouteRegister[]): RouteEntryWithConflict[] => {
+  const result: RouteEntryWithConflict[] = [];
+
+  // 记录已出现的 biz -> 首个注册器索引
+  const bizOwnerIndex = new Map<string, number>();
+  // 记录已出现的 buildPath()
+  const pathSet = new Set<string>();
+
+  gr.forEach((register, registerIndex) => {
+    const entries = register.doRegister();
+
+    // 收集当前注册器所有 biz（一个注册器内可能有多个不同 biz）
+    const bizInThisRegister = new Set<string>();
+
+    entries.forEach((entry) => {
+      // 先 validate 以保证 name/meta 等字段完整
+      entry.validate();
+
+      const builtPath = entry.path;
+      const reasons: string[] = [];
+
+      // biz 冲突检测：同一 biz 首次出现记录其注册器索引，第二个注册器起算冲突
+      if (entry.biz != null && !bizInThisRegister.has(entry.biz)) {
+        bizInThisRegister.add(entry.biz);
+        if (!bizOwnerIndex.has(entry.biz)) {
+          bizOwnerIndex.set(entry.biz, registerIndex);
+        }
+        if (bizOwnerIndex.has(entry.biz) && bizOwnerIndex.get(entry.biz) !== registerIndex) {
+          reasons.push(`域 "${entry.biz}" 已被其他注册器占用`);
+        }
+      }
+
+      // path 冲突检测：buildPath() 全局唯一
+      if (pathSet.has(builtPath)) {
+        reasons.push(`路径 "${builtPath}" 已被其他路由占用`);
+      }
+      if (!pathSet.has(builtPath)) {
+        pathSet.add(builtPath);
+      }
+
+      if (reasons.length === 0) {
+        return;
+      }
+
+      const conflictEntry = new RouteEntryPo();
+      conflictEntry.biz = entry.biz;
+      conflictEntry.path = entry.path;
+      conflictEntry.name = entry.name;
+      conflictEntry.component = entry.component;
+      conflictEntry.meta = entry.meta;
+
+      result.push(
+        Object.assign(conflictEntry, {
+          componentPath: builtPath,
+          reason: reasons.join("；"),
+        }) as RouteEntryWithConflict
+      );
+    });
+  });
+
+  return result;
+};
 
 export default {
   /**
@@ -121,12 +173,21 @@ export default {
     /**
      * 初始化路由服务
      * @param app 应用实例
+     * @param fixedRoutes 固定路由（由入口在初始化时注入，如首页、404、401、外链等）
      */
-    const initialize = (app: App): void => {
+    const initialize = (app: App, fixedRoutes: RouteRecordRaw[]): void => {
       if (hasInitialized) {
         return;
       }
+
       hasInitialized = true;
+
+      fixedRoutes.forEach((route) => {
+        rawAddRoute(route);
+      });
+
+      //检测路由冲突（在注册前检测，避免冲突路由污染 Vue 路由）
+      conflicts.value = getConflicts(routeRegistries.value);
 
       //注册路由注册器
       routeRegistries.value.forEach((register: GenricRouteRegister) => {
@@ -145,6 +206,22 @@ export default {
         }
       });
 
+      //检测是否有路由冲突
+      if (conflicts.value.length > 0) {
+        const container = document.createElement("div");
+        container.id = "grs-conflict-overlay-root";
+        document.body.appendChild(container);
+
+        const conflictOverlayApp = createApp({
+          render: () =>
+            h(GrConflictOverlay, {
+              conflicts: conflicts.value,
+            }),
+        });
+
+        conflictOverlayApp.mount(container);
+      }
+
       app.use(vueRouter);
     };
 
@@ -153,7 +230,7 @@ export default {
      * @param entry 路由条目或路由注册器
      */
     const addRoute = (entry: RouteEntryPo | GenricRouteRegister): void => {
-      //如果是路由注册器 则注册到路由注册器列表
+      //如果是路由注册器 则注册到路由注册器列表 初始化时会自动注册路由
       if (entry instanceof GenricRouteRegister) {
         routeRegistries.value.push(entry);
         return;

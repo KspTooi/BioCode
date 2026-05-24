@@ -102,12 +102,12 @@
 import { computed, onMounted, ref } from "vue";
 import { ElAvatar, ElTag, ElIcon, ElButton, ElMessage, ElMessageBox, ElPopover } from "element-plus";
 import { Message, Phone, User, Operation, Key, Calendar, Clock, SwitchButton, Refresh } from "@element-plus/icons-vue";
-import type { GetCurrentUserProfile } from "@/soa/com-series/api/AuthApi.js";
-import AuthApi from "@/soa/com-series/api/AuthApi.js";
+import type { GetCurrentUserProfile } from "@/soa/com-series/api/AuthApi.ts";
+import AuthApi from "@/soa/com-series/api/AuthApi.ts";
 import ComPasswordReset from "@/soa/com-series/components/ComPasswordReset.vue";
 import ComModalAvatarCropper from "@/soa/com-series/components/ComModalAvatarCropper.vue";
-import UserAuthService from "@/views/auth/service/UserAuthService.js";
-import { Result } from "@/commons/model/Result.js";
+import UserAuthService from "@/views/auth/service/UserAuthService.ts";
+import { Result } from "@/commons/model/Result.ts";
 import ComTabService from "@/soa/com-series/service/ComTabService.ts";
 import { useThrottleFn } from "@vueuse/core";
 

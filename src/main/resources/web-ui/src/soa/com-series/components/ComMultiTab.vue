@@ -1,6 +1,6 @@
 <template>
   <div class="tab-panel-container">
-    <div class="tab-prefix-controls">
+    <div v-if="showPrefixControls" class="tab-prefix-controls">
       <el-icon title="关闭标签页" class="control-btn close-btn" @click="onCloseCurrentTab">
         <Close />
       </el-icon>
@@ -24,7 +24,7 @@
       </template>
     </draggable>
 
-    <div class="tab-controls">
+    <div v-if="showSuffixControls" class="tab-controls">
       <el-icon class="control-btn" title="刷新" @click="onRefresh">
         <Refresh />
       </el-icon>
@@ -43,8 +43,20 @@ import { ref, onMounted, onBeforeUnmount } from "vue";
 import draggable from "vuedraggable";
 import { ElIcon } from "element-plus";
 import { Refresh, Close } from "@element-plus/icons-vue";
-import ComTabService, { type Tab } from "@/soa/com-series/service/ComTabService.js";
-import ComIconService from "@/soa/com-series/service/ComIconService.js";
+import ComTabService, { type Tab } from "@/soa/com-series/service/ComTabService.ts";
+import ComIconService from "@/soa/com-series/service/ComIconService.ts";
+
+const props = withDefaults(
+  defineProps<{
+    showPrefixControls?: boolean;
+    showSuffixControls?: boolean;
+  }>(),
+  {
+    showPrefixControls: true,
+    showSuffixControls: true,
+  }
+);
+
 //使用图标服务
 const { resolveIcon } = ComIconService.useIconService();
 

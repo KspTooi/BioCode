@@ -161,7 +161,7 @@ export default {
      * @returns 过滤后的菜单类型菜单数据
      */
     const filterItemMenu = (menuTree: GetUserMenuTreeVo[]): GetUserMenuTreeVo[] => {
-      return menuTree.filter((item) => item.kind === 1);
+      return menuTree.filter((item) => item.kind === 1 || item.kind === 3 || item.kind === 4);
     };
 
     /**
@@ -177,12 +177,17 @@ export default {
      */
     const openMenu = (item: GetUserMenuTreeVo): void => {
       //如果菜单类型不是菜单项类型，则不处理
-      if (item.kind !== 1) {
+      if (item.kind !== 1 && item.kind !== 3 && item.kind !== 4) {
         return;
       }
 
       //如果菜单路径为空，则不处理
       if (!item.path) {
+        return;
+      }
+
+      if (item.kind === 4) {
+        window.open(item.path, "_blank");
         return;
       }
 
@@ -192,6 +197,7 @@ export default {
         icon: item.icon,
         title: item.name,
         path: item.path,
+        kind: item.kind === 3 ? "iframe" : "normal",
       });
     };
 

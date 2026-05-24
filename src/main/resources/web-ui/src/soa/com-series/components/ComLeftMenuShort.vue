@@ -62,7 +62,7 @@
 
           <!-- 菜单项 一级菜单 菜单项类型 -->
           <el-menu-item
-            v-if="item.kind === 1"
+            v-if="item.kind === 1 || item.kind === 3 || item.kind === 4"
             :key="item.id"
             class="panel-menu-short-item"
             :index="item.id"
@@ -84,8 +84,8 @@
 import { onMounted } from "vue";
 import { ElMenu, ElMenuItem, ElSubMenu, ElIcon, ElAside } from "element-plus";
 import logoUrl from "@/assets/EAS_CROWN.png";
-import ComMenuService from "@/soa/com-series/service/ComMenuService.js";
-import ComIconService from "@/soa/com-series/service/ComIconService.js";
+import ComMenuService from "@/soa/com-series/service/ComMenuService.ts";
+import ComIconService from "@/soa/com-series/service/ComIconService.ts";
 
 // 使用菜单服务
 const { menuTree, loading, activeMenuId, loadMenus, openMenu, filterDirectoryMenu, filterItemMenu } =
