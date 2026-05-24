@@ -20,19 +20,19 @@
 
     <!-- 操作按钮区域 -->
     <StdListAreaAction class="">
-      <el-button type="success" @click="openModal('add', null)">创建岗位</el-button>
+      <el-button type="primary" @click="openModal('add', null)">创建岗位</el-button>
       <el-button
         type="danger"
         :disabled="listSelected.length === 0"
         :loading="listLoading"
         @click="() => removeListBatch(listSelected)"
       >
-          批量删除
+        批量删除
       </el-button>
     </StdListAreaAction>
 
     <!-- 列表表格区域 -->
-    <StdListAreaTable>
+    <StdListAreaTable v-model:list-form="listForm" :list-total="listTotal" :load-list="loadList">
       <el-table
         v-loading="listLoading"
         :data="listData"
@@ -89,29 +89,6 @@
           </template>
         </el-table-column>
       </el-table>
-
-      <template #pagination>
-        <el-pagination
-          v-model:current-page="listForm.pageNum"
-          v-model:page-size="listForm.pageSize"
-          :page-sizes="[10, 20, 50, 100]"
-          layout="total, sizes, prev, pager, next, jumper"
-          :total="listTotal"
-          background
-          @size-change="
-            (val: number) => {
-              listForm.pageSize = val;
-              loadList();
-            }
-          "
-          @current-change="
-            (val: number) => {
-              listForm.pageNum = val;
-              loadList();
-            }
-          "
-        />
-      </template>
     </StdListAreaTable>
 
     <!-- 创建/编辑模态框 -->
@@ -152,7 +129,7 @@
           <el-input
             v-model="modalForm.remark"
             type="textarea"
-            :rows="4"
+            :autosize="{ minRows: 4 }"
             placeholder="请输入备注"
             maxlength="1000"
             show-word-limit
