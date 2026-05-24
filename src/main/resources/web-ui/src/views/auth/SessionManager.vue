@@ -1,6 +1,6 @@
 <template>
-  <StdListLayout>
-    <template #query>
+  <StdListContainer>
+    <StdListAreaQuery>
       <el-form :model="listForm">
         <el-row>
           <el-col :span="5" :offset="1">
@@ -22,12 +22,12 @@
           </el-col>
         </el-row>
       </el-form>
-    </template>
+    </StdListAreaQuery>
 
-    <template #table>
+    <StdListAreaTable v-model:list-form="listForm" :list-total="listTotal" :load-list="loadList">
       <el-table v-loading="listLoading" :data="listData" stripe border height="100%">
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
-        <el-table-column prop="username" label="用户名" min-width="150" />
+        <el-table-column prop="username" label="登录账号" min-width="150" />
         <el-table-column prop="rsMax" label="数据权限(RS)等级" min-width="150">
           <template #default="scope">
             <el-tag v-if="scope.row.rsMax === 0" type="success">全集团</el-tag>
@@ -57,91 +57,70 @@
           </template>
         </el-table-column>
       </el-table>
-    </template>
+    </StdListAreaTable>
 
-    <template #pagination>
-      <el-pagination
-        v-model:current-page="listForm.pageNum"
-        v-model:page-size="listForm.pageSize"
-        :page-sizes="[10, 20, 50, 100]"
-        layout="total, sizes, prev, pager, next, jumper"
-        :total="listTotal"
-        background
-        @size-change="
-          () => {
-            loadList();
-          }
-        "
-        @current-change="
-          () => {
-            loadList();
-          }
-        "
-      />
-    </template>
-  </StdListLayout>
+    <!-- 会话详情模态框 -->
+    <el-dialog v-model="modalVisible" title="会话详情" width="900px" :close-on-click-modal="false" destroy-on-close>
+      <div v-if="currentSessionDetails" class="session-details-container">
+        <!-- 基本信息 -->
+        <el-descriptions :column="2" border title="基本信息" class="mb-4">
+          <el-descriptions-item label="会话ID" :span="2">{{ currentSessionDetails.id }}</el-descriptions-item>
+          <el-descriptions-item label="登录账号">{{ currentSessionDetails.username }}</el-descriptions-item>
+          <el-descriptions-item label="数据权限(RS)等级">
+            <el-tag v-if="currentSessionDetails.rsMax === 0" type="success">全集团</el-tag>
+            <el-tag v-if="currentSessionDetails.rsMax === 10">本公司+下级公司</el-tag>
+            <el-tag v-if="currentSessionDetails.rsMax === 20">仅本公司</el-tag>
+            <el-tag v-if="currentSessionDetails.rsMax === 30">本部门+下级部门</el-tag>
+            <el-tag v-if="currentSessionDetails.rsMax === 40">仅本部门</el-tag>
+            <el-tag v-if="currentSessionDetails.rsMax === 50">仅本人</el-tag>
+            <el-tag v-if="currentSessionDetails.rsMax === 60" type="warning">指定组织</el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item label="登入时间">{{ currentSessionDetails.createTime }}</el-descriptions-item>
+          <el-descriptions-item label="过期时间">{{ currentSessionDetails.expiresAt }}</el-descriptions-item>
+        </el-descriptions>
 
-  <!-- 会话详情模态框 -->
-  <el-dialog v-model="modalVisible" title="会话详情" width="900px" :close-on-click-modal="false" destroy-on-close>
-    <div v-if="currentSessionDetails" class="session-details-container">
-      <!-- 基本信息 -->
-      <el-descriptions :column="2" border title="基本信息" class="mb-4">
-        <el-descriptions-item label="会话ID" :span="2">{{ currentSessionDetails.id }}</el-descriptions-item>
-        <el-descriptions-item label="用户名">{{ currentSessionDetails.username }}</el-descriptions-item>
-        <el-descriptions-item label="数据权限(RS)等级">
-          <el-tag v-if="currentSessionDetails.rsMax === 0" type="success">全集团</el-tag>
-          <el-tag v-if="currentSessionDetails.rsMax === 10">本公司+下级公司</el-tag>
-          <el-tag v-if="currentSessionDetails.rsMax === 20">仅本公司</el-tag>
-          <el-tag v-if="currentSessionDetails.rsMax === 30">本部门+下级部门</el-tag>
-          <el-tag v-if="currentSessionDetails.rsMax === 40">仅本部门</el-tag>
-          <el-tag v-if="currentSessionDetails.rsMax === 50">仅本人</el-tag>
-          <el-tag v-if="currentSessionDetails.rsMax === 60" type="warning">指定组织</el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="登入时间">{{ currentSessionDetails.createTime }}</el-descriptions-item>
-        <el-descriptions-item label="过期时间">{{ currentSessionDetails.expiresAt }}</el-descriptions-item>
-      </el-descriptions>
+        <el-row :gutter="20">
+          <!-- 数据权限部门列表 -->
+          <el-col v-if="currentSessionDetails.rsDeptNames && currentSessionDetails.rsDeptNames.length > 0" :span="10">
+            <div class="section-title">允许访问部门(RSAD) ({{ currentSessionDetails.rsDeptNames.length }})</div>
+            <el-table :data="currentSessionDetails.rsDeptNames" stripe border max-height="400px" size="small">
+              <el-table-column label="部门名称">
+                <template #default="scope">
+                  <el-tag size="small" type="info">{{ scope.row }}</el-tag>
+                </template>
+              </el-table-column>
+            </el-table>
+          </el-col>
 
-      <el-row :gutter="20">
-        <!-- 数据权限部门列表 -->
-        <el-col v-if="currentSessionDetails.rsDeptNames && currentSessionDetails.rsDeptNames.length > 0" :span="10">
-          <div class="section-title">允许访问部门(RSAD) ({{ currentSessionDetails.rsDeptNames.length }})</div>
-          <el-table :data="currentSessionDetails.rsDeptNames" stripe border max-height="400px" size="small">
-            <el-table-column label="部门名称">
-              <template #default="scope">
-                <el-tag size="small" type="info">{{ scope.row }}</el-tag>
-              </template>
-            </el-table-column>
-          </el-table>
-        </el-col>
-
-        <!-- 权限节点列表 -->
-        <el-col :span="currentSessionDetails.rsDeptNames && currentSessionDetails.rsDeptNames.length > 0 ? 14 : 24">
-          <div class="section-title">
-            权限节点 ({{ currentSessionDetails.permissions?.length || 0 }})
-            <el-input
-              v-model="permissionSearchKeyword"
-              placeholder="搜索权限代码"
-              clearable
-              size="small"
-              style="width: 200px; float: right"
-            />
-          </div>
-          <el-table :data="filteredPermissions" stripe border max-height="400px" size="small">
-            <el-table-column label="权限代码" show-overflow-tooltip>
-              <template #default="scope">
-                <code>{{ scope.row }}</code>
-              </template>
-            </el-table-column>
-          </el-table>
-        </el-col>
-      </el-row>
-    </div>
-    <template #footer>
-      <span class="dialog-footer">
-        <el-button @click="modalVisible = false">关闭</el-button>
-      </span>
-    </template>
-  </el-dialog>
+          <!-- 权限节点列表 -->
+          <el-col :span="currentSessionDetails.rsDeptNames && currentSessionDetails.rsDeptNames.length > 0 ? 14 : 24">
+            <div class="section-title">
+              权限节点 ({{ currentSessionDetails.permissions?.length || 0 }})
+              <el-input
+                v-model="permissionSearchKeyword"
+                placeholder="搜索权限代码"
+                clearable
+                size="small"
+                style="width: 200px; float: right"
+              />
+            </div>
+            <el-table :data="filteredPermissions" stripe border max-height="400px" size="small">
+              <el-table-column label="权限代码" show-overflow-tooltip>
+                <template #default="scope">
+                  <code>{{ scope.row }}</code>
+                </template>
+              </el-table-column>
+            </el-table>
+          </el-col>
+        </el-row>
+      </div>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="modalVisible = false">关闭</el-button>
+        </span>
+      </template>
+    </el-dialog>
+  </StdListContainer>
 </template>
 
 <script setup lang="ts">
@@ -154,7 +133,9 @@ import AdminSessionApi, {
   type GetSessionListVo,
 } from "@/views/auth/api/SessionApi.ts";
 import { Result } from "@/commons/model/Result.ts";
-import StdListLayout from "@/soa/std-series/StdListLayout.vue";
+import StdListContainer from "@/soa/std-series/StdListContainer.vue";
+import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
+import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
 
 const ViewIcon = markRaw(View);
 const CloseIcon = markRaw(CloseBold);
