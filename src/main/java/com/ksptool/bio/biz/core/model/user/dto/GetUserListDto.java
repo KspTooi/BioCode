@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Set;
+
 @Getter
 @Setter
 public class GetUserListDto extends PageQuery {
@@ -27,5 +29,8 @@ public class GetUserListDto extends PageQuery {
 
     @Schema(description = "0:封禁 1:正常")
     private Integer status;
+
+    @Schema(description = "用户ID集合")
+    private Set<Long> userIds;
 
 }

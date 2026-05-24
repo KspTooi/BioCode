@@ -10,6 +10,8 @@ import com.ksptool.bio.biz.auth.repository.UserGroupRepository;
 import com.ksptool.bio.biz.auth.repository.UserSessionRepository;
 import com.ksptool.bio.biz.auth.service.SessionService;
 import com.ksptool.bio.biz.core.common.Switch;
+import com.ksptool.bio.biz.core.common.event.UserCreateEvent;
+import com.ksptool.bio.biz.core.common.event.UserRemoveEvent;
 import com.ksptool.bio.biz.core.model.org.OrgPo;
 import com.ksptool.bio.biz.core.model.user.UserPo;
 import com.ksptool.bio.biz.core.model.user.dto.*;
@@ -24,6 +26,7 @@ import jakarta.persistence.Tuple;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
@@ -73,6 +76,9 @@ public class UserService {
 
     @Autowired
     private UserSessionRepository userSessionRepository;
+
+    @Autowired
+    private ApplicationEventPublisher aep;
 
     /**
      * 获取用户列表
@@ -208,6 +214,8 @@ public class UserService {
             ugRepository.saveAll(userGroupPos);
         }
 
+        //发射用户创建事件
+        aep.publishEvent(UserCreateEvent.of(List.of(save)));
     }
 
     /**
@@ -328,6 +336,9 @@ public class UserService {
         }
 
         userRepository.delete(userPo);
+
+        //发射用户删除事件
+        aep.publishEvent(UserRemoveEvent.of(List.of(userPo)));
     }
 
 
@@ -506,12 +517,17 @@ public class UserService {
 
         //批量删除
         if (dto.getKind() == 2) {
+            
+
 
             //直接剔除内置用户
             userPos = userPos.stream().filter(user -> !user.isSystem()).collect(Collectors.toList());
 
             //批量删除用户
             userRepository.deleteAll(userPos);
+
+            //发射用户删除事件
+            aep.publishEvent(UserRemoveEvent.of(userPos));
 
             //销毁被删除用户的session(如果有) 强行踢他们下线
             for (UserPo user : userPos) {

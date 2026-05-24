@@ -59,6 +59,7 @@ public interface UserRepository extends JpaRepository<UserPo, Long> {
               AND (:#{#dto.phone} IS NULL OR u.phone LIKE CONCAT('%', :#{#dto.phone}, '%'))
               AND (:#{#dto.status} IS NULL OR u.status = :#{#dto.status})
               AND (:#{#dto.rootName} IS NULL OR r.name LIKE CONCAT('%', :#{#dto.rootName}, '%'))
+              AND (:#{#dto.userIds} IS NULL OR u.id in :#{#dto.userIds})        
               AND (
                     :#{#dto.orgId} IS NULL
                     OR c.id = :#{#dto.orgId}
@@ -212,8 +213,9 @@ public interface UserRepository extends JpaRepository<UserPo, Long> {
 
     @Query("""
                     SELECT u FROM UserPo u
-                    LEFT JOIN OrgPo o ON u.rootId = o.id
-                    WHERE u.id IN :memberIds AND u.rootId = :orgId
+                    LEFT JOIN OrgPo o ON u.orgId = o.id
+                    WHERE u.id IN :memberIds 
+                                AND(:org is null or u.orgId = :orgId)
             """)
     List<UserPo> getUserByIdsAndOrgId(@Param("memberIds") List<Long> memberIds, @Param("orgId") Long orgId);
 
