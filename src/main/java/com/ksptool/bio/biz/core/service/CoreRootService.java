@@ -16,6 +16,8 @@ import com.ksptool.bio.biz.auth.service.SessionService;
 import com.ksptool.bio.biz.core.common.IdsDiff;
 import com.ksptool.bio.biz.core.common.SuperEntities;
 import com.ksptool.bio.biz.core.common.Switch;
+import com.ksptool.bio.biz.core.common.event.RootCreateEvent;
+import com.ksptool.bio.biz.core.common.event.RootRemoveEvent;
 import com.ksptool.bio.biz.core.service.MenuService;
 import com.ksptool.bio.biz.core.service.UserService;
 import com.ksptool.bio.biz.core.model.pack.RootPackPo;
@@ -34,6 +36,7 @@ import com.ksptool.bio.biz.core.repository.UserRepository;
 import jakarta.persistence.Tuple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -86,6 +89,9 @@ public class CoreRootService {
 
     @Autowired
     private UserService uService;
+
+    @Autowired
+    private ApplicationEventPublisher aep;
 
     /**
      * 查询租户列表
@@ -181,6 +187,9 @@ public class CoreRootService {
         gp.setGroupId(g.getId());
         gp.setPermissionId(perspPermission.getId());
         gpRepository.save(gp);
+
+        //发射租户创建事件
+        aep.publishEvent(RootCreateEvent.of(List.of(insertPo)));
     }
 
     /**
@@ -241,16 +250,7 @@ public class CoreRootService {
     public void removeCoreRoot(CommonIdDto dto) throws BizException {
 
         if (dto.isBatch()) {
-            for (Long id : dto.getIds()) {
-                var root = repository.findById(id)
-                    .orElseThrow(() -> new BizException("租户不存在或无权限访问."));
-                if (root.isSystem()) {
-                    throw new BizException("内置租户不允许删除！");
-                }
-                rpRepository.removeByRid(id);
-            }
-            repository.deleteAllById(dto.getIds());
-            return;
+            throw new BizException("不支持批量删除租户!");
         }
 
         var root = repository.findById(dto.getId())
@@ -261,6 +261,9 @@ public class CoreRootService {
 
         rpRepository.removeByRid(dto.getId());
         repository.deleteById(dto.getId());
+
+        //发射租户删除事件
+        aep.publishEvent(RootRemoveEvent.of(List.of(root)));
 
         //销毁该租户下所有用户会话
         sessionService.closeSessionByRootId(dto.getId());
