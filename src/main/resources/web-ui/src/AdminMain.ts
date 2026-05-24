@@ -14,17 +14,80 @@ import * as ElementPlusIconsVue from "@element-plus/icons-vue";
 // 导入并设置 Iconify
 import { setupIconify } from "@/commons/Iconify.ts";
 import GenricRouteService from "@/soa/genric-route/service/GenricRouteService.ts";
+import ComPage404 from "@/soa/com-series/ComPage404.vue";
+import ComPage401 from "@/soa/com-series/ComPage401.vue";
+import ComPageLanding from "@/soa/com-series/ComPageLanding.vue";
+import StdIframe from "@/soa/std-series/StdIframe.vue";
 import AuthRouteRegister from "@/views/auth/route/AuthRouteRegister";
 import CoreRouteRegister from "@/views/core/route/CoreRouteRegister";
-import DriveRouteRegister from "@/views/drive/route/DriveRouteRegister";
-import RelayRouteRegister from "@/views/relay/route/RelayRouteRegister";
-import DocumentRouteRegister from "@/views/document/route/DocumentRouteRegister";
 import AuditRouteRegister from "@/views/audit/route/AuditRouteRegister";
 import QtRouteRegister from "@/views/qt/route/QtRouteRegister.ts";
-import AssemblyRouteRegister from "@/views/assembly/route/AssemblyRouteRegister.ts";
 import QfRouteRegister from "@/views/qf/route/QfRouteRegister.ts";
-//初始化Iconify
+import ComTabService from "@/soa/com-series/service/ComTabService.ts";
+import ComFramework from "@/soa/com-series/ComFramework.vue";
+import ComLayoutProviderService from "@/soa/com-series/service/ComLayoutProviderService.ts";
+import QlcFramework from "@/soa/layout-series-qlc/QlcFramework.vue";
+import AssemblyRouteRegister from "@/views/assembly/route/AssemblyRouteRegister";
+import PlayGroundRouteRegister from "@/views/playground/route/PlayGroundRouteRegister";
+
+/**
+ * 固定路由 这些路由不会被GenricRouteService动态注册 请注意不要随意修改这些路由，因为它们游离于业务域之外，会引发严重的路由冲突问题。
+ */
+const grsFixedRoutes = [
+  {
+    path: "/index",
+    name: "index",
+    component: ComPageLanding,
+    meta: {},
+  },
+  {
+    path: "/:pathMatch(.*)*",
+    name: "NotFound",
+    component: ComPage404,
+    meta: {
+      layout: "blank",
+    },
+  },
+  {
+    path: "/no-permission",
+    name: "no-permission",
+    component: ComPage401,
+    meta: {
+      layout: "blank",
+    },
+  },
+  {
+    path: "/external-link",
+    name: "external-link",
+    component: StdIframe,
+    meta: {
+      keepAlive: true,
+    },
+  },
+];
+
+/**
+ * 固定标签页 这些标签不会被关闭，且始终位于标签栏前部
+ */
+const ctsFixedTabs = [
+  {
+    id: "index",
+    icon: null,
+    title: "首页",
+    path: "/index",
+    closable: false,
+    kind: "normal" as const,
+  },
+];
+
+//初始化 Iconify
 setupIconify();
+
+//注册布局
+ComLayoutProviderService.registerLayout("default", ComFramework);
+
+//设置默认布局（路由 meta.layout 为 default 或未指定时生效）
+ComLayoutProviderService.setDefaultLayout("default");
 
 //创建应用实例
 const app = createApp(AdminRoot);
@@ -39,21 +102,22 @@ const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate);
 app.use(pinia);
 
+//在标签服务中注册固定标签页
+ComTabService.addFixedTabs(ctsFixedTabs);
+
 const { initialize, addRoute } = GenricRouteService.useGenricRoute();
 
 //在SOA路由服务中注册域业务路由
 addRoute(new AuthRouteRegister());
 addRoute(new CoreRouteRegister());
-addRoute(new DriveRouteRegister());
-addRoute(new RelayRouteRegister());
-addRoute(new DocumentRouteRegister());
 addRoute(new AuditRouteRegister());
 addRoute(new QtRouteRegister());
 addRoute(new AssemblyRouteRegister());
 addRoute(new QfRouteRegister());
+addRoute(new PlayGroundRouteRegister());
 
 //初始化SOA路由服务
-initialize(app);
+initialize(app, grsFixedRoutes);
 
 // 使用Element Plus并设置为中文
 app.use(ElementPlus, {
