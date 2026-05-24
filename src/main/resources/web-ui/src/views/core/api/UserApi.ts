@@ -23,12 +23,13 @@ export interface UserPermissionVo {
 }
 
 export interface GetUserListDto extends PageQuery {
+  rootName?: string | null; // 租户名称
   username?: string; // 用户名查询
   nickname?: string; // 昵称查询
   phone?: string; // 手机号查询
-  status?: number | null; // 用户状态查询: 0-封禁, 1-正常
   orgId?: string | null; // 组织架构ID
-  rootName?: string | null; // 租户名称
+  status?: number | null; // 用户状态 0:封禁 1:正常
+  userIds?: string[]; // 用户ID列表
 }
 
 export interface GetUserListVo {

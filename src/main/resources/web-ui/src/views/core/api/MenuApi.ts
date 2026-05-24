@@ -19,7 +19,7 @@ export interface EditMenuDto {
   id?: string | null; // 菜单ID
   parentId?: string | null; // 父级ID -1:根节点
   name?: string | null; // 菜单名称
-  kind?: number | null; // 菜单类型 0:目录 1:菜单 2:按钮
+  kind?: number | null; // 菜单类型 0:目录 1:菜单 2:按钮 3:外链嵌套 4:外链跳转
   path?: string | null; // 菜单路径(目录不能填写)
   icon?: string | null; // 菜单图标
   hide?: number | null; // 是否隐藏 0:否 1:是
@@ -32,7 +32,7 @@ export interface GetMenuDetailsVo {
   id?: string | null; // 菜单ID
   parentId?: string | null; // 父级ID null:根节点
   name?: string | null; // 菜单名称
-  kind?: number | null; // 菜单类型 0:目录 1:菜单 2:按钮
+  kind?: number | null; // 菜单类型 0:目录 1:菜单 2:按钮 3:外链嵌套 4:外链跳转
   path?: string | null; // 菜单路径(目录不能填写)
   icon?: string | null; // 菜单图标
   hide?: number | null; // 是否隐藏 0:否 1:是
@@ -51,7 +51,7 @@ export interface GetMenuTreeVo {
   id?: string | null; // 菜单ID
   parentId?: string | null; // 父级ID null:根节点
   name?: string | null; // 菜单名称
-  kind?: number | null; // 菜单类型 0:目录 1:菜单 2:按钮
+  kind?: number | null; // 菜单类型 0:目录 1:菜单 2:按钮 3:外链嵌套 4:外链跳转
   path?: string | null; // 菜单路径
   icon?: string | null; // 菜单图标
   hide?: number | null; // 是否隐藏 0:否 1:是
@@ -65,7 +65,7 @@ export interface GetUserMenuTreeVo {
   parentId?: string | null; // 父级ID null:根节点
   name?: string | null; // 菜单名称
   icon?: string | null; // 菜单图标
-  kind?: number | null; // 菜单类型 0:目录 1:菜单 2:按钮
+  kind?: number | null; // 菜单类型 0:目录 1:菜单 2:按钮 3:外链嵌套 4:外链跳转
   path?: string | null; // 菜单路径
   hide?: number | null; // 是否隐藏 0:否 1:是
   permissionCode?: string[]; // 所需权限码列表
