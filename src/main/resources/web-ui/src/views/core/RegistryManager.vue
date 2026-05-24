@@ -70,7 +70,7 @@
           </StdListAreaQuery>
 
           <StdListAreaAction>
-            <el-button type="success" :disabled="!currentKeyPath" @click="openModal('add', null, currentNodeId)">
+            <el-button type="primary" :disabled="!currentKeyPath" @click="openModal('add', null, currentNodeId)">
               创建条目
             </el-button>
             <el-button type="danger" :disabled="!currentKeyPath || listSelected.length === 0" @click="removeListBatch">
@@ -84,12 +84,12 @@
             >
               导入条目
             </el-button>
-            <el-button v-has-code="'core:registry:clearcache'" type="warning" :icon="DeleteIcon" @click="onClearCache"
-              >清除缓存</el-button
-            >
+            <el-button v-has-code="'core:registry:clearcache'" type="warning" :icon="DeleteIcon" @click="onClearCache">
+              清除缓存
+            </el-button>
           </StdListAreaAction>
 
-          <StdListAreaTable>
+          <StdListAreaTable v-model:list-form="listForm" :list-total="listTotal" :load-list="_loadList">
             <el-table
               v-loading="listLoading"
               :data="listData"
@@ -143,29 +143,6 @@
                 </template>
               </el-table-column>
             </el-table>
-
-            <template #pagination>
-              <el-pagination
-                v-model:current-page="listForm.pageNum"
-                v-model:page-size="listForm.pageSize"
-                :page-sizes="[10, 20, 50, 100]"
-                layout="total, sizes, prev, pager, next, jumper"
-                :total="listTotal"
-                background
-                @size-change="
-                  (val: number) => {
-                    listForm.pageSize = val;
-                    loadList(currentKeyPath);
-                  }
-                "
-                @current-change="
-                  (val: number) => {
-                    listForm.pageNum = val;
-                    loadList(currentKeyPath);
-                  }
-                "
-              />
-            </template>
           </StdListAreaTable>
         </StdListContainer>
       </pane>
@@ -212,7 +189,7 @@
           <el-input
             v-model="modalForm.nvalue"
             type="textarea"
-            :rows="3"
+            :autosize="{ minRows: 3 }"
             placeholder="请输入数据值"
             maxlength="1024"
             show-word-limit
@@ -228,7 +205,14 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="说明" prop="remark">
-          <el-input v-model="modalForm.remark" type="textarea" placeholder="请输入说明" maxlength="1000" show-word-limit />
+          <el-input
+            v-model="modalForm.remark"
+            type="textarea"
+            :autosize="{ minRows: 3 }"
+            placeholder="请输入说明"
+            maxlength="1000"
+            show-word-limit
+          />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -266,7 +250,14 @@
           <el-input-number v-model="nodeForm.seq" :min="0" />
         </el-form-item>
         <el-form-item label="说明" prop="remark">
-          <el-input v-model="nodeForm.remark" type="textarea" placeholder="请输入说明" maxlength="1000" show-word-limit />
+          <el-input
+            v-model="nodeForm.remark"
+            type="textarea"
+            :autosize="{ minRows: 3 }"
+            placeholder="请输入说明"
+            maxlength="1000"
+            show-word-limit
+          />
         </el-form-item>
       </el-form>
       <template #footer>
