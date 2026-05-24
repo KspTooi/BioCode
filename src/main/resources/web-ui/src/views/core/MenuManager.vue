@@ -43,10 +43,12 @@
                 <el-tag v-if="data.kind === 0" size="small" type="info" class="menu-kind-tag">目录</el-tag>
                 <el-tag v-if="data.kind === 1" size="small" type="success" class="menu-kind-tag">菜单</el-tag>
                 <el-tag v-if="data.kind === 2" size="small" class="menu-kind-tag">按钮</el-tag>
+                <el-tag v-if="data.kind === 3" size="small" type="warning" class="menu-kind-tag">外链嵌套</el-tag>
+                <el-tag v-if="data.kind === 4" size="small" type="danger" class="menu-kind-tag">外链跳转</el-tag>
               </template>
               <template #actions="{ data }">
                 <el-button
-                  v-show="data.kind !== 2"
+                  v-show="data.kind !== 2 && data.kind !== 3 && data.kind !== 4"
                   link
                   type="success"
                   size="small"
@@ -131,7 +133,7 @@
                         <el-form-item :label="panelFormLabel + '名称'" prop="name">
                           <el-input
                             v-model="panelForm.name"
-                            placeholder="请输入菜单名称"
+                            :placeholder="'请输入' + panelFormLabel + '名称'"
                             clearable
                             maxlength="40"
                             show-word-limit
@@ -161,6 +163,16 @@
                               :value="2"
                               :disabled="panelMode === 'add-item' && panelCurrentRow?.kind == 0"
                             />
+                            <el-option
+                              label="外链嵌套"
+                              :value="3"
+                              :disabled="panelMode === 'add-item' && panelCurrentRow?.kind == 1"
+                            />
+                            <el-option
+                              label="外链跳转"
+                              :value="4"
+                              :disabled="panelMode === 'add-item' && panelCurrentRow?.kind == 1"
+                            />
                           </el-select>
                         </el-form-item>
                       </el-col>
@@ -172,7 +184,24 @@
                         </template>
                       </el-input>
                     </el-form-item>
-                    <el-form-item v-if="panelForm.kind == 1 || panelForm.kind == 2" label="所需权限" prop="permissionCode">
+                    <el-form-item
+                      v-if="panelForm.kind == 3 || panelForm.kind == 4"
+                      :label="panelFormLabel + '路径'"
+                      prop="path"
+                    >
+                      <el-input
+                        v-model="panelForm.path"
+                        placeholder="http://www.example.com"
+                        clearable
+                        maxlength="512"
+                        show-word-limit
+                      />
+                    </el-form-item>
+                    <el-form-item
+                      v-if="panelForm.kind == 1 || panelForm.kind == 2 || panelForm.kind == 3 || panelForm.kind == 4"
+                      label="所需权限"
+                      prop="permissionCode"
+                    >
                       <el-select
                         v-model="panelForm.permissionCode"
                         multiple
@@ -194,7 +223,7 @@
                       </div>
                     </el-form-item>
                     <el-form-item
-                      v-if="panelForm.kind == 0 || panelForm.kind == 1"
+                      v-if="panelForm.kind == 0 || panelForm.kind == 1 || panelForm.kind == 3 || panelForm.kind == 4"
                       :label="panelFormLabel + '图标'"
                       prop="icon"
                     >
@@ -220,7 +249,7 @@
                       <el-input
                         v-model="panelForm.remark"
                         type="textarea"
-                        :rows="3"
+                        :autosize="{ minRows: 3 }"
                         placeholder="请输入备注"
                         clearable
                         maxlength="200"
@@ -232,7 +261,6 @@
               </el-scrollbar>
             </div>
           </el-skeleton>
-          <!-- v-show="!panelLoading && panelVisible" -->
 
           <div v-show="!panelLoading && !panelVisible" class="panel-empty">
             <el-icon class="panel-empty-icon"><Menu /></el-icon>
