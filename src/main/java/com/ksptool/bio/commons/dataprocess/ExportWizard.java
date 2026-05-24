@@ -54,6 +54,7 @@ public class ExportWizard<T> {
                 .sheet(prefix)
                 .head(targetClazz)
                 .registerWriteHandler(new LongestMatchColumnWidthStyleStrategy())
+                .registerWriteHandler(new AttachImageWriteHandler())
                 .doWrite(data);
     }
 
