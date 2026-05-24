@@ -42,7 +42,7 @@ public interface GroupMenuRepository extends JpaRepository<GroupMenuPo, GroupMen
      */
     @Query("""
             SELECT m FROM GroupMenuPo gm
-            LEFT JOIN MenuPo m ON gm.menuId = m.id
+            INNER JOIN MenuPo m ON gm.menuId = m.id
             WHERE gm.groupId IN :gids
             """)
     List<MenuPo> getMenusByGids(@Param("gids") List<Long> gids);
