@@ -1,6 +1,6 @@
 <template>
-  <StdListLayout>
-    <template #query>
+  <StdListContainer>
+    <StdListAreaQuery>
       <el-form :model="queryForm">
         <el-row>
           <el-col :span="5" :offset="1">
@@ -22,13 +22,13 @@
           </el-col>
         </el-row>
       </el-form>
-    </template>
+    </StdListAreaQuery>
 
-    <template #actions>
-      <el-button type="success" @click="openModal('add', null)">创建组织机构</el-button>
-    </template>
+    <StdListAreaAction>
+      <el-button type="primary" @click="openModal('add', null)">创建组织机构</el-button>
+    </StdListAreaAction>
 
-    <template #table>
+    <StdListAreaTable>
       <el-table
         ref="listTableRef"
         v-loading="listLoading"
@@ -73,82 +73,89 @@
           </template>
         </el-table-column>
       </el-table>
-    </template>
-  </StdListLayout>
+    </StdListAreaTable>
 
-  <!-- 组织机构编辑/创建模态框 -->
-  <el-dialog
-    v-model="modalVisible"
-    :title="modalMode === 'edit' ? '编辑' + modalKindName : modalMode === 'add-item' ? '创建子级' : '创建' + modalKindName"
-    width="500px"
-    :close-on-click-modal="false"
-    @close="
-      resetModal();
-      loadList();
-    "
-  >
-    <el-form
-      v-if="modalVisible"
-      ref="modalFormRef"
-      :model="modalForm"
-      :rules="modalRules"
-      label-width="120px"
-      :validate-on-rule-change="false"
+    <!-- 组织机构编辑/创建模态框 -->
+    <el-dialog
+      v-model="modalVisible"
+      :title="modalMode === 'edit' ? '编辑' + modalKindName : modalMode === 'add-item' ? '创建子级' : '创建' + modalKindName"
+      width="500px"
+      :close-on-click-modal="false"
+      @close="
+        resetModal();
+        loadList();
+      "
     >
-      <el-form-item :label="modalKindName + '名称'" prop="name">
-        <el-input v-model="modalForm.name" :placeholder="'请输入' + modalKindName + '名称'" maxlength="80" show-word-limit />
-      </el-form-item>
-      <el-form-item :label="modalKindName + '简称'" prop="shortName">
-        <el-input
-          v-model="modalForm.shortName"
-          :placeholder="'请输入' + modalKindName + '简称'"
-          maxlength="40"
-          show-word-limit
-        />
-      </el-form-item>
-      <el-form-item v-if="modalMode !== 'edit'" :label="modalKindName + '类型'" prop="kind">
-        <el-radio-group
-          v-model="modalForm.kind"
-          @change="
-            (e) => {
-              if (e === 0) modalForm.parentId = null;
-            }
-          "
-        >
-          <el-radio :value="0" :disabled="modalMode === 'add-item'">企业</el-radio>
-          <el-radio :value="1">子企业</el-radio>
-          <el-radio :value="2">部门</el-radio>
-        </el-radio-group>
-      </el-form-item>
+      <el-form
+        v-if="modalVisible"
+        ref="modalFormRef"
+        :model="modalForm"
+        :rules="modalRules"
+        label-width="120px"
+        :validate-on-rule-change="false"
+      >
+        <el-form-item :label="modalKindName + '名称'" prop="name">
+          <el-input v-model="modalForm.name" :placeholder="'请输入' + modalKindName + '名称'" maxlength="80" show-word-limit />
+        </el-form-item>
+        <el-form-item :label="modalKindName + '简称'" prop="shortName">
+          <el-input
+            v-model="modalForm.shortName"
+            :placeholder="'请输入' + modalKindName + '简称'"
+            maxlength="40"
+            show-word-limit
+          />
+        </el-form-item>
+        <el-form-item v-if="modalMode !== 'edit'" :label="modalKindName + '类型'" prop="kind">
+          <el-radio-group
+            v-model="modalForm.kind"
+            @change="
+              (e) => {
+                if (e === 0) modalForm.parentId = null;
+              }
+            "
+          >
+            <el-radio :value="0" :disabled="modalMode === 'add-item'">企业</el-radio>
+            <el-radio :value="1">子企业</el-radio>
+            <el-radio :value="2">部门</el-radio>
+          </el-radio-group>
+        </el-form-item>
 
-      <el-form-item v-if="[1, 2].includes(modalForm.kind)" label="上级组织" prop="parentId">
-        <el-tree-select
-          v-model="modalForm.parentId"
-          :data="filterTreeSelectData"
-          placeholder="请选择上级组织"
-          clearable
-          check-strictly
-          :render-after-expand="true"
-          :disabled="modalMode === 'add-item' && modalForm.kind === 0"
-          node-key="value"
-        />
-      </el-form-item>
-      <el-form-item :label="modalKindName + '排序'" prop="seq">
-        <el-input-number v-model="modalForm.seq" :min="0" style="width: 100%" />
-      </el-form-item>
-      <el-form-item :label="modalKindName + '备注'" prop="remark">
-        <el-input v-model="modalForm.remark" placeholder="请输入备注" type="textarea" maxlength="200" show-word-limit />
-      </el-form-item>
-    </el-form>
-    <template #footer>
-      <div class="dialog-footer">
-        <el-button @click="modalVisible = false">关闭</el-button>
-        <el-button type="primary" :loading="modalLoading" @click="submitModal">
-          {{ modalMode === "add" ? "创建" : modalMode === "add-item" ? "创建" : "保存" }}
-        </el-button>
-      </div>
-    </template>
-  </el-dialog>
+        <el-form-item v-if="[1, 2].includes(modalForm.kind)" label="上级组织" prop="parentId">
+          <el-tree-select
+            v-model="modalForm.parentId"
+            :data="filterTreeSelectData"
+            placeholder="请选择上级组织"
+            clearable
+            check-strictly
+            :render-after-expand="true"
+            :disabled="modalMode === 'add-item' && modalForm.kind === 0"
+            node-key="value"
+          />
+        </el-form-item>
+        <el-form-item :label="modalKindName + '排序'" prop="seq">
+          <el-input-number v-model="modalForm.seq" :min="0" style="width: 100%" />
+        </el-form-item>
+        <el-form-item :label="modalKindName + '备注'" prop="remark">
+          <el-input
+            v-model="modalForm.remark"
+            placeholder="请输入备注"
+            type="textarea"
+            :autosize="{ minRows: 3 }"
+            maxlength="200"
+            show-word-limit
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="modalVisible = false">关闭</el-button>
+          <el-button type="primary" :loading="modalLoading" @click="submitModal">
+            {{ modalMode === "add" ? "创建" : modalMode === "add-item" ? "创建" : "保存" }}
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
+  </StdListContainer>
 </template>
 
 <script setup lang="ts">
@@ -160,7 +167,10 @@ import OrgManagerService from "@/views/core/service/OrgManagerService.ts";
 import ComSeqFixer from "@/soa/com-series/ComSeqFixer.vue";
 import OrgApi from "@/views/core/api/OrgApi.ts";
 import { Result } from "@/commons/model/Result";
-import StdListLayout from "@/soa/std-series/StdListLayout.vue";
+import StdListContainer from "@/soa/std-series/StdListContainer.vue";
+import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
+import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";
+import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
 import type { GetOrgDetailsVo } from "@/views/core/api/OrgApi.ts";
 
 const EditIcon = markRaw(Edit);
