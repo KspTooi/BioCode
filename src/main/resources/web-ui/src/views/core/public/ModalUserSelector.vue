@@ -1,21 +1,25 @@
+<!--
+  * 用户选择模态框
+  * 所有属性都会透传给el-dialog组件 具体参考el-dialog组件的属性 @see DialogProps
+-->
 <template>
   <el-dialog
     v-model="modalVisible"
-    :title="title"
-    :width="width"
+    :title="props.title"
+    :width="props.width"
     :close-on-click-modal="false"
     append-to-body
     destroy-on-close
     class="core-user-select-modal"
-    @opened="onModalOpen"
-    @close="onModalClose"
+    v-bind="$attrs"
   >
     <div v-loading="listLoading" class="modal-body">
       <splitpanes class="custom-theme">
         <pane size="20" min-size="10" max-size="40">
           <div style="height: 100%; box-sizing: border-box">
             <OrgTree
-              v-model="modalCurrentOrgId"
+              v-model="draftCheckedOrgId"
+              :crop-org-id="props.cropOrgId"
               :nr="true"
               :nr-value="null"
               nr-title="全部组织机构"
@@ -24,8 +28,11 @@
               search-placeholder="请输入组织机构"
               :search-cascade="true"
               :show-header="true"
-              @on-select="loadList(modalCurrentOrgId)"
-              @on-root-select="loadList(null)"
+              @on-select="loadList()"
+              @on-root-select="
+                draftCheckedOrgId = null;
+                loadList();
+              "
             />
           </div>
         </pane>
@@ -35,21 +42,18 @@
             <StdListAreaQuery>
               <el-form :model="listForm" size="small">
                 <el-row class="gap-4">
-                  <el-form-item label="用户名">
-                    <el-input v-model="listForm.username" placeholder="请输入用户名" clearable />
+                  <el-form-item label="登录账号">
+                    <el-input v-model="listForm.username" placeholder="请输入登录账号" clearable />
                   </el-form-item>
-                  <el-form-item label="昵称">
-                    <el-input v-model="listForm.nickname" placeholder="请输入昵称" clearable />
+                  <el-form-item label="用户姓名">
+                    <el-input v-model="listForm.nickname" placeholder="请输入用户姓名" clearable />
                   </el-form-item>
-                  <el-form-item label="状态">
-                    <el-select v-model="listForm.status" placeholder="请选择状态" clearable style="width: 100%">
-                      <el-option label="正常" :value="1" />
-                      <el-option label="封禁" :value="0" />
-                    </el-select>
+                  <el-form-item label="手机号">
+                    <el-input v-model="listForm.phone" placeholder="请输入手机号" clearable />
                   </el-form-item>
 
                   <el-form-item style="margin-left: auto">
-                    <el-button type="primary" :disabled="listLoading" @click="loadList(modalCurrentOrgId)">查询</el-button>
+                    <el-button type="primary" :disabled="listLoading" @click="loadList()">查询</el-button>
                     <el-button :disabled="listLoading" @click="resetList">重置</el-button>
                   </el-form-item>
                 </el-row>
@@ -65,13 +69,18 @@
                 style="cursor: pointer"
                 row-key="id"
                 height="100%"
-                :class="{ 'single-select': !props.checkMultiple }"
-                @selection-change="(rows: GetUserListVo[]) => onListCheck(rows)"
-                @row-click="onRowClick"
+                @row-click="(row: GetUserListVo) => stccRef?.onElRowCheck(row)"
               >
-                <el-table-column type="selection" width="55" :reserve-selection="true" />
-                <el-table-column prop="username" label="用户名" min-width="120" show-overflow-tooltip />
-                <el-table-column prop="nickname" label="昵称" min-width="120" show-overflow-tooltip />
+                <StdTableCheckColumn
+                  ref="stccRef"
+                  v-model="draftCheckUids"
+                  :data="listData"
+                  :mode="props.mode"
+                  width="40"
+                  :readonly="props.readonly"
+                />
+                <el-table-column prop="username" label="登录账号" min-width="120" show-overflow-tooltip />
+                <el-table-column prop="nickname" label="用户姓名" min-width="120" show-overflow-tooltip />
                 <el-table-column label="性别" min-width="80" show-overflow-tooltip>
                   <template #default="scope">
                     <span v-if="scope.row.gender === 0">男</span>
@@ -111,8 +120,8 @@
                   :total="listTotal"
                   background
                   size="small"
-                  @size-change="loadList(modalCurrentOrgId)"
-                  @current-change="loadList(modalCurrentOrgId)"
+                  @size-change="loadList()"
+                  @current-change="loadList()"
                 />
               </template>
             </StdListAreaTable>
@@ -122,20 +131,22 @@
     </div>
 
     <template #footer>
-      <div class="dialog-footer">
-        <el-button @click="onModalClose">关闭</el-button>
-        <el-button type="primary" :disabled="modalCheckedUserIds.length < 1" @click="onModalSubmit"
-          >保存({{ modalCheckedUserIds.length }})</el-button
+      <div v-if="!props.readonly" class="dialog-footer">
+        <el-button @click="modalVisible = false">关闭</el-button>
+        <el-button type="primary" :disabled="draftCheckUids.length < 1 || isOverMax" @click="onModalSubmit"
+          >保存({{ draftCheckUids.length }})</el-button
         >
+      </div>
+      <div v-else class="dialog-footer">
+        <el-button @click="modalVisible = false">关闭</el-button>
       </div>
     </template>
   </el-dialog>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { useTemplateRef } from "vue";
 import { Splitpanes, Pane } from "splitpanes";
-import type { ElTable } from "element-plus";
 import "splitpanes/dist/splitpanes.css";
 import OrgTree from "@/views/core/public/OrgTree.vue";
 import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
@@ -145,52 +156,35 @@ import ModalUserSelectorService, {
   type ModalUserSelectorProps,
 } from "@/views/core/public/service/ModalUserSelectorService.ts";
 import type { GetUserListVo } from "@/views/core/api/UserApi";
+import StdTableCheckColumn from "@/soa/std-series/StdTableCheckColumn.vue";
 
 const props = withDefaults(defineProps<ModalUserSelectorProps>(), {
   title: "选择用户",
-  width: "75%",
-  checkMultiple: false,
+  width: "80%",
+  mode: "multiple",
+  readonly: false,
+  max: null,
 });
 
 const emit = defineEmits<ModalUserSelectorEmits>();
 
-const tableRef = ref<InstanceType<typeof ElTable>>();
+const stccRef = useTemplateRef<InstanceType<typeof StdTableCheckColumn>>("stccRef");
 
 //弹窗显隐控制 外部用v-model绑定
 const modalVisible = defineModel<boolean>({ default: false });
 
 //当前选中组织ID 外部用v-model:current-org-id绑定
-const modalCurrentOrgId = defineModel<string | null>("currentOrgId", { default: null });
+const bindCheckedOrgId = defineModel<string | null>("currentOrgId", { default: null });
 
 //当前已勾选的用户IDS 外部用v-model:checked-user-ids绑定
-const modalCheckedUserIds = defineModel<string[]>("checkedUserIds", { default: () => [] });
+const bindCheckedUids = defineModel<string[]>("checkedUserIds", { default: () => [] });
 
 //用户选择模态框打包
-const {
-  listForm,
-  listData,
-  listTotal,
-  listLoading,
-  loadList,
-  resetList,
-  onListCheck,
-  onModalOpen,
-  onModalClose,
-  onModalSubmit,
-} = ModalUserSelectorService.useUserSelect(props, emit, tableRef, modalVisible, modalCurrentOrgId, modalCheckedUserIds);
-
-//行点击切换勾选状态，复用 selection-change → onListCheck 流程
-const onRowClick = (row: GetUserListVo): void => {
-  tableRef.value?.toggleRowSelection(row, undefined);
-};
+const { listForm, listData, listTotal, listLoading, draftCheckUids, isOverMax, draftCheckedOrgId, loadList, resetList, onModalSubmit } =
+  ModalUserSelectorService.useUserSelect(props, emit, modalVisible, bindCheckedOrgId, bindCheckedUids);
 </script>
 
 <style scoped>
-.single-select :deep(thead .el-checkbox) {
-  visibility: hidden;
-  pointer-events: none;
-}
-
 .core-user-select-modal :deep(.el-dialog__body) {
   padding: 10px 20px;
 }

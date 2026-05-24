@@ -1,23 +1,44 @@
-import { ref, type Ref } from "vue";
+import { computed, ref, watch, type DefineComponent, type EmitFn, type Ref } from "vue";
 import type { GetUserListDto, GetUserListVo } from "@/views/core/api/UserApi";
 import AdminUserApi from "@/views/core/api/UserApi";
 import { Result } from "@/commons/model/Result";
-import { ElMessage, ElTable } from "element-plus";
+import { ElMessage, ElTable, type DialogProps } from "element-plus";
+import { useDebounceFn, useThrottleFn, watchDebounced } from "@vueuse/core";
+import UserApi from "@/views/core/api/UserApi";
+import ModalUserSelectorVue from "@/views/core/public/ModalUserSelector.vue";
 
 /**
- * 用户选择器列表参数
+ * 模态用户选择器参数
+ * 其他参数透传给el-dialog组件 具体参考el-dialog组件的属性 @see DialogProps
+ *
+ * 双向绑定v-model:参数
+ * v-model 模态框显隐控制
+ * v-model:current-org-id 当前选中组织ID
+ * v-model:checked-user-ids 当前已勾选用户IDS 不管单选多选都是数组
  */
 export interface ModalUserSelectorProps {
-  //弹窗标题，默认为 "选择用户"
+  //模态框标题
   title?: string;
 
-  //弹窗宽度，默认为 "75%"
+  //模态框宽度
   width?: string | number;
 
-  //是否支持多选用户，默认为 false
-  checkMultiple?: boolean;
+  //模式: 单选、多选
+  mode?: "single" | "multiple";
+
+  //是否只读
+  readonly?: boolean;
+
+  //限制选择用户数量
+  max?: number | null;
+
+  //左侧组织树裁剪根ID 将会以该ID为根节点进行裁剪 只显示该组织及下级组织
+  cropOrgId?: string | null;
 }
 
+/**
+ * 模态用户选择器事件发射器
+ */
 export interface ModalUserSelectorEmits {
   (e: "on-submit", data: string[]): void;
   (e: "on-submit-entity", data: GetUserListVo[]): void;
@@ -27,22 +48,23 @@ export interface ModalUserSelectorEmits {
 export default {
   /**
    * 用户选择模态框打包
-   * @param props 用户选择器列表参数
-   * @param modalCurrentOrgId 当前选中组织ID
-   * @param modalmodalCheckedUserIds 当前已勾选的用户IDS
+   * @param emit 用户选择器事件发射器
+   * @param modalVisible 模态框显隐控制
+   * @param bindCheckedOrgId 当前选中组织ID
+   * @param bindCheckedUids 当前已勾选的用户IDS
    */
   useUserSelect(
     props: ModalUserSelectorProps,
     emit: ModalUserSelectorEmits,
-    listRef: Ref<InstanceType<typeof ElTable>>,
     modalVisible: Ref<boolean>,
-    modalCurrentOrgId: Ref<string | null>,
-    modalCheckedUserIds: Ref<string[]>
+    bindCheckedOrgId: Ref<string | null>,
+    bindCheckedUids: Ref<string[]>
   ) {
     const listForm = ref<GetUserListDto>({
       pageNum: 1,
       pageSize: 20,
       username: "",
+      phone: "",
       status: null,
       orgId: null,
     });
@@ -50,25 +72,37 @@ export default {
     const listData = ref<GetUserListVo[]>([]);
     const listTotal = ref(0);
     const listLoading = ref(false);
-    const displayValue = ref("");
-    const checkedUsersRows = ref<GetUserListVo[]>([]);
+    const modalLoading = ref(false);
+
+    //草稿当前选中组织ID
+    const draftCheckedOrgId = ref<string | null>(null);
+
+    //草稿已勾选用户IDS
+    const draftCheckUids = ref<string[]>([]);
+
+    /**
+     * 是否超过最大选择数量
+     */
+    const isOverMax = computed(() => {
+      if (!props.max) {
+        return false;
+      }
+
+      return draftCheckUids.value.length > props.max;
+    });
 
     /**
      * 加载用户列表
-     * @param orgId 组织ID
      */
-    const loadList = async (orgId?: string | null): Promise<void> => {
+    const loadList = async (): Promise<void> => {
       listLoading.value = true;
-      listForm.value.orgId = orgId ?? null;
+      listForm.value.orgId = draftCheckedOrgId.value ?? null;
 
       const result = await AdminUserApi.getUserList(listForm.value);
 
       if (Result.isSuccess(result)) {
         listData.value = result.data;
         listTotal.value = result.total;
-
-        //同步已勾选用户IDS到表格
-        syncChecked();
       }
 
       if (Result.isError(result)) {
@@ -78,115 +112,92 @@ export default {
       listLoading.value = false;
     };
 
-    const resetList = (): void => {
+    /**
+     * 重置用户列表
+     */
+    const resetList = (load: boolean = true): void => {
       listForm.value.pageNum = 1;
       listForm.value.pageSize = 20;
       listForm.value.username = "";
       listForm.value.nickname = "";
+      listForm.value.phone = "";
       listForm.value.status = null;
-      loadList(listForm.value.orgId);
+      if (load) {
+        loadList();
+      }
     };
 
     /**
-     * 用户列表勾选
-     * @param rows 当前所有已选行（含 reserve-selection 跨页保留的行）
+     * 模态框提交
      */
-    const onListCheck = (rows: GetUserListVo[]): void => {
-      if (props.checkMultiple) {
-        //跨页合并：当前页内的勾选以 rows 为准，当前页外的已选 id 原样保留
-        const currentPageIds = new Set(listData.value.map((user) => user.id));
-        const selectedInPage = rows.filter((row) => currentPageIds.has(row.id));
-        const keptOutOfPage = checkedUsersRows.value.filter((u) => !currentPageIds.has(u.id));
-        checkedUsersRows.value = [...keptOutOfPage, ...selectedInPage];
-        modalCheckedUserIds.value = checkedUsersRows.value.map((u) => u.id);
+    const onModalSubmit = async (): Promise<void> => {
+      modalLoading.value = true;
+
+      //提交时根据Draft查询出用户的完整Vo 外部要使用
+      try {
+        const result = await UserApi.getUserList({
+          pageNum: 1,
+          pageSize: draftCheckUids.value.length + 100,
+          userIds: draftCheckUids.value,
+        });
+
+        //根据后端返回的结果获取用户完整Vo和用户IDS(防止Draft中选了后端不存在的用户ID)
+        const userVos = result.data;
+        const userIds = userVos.map((vo) => vo.id);
+
+        //提交Draft到外部
+        bindCheckedUids.value = [...userIds];
+
+        emit("on-submit", userIds);
+        emit("on-submit-entity", userVos);
+        modalVisible.value = false;
+      } catch (error: any) {
+        ElMessage.error("获取用户信息失败，请稍后重试。");
         return;
+      } finally {
+        modalLoading.value = false;
       }
-      if (rows.length === 0) {
-        modalCheckedUserIds.value = [];
-        checkedUsersRows.value = [];
-        return;
-      }
-      const last = rows[rows.length - 1];
-      rows.slice(0, -1).forEach((row) => listRef.value?.toggleRowSelection(row, false));
-      modalCheckedUserIds.value = [last.id];
-      checkedUsersRows.value = [last];
     };
 
     /**
      * 模态框打开
      */
     const onModalOpen = (): void => {
-      checkedUsersRows.value = [];
+      //把外部的bind同步给draft
+      draftCheckUids.value = [...bindCheckedUids.value];
+      draftCheckedOrgId.value = bindCheckedOrgId.value;
 
-      //重置查询表单
-      listForm.value.pageNum = 1;
-      listForm.value.pageSize = 20;
-      listForm.value.username = "";
-      listForm.value.nickname = "";
-      listForm.value.status = null;
+      //如果有剪裁根ID 则选中剪裁根ID
+      if (props.cropOrgId) {
+        draftCheckedOrgId.value = props.cropOrgId;
+      }
 
-      //先根据当前选中组织ID加载用户列表
-      loadList(modalCurrentOrgId.value);
+      //重置用户列表
+      resetList();
     };
 
     /**
      * 模态框关闭
      */
     const onModalClose = (): void => {
-      modalVisible.value = false;
+      //清空内部draft
+      draftCheckUids.value = [];
       emit("on-close");
     };
 
-    /**
-     * 模态框提交
-     */
-    const onModalSubmit = (): void => {
-      modalVisible.value = false;
-      emit("on-submit", modalCheckedUserIds.value);
-      emit("on-submit-entity", checkedUsersRows.value);
-    };
-
-    /**
-     * 同步已勾选用户IDS到表格
-     */
-    const syncChecked = (): void => {
-      //当前已勾选的用户IDS长度
-      const length = modalCheckedUserIds.value.length;
-
-      //需要恢复之前的选中
-      if (length > 0) {
-        //多选模式下 外面传入的已选用户IDS长度大于1 不支持恢复
-        if (length > 1 && !props.checkMultiple) {
-          console.warn("多选模式下 外部双向绑定传入的已选用户IDS长度大于1 不支持恢复选中状态");
-          return;
-        }
-
-        //直接恢复选中，并将当前页已命中的VO补充进checkedUsersRows
-        const existingIds = new Set(checkedUsersRows.value.map((u) => u.id));
-        listData.value.forEach((user) => {
-          if (!modalCheckedUserIds.value.includes(user.id)) {
-            return;
-          }
-          listRef.value?.toggleRowSelection(user, true);
-          if (!existingIds.has(user.id)) {
-            checkedUsersRows.value = [...checkedUsersRows.value, user];
-            existingIds.add(user.id);
-          }
-        });
-      }
-    };
+    //监听模态框显隐控制
+    watch(modalVisible, (visible) => (visible ? onModalOpen() : onModalClose()));
 
     return {
       listForm,
       listData,
       listTotal,
       listLoading,
-      displayValue,
+      draftCheckUids,
+      isOverMax,
+      draftCheckedOrgId,
       loadList,
       resetList,
-      onListCheck,
-      onModalOpen,
-      onModalClose,
       onModalSubmit,
     };
   },
