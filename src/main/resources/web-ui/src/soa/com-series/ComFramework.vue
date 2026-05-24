@@ -28,7 +28,7 @@
               <ILineMdMenuUnfoldRight />
             </div>
             <!-- 面包屑导航，放在头部区域 -->
-            <StdBreadcrumb />
+            <ComBreadcrumb />
           </div>
         </el-header>
 
@@ -65,7 +65,7 @@ import ComUserProfile from "@/soa/com-series/components/ComUserProfile.vue";
 import ComLeftMenuShort from "@/soa/com-series/components/ComLeftMenuShort.vue";
 import CoreUserNoticeDropMenu from "@/views/core/components/public/CoreUserNoticeDropMenu.vue";
 import UserAuthService from "@/views/auth/service/UserAuthService.ts";
-import StdBreadcrumb from "@/soa/std-series/StdBreadcrumb.vue";
+import ComBreadcrumb from "@/soa/com-series/ComBreadcrumb.vue";
 
 const route = useRoute();
 
