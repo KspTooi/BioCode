@@ -1,25 +1,30 @@
 import flowableDescriptor from "@/views/qf/sfc_private/flowable-designer/flowableDescriptor.json";
 import biocDescriptor from "@/views/qf/sfc_private/flowable-designer/biocDescriptor.json";
+import QfeDescriptor from "@/views/qf/sfc_private/flowable-designer/QfeDescriptor.json";
+
+/** QFE 扩展命名空间 URI，与 qfeDescriptor.json、后端 QfeVarsModel.NS_URI 一致 */
+export const QFE_NS_URI = "quick_flow_extstion";
+
+/** QFE 扩展命名空间前缀 */
+export const QFE_NS_PREFIX = "qfe";
+
+const FLOWABLE_NS = "http://flowable.org/bpmn";
 
 export function getFlowableModdleExtensions(): Record<string, Record<string, unknown>> {
   return {
     flowable: flowableDescriptor as unknown as Record<string, unknown>,
     // 注册 bioc 命名空间描述符，使 moddle 能正确解析 bioc:fill / bioc:stroke 属性
     bioc: biocDescriptor as unknown as Record<string, unknown>,
+    // 注册 qfe 命名空间描述符，使 moddle 能正确解析 qfe:utAprKind 等扩展属性
+    qfe: QfeDescriptor as unknown as Record<string, unknown>,
   };
 }
-
-const FLOWABLE_NS = "http://flowable.org/bpmn";
 
 function escapeXml(text: string): string {
   if (!text) {
     return "";
   }
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
 /** 生成含开始事件的空白可执行流程（与 moddle 中 flow 命名空间一致） */
@@ -31,6 +36,7 @@ export function buildEmptyFlowableDiagram(processId: string, processName: string
   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
   xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:qfe="${QFE_NS_URI}"
   xmlns:flowable="${FLOWABLE_NS}"
   id="Definitions_${processId}"
   targetNamespace="${FLOWABLE_NS}">

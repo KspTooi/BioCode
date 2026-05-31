@@ -12,6 +12,8 @@ import type { GetQfModelGroupListVo } from "@/views/qf/api/QfModelGroupApi.ts";
 import QfModelGroupApi from "@/views/qf/api/QfModelGroupApi.ts";
 import { Result } from "@/commons/model/Result";
 import { ElMessage, ElMessageBox } from "element-plus";
+import type { GetQfBizFormListVo } from "../api/QfBizFormApi";
+import QfBizFormApi from "../api/QfBizFormApi";
 
 /**
  * 模态框模式类型
@@ -169,19 +171,33 @@ export default {
     const modalForm = reactive<GetQfModelDetailsVo>({
       id: "",
       groupId: "",
+      formId: "",
       name: "",
       code: null,
       bpmnXml: "",
       seq: 0,
     });
 
+    //模型表单
+    const modelFormList = ref<GetQfBizFormListVo[]>([]);
+
     /**
      * 加载分组列表
      */
     const loadGroupList = async (): Promise<void> => {
-      const result = await QfModelGroupApi.getQfModelGroupList({ pageNum: 1, pageSize: 999 });
+      const result = await QfModelGroupApi.getQfModelGroupList({ pageNum: 1, pageSize: 10000 });
       if (Result.isSuccess(result)) {
         groupList.value = result.data;
+      }
+    };
+
+    /**
+     * 加载模型表单列表
+     */
+    const loadModelFormList = async (): Promise<void> => {
+      const result = await QfBizFormApi.getQfBizFormList({ pageNum: 1, pageSize: 10000 });
+      if (Result.isSuccess(result)) {
+        modelFormList.value = result.data;
       }
     };
 
@@ -212,11 +228,16 @@ export default {
     const openModal = async (mode: ModalMode, row: GetQfModelListVo | null): Promise<void> => {
       modalMode.value = mode;
 
+      //加载模型分组列表
       await loadGroupList();
+
+      //加载模型表单列表
+      await loadModelFormList();
 
       if (mode === "add") {
         modalForm.id = "";
         modalForm.groupId = "";
+        modalForm.formId = "";
         modalForm.name = "";
         modalForm.code = "";
         modalForm.bpmnXml = "";
@@ -235,6 +256,7 @@ export default {
           const details = await QfModelApi.getQfModelDetails({ id: row.id });
           modalForm.id = details.id;
           modalForm.groupId = details.groupId;
+          modalForm.formId = details.formId ?? "";
           modalForm.name = details.name;
           modalForm.code = details.code;
           modalForm.bpmnXml = details.bpmnXml;
@@ -256,6 +278,7 @@ export default {
       modalFormRef.value.resetFields();
       modalForm.id = "";
       modalForm.groupId = "";
+      modalForm.formId = "";
       modalForm.name = "";
       modalForm.code = "";
       modalForm.bpmnXml = "";
@@ -282,6 +305,7 @@ export default {
         try {
           const addDto: AddQfModelDto = {
             groupId: modalForm.groupId || undefined,
+            formId: modalForm.formId || undefined,
             name: modalForm.name,
             code: modalForm.code,
             seq: modalForm.seq,
@@ -309,6 +333,7 @@ export default {
           const editDto: EditQfModelDto = {
             id: modalForm.id,
             groupId: modalForm.groupId || undefined,
+            formId: modalForm.formId || undefined,
             name: modalForm.name,
             seq: modalForm.seq,
           };
@@ -331,6 +356,7 @@ export default {
       modalForm,
       modalRules,
       groupList,
+      modelFormList,
       openModal,
       resetModal,
       submitModal,

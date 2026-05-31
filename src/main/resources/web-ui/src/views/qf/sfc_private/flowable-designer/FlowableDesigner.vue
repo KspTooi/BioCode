@@ -44,9 +44,18 @@
           {{ modelStatus.valid ? "模型有效" : `${modelStatus.issues.length} 项问题` }}
         </span>
       </el-tooltip>
-      <span class="flowable-designer-hint ml8">
+      <el-divider direction="vertical" />
+      <span class="flowable-designer-hint ml4">
         <el-icon><Cpu /></el-icon>
-        Flowable（flow 命名空间）
+        Bpmn2
+      </span>
+      <span class="flowable-designer-hint ml4">
+        <el-icon><Cpu /></el-icon>
+        Flowable 扩展
+      </span>
+      <span class="flowable-designer-hint ml4">
+        <el-icon><Cpu /></el-icon>
+        QFE 扩展
       </span>
     </div>
 
@@ -69,7 +78,7 @@
       </pane>
       <pane min-size="20" size="30">
         <!-- <FlowablePropertyPanel :modeler="modeler" /> -->
-        <QfdPanel :modeler="modeler" />
+        <QfdPanel :modeler="modeler" :form-id="formId ?? undefined" :readonly="readonly" />
       </pane>
     </splitpanes>
   </div>
@@ -98,16 +107,17 @@ import "bpmn-js/dist/assets/diagram-js.css";
 import "bpmn-js/dist/assets/bpmn-font/css/bpmn.css";
 import { useFlowableModeler } from "@/views/qf/sfc_private/flowable-designer/UseFlowableModeler";
 import QfdPanel from "@/views/qf/sfc_private/flowable-designer/components/QfdPanel.vue";
+import type { GetQfModelDetailsVo } from "@/views/qf/api/QfModelApi.ts";
 
 const props = withDefaults(
   defineProps<{
-    /** 初始 BPMN XML，空则新建空白流程 */
-    initialXml?: string;
-    /** 是否只读 */
-    readonly?: boolean;
+    initialXml?: string; //初始 BPMN XML，空则新建空白流程
+    readonly?: boolean; //是否只读
+    formId?: string; //绑定的表单ID
   }>(),
   {
     initialXml: "",
+    formId: null,
   }
 );
 
@@ -335,9 +345,12 @@ onBeforeUnmount((): void => {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background-color: #f0f2f5;
+  background-color: #f5f3f0;
   padding: 4px 8px;
   border-radius: 4px;
+  cursor: default;
+  user-select: none;
+  color: #e67315;
 }
 .flowable-designer-file {
   display: none;

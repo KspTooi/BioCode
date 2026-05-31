@@ -31,6 +31,12 @@
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
         <el-table-column prop="name" label="模型名称" min-width="120" show-overflow-tooltip />
         <el-table-column prop="code" label="模型编码" min-width="120" show-overflow-tooltip />
+        <el-table-column label="业务表单" min-width="140" show-overflow-tooltip>
+          <template #default="scope">
+            <span v-if="scope.row.bizFormName && scope.row.bizFormCode">{{ scope.row.bizFormName }}({{ scope.row.bizFormCode }})</span>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="version" label="模型版本号" min-width="60" show-overflow-tooltip align="center">
           <template #default="scope">
             <el-tag>V{{ scope.row.version }}</el-tag>

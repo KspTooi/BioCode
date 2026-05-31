@@ -22,6 +22,8 @@ export interface GetQfModelListVo {
   groupName: string; // 模型分组
   name: string; // 模型名称
   code: string; // 模型编码
+  bizFormName: string; // 关联业务表单名称
+  bizFormCode: string; // 关联业务表单编码
   version: number; // 模型版本号
   status: number; // 模型状态 0:草稿 1:已部署 2:历史
   seq: number; // 排序
@@ -34,6 +36,7 @@ export interface GetQfModelListVo {
 export interface GetQfModelDetailsVo {
   id: string; // 主键ID
   groupId: string; // 模型分组ID
+  formId: string; // 关联表单ID
   name: string; // 模型名称
   code: string; // 模型编码
   bpmnXml: string; // 模型BPMN XML
@@ -45,6 +48,7 @@ export interface GetQfModelDetailsVo {
  */
 export interface AddQfModelDto {
   groupId?: string; // 模型分组ID
+  formId?: string; // 关联表单ID
   name: string; // 模型名称
   code: string; // 模型编码
   seq: number; // 排序
@@ -56,6 +60,7 @@ export interface AddQfModelDto {
 export interface EditQfModelDto {
   id: string; // 主键ID
   groupId?: string; // 模型分组ID
+  formId?: string; // 关联表单ID
   name: string; // 模型名称
   seq: number; // 排序
 }

@@ -92,6 +92,13 @@ export default {
       routePc: "",
       routeMobile: "",
       dataId: "",
+      engProcId: "",
+      allowComment: 0,
+      allowActions: [
+        { kind: 0, name: "同意" },
+        { kind: 1, name: "驳回" },
+      ],
+      allowEditFields: [],
     });
 
     const modalRules: FormRules = {};

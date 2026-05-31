@@ -73,11 +73,16 @@ export default {
      */
     const removeList = async (row: GetQfBizFormListVo): Promise<void> => {
       try {
-        await ElMessageBox.confirm("确定删除该条记录吗？", "提示", {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning",
-        });
+        await ElMessageBox.confirm(
+          '确定删除该业务表单吗？<div style="color: #F56C6C; margin-top: 8px; line-height: 1.5;">注意：删除表单会连带删除其下所有字段配置，且不可恢复。</div>',
+          "提示",
+          {
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+            type: "warning",
+            dangerouslyUseHTMLString: true,
+          }
+        );
       } catch {
         return;
       }
@@ -124,6 +129,7 @@ export default {
       routeMobile: "",
       status: 0,
       seq: 0,
+      summaryTemplate: "",
     });
 
     /**
@@ -144,13 +150,17 @@ export default {
         { max: 80, message: "表单图标长度不能超过80个字符", trigger: "blur" },
       ],
       tableName: [
-        { required: true, message: "请输入物理表名", trigger: "blur" },
-        { max: 200, message: "物理表名长度不能超过200个字符", trigger: "blur" },
+        { required: true, message: "物理表名不能为空", trigger: "blur" },
+        { max: 200, message: "物理表名不能超过200个字符", trigger: "blur" },
       ],
-      routePc: [{ max: 512, message: "PC端路由名长度不能超过512个字符", trigger: "blur" }],
-      routeMobile: [{ max: 512, message: "移动端路由名长度不能超过512个字符", trigger: "blur" }],
-      status: [{ required: true, message: "请输入状态 0:正常 1:停用", trigger: "blur" }],
-      seq: [{ required: true, message: "请输入排序", trigger: "blur" }],
+      routePc: [{ max: 512, message: "PC端路由名最多512个字符", trigger: "blur" }],
+      routeMobile: [{ max: 512, message: "移动端路由名最多512个字符", trigger: "blur" }],
+      status: [
+        { required: true, message: "状态不能为空", trigger: "change" },
+        { type: "number", min: 0, max: 1, message: "状态只能为0(正常)或1(停用)", trigger: "change" },
+      ],
+      seq: [{ required: true, message: "排序不能为空", trigger: "blur" }],
+      summaryTemplate: [{ max: 200, message: "摘要模板不能超过200个字符", trigger: "blur" }],
     };
 
     /**
@@ -172,6 +182,7 @@ export default {
         modalForm.routeMobile = "";
         modalForm.status = 0;
         modalForm.seq = 0;
+        modalForm.summaryTemplate = "";
         modalVisible.value = true;
         return;
       }
@@ -190,10 +201,11 @@ export default {
           modalForm.formType = details.formType;
           modalForm.icon = details.icon;
           modalForm.tableName = details.tableName;
-          modalForm.routePc = details.routePc;
-          modalForm.routeMobile = details.routeMobile;
+          modalForm.routePc = details.routePc ?? "";
+          modalForm.routeMobile = details.routeMobile ?? "";
           modalForm.status = details.status;
           modalForm.seq = details.seq;
+          modalForm.summaryTemplate = details.summaryTemplate ?? "";
           modalVisible.value = true;
         } catch (error: any) {
           ElMessage.error(error.message);
@@ -219,6 +231,7 @@ export default {
       modalForm.routeMobile = "";
       modalForm.status = 0;
       modalForm.seq = 0;
+      modalForm.summaryTemplate = "";
     };
 
     /**
@@ -249,6 +262,7 @@ export default {
             routeMobile: modalForm.routeMobile,
             status: modalForm.status,
             seq: modalForm.seq,
+            summaryTemplate: modalForm.summaryTemplate,
           };
           await QfBizFormApi.addQfBizForm(addDto);
           ElMessage.success("新增成功");
@@ -280,6 +294,7 @@ export default {
             routeMobile: modalForm.routeMobile,
             status: modalForm.status,
             seq: modalForm.seq,
+            summaryTemplate: modalForm.summaryTemplate,
           };
           await QfBizFormApi.editQfBizForm(editDto);
           ElMessage.success("编辑成功");

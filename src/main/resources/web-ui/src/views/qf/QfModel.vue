@@ -45,6 +45,12 @@
         </el-table-column>
         <el-table-column prop="name" label="模型名称" min-width="120" show-overflow-tooltip />
         <el-table-column prop="code" label="模型编码" min-width="120" show-overflow-tooltip />
+        <el-table-column label="业务表单" min-width="140" show-overflow-tooltip>
+          <template #default="scope">
+            <span v-if="scope.row.bizFormName && scope.row.bizFormCode">{{ scope.row.bizFormName }}({{ scope.row.bizFormCode }})</span>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="version" label="模型版本号" min-width="75" show-overflow-tooltip align="center">
           <template #default="scope">
             <el-tag>V{{ scope.row.version }}</el-tag>
@@ -153,6 +159,7 @@
             <el-option v-for="group in groupList" :key="group.id" :label="group.name" :value="group.id" />
           </el-select>
         </el-form-item>
+
         <el-form-item label="模型名称" prop="name">
           <el-input
             v-model="modalForm.name"
@@ -172,6 +179,18 @@
             show-word-limit
             :disabled="modalMode === 'edit' || modalMode === 'view'"
           />
+        </el-form-item>
+        <el-form-item label="业务表单" prop="formId">
+          <el-select
+            v-model="modalForm.formId"
+            placeholder="请选择业务表单"
+            clearable
+            style="width: 100%"
+            filterable
+            :disabled="modalMode === 'view'"
+          >
+            <el-option v-for="form in modelFormList" :key="form.id" :label="`${form.name}(${form.code})`" :value="form.id" />
+          </el-select>
         </el-form-item>
         <el-form-item label="排序" prop="seq">
           <el-input
@@ -224,8 +243,18 @@ const { listForm, listData, listTotal, listLoading, loadList, resetList, removeL
 const modalFormRef = ref<FormInstance>();
 
 // 模态框打包
-const { modalVisible, modalLoading, modalMode, modalForm, modalRules, groupList, openModal, resetModal, submitModal } =
-  QfModelService.useQfModelModal(modalFormRef, loadList);
+const {
+  modalVisible,
+  modalLoading,
+  modalMode,
+  modalForm,
+  modalRules,
+  groupList,
+  modelFormList,
+  openModal,
+  resetModal,
+  submitModal,
+} = QfModelService.useQfModelModal(modalFormRef, loadList);
 
 onMounted(async () => {});
 </script>

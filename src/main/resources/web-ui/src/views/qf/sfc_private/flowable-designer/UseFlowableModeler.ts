@@ -237,13 +237,17 @@ export function useFlowableModeler(containerRef: Ref<HTMLElement | null>, readon
   };
 
   const zoomFit = (): void => {
-    const m = modeler.value;
-    if (!m) {
-      return;
+    try {
+      const m = modeler.value;
+      if (!m) {
+        return;
+      }
+      const canvas = m?.get("canvas") as { zoom: (v: string, v2: string) => void };
+      defaultZoom.value = 1;
+      canvas?.zoom("fit-viewport", "auto");
+    } catch (error) {
+      console.error(error);
     }
-    const canvas = m.get("canvas") as { zoom: (v: string, v2: string) => void };
-    defaultZoom.value = 1;
-    canvas.zoom("fit-viewport", "auto");
   };
 
   const undo = (): void => {

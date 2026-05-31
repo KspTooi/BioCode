@@ -1,3 +1,11 @@
+<!--
+ * @Description: 
+ * @Author: luohangyu osv6249@dingtalk.com
+ * @Date: 2026-04-30 16:49:45
+ * @LastEditors: luohangyu osv6249@dingtalk.com
+ * @LastEditTime: 2026-05-13 14:04:51
+ * @FilePath: \whole-process-services\wproc-main\src\main\resources\web-ui\src\views\qf\sfc_private\flowable-designer\components\QfdPanelExtensionProperties.vue
+-->
 <template>
   <div class="qfd-extension-properties">
     <div class="qfd-section-head">

@@ -45,9 +45,19 @@
               link
               type="primary"
               size="small"
-              @click="onApproveRoute(scope.row)"
+              @click="onApproveRoute(scope.row, 'approve')"
             >
               办理
+            </el-button>
+            <el-button
+              v-if="scope.row.status === 1"
+              :icon="ViewIcon"
+              link
+              type="success"
+              size="small"
+              @click="onApproveRoute(scope.row, 'view')"
+            >
+              查看
             </el-button>
             <!-- <el-button
               v-if="scope.row.status === 0"
@@ -59,7 +69,7 @@
             >
               审批
             </el-button> -->
-            <el-button :icon="DeleteIcon" link type="danger" size="small" @click="removeList(scope.row)"> 删除 </el-button>
+            <!-- <el-button :icon="DeleteIcon" link type="danger" size="small" @click="removeList(scope.row)"> 删除 </el-button> -->
           </template>
         </el-table-column>
       </el-table>
@@ -72,34 +82,30 @@
 
 <script setup lang="ts">
 import { ref, markRaw } from "vue";
-import { Edit, Delete } from "@element-plus/icons-vue";
+import { Edit, View } from "@element-plus/icons-vue";
 import QfTodoService from "@/views/qf/service/QfTodoService.ts";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
 import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
 import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
 import type { GetQfTodoListVo } from "@/views/qf/api/QfTodoApi.ts";
-import QfApproveModal from "@/views/qf/public/QfApproveModal.vue";
 import ComDirectRouteContext from "@/soa/com-series/service/ComDirectRouteContext";
 
 const EditIcon = markRaw(Edit);
-const DeleteIcon = markRaw(Delete);
+const ViewIcon = markRaw(View);
 
 const approveModalVisible = ref(false);
 const approveTodoId = ref<string | null>(null);
-
-const onApprove = (row: GetQfTodoListVo): void => {
-  approveTodoId.value = row.id;
-  approveModalVisible.value = true;
-};
 
 const { cdrcRedirectWithNewTab } = ComDirectRouteContext.useDirectRouteContext();
 
 /**
  * 跳转至流程办理页面
  * @param row 待办事项
+ * @param mode 操作模式 "approve" | "view"
  */
-const onApproveRoute = (row: GetQfTodoListVo): void => {
+const onApproveRoute = (row: GetQfTodoListVo, mode: "approve" | "view"): void => {
   cdrcRedirectWithNewTab("qfApprove", row.id, "流程办理", {
+    _mode: mode,
     ...row,
   });
 };

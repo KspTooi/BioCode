@@ -2,6 +2,7 @@
   <div class="flowable-property-panel">
     <div class="flowable-property-panel__header">
       <div class="flowable-property-panel__title">{{ panelTitle }}</div>
+      <el-tag v-if="readonly" type="warning" size="small">只读模式</el-tag>
     </div>
     <div v-if="!modeler" class="flowable-property-panel__empty">设计器未就绪</div>
     <div v-else-if="bo" class="flowable-property-panel__content">
@@ -74,7 +75,7 @@
           </el-collapse-item>
 
           <!-- 用户任务：审批与多实例 -->
-          <el-collapse-item v-if="elementType === 'bpmn:UserTask'" name="multiInstance">
+          <el-collapse-item v-show="false" v-if="elementType === 'bpmn:UserTask'" name="multiInstance">
             <template #title>
               <div class="collapse-title">
                 <el-icon><Grid /></el-icon>
@@ -82,6 +83,28 @@
               </div>
             </template>
             <QfdPanelMultiInstance :modeler="modeler" :element="targetElement" />
+          </el-collapse-item>
+
+          <!-- 用户任务：审批与多实例 (QFE) -->
+          <el-collapse-item v-if="elementType === 'bpmn:UserTask'" name="multiInstanceQfe">
+            <template #title>
+              <div class="collapse-title">
+                <el-icon><Grid /></el-icon>
+                <span>审批与多实例 (QFE)</span>
+              </div>
+            </template>
+            <QfdPanelMultiInstanceQfe :modeler="modeler" :element="targetElement" />
+          </el-collapse-item>
+
+          <!-- 用户任务：表单配置 -->
+          <el-collapse-item v-if="elementType === 'bpmn:UserTask'" name="formConfig">
+            <template #title>
+              <div class="collapse-title">
+                <el-icon><Document /></el-icon>
+                <span>表单配置</span>
+              </div>
+            </template>
+            <QfdPanelForm :modeler="modeler" :element="targetElement" :form-id="formId" />
           </el-collapse-item>
 
           <!-- 用户任务：任务监听器 -->
@@ -158,7 +181,20 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, toRef } from "vue";
-import { Bell, ChatDotRound, CirclePlus, Connection, Flag, Grid, InfoFilled, Select, Setting, Timer, VideoPlay } from "@element-plus/icons-vue";
+import {
+  Bell,
+  ChatDotRound,
+  CirclePlus,
+  Connection,
+  Document,
+  Flag,
+  Grid,
+  InfoFilled,
+  Select,
+  Setting,
+  Timer,
+  VideoPlay,
+} from "@element-plus/icons-vue";
 import QfdPanelService from "@/views/qf/sfc_private/flowable-designer/service/QfdPanelService";
 import QfdPanelGeneral from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelGeneral.vue";
 import QfdPanelExecutionListeners from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelExecutionListeners.vue";
@@ -168,15 +204,27 @@ import QfdPanelUserTask from "@/views/qf/sfc_private/flowable-designer/component
 import QfdPanelTaskListeners from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelTaskListeners.vue";
 import QfdPanelStartEvent from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelStartEvent.vue";
 import QfdPanelMultiInstance from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelMultiInstance.vue";
+import QfdPanelMultiInstanceQfe from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelMultiInstanceQfe.vue";
+import QfdPanelForm from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelForm.vue";
 import QfdPanelSequenceFlow from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelSequenceFlow.vue";
 import QfdPanelProcess from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelProcess.vue";
 import QfdPanelMsgAndSignals from "@/views/qf/sfc_private/flowable-designer/components/QfdPanelMsgAndSignals.vue";
 
-const props = defineProps<{
-  modeler: unknown;
-}>();
+const props = withDefaults(
+  defineProps<{
+    modeler: unknown;
+    formId?: string; //绑定的表单ID
+    readonly?: boolean; //是否只读
+  }>(),
+  {
+    formId: undefined,
+    readonly: false,
+  }
+);
 
-const { targetElement, bo, elementType, panelTitle, activeNames, dispose } = QfdPanelService.useQfdPanel(toRef(props, "modeler"));
+const { targetElement, bo, elementType, panelTitle, activeNames, dispose } = QfdPanelService.useQfdPanel(
+  toRef(props, "modeler")
+);
 
 const ASYNC_TYPES = new Set([
   "bpmn:ServiceTask",
@@ -226,6 +274,10 @@ onBeforeUnmount(() => {
   box-shadow: -2px 0 8px rgba(0, 0, 0, 0.02);
 }
 .flowable-property-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   padding: 16px 20px;
   border-bottom: 1px solid var(--el-border-color-light);
   background-color: #fafafa;

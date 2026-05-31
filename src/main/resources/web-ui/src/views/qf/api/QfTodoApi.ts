@@ -24,6 +24,7 @@ export interface GetQfTodoListVo {
   summary: string; // 摘要(如：张三提交的 5000 元报销)
   status: number; // 待办状态 0:待办 1:已办
   createTime: string; // 任务到达时间
+  _mode: "approve" | "view"; // 操作模式 "approve" | "view"
 }
 
 /**
@@ -38,6 +39,11 @@ export interface GetQfTodoDetailsVo {
   routePc: string; // PC端路由名
   routeMobile: string; // 移动端路由名
   dataId: string; // 物理表数据主键ID
+  engProcId: string; // 引擎流程ID
+  allowComment: number; // 允许填写审批意见 0:不允许 1:允许
+  // 操作类型 0:同意 1:驳回 2:转交 3:驳回节点
+  allowActions: { kind: number; name: string }[];
+  allowEditFields: string[]; // 允许编辑的字段
 }
 
 /**
@@ -52,8 +58,10 @@ export interface EditQfTodoDto {
  */
 export interface ApproveQfTodoDto {
   id: string; // 主键ID
-  action: number; // 操作 0:同意 1:驳回
+  action: number; // 操作 0:同意 1:驳回 2:转交 3:驳回节点
   comment: string; // 审批意见
+  nodeId: string; // 节点ID
+  memberId: string; // 办理成员ID(用于转交，只能是用户ID)
 }
 
 /**

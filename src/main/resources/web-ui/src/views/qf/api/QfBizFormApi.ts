@@ -38,10 +38,11 @@ export interface GetQfBizFormDetailsVo {
   formType: number; // 表单类型 0:手搓表单 1:动态表单
   icon: string; // 表单图标
   tableName: string; // 物理表名
-  routePc: string; // PC端路由名
-  routeMobile: string; // 移动端路由名
+  routePc?: string; // PC端路由名
+  routeMobile?: string; // 移动端路由名
   status: number; // 状态 0:正常 1:停用
   seq: number; // 排序
+  summaryTemplate?: string; // 摘要模板
 }
 
 /**
@@ -53,10 +54,11 @@ export interface AddQfBizFormDto {
   formType: number; // 表单类型 0:手搓表单 1:动态表单
   icon: string; // 表单图标
   tableName: string; // 物理表名
-  routePc: string; // PC端路由名
-  routeMobile: string; // 移动端路由名
+  routePc?: string; // PC端路由名
+  routeMobile?: string; // 移动端路由名
   status: number; // 状态 0:正常 1:停用
   seq: number; // 排序
+  summaryTemplate?: string; // 摘要模板
 }
 
 /**
@@ -68,10 +70,11 @@ export interface EditQfBizFormDto {
   formType: number; // 表单类型 0:手搓表单 1:动态表单
   icon: string; // 表单图标
   tableName: string; // 物理表名
-  routePc: string; // PC端路由名
-  routeMobile: string; // 移动端路由名
+  routePc?: string; // PC端路由名
+  routeMobile?: string; // 移动端路由名
   status: number; // 状态 0:正常 1:停用
   seq: number; // 排序
+  summaryTemplate?: string; // 摘要模板
 }
 
 export default {

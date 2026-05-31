@@ -1,0 +1,25 @@
+{
+  "name": "Quick Flow Extension",
+  "uri": "quick_flow_extstion",
+  "prefix": "qfe",
+  "xml": { "tagAlias": "lowerCase" },
+  "types": [
+    {
+      "name": "UserTaskExtension",
+      "isAbstract": true,
+      "extends": ["bpmn:UserTask"],
+      "properties": [
+        { "name": "utAprKind", "isAttr": true, "type": "String" },
+        { "name": "utAprMemberKind", "isAttr": true, "type": "String" },
+        { "name": "utAprMemberIds", "isAttr": true, "type": "String" },
+        { "name": "utAprMemberNames", "isAttr": true, "type": "String" },
+        { "name": "utAprMi", "isAttr": true, "type": "String" },
+        { "name": "utAprMiExpress", "isAttr": true, "type": "String" },
+        { "name": "utAprActions", "isAttr": true, "type": "String" },
+        { "name": "utAprActionNames", "isAttr": true, "type": "String" },
+        { "name": "utAprComment", "isAttr": true, "type": "String" },
+        { "name": "utFormAllowEditFields", "isAttr": true, "type": "String" }
+      ]
+    }
+  ]
+}

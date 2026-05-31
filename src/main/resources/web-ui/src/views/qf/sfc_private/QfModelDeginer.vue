@@ -1,6 +1,14 @@
 <template>
   <div v-loading="loading" class="qf-model-deginer-page w-full h-full">
-    <FlowableDesigner v-if="!loading" :initial-xml="initialXml" :readonly="readonly" @update:xml="onUpdateXml" @save="onSave" @exit="onExit" />
+    <FlowableDesigner
+      v-if="!loading"
+      :initial-xml="initialXml"
+      :readonly="readonly"
+      :form-id="formId"
+      @update:xml="onUpdateXml"
+      @save="onSave"
+      @exit="onExit"
+    />
   </div>
 </template>
 
@@ -17,6 +25,7 @@ const { cdrcReturn, getCdrcQuery, cdrcRedirect } = ComDirectRouteContext.useDire
 const initialXml = ref<string>("");
 const rows = ref<GetQfModelListVo | null>(null);
 const readonly = ref<boolean>(false);
+const formId = ref<string | null>(null);
 
 const loading = ref<boolean>(true);
 
@@ -37,6 +46,7 @@ onMounted(async () => {
     loading.value = true;
     const details = await QfModelApi.getQfModelDetails({ id: query.id });
     initialXml.value = details.bpmnXml;
+    formId.value = details.formId;
 
     //如果模型不是草稿状态，则只读
     if (query.status !== 0) {

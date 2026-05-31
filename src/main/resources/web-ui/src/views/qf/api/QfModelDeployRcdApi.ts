@@ -21,6 +21,8 @@ export interface GetQfModelDeployRcdListVo {
   modelId: string; // 模型ID
   name: string; // 模型名称
   code: string; // 模型编码
+  bizFormName: string; // 关联业务表单名称
+  bizFormCode: string; // 关联业务表单编码
   version: number; // 模型版本号
   status: number; // 部署状态 0:正常 1:部署失败 2:已挂起
   createTime: string; // 部署时间
