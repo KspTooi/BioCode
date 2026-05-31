@@ -40,9 +40,6 @@ public class QfModelDeployRcdController {
     @Autowired
     private QfModelDeployRcdService qfModelDeployRcdService;
 
-    @Autowired
-    private QfProcService qfProcService;
-
     @PreAuthorize("@auth.hasCode('qf:model:deploy:list')")
     @PostMapping("/getQfModelDeployRcdList")
     @Operation(summary = "查询流程模型部署列表")

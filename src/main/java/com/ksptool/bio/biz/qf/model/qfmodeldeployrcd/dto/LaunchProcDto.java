@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class LaunchQfProcessDto {
+public class LaunchProcDto {
 
     @NotBlank(message = "模型编码不能为空")
     private String code;

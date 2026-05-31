@@ -1,7 +1,7 @@
 package com.ksptool.bio.biz.qf.controller;
 
 import com.ksptool.assembly.entity.web.Result;
-import com.ksptool.bio.biz.qf.model.qfmodeldeployrcd.dto.LaunchQfProcessDto;
+import com.ksptool.bio.biz.qf.model.qfmodeldeployrcd.dto.LaunchProcDto;
 import com.ksptool.bio.biz.qf.model.qftodo.dto.GetProcessApproveFlowDto;
 import com.ksptool.bio.biz.qf.model.qftodo.dto.GetProcessApproveFlowRecordDto;
 import com.ksptool.bio.biz.qf.model.qftodo.dto.GetProcessNodeConfigsDto;
@@ -20,11 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import static com.ksptool.entities.Entities.assign;
 
 
 /**
@@ -51,15 +47,11 @@ public class QfProcController {
     @Autowired
     private QfProcService qfProcService;
 
-
-    @PreAuthorize("@auth.hasCode('qf:model:deploy:edit')")
-    @Operation(summary = "发起审批流程")
-    @PostMapping("/launchQfProcess")
-    public Result<String> launchQfProcess(@RequestBody @Valid LaunchQfProcessDto dto) throws Exception {
-        //把参数转换成Map
-        Map<String, String> datas = new HashMap<>();
-        assign(dto, datas);
-        String processInstanceId = qfProcService.launchProc(dto.getCode(), dto.getDataId(),datas);
+    @PreAuthorize("@auth.hasCode('qf:proc:launch')")
+    @Operation(summary = "发起审批流程(测试用)")
+    @PostMapping("/launchProc")
+    public Result<String> launchProc(@RequestBody @Valid LaunchProcDto dto) throws Exception {
+        String processInstanceId = qfProcService.launchProc(dto.getCode(), dto.getDataId(), null);
         return Result.success(processInstanceId);
     }
 
