@@ -1,0 +1,70 @@
+---
+description: SFC 与 Service 的职责边界：派生展示留在模板，状态与流程留在 Service，禁止过度抽象 computed/小函数
+globs:
+alwaysApply: false
+kind: CR
+---
+
+# SFC ↔ Service 边界（WebUiSfcServiceCR）
+
+> 术语以 [Glossary](../_meta/Glossary.mdc) 为准，骨架以 [RuleSkeleton](../_meta/RuleSkeleton.mdc) 为准。
+> SFC 内部规则见 [WebUiVueSfcMR](module/WebUiVueSfcMR.mdc)；Service 内部规则见 [WebUiServiceMR](module/WebUiServiceMR.mdc)。
+
+---
+
+## 1. 拓扑
+
+```
+SFC <template>  ──读取──▶  Service 暴露的 ref/reactive/computed
+SFC <template>  ──调用──▶  Service 暴露的 onXxx 方法
+SFC <script>    ──解构──▶  Service.useXxx() 返回对象
+Service         ──不感知──▶  DOM / 模板表达式 / 按钮样式 / 图标
+```
+
+涉及两类文件：`views/**/*.vue` 与 `views/**/service/*Service.ts`。
+
+---
+
+## 2. 边界契约（Must）
+
+1. 模板侧能用一次表达式（`===` / `??` / 三元 / 可选链）算出来的派生值，禁止在 Service 里用 `computed` 包一层后再暴露
+2. 仅供模板单点使用的纯映射函数（入参 → 字面量/枚举），禁止作为 Service 方法暴露；应内联为模板三元，或在数据源里预置字段（如 `actions[i].type`）
+3. Service 只允许暴露三类成员：①响应式状态（`ref` / `reactive` / `shallowRef`）②`onXxx` 用户动作 ③可复用 `computed`
+4. 暴露 `computed` 必须满足以下任一条件，否则改为模板表达式：①存在 ≥ 2 个消费点 ②依赖异步数据归一化 ③包含 ≥ 3 步运算/查找
+5. SFC 解构 Service 时，不得出现 `getXxxType` / `formatXxx` / `isXxx` 等纯展示辅助函数；这类逻辑要么模板内联，要么下沉到通用 util，不经过 Service
+6. Service 内"用户动作"必须一个动作一个 `onXxx`，禁止拆出仅供 `onXxx` 调用一次的中间桥接函数（如 `xxxActionByKind` + `onXxxByKind` + `onXxx` 三段式）
+7. SFC 不得直接读取 `props` 之外的领域数据再做派生判断；要派生先回 Service 加 `computed`（满足规则 4）或回数据源加字段
+
+---
+
+## 3. 数据与类型流
+
+| 类型/数据 | 定义方 | 消费方 | 流向 |
+| --- | --- | --- | --- |
+| 原始响应 `GetXxxDetailsVo` / `GetXxxListVo` | Api | Service `ref` / `reactive` | Api → Service |
+| 单点 UI 派生布尔/枚举/样式 | 模板表达式 | 模板自身 | 不经过 Service |
+| 多点复用派生 / 异步归一化结果 | Service `computed` | 多处模板 + 方法 | Service → SFC |
+| 数据驱动的样式/图标字段 | Api Vo / Service 初始化时回填 | 模板 `v-for` 直读 | 数据源 → SFC |
+
+---
+
+## 4. 命名对齐
+
+| 场景 | SFC 模板 | Service 暴露 |
+| --- | --- | --- |
+| 单点布尔判定 | `v-if="details?.allowComment === 1"` | 不暴露 |
+| 多点复用布尔（≥ 2 处） | `v-if="showComment"` | `showComment = computed(...)` |
+| 按钮样式/图标映射 | `:type="act.kind === 1 ? 'success' : 'danger'"` | 不暴露 |
+| 数据驱动样式 | `:type="act.type"` | `approveActions` 元素自带 `type` |
+| 用户动作 | `@click="onApprove(act.kind)"` | `onApprove(kind)` 单一入口 |
+| 表单提交 | `@click="submitModal"` | `submitModal` |
+
+---
+
+## 5. 反模式（Anti-patterns）
+
+- 错在 Service：为单点 `v-show`/`v-if` 写 `computed` —— 应内联到模板表达式
+- 错在 Service：暴露 `getApproveBtnType(kind)` 等纯字面量映射 —— 应模板三元，或在数据源元素带 `type` 字段
+- 错在 SFC：模板出现多步条件链 + 字面量映射的长表达式 —— 应下沉为数据源字段，而不是回填到 Service 当 `computed`
+- 错在 Service：把单一用户动作拆成 `actionByKind` + `onXxxByKind` + `onXxx` 三段中间函数 —— 应合并为单一 `onXxx(kind)`，内部局部完成映射，不向 SFC 暴露中间层
+- 错在 SFC：解构出 `getXxxType` / `formatXxx` / `isXxx` 等辅助 —— Service 不应导出此类成员

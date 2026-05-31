@@ -43,6 +43,10 @@
 
 @.cursor/rules/web-service/module/WebServiceRepositoryMR.mdc
 
+## 后端方法尺度与控制流规范（**/*.java）
+
+@.cursor/rules/web-service/module/WebServiceMethodMR.mdc
+
 ## 前端通用规范（*.ts / *.js / *.vue）
 
 @.cursor/rules/web-ui/WebUI.mdc
@@ -55,10 +59,22 @@
 
 @.cursor/rules/web-ui/WebUIService.mdc
 
+## 前端 SFC↔Service 边界规范（*.vue 与 service/*Service.ts）
+
+@.cursor/rules/web-ui/WebUiSfcServiceCR.mdc
+
 ## 选择器组件 Skill
 
 @.cursor/skills/web-ui/org-selector/SKILL.md
 @.cursor/skills/web-ui/user-selector/SKILL.md
+
+## 组件 Props 定义 Skill
+
+@.cursor/skills/web-ui/component-props/SKILL.md
+
+## SOA 通用组件 Skill
+
+@.cursor/skills/web-ui/com-seq-fixer/SKILL.md
 
 ## 布局管理器 Skill
 

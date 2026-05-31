@@ -50,6 +50,12 @@ Service 文件是本模块的**业务逻辑层**，封装响应式状态与 UI �
 10. 删除前必须 `ElMessageBox.confirm` 二次确认；用户取消 catch 后直接 `return`
 11. `submitModal` 流程固定：`validate → 构造 Dto → 调 Api → ElMessage.success → reloadCallback → modalVisible = false`
 12. 禁用 `else` / `switch`，短路优先；ID 字段转 `string`（`String(row.id)`）
+13. 仅本函数内使用一次的小工具（≤ 5 行、无副作用），必须就地内联，禁止提为模块级常量或独立函数
+14. 暴露的 `computed` 必须满足 ≥ 2 个消费点、含异步归一化、或 ≥ 3 步运算之一；单点派生留给模板表达式
+15. 禁止暴露 `getXxxType` / `formatXxx` / `isXxx` 等纯字面量映射函数给 SFC；内联到模板，或在数据源元素带字段，或下沉到通用 util
+16. 单一用户动作只暴露一个 `onXxx`，禁止拆出仅被 `onXxx` 调用一次的中间桥接函数
+17. **每个 `useXxx` 与其暴露的 `onXxx` / `loadXxx` / `submitXxx` 等方法必须有 JSDoc**：首行一句话写意图（"做什么 / 何时触发 / 副作用"），`useXxx` 接收 props/ref 入参时必须列 `@param`；模块级辅助函数（如 `approveActionByKind`）若保留也必须有 JSDoc；纯赋值箭头与 watch 回调可省
+18. JSDoc 只写**意图**与**约束**，禁止复述函数名或参数名；禁止"`// 调用 Api`"等流水账
 
 ---
 
@@ -337,6 +343,26 @@ useXxxModal() {
 }
 ```
 
+```ts
+// ❌ 单点派生被包成 computed 暴露
+const showComment = computed(() => props.details?.allowComment === 1);
+// → 模板里直接 v-show="details?.allowComment === 1"
+```
+
+```ts
+// ❌ 纯字面量映射被抽成 Service 方法
+const getApproveBtnType = (k: number) => (k === 1 ? "success" : "danger");
+// → 模板 :type="act.kind === 1 ? 'success' : 'danger'"，或 actions[i] 自带 type 字段
+```
+
+```ts
+// ❌ 单一动作被切成三段中间函数
+const actionByKind = (k) => (k === 0 ? 1 : k === 1 ? 0 : null);
+const onApproveByKind = (k) => onApprove(actionByKind(k)!);
+const onApprove = async (a) => { ... };
+// → 合并为单一 onApprove(kind)，内部局部映射，不暴露中间层
+```
+
 ---
 
 ## 6. 速查（Cheat Sheet）
@@ -374,3 +400,13 @@ useXxxModal() {
 | API 调用失败      | 独立 `try/catch`，`ElMessage.error(error.message)` |
 | 表单校验失败      | `try { await validate() } catch { return }`        |
 | loading 收尾      | 有 finally 用 `finally {}`；无则前后手动设置       |
+
+### 派生值暴露决策
+
+| 派生值类型 | 消费点数 | 处理方式 |
+| --- | --- | --- |
+| 一次表达式可算（`===` / `??` / 三元 / 可选链） | 1 处 | 模板内联，**不**进 Service |
+| 同样一次表达式可算 | ≥ 2 处 | 进 Service `computed` 暴露 |
+| 含异步数据归一化 / ≥ 3 步运算 | 任意 | 进 Service `computed` 暴露 |
+| 纯字面量映射（入参 → "success" / "danger" 等） | 任意 | 模板三元 或 数据源带字段，**不**写成 Service 方法 |
+| 单次用户动作的中间桥接 | 仅 1 处调用 | 内联进 `onXxx`，**不**单独定义 |

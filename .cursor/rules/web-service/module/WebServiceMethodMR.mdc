@@ -1,0 +1,298 @@
+---
+description: Java 方法尺度与控制流：方法抽取四问、if-return 守卫优先、嵌套深度上限 2、禁碎拆禁 else
+globs: **/*.java
+alwaysApply: false
+kind: MR
+---
+
+# Java 方法尺度与控制流（MR）
+
+> 术语以 [Glossary](../../_meta/Glossary.mdc) 为准，骨架以 [RuleSkeleton](../../_meta/RuleSkeleton.mdc) 为准。
+
+---
+
+## 1. 职责
+
+约束 Java 方法的**抽取尺度**与**控制流形态**，让生成的代码默认走"线性顺序流程 + 早返回守卫"路线，避免两类常见反模式：
+
+1. 过度碎拆（一次性 private helper）
+2. 深层嵌套 / `else` / `switch`
+
+适用：所有 `src/main/java/**/*.java`（Service / Listener / Tools / Utils / Controller 内的私有与包级方法均受约束）。
+
+**不做什么**：不约束 public API 签名（各层 MR 职责）、不约束事务/权限/异步等架构层拆分。
+
+---
+
+## 2. 文件骨架
+
+本规则仅约束**方法体内部形态**，不约束文件结构；文件结构归各层 MR。
+
+---
+
+## 3. 硬性规则（Must）
+
+1. **方法抽取四问**：仅满足任一条件才允许抽取私有方法，否则必须内联：①已被 ≥ 2 处调用；②屏蔽 ≥ 1 个第三方 API/异常 quirk/资源生命周期；③将宿主方法认知复杂度从"高"降至"中"以下；④跨事务/权限/异步/缓存运行时边界
+2. **枚举 → 字面量映射**禁止在调用类抽 `private static` helper，必须下沉到枚举字段或静态 `Map`
+3. **分支控制流优先级**（按序穷举）：① `if-return` 早退 → ② `if-continue` / `if-throw` → ③ 三元一行 → ④ 平铺 `if { ... }` 后跟主体；禁止 `else` / `else if` / `switch`
+4. **嵌套深度上限 2**：方法体内 `if` / `for` / `while` / `try` 任意控制结构嵌套深度 > 2 时，必须用守卫展平为 ≤ 2
+5. **方法长度阈值**：Controller 软 30 / 硬 50；Service 业务方法软 150 / 硬 250；Listener / Handler 软 200 / 硬 300；Tools / Utils 单方法软 80 / 硬 150。超软上限优先用空行 + `//---- 区段名 ----` 分段，**不抽 helper**；超硬上限按四问重新评估
+6. 优先使用 Apache Commons Lang3 / Guava 等现成工具（如 `NumberUtils.toLong` / `StringUtils.isBlank` / `Objects.requireNonNullElse`），不为已有等价功能写 helper
+7. "先面条后拆分"：判断是否构成抽象需要**全局视角**，AI 第一次生成时一律走线性顺序流程；抽取时机由"第二次出现重复"驱动，不由"长度"驱动
+8. **每个方法必须有 Javadoc**（含 `public` / `protected` / `private` / `static` / 包级、含 getter/setter 之外的所有方法）：首行一句话描述意图（"做什么 / 何时调用"），≥ 2 个参数时必须标 `@param`，返回值非 `void` 且语义不显而易见时必须标 `@return`，抛出受检异常时必须标 `@throws`；getter/setter 与 `@Override` 实现方法可省略
+9. 注释只写**意图**与**约束**（"为什么 / 何时调用 / 触发副作用 / 已知 quirk"），禁止复述方法名或参数名；禁止"`// 调用 save`"等流水账
+
+---
+
+## 4. 模板（Templates）
+
+### 方法级 Javadoc
+
+```java
+/**
+ * 任务重分配回调：作废旧待办并按新办理人重建一条待办
+ * <p>
+ * Flowable 在任务创建时若已设 assignee，会先发 TASK_CREATED 再发 TASK_ASSIGNED；
+ * 30 秒内的 TASK_ASSIGNED 视为初始注入，仅更新 memberId，不作废重建。
+ *
+ * @param event 引擎任务重分配事件
+ */
+@Override
+protected void taskAssigned(FlowableEngineEntityEvent event) { ... }
+```
+
+### 守卫式线性方法（推荐基线）
+
+```java
+/**
+ * 处理待办主流程：守卫边界 → 更新状态 → 发布事件
+ */
+public void handle(Task task) {
+    //---- 守卫：边界条件 ----
+    if (task == null) return;
+    var po = repo.find(task.getId());
+    if (po == null) return;
+    if (po.getStatus() != 0) return;
+
+    //---- 主体：happy path ----
+    var vars = service.getVariables(task.getId());
+    var memberType = QfMemberKinds.of(task).getMemberType();
+    po.setMemberType(memberType);
+    po.setUpdateTime(LocalDateTime.now());
+    repo.save(po);
+
+    //---- 事件发布 ----
+    var event = new TaskAssignedEvent(this);
+    assign(po, event);
+    aep.publishEvent(event);
+}
+```
+
+### 枚举字段替代调用类的 private static helper
+
+```java
+public enum QfMemberKinds {
+    USER(0),
+    GROUP(1),
+    DEPT(1),
+    ANYONE(2);
+
+    private final int memberType;
+
+    QfMemberKinds(int memberType) {
+        this.memberType = memberType;
+    }
+
+    public int getMemberType() {
+        return memberType;
+    }
+}
+```
+
+调用处：`var memberType = memberKind.getMemberType();`，不再需要 `resolveMemberType`。
+
+### 守卫展平嵌套
+
+```java
+// 改写前：嵌套 3 层
+for (var item : list) {
+    if (item != null) {
+        if (item.isActive()) {
+            process(item);
+        }
+    }
+}
+
+// 改写后：嵌套 1 层
+for (var item : list) {
+    if (item == null) continue;
+    if (!item.isActive()) continue;
+    process(item);
+}
+```
+
+### 现成工具替代解析 helper
+
+```java
+// ❌ 不要写
+private static Long parseAssignee(String s) {
+    if (StringUtils.isBlank(s) || !NumberUtils.isCreatable(s)) return null;
+    return Long.parseLong(s);
+}
+
+// ✅ 直接用 Apache Commons
+Long realMemberId = NumberUtils.toLong(task.getAssignee(), -1L);
+if (realMemberId <= 0) return;
+```
+
+### 超长方法分段（区段注释代替抽 helper）
+
+```java
+public void taskAssigned(FlowableEngineEntityEvent event) {
+    //---- 1. 守卫与状态判定 ----
+    ...
+
+    //---- 2. 作废旧待办 ----
+    ...
+
+    //---- 3. 读取流程变量 ----
+    ...
+
+    //---- 4. 构造新待办 ----
+    ...
+
+    //---- 5. 发布事件 ----
+    ...
+}
+```
+
+---
+
+## 5. 反模式（Anti-patterns）
+
+```java
+// ❌ 仅 1 处调用、3 行、无 quirk 屏蔽 → 必须内联或用现成工具
+private static Long parseAssignee(String s) {
+    if (StringUtils.isBlank(s) || !NumberUtils.isCreatable(s)) return null;
+    return Long.parseLong(s);
+}
+```
+
+```java
+// ❌ 枚举映射写成调用类 private static → 应下沉到枚举字段
+private static int resolveMemberType(QfMemberKinds kind) {
+    if (kind == QfMemberKinds.USER) return 0;
+    if (kind == QfMemberKinds.GROUP || kind == QfMemberKinds.DEPT) return 1;
+    return 0;
+}
+```
+
+```java
+// ❌ 线性流程被拆成 step1/step2/step3 互不复用 → 合并 + 区段注释
+private void handle() {
+    var a = step1();
+    var b = step2(a);
+    step3(b);
+}
+```
+
+```java
+// ❌ 用 else 包裹主体 → 应早退守卫
+if (ok) {
+    doMain();
+} else {
+    return;
+}
+```
+
+```java
+// ❌ 反向嵌套规避 else → 仍违反嵌套深度上限
+if (a) {
+    if (b) {
+        if (c) {
+            doMain();
+        }
+    }
+}
+```
+
+```java
+// ❌ switch 做枚举分发 → 用枚举字段或 if-return 序列
+switch (kind) {
+    case USER: return 0;
+    case GROUP: return 1;
+    default: return 0;
+}
+```
+
+```java
+// ❌ 方法无 Javadoc
+public void taskAssigned(FlowableEngineEntityEvent event) { ... }
+```
+
+```java
+// ❌ Javadoc 复述方法名 → 等于没写
+/** 处理任务分配 */
+public void taskAssigned(FlowableEngineEntityEvent event) { ... }
+```
+
+---
+
+## 6. 速查（Cheat Sheet）
+
+### 方法抽取判定
+
+| 触发条件 | 处置 |
+| --- | --- |
+| 调用点 = 1 且 ≤ 8 行 且 无抽象增益 | **内联** |
+| 调用点 ≥ 2 | 抽取 |
+| 屏蔽第三方 quirk / 异常转换 / 资源生命周期 | 可抽 |
+| 跨事务 / 权限 / 异步 / 缓存边界 | **必抽** |
+| 枚举 → 字面量映射 | 下沉到枚举字段，**不在调用类** |
+| Apache Commons / Guava 已有等价 | 直接用，**不抽不内联** |
+
+### 分支控制流优先级（按序穷举）
+
+| 优先级 | 写法 | 何时用 |
+| --- | --- | --- |
+| 1 | `if (!ok) return;` | 守卫边界条件 |
+| 2 | `if (skip) continue;` / `if (bad) throw ...;` | 循环跳过 / 异常退出 |
+| 3 | `var x = a ? b : c;` | 一行可算的派生值 |
+| 4 | 平铺 `if { ... }` 后跟主体 | 无法早退的真分支 |
+| ✗ | `else` / `else if` / `switch` | **永不使用** |
+
+### 方法长度阈值
+
+| 类型 | 软上限 | 硬上限 | 超软处置 | 超硬处置 |
+| --- | --- | --- | --- | --- |
+| Controller 方法 | 30 | 50 | 检查是否漏调 Service | 必拆 |
+| Service 业务方法 | 150 | 250 | 区段注释分段 | 按四问重审 |
+| Listener / Handler | 200 | 300 | 区段注释分段 | 按四问重审 |
+| Tools / Utils 单方法 | 80 | 150 | 区段注释分段 | 按四问重审 |
+
+### 嵌套深度
+
+| 深度 | 处置 |
+| --- | --- |
+| ≤ 2 | OK |
+| 3 | 守卫展平为 ≤ 2 |
+| ≥ 4 | 必须重构：先守卫展平，再按四问评估抽取 |
+
+### Javadoc 必填矩阵
+
+| 方法类型 | Javadoc | `@param` | `@return` | `@throws` |
+| --- | --- | --- | --- | --- |
+| public / protected / 包级 | **必填** | ≥ 2 参数必填 | 非 void 且非显而易见必填 | 受检异常必填 |
+| private / static helper | **必填**（首行意图即可） | 可省 | 可省 | 可省 |
+| getter / setter | 可省 | — | — | — |
+| `@Override` 实现 | 可省（语义不变） | — | — | — |
+| Lambda / 匿名内部类 | 可省 | — | — | — |
+
+### Javadoc 内容口诀
+
+| 该写 | 不该写 |
+| --- | --- |
+| 做什么（意图） | 复述方法名 |
+| 何时被调用 / 触发条件 | 复述参数名 |
+| 副作用（写库 / 发事件 / 改状态） | 复述代码逐行行为 |
+| 已知 quirk / 隐式约束（如 30 秒窗口） | "调用 save"、"返回结果"等流水账 |

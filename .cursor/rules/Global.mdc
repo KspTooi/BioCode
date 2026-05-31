@@ -30,6 +30,8 @@ alwaysApply: true
 - 后端 Controller 规范：@.cursor/rules/web-service/module/WebServiceControllerMR.mdc
 - 后端 Service 规范：@.cursor/rules/web-service/module/WebServiceServiceMR.mdc
 - 后端 Repository 规范：@.cursor/rules/web-service/module/WebServiceRepositoryMR.mdc
+- 后端方法尺度与控制流规范：@.cursor/rules/web-service/module/WebServiceMethodMR.mdc
 - 前端通用规范：@.cursor/rules/web-ui/WebUI.mdc
 - 前端 Api 规范：@.cursor/rules/web-ui/WebUiApi.mdc
 - 前端 Service 规范：@.cursor/rules/web-ui/WebUIService.mdc
+- 前端 SFC↔Service 边界规范：@.cursor/rules/web-ui/WebUiSfcServiceCR.mdc
