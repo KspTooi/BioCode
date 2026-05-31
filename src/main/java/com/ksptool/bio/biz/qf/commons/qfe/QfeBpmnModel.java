@@ -140,7 +140,7 @@ public class QfeBpmnModel {
             if (!(element instanceof UserTask ut)) {
                 continue;
             }
-            result.add(new QfeUserTask().of(ut));
+            result.add(QfeUserTask.of(ut));
         }
         return result;
     }
@@ -158,7 +158,7 @@ public class QfeBpmnModel {
         if (!(bpmnModel.getFlowElement(taskDefKey) instanceof UserTask ut)) {
             return null;
         }
-        return new QfeUserTask().of(ut);
+        return QfeUserTask.of(ut);
     }
 
     /**
@@ -221,7 +221,7 @@ public class QfeBpmnModel {
                 }
                 var source = bpmnModel.getFlowElement(sourceRef);
                 if (source instanceof UserTask ut) {
-                    result.add(new QfeUserTask().of(ut));
+                    result.add(QfeUserTask.of(ut));
                     continue;
                 }
                 if (source instanceof Gateway) {
