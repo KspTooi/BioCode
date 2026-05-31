@@ -243,11 +243,6 @@ onMounted(async () => {
   } finally {
     detailsLoading.value = false;
   }
-
-  if (!details.value?.routePc) {
-    ElMessage.error("待办详情不存在，或流程表单配置有误！");
-    closeTab(activeTabId.value);
-  }
 });
 </script>
 

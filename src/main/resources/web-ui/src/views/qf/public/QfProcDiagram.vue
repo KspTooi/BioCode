@@ -3,15 +3,15 @@
     <div class="diagram-legend">
       <span class="legend-item">
         <span class="legend-dot legend-current" />
-        当前节点
+        正在处理
       </span>
       <span class="legend-item">
         <span class="legend-dot legend-done" />
-        已完成
+        已处理
       </span>
       <span class="legend-item">
         <span class="legend-dot legend-pending" />
-        未审批
+        未处理
       </span>
     </div>
     <div v-loading="flowLoading" class="diagram-container">
