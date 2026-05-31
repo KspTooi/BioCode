@@ -191,12 +191,10 @@ async function bindStackListener(): Promise<void> {
 
 async function onSave(): Promise<void> {
   const xml = await saveXml(true);
-  console.log("11", xml);
   if (!xml) {
     return;
   }
   emit("save", xml);
-  //ElMessage.success("已生成流程 XML");
 }
 
 async function downloadXml(): Promise<void> {

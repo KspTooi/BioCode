@@ -4,31 +4,14 @@ import com.ksptool.bio.biz.qf.commons.qfe.QfeUserTask.AprKind;
 import com.ksptool.bio.biz.qf.commons.qfe.QfeUserTask.MemberKind;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.converter.BpmnXMLConverter;
-import org.flowable.bpmn.model.BpmnModel;
-import org.flowable.bpmn.model.Gateway;
-import org.flowable.bpmn.model.MultiInstanceLoopCharacteristics;
-import org.flowable.bpmn.model.SequenceFlow;
-import org.flowable.bpmn.model.UserTask;
+import org.flowable.bpmn.model.*;
 import org.flowable.common.engine.impl.util.io.StringStreamSource;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class QfeBpmnModel {
 
     private static final BpmnXMLConverter BPMN_XML_CONVERTER = new BpmnXMLConverter();
-
-    //多实例 collection 变量前缀(${qfMi_<节点ID>})，与 QfProcService 注入、QfMemberService 解析保持一致
-    private static final String MI_VAR_PREFIX = "qfMi_";
-
-    //多实例 elementVariable 约定名，每个实例的办理人写入该变量
-    private static final String MI_ELEMENT_VAR = "assignee";
 
     private BpmnModel bpmnModel;
 
@@ -121,6 +104,27 @@ public class QfeBpmnModel {
     public BpmnModel getBpmnModel() {
         return bpmnModel;
     }
+
+
+    /**
+     * 获取主流程第一个开始节点
+     *
+     * @return 开始节点
+     */
+    public StartEvent getStartEvent() {
+        if (bpmnModel == null || bpmnModel.getMainProcess() == null) {
+            return null;
+        }
+
+        var startEvents = bpmnModel.getMainProcess().findFlowElementsOfType(StartEvent.class);
+
+        if (startEvents.isEmpty()) {
+            return null;
+        }
+
+        return startEvents.get(0);
+    }
+
 
     /**
      * 获取主流程中所有 UserTask，按 BPMN 元素顺序返回；bpmnModel 未初始化时返回空列表
@@ -268,22 +272,48 @@ public class QfeBpmnModel {
                 return "节点[" + utId + "][" + utName + "]至少需要有一个允许的审批操作，请配置qfe:utAprActions";
             }
 
-            //多实例(会签/或签/自定义)节点：流程定义必须自带标准多实例特性，且 collection/elementVariable 符合 QF 约定
-            //(后端不再在部署期注入多实例，完整 BPMN 由前端设计器产出)
+            //多实例校验，前端必须产出QFE+FLOWABLE两套配置
             if (qfeUserTask.isMultiInstance()) {
+
                 MultiInstanceLoopCharacteristics loop = qfeUserTask.getUserTask().getLoopCharacteristics();
+                
                 if (loop == null) {
                     return "多实例节点[" + utId + "][" + utName + "]缺少多实例配置(multiInstanceLoopCharacteristics)，请在设计器中重新保存。";
                 }
-                var expectCollection = "${" + MI_VAR_PREFIX + utId + "}";
-                if (!expectCollection.equals(loop.getInputDataItem())) {
-                    return "多实例节点[" + utId + "][" + utName + "]的集合表达式必须为" + expectCollection
-                            + "，当前为[" + loop.getInputDataItem() + "]。";
+
+                //多实例类型为自定义必须配表达式(Flowable 原生配置)
+                var exp = qfeUserTask.getMultiInstanceExpress();
+
+                if (StringUtils.isBlank(exp)) {
+                    return "标准节点[" + utId + "][" + utName + "]的多实例为自定义时必须配表达式。";
                 }
-                if (!MI_ELEMENT_VAR.equals(loop.getElementVariable())) {
-                    return "多实例节点[" + utId + "][" + utName + "]的元素变量(elementVariable)必须为" + MI_ELEMENT_VAR
-                            + "，当前为[" + loop.getElementVariable() + "]。";
+
+                //检查多实例内部的原生Flowable配置是否正确
+                var miColl = loop.getInputDataItem();
+                var miEl = loop.getElementVariable();
+
+                if(StringUtils.isBlank(miColl) || StringUtils.isBlank(miEl)){
+                    return "节点[" + utId + "][" + utName + "] 为多实例，但内部multiInstanceLoopCharacteristics属性缺少必要配置!";
                 }
+
+                var expectMiColl = "${qfMi_" + utId + "}";
+                var expectMiEl = "assignee";
+
+                if(!miColl.equals(expectMiColl)){
+                    return "多实例节点[" + utId + "][" + utName + "] 未配置正确的 flowable:collection。";
+                }
+                
+                if(!miEl.equals(expectMiEl)){
+                    return "多实例节点[" + utId + "][" + utName + "] 未配置正确的 flowable:elementVariable。";
+                }
+
+                //检查多实例完成条件是否正确配置
+                var comp = loop.getCompletionCondition();
+
+                if(comp == null || StringUtils.isBlank(comp)){
+                    return "节点[" + utId + "][" + utName + "] 为多实例，但内部multiInstanceLoopCharacteristics属性缺少完成条件配置!";
+                }
+
             }
 
 
@@ -295,22 +325,28 @@ public class QfeBpmnModel {
                     return "标准节点[" + utId + "][" + utName + "]的处理人配置只允许为指定用户、用户组、发起人。";
                 }
 
-                //多实例为自定义必须配表达式
-                if (qfeUserTask.isMultiInstance()) {
-
-                    var exp = qfeUserTask.getMultiInstanceExpress();
-
-                    if (StringUtils.isBlank(exp)) {
-                        return "标准节点[" + utId + "][" + utName + "]的多实例为自定义时必须配表达式。";
-                    }
-
-                }
-
                 //标准节点若处理人配置选择为 指定用户、用户组 必须至少配置一名处理人
                 if (memberKind == MemberKind.USER || memberKind == MemberKind.GROUP) {
                     if (qfeUserTask.getMemberIds().isEmpty()) {
                         return "标准节点[" + utId + "][" + utName + "]的处理人配置选择为指定用户、用户组时必须至少配置一名处理人。";
                     }
+                }
+
+                //如果处理人使用了"发起人" 则开始节点上必须写死 发起人变量=initiator
+                if (memberKind == MemberKind.INITIATOR) {
+
+                    var startEvent = getStartEvent();
+
+                    if (startEvent == null) {
+                        return "未能找到开始节点，请检查BPMN模型。";
+                    }
+
+                    var initiator = startEvent.getInitiator();
+
+                    if (StringUtils.isBlank(initiator) || !initiator.equals("initiator")) {
+                        return "至少有一个节点使用了发起人变量，但在开始节点上未配置正确的发起人变量(flowable:initiator)。";
+                    }
+
                 }
 
             }
@@ -329,6 +365,11 @@ public class QfeBpmnModel {
                     if (qfeUserTask.getMemberIds().isEmpty()) {
                         return "发起时选人节点[" + utId + "][" + utName + "]的处理人配置选择为指定用户、用户组时至少需指定一名处理人。";
                     }
+                }
+
+                //发起时选人不能使用多实例
+                if (qfeUserTask.isMultiInstance()) {
+                    return "发起时选人节点[" + utId + "][" + utName + "]不能配置为多实例。";
                 }
 
             }

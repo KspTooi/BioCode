@@ -4,7 +4,6 @@ import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.bio.biz.qf.commons.QfModelTools;
-import com.ksptool.bio.biz.qf.commons.qfe.QfeXmlModel;
 import com.ksptool.bio.biz.qf.model.qfmodel.QfModelPo;
 import com.ksptool.bio.biz.qf.model.qfmodel.dto.AddQfModelDto;
 import com.ksptool.bio.biz.qf.model.qfmodel.dto.DesignQfModelDto;
@@ -28,9 +27,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 
+import static com.ksptool.bio.biz.core.common.TupleMapper.tupleAs;
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
-import static com.ksptool.bio.biz.core.common.TupleMapper.tupleAs;
 
 
 /**
@@ -179,12 +178,6 @@ public class QfModelService {
             throw new BizException("设计失败,只有草稿状态才能设计。");
         }
 
-
-        //对XML进行归一化
-        var nXml = QfeXmlModel.of(dto.getBpmnXml()).normalize();
-        
-
-
         //先保存原始BPMN XML
         updatePo.setBpmnXml(dto.getBpmnXml());
 
@@ -245,7 +238,7 @@ public class QfModelService {
         QfModelPo po = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("部署失败,数据不存在或无权限访问."));
 
-        if(po.getFormId() == null){
+        if (po.getFormId() == null) {
             throw new BizException("部署流程必须要绑定表单。");
         }
 
