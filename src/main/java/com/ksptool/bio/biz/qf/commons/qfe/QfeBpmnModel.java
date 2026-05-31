@@ -272,8 +272,11 @@ public class QfeBpmnModel {
                 return "节点[" + utId + "][" + utName + "]至少需要有一个允许的审批操作，请配置qfe:utAprActions";
             }
 
-            //校验发起时跳过节点 -- 发起时跳过节点的上一个节点必须也是发起时跳过节点或是开始节点
+            //校验发起时跳过节点 -- 上有节点必须至少有一个"发起时跳过节点"或"开始节点"
             if (qfeUserTask.isInitSkip()) {
+
+                //上游节点中"发起时跳过节点"或"开始节点"的数量
+                var passNodeCount = 0;
 
                 //获取上游连接的线
                 var prevConnections = qfeUserTask.getUserTask().getIncomingFlows();
@@ -282,7 +285,7 @@ public class QfeBpmnModel {
                     return "节点[" + utId + "][" + utName + "] 为发起时跳过节点，但未配置上游节点。";
                 }
 
-                //遍历上游连接的全部线 所有线都必须全部符合要求
+                //遍历上游连接的全部线 找出"发起时跳过节点"或"开始节点"
                 for (var prevConn : prevConnections) {
 
                     //连线的源节点
@@ -291,6 +294,7 @@ public class QfeBpmnModel {
 
                     //开始节点 合法
                     if (upSource instanceof StartEvent) {
+                        passNodeCount++;
                         continue;
                     }
 
@@ -303,11 +307,15 @@ public class QfeBpmnModel {
                             return "节点[" + utId + "][" + utName + "] 为发起时跳过节点，但上游节点[" + upQfeUt.getId() + "][" + upQfeUt.getName() + "]不是发起时跳过节点。";
                         }
 
+                        passNodeCount++;
                         continue;
                     }
 
-                    //其余类型(网关/结束等)均不允许
-                    return "节点[" + utId + "][" + utName + "] 为发起时跳过节点，上游节点只能是开始节点或另一个发起时跳过节点。";
+                    //其余类型(网关/结束等)均不算合法节点
+                }
+
+                if(passNodeCount < 1){
+                    return "节点[" + utId + "][" + utName + "] 为发起时跳过节点，但未正确连接到'开始节点'或另一个'发起时跳过节点'。";
                 }
 
             }
