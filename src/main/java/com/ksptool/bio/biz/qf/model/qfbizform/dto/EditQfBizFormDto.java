@@ -17,7 +17,7 @@ public class EditQfBizFormDto {
     private Long id;
 
     @NotBlank(message = "业务名称不能为空")
-    @Length(max = 40, message = "业务名称最多40个字符")
+    @Length(max = 40, message = "业务名称不能超过40个字符")
     @Schema(description = "业务名称")
     private String name;
 
@@ -27,20 +27,20 @@ public class EditQfBizFormDto {
     private Integer formType;
 
     @NotBlank(message = "表单图标不能为空")
-    @Length(max = 80, message = "表单图标最多80个字符")
+    @Length(max = 80, message = "表单图标不能超过80个字符")
     @Schema(description = "表单图标")
     private String icon;
 
     @NotBlank(message = "物理表名不能为空")
-    @Length(max = 200, message = "物理表名最多200个字符")
+    @Length(max = 200, message = "物理表名不能超过200个字符")
     @Schema(description = "物理表名")
     private String tableName;
 
-    @Length(max = 512, message = "PC端路由名最多512个字符")
+    @Length(max = 512, message = "PC端路由名不能超过512个字符")
     @Schema(description = "PC端路由名")
     private String routePc;
 
-    @Length(max = 512, message = "移动端路由名最多512个字符")
+    @Length(max = 512, message = "移动端路由名不能超过512个字符")
     @Schema(description = "移动端路由名")
     private String routeMobile;
 
@@ -52,5 +52,7 @@ public class EditQfBizFormDto {
     @NotNull(message = "排序不能为空")
     @Schema(description = "排序")
     private Integer seq;
-
+    @Length(max = 200, message = "摘要模板不能超过200个字符")
+    @Schema(description = "摘要模板")
+    private String summaryTemplate;
 }

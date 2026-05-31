@@ -21,11 +21,17 @@ public class ApproveQfTodoDto {
     private Long id;
 
     @NotNull(message = "操作不能为空")
-    @Range(min = 0, max = 1,message = "操作只能为0或1")
-    @Schema(description = "操作 0:同意 1:驳回")
+    @Range(min = 0, max = 3,message = "操作只能为0-3")
+    @Schema(description = "操作 0:同意,1:驳回,2:转交,3:驳回节点")
     private Integer action;
 
     @Schema(description = "审批意见")
     private String comment;
+
+    @Schema(description = "节点ID")
+    private String nodeId;
+
+    @Schema(description = "//办理成员ID(用于转交，只能是用户ID)")
+    private Long memberId;
 
 }

@@ -4,6 +4,7 @@ import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.bio.biz.qf.commons.QfModelTools;
+import com.ksptool.bio.biz.qf.commons.qfe.QfeXmlModel;
 import com.ksptool.bio.biz.qf.model.qfmodel.QfModelPo;
 import com.ksptool.bio.biz.qf.model.qfmodel.dto.AddQfModelDto;
 import com.ksptool.bio.biz.qf.model.qfmodel.dto.DesignQfModelDto;
@@ -16,6 +17,7 @@ import com.ksptool.bio.biz.qf.model.qfmodelgroup.QfModelGroupPo;
 import com.ksptool.bio.biz.qf.repository.QfModelDeployRcdRepository;
 import com.ksptool.bio.biz.qf.repository.QfModelGroupRepository;
 import com.ksptool.bio.biz.qf.repository.QfModelRepository;
+import jakarta.persistence.Tuple;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.repository.Deployment;
 import org.flowable.engine.repository.ProcessDefinition;
@@ -28,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
+import static com.ksptool.bio.biz.core.common.TupleMapper.tupleAs;
 
 
 /**
@@ -61,11 +64,13 @@ public class QfModelService {
      * @return 查询结果
      */
     public PageResult<GetQfModelListVo> getQfModelList(GetQfModelListDto dto) {
-        Page<GetQfModelListVo> page = repository.getQfModelList(dto, dto.pageRequest());
+        Page<Tuple> page = repository.getQfModelList(dto, dto.pageRequest());
         if (page.isEmpty()) {
             return PageResult.successWithEmpty();
         }
-        return PageResult.success(page.getContent(), (int) page.getTotalElements());
+
+        Page<GetQfModelListVo> voPage = tupleAs(page, GetQfModelListVo.class);
+        return PageResult.success(voPage.getContent(), (int) voPage.getTotalElements());
     }
 
     /**
@@ -174,6 +179,12 @@ public class QfModelService {
             throw new BizException("设计失败,只有草稿状态才能设计。");
         }
 
+
+        //对XML进行归一化
+        var nXml = QfeXmlModel.of(dto.getBpmnXml()).normalize();
+        
+
+
         //先保存原始BPMN XML
         updatePo.setBpmnXml(dto.getBpmnXml());
 
@@ -234,6 +245,10 @@ public class QfModelService {
         QfModelPo po = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("部署失败,数据不存在或无权限访问."));
 
+        if(po.getFormId() == null){
+            throw new BizException("部署流程必须要绑定表单。");
+        }
+
         //不能在历史版本上部署
         if (po.getStatus() == 2) {
             throw new BizException("部署失败,模型状态异常。");
@@ -283,6 +298,7 @@ public class QfModelService {
         var rcd = new QfModelDeployRcdPo();
         rcd.setRootId(po.getRootId());
         rcd.setDeptId(po.getDeptId());
+        rcd.setFormId(po.getFormId());
         rcd.setModelId(po.getId());
         rcd.setName(po.getName());
         rcd.setCode(po.getCode());

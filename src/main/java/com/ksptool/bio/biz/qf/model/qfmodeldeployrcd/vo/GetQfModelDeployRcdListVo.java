@@ -22,6 +22,11 @@ public class GetQfModelDeployRcdListVo {
     @Schema(description = "模型编码")
     private String code;
 
+    @Schema(description = "关联业务表单名称")
+    private String bizFormName;
+    @Schema(description = "关联业务表单编码")
+    private String bizFormCode;
+
     @Schema(description = "模型版本号")
     private Integer version;
 

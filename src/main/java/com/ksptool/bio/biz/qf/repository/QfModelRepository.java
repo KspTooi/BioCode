@@ -3,6 +3,7 @@ package com.ksptool.bio.biz.qf.repository;
 import com.ksptool.bio.biz.qf.model.qfmodel.QfModelPo;
 import com.ksptool.bio.biz.qf.model.qfmodel.dto.GetQfModelListDto;
 import com.ksptool.bio.biz.qf.model.qfmodel.vo.GetQfModelListVo;
+import jakarta.persistence.Tuple;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,26 +24,28 @@ import org.springframework.stereotype.Repository;
 public interface QfModelRepository extends JpaRepository<QfModelPo, Long> {
 
     @Query("""
-            SELECT new com.ksptool.bio.biz.qf.model.qfmodel.vo.GetQfModelListVo(
-                u.id,
-                g.name,
-                u.name,
-                u.code,
-                u.version,
-                u.status,
-                u.seq,
-                u.createTime
-            )
+            SELECT
+                u.id AS id,
+                g.name AS groupName,
+                u.name AS name,
+                u.code AS code,
+                p.name AS bizFormName,
+                p.code AS bizFormCode,
+                u.version AS version,
+                u.status AS status,
+                u.seq AS seq,
+                u.createTime AS createTime
             FROM QfModelPo u
             LEFT JOIN QfModelGroupPo g ON g.id = u.groupId
+            LEFT JOIN QfBizFormPo p ON p.id = u.formId
             WHERE
             (:#{#dto.name} IS NULL OR u.name LIKE CONCAT('%', :#{#dto.name}, '%'))
             AND (:#{#dto.code} IS NULL OR u.code LIKE CONCAT('%', :#{#dto.code}, '%'))
             AND (:#{#dto.groupName} IS NULL OR g.name LIKE CONCAT('%', :#{#dto.groupName}, '%'))
             AND (:#{#dto.status} IS NULL OR u.status IN :#{#dto.status})
-            ORDER BY g.name,u.seq ASC, u.createTime DESC
+            ORDER BY g.name, u.seq ASC, u.createTime DESC
             """)
-    Page<GetQfModelListVo> getQfModelList(@Param("dto") GetQfModelListDto dto, Pageable pageable);
+    Page<Tuple> getQfModelList(@Param("dto") GetQfModelListDto dto, Pageable pageable);
 
     /**
      * 根据编码统计流程模型数量 排除指定ID

@@ -4,7 +4,6 @@ import com.ksptool.assembly.entity.exception.BizException;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.bpmn.model.BpmnModel;
-import org.flowable.bpmn.model.UserTask;
 import org.flowable.common.engine.impl.util.io.StringStreamSource;
 import org.flowable.validation.ProcessValidator;
 import org.flowable.validation.ProcessValidatorFactory;
@@ -22,8 +21,6 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.ByteArrayInputStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -201,111 +198,5 @@ public class QfModelTools {
          * 它会返回 "user.name"，这在当前项目流程里够用了，但请勿在复杂表达式场景下滥用。
          */
         return s.substring(2, s.length() - 1).trim();
-    }
-
-    /**
-     * 解析用户任务的候选人
-     *
-     * @param ut 用户任务
-     * @return 候选人ID列表
-     * 如果是用户 则返回用户ID列表
-     * 如果是用户组 则返回用户组编码列表
-     * 如果是组织机构 则返回组织机构ID列表
-     */
-    public static List<String> resolveCandidates(UserTask ut) {
-        if (ut == null) {
-            return Collections.emptyList();
-        }
-
-        /* 设计背景:
-         *  Flowable 的 UserTask 在 BPMN 标准里有三种办理人字段:
-         *    - assignee        -> 唯一指定办理人 (单实例单人)
-         *    - candidateUsers  -> 候选人集合    (多个用户都可认领)
-         *    - candidateGroups -> 候选组集合    (某个组的成员都可认领)
-         *  业务上 "办理人是什么" 靠前端设计器挂的 assigneeKind 属性区分 (user/group/dept/initiator),
-         *  但 Flowable 引擎只识别前面三个原生字段. 所以本方法的职责是:
-         *  把 candidateUsers / candidateGroups 里装的所有 ID (可能是用户ID/组编码/部门ID) 原样合并成一个列表,
-         *  至于这些 ID 是"用户"还是"组", 由调用方结合 resolveMemberKind 自己判断.
-         *  为什么不读 assignee?
-         *  单实例单人情况下 Flowable 任务创建后可以直接通过 task.getAssignee() 拿到办理人,
-         *  无需通过候选字段. 这个方法专注处理"多候选/多实例"场景的候选列表.
-         */
-        List<String> src = new ArrayList<>();
-        if (ut.getCandidateUsers() != null) {
-            src.addAll(ut.getCandidateUsers());
-        }
-        if (ut.getCandidateGroups() != null) {
-            src.addAll(ut.getCandidateGroups());
-        }
-
-        List<String> out = new ArrayList<>();
-        for (String s : src) {
-            if (StringUtils.isBlank(s)) {
-                continue;
-            }
-
-            /* 这里主要是处理前端设计器用逗号拼接的候选人列表
-             *  Flowable 的 XML 解析器在读 <userTask flowable:candidateUsers="u1,u2,u3">
-             *  时会把整串 "u1,u2,u3" 当作"一个候选人"直接塞进 List, 而不会按逗号拆.
-             *  前端设计器在用户多选"指定用户"时, 生成的 XML 正是逗号拼接格式,
-             *  所以这里必须手动拆一次, 否则一个多人候选任务会被误判成"只有一个叫 'u1,u2,u3' 的候选人".
-             */
-            for (String x : s.split(",")) {
-                String t = x.trim();
-                if (StringUtils.isBlank(t)) {
-                    continue;
-                }
-                out.add(t);
-            }
-        }
-        return out;
-    }
-
-    /**
-     * 解析办理人类型
-     * 根据任务定义键获取办理人类型
-     * 这里获取的是前端设计器 (flowable-designer) 扩展的 BPMN 自定义属性 assigneeKind
-     *
-     * @param model      流程模型
-     * @param taskDefKey 任务定义键
-     * @return 办理人类型 获取失败返回null
-     */
-    public static QfMemberKinds resolveMemberKind(BpmnModel model, String taskDefKey) {
-
-        if (model == null || StringUtils.isBlank(taskDefKey)) {
-            return null;
-        }
-
-        var flowElement = model.getFlowElement(taskDefKey);
-
-        if (!(flowElement instanceof UserTask userTask)) {
-            return null;
-        }
-
-        String kindStr = userTask.getAttributeValue("http://flowable.org/bpmn", QfVarsModel.ASSIGNEE_KIND.getValue());
-
-        if (kindStr == null || kindStr.isBlank()) {
-            return null;
-        }
-
-        //用户和发起人都是用户类型
-        if (kindStr.equals("user") || kindStr.equals("initiator")) {
-            return QfMemberKinds.USER;
-        }
-
-        //用户组是用户组类型
-        if (kindStr.equals("group")) {
-            return QfMemberKinds.GROUP;
-        }
-
-        //组织机构是组织机构类型 但一期我不打算支持这个功能 如果前端设计器非要传这个值，就报错吧
-        if (kindStr.equals("dept")) {
-
-            //如果能走到这里来 说明前端设计的模型有问题
-            throw new RuntimeException("无法解析办理人类型: 组织机构类型不支持, 任务定义键: " + taskDefKey);
-        }
-
-        //什么模型会既不是用户类型又不是用户组类型呢？ 这说明前端设计的模型有问题
-        return null;
     }
 }

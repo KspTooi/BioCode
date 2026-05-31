@@ -21,10 +21,12 @@ import static com.ksptool.entities.Entities.assign;
 /**
  * 任务取消监听器
  * <p>
- * 监听引擎 ACTIVITY_CANCELLED 事件，过滤 UserTask 类型的节点取消。
- * 通过 executionId 查询对应的引擎任务实例，再精确作废对应的 QfTodoPo(status=10)。
+ * 监听 ACTIVITY_CANCELLED 事件：
+ * 边界事件打断任务、管理员驳回后引擎回溯取消上游任务、多实例或签完成后引擎取消其余并行实例。
+ * </p>
  * <p>
- * 典型触发场景：边界事件打断任务、管理员驳回后引擎回溯取消上游任务等。
+ * 注意：Flowable 8.0.0 没有 TASK_CANCELLED 事件枚举值，无法通过 onEvent 分发。
+ * 或签/并签场景下，任务完成时由 QfTodoService.cancelOrphanedTodos 主动作废同级待办。
  *
  * @author WangQingHua(603484930@qq.com)
  * @author KspTool(ksptool@outlook.com)
@@ -65,21 +67,28 @@ public class QfTaskCancelledListener extends AbstractFlowableEngineEventListener
                 .list();
 
         for (Task task : tasks) {
-            var po = qfTodoRepository.findByEngTaskId(task.getId());
-            if (po == null) {
-                continue;
-            }
-            if (po.getStatus() != 0) {
-                continue;
-            }
-            po.setStatus(10);
-            qfTodoRepository.save(po);
-            //发布任务取消事件
-            QfTaskCancelledEvent fireEvent = new QfTaskCancelledEvent(this);
-            assign(po, fireEvent);
-            fireEvent.setReason("流程取消");
-            aep.publishEvent(fireEvent);
-            log.debug("[QfTaskCancelledListener] 待办已标记为已作废, todoId: {}, taskId: {}", po.getId(), task.getId());
+            cancelTodo(task.getId());
         }
+    }
+
+    /**
+     * 根据引擎任务ID作废对应的待办
+     */
+    private void cancelTodo(String engTaskId) {
+        var po = qfTodoRepository.findByEngTaskIdAndStatus(engTaskId, 0);
+        if (po == null) {
+            return;
+        }
+        if (po.getStatus() != 0) {
+            return;
+        }
+        po.setStatus(10);
+        qfTodoRepository.save(po);
+        //发布任务取消事件
+        QfTaskCancelledEvent fireEvent = new QfTaskCancelledEvent(this);
+        assign(po, fireEvent);
+        fireEvent.setReason("流程取消");
+        aep.publishEvent(fireEvent);
+        log.debug("[QfTaskCancelledListener] 待办已标记为已作废, todoId: {}, taskId: {}", po.getId(), engTaskId);
     }
 }

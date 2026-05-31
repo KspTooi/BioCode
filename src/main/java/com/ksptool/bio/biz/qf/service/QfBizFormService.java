@@ -108,8 +108,7 @@ public class QfBizFormService {
     @Transactional(rollbackFor = Exception.class)
     public void removeBizForm(CommonIdDto dto) throws BizException {
         if (dto.isBatch()) {
-            repository.deleteAllById(dto.getIds());
-            return;
+            throw new BizException("表单不支持批量删除");
         }
 
         //检查还有没有待办在用这个表单(只要有一个待办还没有完成就不能删除)

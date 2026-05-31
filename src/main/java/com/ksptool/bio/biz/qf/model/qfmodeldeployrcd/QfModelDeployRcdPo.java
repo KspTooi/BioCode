@@ -39,6 +39,9 @@ public class QfModelDeployRcdPo {
     @Column(name = "model_id", nullable = false, comment = "模型ID")
     private Long modelId;
 
+    @Column(name = "form_id",nullable = false, comment = "关联表单ID")
+    private Long formId;
+
     @Column(name = "name", nullable = false, length = 80, comment = "模型名称")
     private String name;
 

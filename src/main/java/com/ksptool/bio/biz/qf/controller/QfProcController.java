@@ -2,6 +2,11 @@ package com.ksptool.bio.biz.qf.controller;
 
 import com.ksptool.assembly.entity.web.Result;
 import com.ksptool.bio.biz.qf.model.qfmodeldeployrcd.dto.LaunchQfProcessDto;
+import com.ksptool.bio.biz.qf.model.qftodo.dto.GetProcessApproveFlowDto;
+import com.ksptool.bio.biz.qf.model.qftodo.dto.GetProcessApproveFlowRecordDto;
+import com.ksptool.bio.biz.qf.model.qftodo.dto.GetProcessNodeConfigsDto;
+import com.ksptool.bio.biz.qf.model.qftodo.vo.ApproveFlowRecordVo;
+import com.ksptool.bio.biz.qf.model.qftodo.vo.ProcessNodeConfigVo;
 import com.ksptool.bio.biz.qf.service.QfProcService;
 import com.ksptool.bio.commons.annotation.PrintLog;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,6 +19,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static com.ksptool.entities.Entities.assign;
 
 
 /**
@@ -45,8 +56,54 @@ public class QfProcController {
     @Operation(summary = "发起审批流程")
     @PostMapping("/launchQfProcess")
     public Result<String> launchQfProcess(@RequestBody @Valid LaunchQfProcessDto dto) throws Exception {
-        String processInstanceId = qfProcService.launchProc(dto.getCode(), dto.getBizFormCode(), dto.getDataId());
+        //把参数转换成Map
+        Map<String, String> datas = new HashMap<>();
+        assign(dto, datas);
+        String processInstanceId = qfProcService.launchProc(dto.getCode(), dto.getDataId(),datas);
         return Result.success(processInstanceId);
+    }
+
+    @PreAuthorize("@auth.hasCode('qf:model:deploy:edit')")
+    @Operation(summary = "获取流程节点配置列表（发起流程时使用）")
+    @PostMapping("/getProcessNodeConfigs")
+    public Result<List<ProcessNodeConfigVo>> getProcessNodeConfigs(@RequestBody @Valid GetProcessNodeConfigsDto dto) throws Exception {
+        List<ProcessNodeConfigVo> nodes = qfProcService.getProcessNodeConfigs(dto.getCode());
+        if (nodes == null || nodes.isEmpty()) {
+            return Result.error("未找到流程节点");
+        }
+        return Result.success(nodes);
+    }
+
+    /**
+     * 代办审批的时候回显审批流画布
+     *
+     */
+    @PreAuthorize("@auth.hasCode('qf:todo:details')")
+    @Operation(summary = "获取待办事项审批流")
+    @PostMapping("/getProcessApproveFlow")
+    public Result<String> getQfTodoApproveFlow(@RequestBody @Valid GetProcessApproveFlowDto dto) throws Exception {
+        String flow = qfProcService.getProcessApproveFlow(dto);
+        if (flow == null) {
+            return Result.error("无数据");
+        }
+        return Result.success(flow);
+    }
+
+    /**
+     * 代办的流程的流转记录
+     * 返回按照时间的顺序
+     * 返回 节点名称，节点审批人，节点审批时间，节点审批结果
+     *
+     */
+    @PreAuthorize("@auth.hasCode('qf:todo:details')")
+    @Operation(summary = "获取待办事项流程流转记录")
+    @PostMapping("/getProcessApproveFlowRecord")
+    public Result<List<ApproveFlowRecordVo>> getQfTodoApproveFlowRecord(@RequestBody @Valid GetProcessApproveFlowRecordDto dto) throws Exception {
+        List<ApproveFlowRecordVo> records = qfProcService.getProcessApproveFlowRecord(dto);
+        if (records == null || records.isEmpty()) {
+            return Result.error("无数据");
+        }
+        return Result.success(records);
     }
 
 }

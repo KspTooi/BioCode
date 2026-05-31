@@ -14,6 +14,9 @@ public class EditQfModelDto {
     @Schema(description="模型分组ID")
     private Long groupId;
 
+    @Schema(description="关联表单ID")
+    private Long formId;
+
     @NotNull(message = "主键ID不能为空")
     @Schema(description="主键ID")
     private Long id;

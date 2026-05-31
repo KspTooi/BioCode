@@ -1,7 +1,6 @@
 package com.ksptool.bio.biz.qf.commons.config;
 
 import com.ksptool.bio.biz.qf.commons.QfSnowflakeIdGenerator;
-import com.ksptool.bio.biz.qf.commons.listener.QfMiRenameParseHandler;
 import com.ksptool.bio.biz.qf.commons.listener.QfProcFinishedListener;
 import com.ksptool.bio.biz.qf.commons.listener.QfTaskAssignedListener;
 import com.ksptool.bio.biz.qf.commons.listener.QfTaskCancelledListener;
@@ -92,14 +91,6 @@ public class QfFlowableConfig implements EngineConfigurationConfigurer<SpringPro
         );
 
         cfg.setTypedEventListeners(typedListeners);
-
-        //注册多实例变量重命名处理器，在部署期将 ${assigneeList}/${groupList} 改写为 ${qfMi_<taskId>}
-        var preHandlers = cfg.getPreBpmnParseHandlers();
-        if (preHandlers == null) {
-            preHandlers = new ArrayList<>();
-            cfg.setPreBpmnParseHandlers(preHandlers);
-        }
-        preHandlers.add(new QfMiRenameParseHandler());
 
         //注册雪花算法ID生成器
         cfg.setIdGenerator(new QfSnowflakeIdGenerator());

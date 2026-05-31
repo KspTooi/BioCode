@@ -1,6 +1,6 @@
 package com.ksptool.bio.biz.qf.service;
 
-import com.ksptool.bio.biz.qf.commons.QfMemberKinds;
+import com.ksptool.bio.biz.qf.commons.qfe.QfeUserTask.MemberKind;
 import org.flowable.task.api.Task;
 
 import java.util.List;
@@ -35,7 +35,7 @@ public interface QfMemberService {
      * @param task 任务
      * @return 办理成员类型
      */
-    QfMemberKinds getMemberKind(Task task);
+    MemberKind getMemberKind(Task task);
 
 
     /**

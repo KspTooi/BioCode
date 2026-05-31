@@ -51,6 +51,7 @@ public interface QfTodoRepository extends JpaRepository<QfTodoPo, Long> {
             (
                 (u.memberType = 0 AND u.memberId = :uid)
                 OR (u.memberType = 1 AND u.memberId IN :gIds)
+                OR u.memberType = 2  And u.memberId = :uid
             )
             AND (:#{#dto.nodeName} IS NULL OR u.nodeName LIKE CONCAT('%', :#{#dto.nodeName}, '%'))
             AND (:#{#dto.bizFormId} IS NULL OR u.bizFormId = :#{#dto.bizFormId})
@@ -63,9 +64,9 @@ public interface QfTodoRepository extends JpaRepository<QfTodoPo, Long> {
                               Pageable pageable);
 
     /**
-     * 按引擎任务ID查询待办（通常只有一条）
+     * 按引擎任务ID + 状态查询待办（通常只有一条）
      */
-    QfTodoPo findByEngTaskId(String engTaskId);
+    QfTodoPo findByEngTaskIdAndStatus(String engTaskId, Integer status);
 
     /**
      * 按引擎流程实例ID + 状态查询待办列表（用于流程结束时批量作废剩余待办）
@@ -103,7 +104,7 @@ public interface QfTodoRepository extends JpaRepository<QfTodoPo, Long> {
             WHERE u.tableName = :tableName
             AND u.dataId = :dataId
             """)
-    List<QfTodoPo> findByTableNameAndDataId(@Param("tableName") String tableName, @Param("dataId") Long dataId);
+    List<QfTodoPo> getByTableNameAndDataId(@Param("tableName") String tableName, @Param("dataId") Long dataId);
 
     @Query("""
     SELECT u FROM QfTodoPo u

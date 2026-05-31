@@ -20,11 +20,17 @@ public class GetQfModelListVo {
     @Schema(description = "模型分组")
     private String groupName;
 
+
     @Schema(description = "模型名称")
     private String name;
 
     @Schema(description = "模型编码")
     private String code;
+
+    @Schema(description = "关联业务表单名称")
+    private String bizFormName;
+    @Schema(description = "关联业务表单编码")
+    private String bizFormCode;
 
     @Schema(description = "模型版本号")
     private Integer version;

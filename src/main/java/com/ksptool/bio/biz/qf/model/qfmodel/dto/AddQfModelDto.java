@@ -14,6 +14,9 @@ public class AddQfModelDto {
     @Schema(description = "模型分组ID")
     private Long groupId;
 
+    @Schema(description = "关联表单ID")
+    private Long formId;
+
     @NotNull(message = "模型名称不能为空")
     @Length(max = 80, message = "模型名称长度不能超过80个字符")
     @Schema(description = "模型名称")

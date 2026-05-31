@@ -1,6 +1,6 @@
 package com.ksptool.bio.biz.qf.commons.listener;
 
-import com.ksptool.bio.biz.qf.commons.QfMemberKinds;
+import com.ksptool.bio.biz.qf.commons.qfe.QfeUserTask.MemberKind;
 import com.ksptool.bio.biz.qf.commons.QfProcTools;
 import com.ksptool.bio.biz.qf.commons.QfVarsProc;
 import com.ksptool.bio.biz.qf.commons.event.QfTaskStartedEvent;
@@ -91,33 +91,28 @@ public class QfTaskCreatedListener extends AbstractFlowableEngineEventListener {
         //获取办理成员ID
         var _memberId = qms.getMemberId(task);
 
-        if (_memberId == null) {
+        // 任意人类型没有指定办理人，允许 memberId 为 null（后续兜底为 0）
+        if (_memberId == null && memberKind != MemberKind.ANYONE) {
             log.warn("待办任务创建失败: 无法解析办理成员ID, 任务ID: {}", task.getId());
             return;
         }
-
         //准备待办数据
         var rid = QfProcTools.varLong(vars, QfVarsProc.ROOT_ID, 0L);
         var did = QfProcTools.varLong(vars, QfVarsProc.DEPT_ID, 0L);
         var etId = task.getId();
         var epId = task.getProcessInstanceId();
-
         //获取具体的业务表单
         var bizFormId = QfProcTools.varLong(vars, QfVarsProc.BIZ_FORM_ID, 0L);
         var tableName = QfProcTools.varString(vars, QfVarsProc.TABLE_NAME, "unknow");
         var dataId = QfProcTools.varLong(vars, QfVarsProc.DATA_ID, 0L);
         var nodeName = QfProcTools.nodeName(task);
         var summary = QfProcTools.varString(vars, QfVarsProc.SUMMARY, "");
-        var memberType = 0;
-
-        if(memberKind == QfMemberKinds.USER){
-            memberType = 0;
-        }
-        if(memberKind == QfMemberKinds.GROUP){
-            memberType = 1;
-        }
+        var memberType = memberKind.getMemberType();
 
         var memberId = _memberId;
+        if (memberId == null) {
+            memberId = 0L;
+        }
         var initiatorId = QfProcTools.varLong(vars, QfVarsProc.INITIATOR_ID, 0L);
         var initiatorName = QfProcTools.varString(vars, QfVarsProc.INITIATOR_NAME, "");
         var initiatorTime = QfProcTools.varDateTime(vars, QfVarsProc.INITIATOR_TIME, LocalDateTime.now());
@@ -138,9 +133,10 @@ public class QfTaskCreatedListener extends AbstractFlowableEngineEventListener {
         po.setInitiatorId(initiatorId);
         po.setInitiatorName(trunc(initiatorName, 20));
         po.setInitiatorTime(initiatorTime);
+        po.setEngProcessDefId(task.getProcessDefinitionId());
         po.setStatus(0); //0:待办 1:已办 10:已作废
 
-        qfTodoRepository.save(po);
+        qfTodoRepository.saveAndFlush(po);
 
         //发布任务启动事件
         QfTaskStartedEvent fireEvent = new QfTaskStartedEvent(this);
@@ -148,6 +144,5 @@ public class QfTaskCreatedListener extends AbstractFlowableEngineEventListener {
         fireEvent.setTodoId(po.getId());
         aep.publishEvent(fireEvent);
     }
-
 
 }

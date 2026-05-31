@@ -29,7 +29,7 @@ public interface QfBizFormRepository extends JpaRepository<QfBizFormPo, Long> {
             AND (:#{#po.tableName} IS NULL OR u.tableName LIKE CONCAT('%', :#{#po.tableName}, '%'))
             AND (:#{#po.status} IS NULL OR u.status = :#{#po.status} )
             AND (:#{#po.seq} IS NULL OR u.seq = :#{#po.seq} )
-            ORDER BY u.createTime DESC
+            ORDER BY u.seq DESC,u.createTime DESC
             """)
     Page<QfBizFormPo> getBizFormList(@Param("po") QfBizFormPo po, Pageable pageable);
 

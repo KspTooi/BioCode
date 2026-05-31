@@ -41,6 +41,9 @@ public class QfTodoPo {
     @Column(name = "biz_form_id", nullable = false, comment = "业务表单ID")
     private Long bizFormId;
 
+    @Column(name = "eng_process_def_id", length = 200, comment = "引擎流程ID(部署失败为NULL)")
+    private String engProcessDefId;
+
     @Column(name = "table_name", nullable = false, length = 200, comment = "物理表名(带入业务表单数据)")
     private String tableName;
 

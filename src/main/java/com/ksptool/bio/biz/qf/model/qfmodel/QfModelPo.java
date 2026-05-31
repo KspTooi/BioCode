@@ -42,6 +42,9 @@ public class QfModelPo {
     @Column(name = "group_id", comment = "模型组ID")
     private Long groupId;
 
+    @Column(name = "form_id", comment = "关联表单ID")
+    private Long formId;
+
     @Column(name = "name", nullable = false, length = 80, comment = "模型名称")
     private String name;
 

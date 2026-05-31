@@ -49,7 +49,7 @@ public class QfTaskFinishedListener extends AbstractFlowableEngineEventListener 
     @Override
     protected void taskCompleted(FlowableEngineEntityEvent event) {
         Task task = (Task) event.getEntity();
-        var po = qfTodoRepository.findByEngTaskId(task.getId());
+        var po = qfTodoRepository.findByEngTaskIdAndStatus(task.getId(),0);
 
         if (po == null) {
             log.warn("[QfTaskFinishedListener] 未找到对应待办记录, 引擎任务ID: {}", task.getId());

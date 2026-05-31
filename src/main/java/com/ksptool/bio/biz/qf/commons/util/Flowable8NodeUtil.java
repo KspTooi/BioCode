@@ -126,6 +126,16 @@ public class Flowable8NodeUtil {
                     "xmlns:bioc=\"http://bpmn.io/schema/bpmn/bioc\" xmlns:bpmndi=");
         }
 
+        // 添加 qfe 命名空间声明，确保 qfe: 前缀属性可被前端正确解析
+        if (!xml.contains("xmlns:qfe=")) {
+            xml = xml.replace("xmlns:bpmndi=",
+                    "xmlns:qfe=\"quick_flow_extstion\" xmlns:bpmndi=");
+        }
+
+        // 修正 BpmnXMLConverter 对 qfe 命名空间可能生成的 auto-prefix（ns1: → qfe:）
+        xml = xml.replace(" ns1:utApr", " qfe:utApr");
+        xml = xml.replace(" ns2:utApr", " qfe:utApr");
+
         // 着色顺序：pending → finished → current（current 最后写，优先级最高）
         xml = colorBpmnShapes(xml, pendingIds, NodeStatusEnum.PENDING);
         xml = colorBpmnShapes(xml, finishedIds, NodeStatusEnum.FINISHED);

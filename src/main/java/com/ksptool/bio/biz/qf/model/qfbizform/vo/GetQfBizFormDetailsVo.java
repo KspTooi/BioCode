@@ -3,6 +3,7 @@ package com.ksptool.bio.biz.qf.model.qfbizform.vo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
 
 @Getter
 @Setter
@@ -37,5 +38,6 @@ public class GetQfBizFormDetailsVo {
 
     @Schema(description = "排序")
     private Integer seq;
-
+    @Schema(description = "摘要模板")
+    private String summaryTemplate;
 }

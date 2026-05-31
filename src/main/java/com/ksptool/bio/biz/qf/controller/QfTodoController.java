@@ -3,12 +3,10 @@ package com.ksptool.bio.biz.qf.controller;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.assembly.entity.web.Result;
-import com.ksptool.bio.biz.qf.model.qftodo.dto.ApproveQfTodoDto;
-import com.ksptool.bio.biz.qf.model.qftodo.dto.GetQfTodoListDto;
-import com.ksptool.bio.biz.qf.model.qftodo.dto.CancelQfTodoDto;
+import com.ksptool.bio.biz.qf.model.qftodo.dto.*;
 import com.ksptool.bio.biz.qf.model.qftodo.vo.GetQfTodoDetailsVo;
-import com.ksptool.bio.biz.qf.model.qftodo.vo.ApproveFlowRecordVo;
 import com.ksptool.bio.biz.qf.model.qftodo.vo.GetQfTodoListVo;
+import com.ksptool.bio.biz.qf.model.qftodo.vo.ProcessNodeVo;
 import com.ksptool.bio.biz.qf.service.QfTodoService;
 import com.ksptool.bio.commons.annotation.PrintLog;
 import io.swagger.v3.oas.annotations.Operation;
@@ -63,13 +61,6 @@ public class QfTodoController {
         return Result.success(details);
     }
 
-    @PreAuthorize("@auth.hasCode('qf:todo:remove')")
-    @Operation(summary = "删除待办事项")
-    @PostMapping("/removeQfTodo")
-    public Result<String> removeQfTodo(@RequestBody @Valid CommonIdDto dto) throws Exception {
-        qfTodoService.removeQfTodo(dto);
-        return Result.success("操作成功");
-    }
 
     @PreAuthorize("@auth.hasCode('qf:todo:approve')")
     @Operation(summary = "审批待办事项")
@@ -87,35 +78,19 @@ public class QfTodoController {
         return Result.success("操作成功");
     }
 
-    /**
-     * 代办审批的时候回显审批流画布
-     *
-     */
-    @PreAuthorize("@auth.hasCode('qf:todo:details')")
-    @Operation(summary = "获取待办事项审批流")
-    @PostMapping("/getQfTodoApproveFlow")
-    public Result<String> getQfTodoApproveFlow(@RequestBody @Valid CommonIdDto dto) throws Exception {
-        String flow = qfTodoService.getQfTodoApproveFlow(dto);
-        if (flow == null) {
-            return Result.error("无数据");
-        }
-        return Result.success(flow);
-    }
+
 
     /**
-     * 代办的流程的流转记录
-     * 返回按照时间的顺序
-     * 返回 节点名称，节点审批人，节点审批时间，节点审批结果
-     *
+     * 获取待办事项对应流程的所有节点ID和名称
      */
     @PreAuthorize("@auth.hasCode('qf:todo:details')")
-    @Operation(summary = "获取待办事项流程流转记录")
-    @PostMapping("/getQfTodoApproveFlowRecord")
-    public Result<List<ApproveFlowRecordVo>> getQfTodoApproveFlowRecord(@RequestBody @Valid CommonIdDto dto) throws Exception {
-        List<ApproveFlowRecordVo> records = qfTodoService.getQfTodoApproveFlowRecord(dto);
-        if (records == null || records.isEmpty()) {
+    @Operation(summary = "获取待办事项流程节点列表")
+    @PostMapping("/getQfTodoProcessNodes")
+    public Result<List<ProcessNodeVo>> getQfTodoProcessNodes(@RequestBody @Valid CommonIdDto dto) throws Exception {
+        List<ProcessNodeVo> nodes = qfTodoService.getQfTodoProcessNodes(dto);
+        if (nodes == null || nodes.isEmpty()) {
             return Result.error("无数据");
         }
-        return Result.success(records);
+        return Result.success(nodes);
     }
 }

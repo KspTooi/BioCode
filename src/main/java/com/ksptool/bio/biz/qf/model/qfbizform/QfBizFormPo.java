@@ -56,6 +56,8 @@ public class QfBizFormPo {
     @Column(name = "seq", nullable = false, comment = "排序")
     private Integer seq;
 
+    @Column(name = "summary_template", length = 200, comment = "摘要模板")
+    private String summaryTemplate;
     @CreatedDate
     @Column(name = "create_time", nullable = false, comment = "创建时间")
     private LocalDateTime createTime;

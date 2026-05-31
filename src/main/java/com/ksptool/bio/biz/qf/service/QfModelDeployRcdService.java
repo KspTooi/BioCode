@@ -10,6 +10,7 @@ import com.ksptool.bio.biz.qf.model.qfmodeldeployrcd.vo.GetQfModelDeployRcdDetai
 import com.ksptool.bio.biz.qf.model.qfmodeldeployrcd.vo.GetQfModelDeployRcdListVo;
 import com.ksptool.bio.biz.qf.repository.QfModelDeployRcdRepository;
 import com.ksptool.bio.biz.qf.repository.QfModelRepository;
+import jakarta.persistence.Tuple;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import java.util.List;
 
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
+import static com.ksptool.bio.biz.core.common.TupleMapper.tupleAs;
 
 
 /**
@@ -57,13 +59,13 @@ public class QfModelDeployRcdService {
         QfModelDeployRcdPo query = new QfModelDeployRcdPo();
         assign(dto, query);
 
-        Page<QfModelDeployRcdPo> page = repository.getQfModelDeployRcdList(query, dto.pageRequest());
+        Page<Tuple> page = repository.getQfModelDeployRcdList(query, dto.pageRequest());
         if (page.isEmpty()) {
             return PageResult.successWithEmpty();
         }
 
-        List<GetQfModelDeployRcdListVo> vos = as(page.getContent(), GetQfModelDeployRcdListVo.class);
-        return PageResult.success(vos, (int) page.getTotalElements());
+        Page<GetQfModelDeployRcdListVo> voPage = tupleAs(page, GetQfModelDeployRcdListVo.class);
+        return PageResult.success(voPage.getContent(), (int) voPage.getTotalElements());
     }
 
 

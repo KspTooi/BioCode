@@ -13,7 +13,8 @@ public class GetQfModelDetailsVo {
 
     @Schema(description = "模型分组ID")
     private Long groupId;
-
+    @Schema(description = "关联表单ID")
+    private Long formId;
     @Schema(description = "模型名称")
     private String name;
 

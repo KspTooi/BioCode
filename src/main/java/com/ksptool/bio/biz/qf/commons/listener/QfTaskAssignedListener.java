@@ -1,14 +1,14 @@
 package com.ksptool.bio.biz.qf.commons.listener;
 
-import com.ksptool.bio.biz.qf.commons.QfMemberKinds;
 import com.ksptool.bio.biz.qf.commons.QfProcTools;
 import com.ksptool.bio.biz.qf.commons.QfVarsProc;
 import com.ksptool.bio.biz.qf.commons.event.QfTaskAssignedEvent;
-import com.ksptool.bio.biz.qf.commons.event.QfTaskStartedEvent;
 import com.ksptool.bio.biz.qf.model.qftodo.QfTodoPo;
 import com.ksptool.bio.biz.qf.repository.QfTodoRepository;
 import com.ksptool.bio.biz.qf.service.QfMemberService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.flowable.common.engine.api.delegate.event.FlowableEngineEntityEvent;
 import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
 import org.flowable.engine.TaskService;
@@ -67,27 +67,46 @@ public class QfTaskAssignedListener extends AbstractFlowableEngineEventListener 
      * <p>
      * 当引擎任务发生重新分配时，将旧待办作废（status=10），
      * 并根据任务变量重新创建一条新待办及发布任务重分配事件。
+     * <p>
+     * 注意：Flowable 在任务创建时若已设 assignee，会先发 TASK_CREATED 再发 TASK_ASSIGNED。
+     * 此时旧待办刚创建（<30 秒内），属于初始分配而非转交，仅更新待办 memberId 不进行作废重建。
      *
      * @param event 任务重分配事件
      */
     @Override
     protected void taskAssigned(FlowableEngineEntityEvent event) {
         Task task = (Task) event.getEntity();
-        var po = qfTodoRepository.findByEngTaskId(task.getId());
+        var po = qfTodoRepository.findByEngTaskIdAndStatus(task.getId(), 0);
 
         if (po == null) {
-            log.warn("[QfTaskAssignedListener] 未找到对应待办记录, 引擎任务ID: {}", task.getId());
+            log.debug("[QfTaskAssignedListener] 待办尚未创建(可能TASK_ASSIGNED先于TASK_CREATED触发), 引擎任务ID: {}", task.getId());
             return;
         }
 
+        //判断是否属于初始分配（任务创建后 30 秒内的 TASK_ASSIGNED 视为初始 assignee 注入）
+        var now = LocalDateTime.now();
+        var isInitial = po.getCreateTime() != null
+                && java.time.Duration.between(po.getCreateTime(), now).getSeconds() < 30;
+
+        if (isInitial) {
+            //初始分配：更新待办的 memberId 到实际办理人，不作废旧待办
+            Long realMemberId = parseAssignee(task.getAssignee());
+            if (realMemberId != null && !realMemberId.equals(po.getMemberId())) {
+                po.setMemberId(realMemberId);
+                qfTodoRepository.save(po);
+            }
+            return;
+        }
+
+        //以下是真正的转交（重新分配）：作废旧待办，创建新待办
         if (po.getStatus() != 0) {
             return;
         }
-        // 取消旧待办
+
+        // 作废旧待办
         po.setStatus(10);
         po.setComment("处理人变更，重新分配");
         qfTodoRepository.save(po);
-
 
         //获取任务变量Map
         Map<String, Object> vars = taskService.getVariables(task.getId());
@@ -120,14 +139,7 @@ public class QfTaskAssignedListener extends AbstractFlowableEngineEventListener 
         var dataId = QfProcTools.varLong(vars, QfVarsProc.DATA_ID, 0L);
         var nodeName = QfProcTools.nodeName(task);
         var summary = QfProcTools.varString(vars, QfVarsProc.SUMMARY, "");
-        var memberType = 0;
-
-        if(memberKind == QfMemberKinds.USER){
-            memberType = 0;
-        }
-        if(memberKind == QfMemberKinds.GROUP){
-            memberType = 1;
-        }
+        var memberType = memberKind.getMemberType();
 
         var memberId = _memberId;
         var initiatorId = QfProcTools.varLong(vars, QfVarsProc.INITIATOR_ID, 0L);
@@ -149,8 +161,8 @@ public class QfTaskAssignedListener extends AbstractFlowableEngineEventListener 
         po.setInitiatorId(initiatorId);
         po.setInitiatorName(trunc(initiatorName, 20));
         po.setInitiatorTime(initiatorTime);
-        po.setStatus(0); //0:待办 1:已办 10:已作废
-
+        po.setStatus(0);
+        po.setEngProcessDefId(task.getProcessDefinitionId());
         qfTodoRepository.save(po);
 
         //发布任务启动事件
@@ -158,6 +170,13 @@ public class QfTaskAssignedListener extends AbstractFlowableEngineEventListener 
         assign(po, fireEvent);
         fireEvent.setTodoId(po.getId());
         aep.publishEvent(fireEvent);
+    }
+
+    private static Long parseAssignee(String assignee) {
+        if (StringUtils.isBlank(assignee) || !NumberUtils.isCreatable(assignee)) {
+            return null;
+        }
+        return Long.parseLong(assignee);
     }
 
 }
