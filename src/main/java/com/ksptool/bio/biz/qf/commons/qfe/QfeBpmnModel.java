@@ -122,7 +122,7 @@ public class QfeBpmnModel {
             return null;
         }
 
-        return startEvents.get(0);
+        return startEvents.getFirst();
     }
 
 
@@ -308,13 +308,12 @@ public class QfeBpmnModel {
                         }
 
                         passNodeCount++;
-                        continue;
                     }
 
                     //其余类型(网关/结束等)均不算合法节点
                 }
 
-                if(passNodeCount < 1){
+                if (passNodeCount < 1) {
                     return "节点[" + utId + "][" + utName + "] 为发起时跳过节点，但未正确连接到'开始节点'或另一个'发起时跳过节点'。";
                 }
 
