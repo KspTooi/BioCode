@@ -8,10 +8,8 @@ import type {
 import QfModelDeployRcdApi from "@/views/qf/api/QfModelDeployRcdApi.ts";
 import { Result } from "@/commons/model/Result";
 import { ElMessage, ElMessageBox } from "element-plus";
-import type { GetQfBizFormListVo } from "@/views/qf/api/QfBizFormApi";
-import QfBizFormApi from "@/views/qf/api/QfBizFormApi";
 import QfProcApi from "@/views/qf/api/QfProcApi.ts";
-import type { LaunchQfProcessDto } from "@/views/qf/api/QfProcApi.ts";
+import type { LaunchProcDto } from "@/views/qf/api/QfProcApi.ts";
 
 /**
  * 模态框模式类型
@@ -247,18 +245,13 @@ export default {
     // 当前要发起流程的行数据（用于回显模型编码）
     const launchRow = ref<GetQfModelDeployRcdListVo | null>(null);
 
-    //流程业务表单选择数据
-    const launchBizFormList = ref<GetQfBizFormListVo[]>([]);
-
-    const launchForm = reactive<LaunchQfProcessDto>({
+    const launchForm = reactive<LaunchProcDto>({
       code: "",
-      bizFormCode: "",
-      dataId: null,
+      dataId: "",
     });
 
     const launchRules: FormRules = {
       code: [{ required: true, message: "模型编码不能为空", trigger: "blur" }],
-      bizFormCode: [{ required: true, message: "业务表单不能为空", trigger: "blur" }],
       dataId: [{ required: true, message: "业务数据ID不能为空", trigger: "blur" }],
     };
 
@@ -268,22 +261,8 @@ export default {
     const openLaunchModal = async (row: GetQfModelDeployRcdListVo): Promise<void> => {
       launchRow.value = row;
       launchForm.code = row.code;
-      launchForm.bizFormCode = "";
-      launchForm.dataId = null;
+      launchForm.dataId = "";
       launchVisible.value = true;
-
-      //获取流程业务表单选择数据
-      const result = await QfBizFormApi.getQfBizFormList({
-        pageNum: 1,
-        pageSize: 50000,
-        name: null,
-        code: null,
-        status: 0,
-      });
-
-      if (Result.isSuccess(result)) {
-        launchBizFormList.value = result.data;
-      }
     };
 
     /**
@@ -294,8 +273,7 @@ export default {
         modalFormRef.value.resetFields();
       }
       launchForm.code = "";
-      launchForm.bizFormCode = "";
-      launchForm.dataId = null;
+      launchForm.dataId = "";
       launchRow.value = null;
     };
 
@@ -316,7 +294,7 @@ export default {
       launchLoading.value = true;
 
       try {
-        const msg = await QfProcApi.launchQfProcess(launchForm);
+        const msg = await QfProcApi.launchProc(launchForm);
         ElMessage.success(msg || "流程已发起");
         launchVisible.value = false;
         reloadCallback();
@@ -333,7 +311,6 @@ export default {
       launchRow,
       launchForm,
       launchRules,
-      launchBizFormList,
       openLaunchModal,
       resetLaunchModal,
       submitLaunchModal,

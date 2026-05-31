@@ -5,9 +5,8 @@ import type { ApproveFlowRecordVo } from "@/views/qf/api/QfTodoApi.ts";
 /**
  * 发起审批流程Dto
  */
-export interface LaunchQfProcessDto {
+export interface LaunchProcDto {
   code: string; // 模型编码
-  bizFormCode: string; // 业务表单编码
   dataId: string; // 业务数据ID
 }
 
@@ -22,8 +21,8 @@ export default {
   /**
    * 发起审批流程
    */
-  launchQfProcess: async (dto: LaunchQfProcessDto): Promise<string> => {
-    const result = await Http.postEntity<Result<string>>("/qfProc/launchQfProcess", dto);
+  launchProc: async (dto: LaunchProcDto): Promise<string> => {
+    const result = await Http.postEntity<Result<string>>("/qfProc/launchProc", dto);
     if (result.code === 0) {
       return result.message;
     }

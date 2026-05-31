@@ -140,19 +140,8 @@
         <el-form-item label="模型编码" prop="code">
           <el-input v-model="launchForm.code" disabled />
         </el-form-item>
-        <el-form-item label="业务表单编码" prop="bizFormCode">
-          <el-select v-model="launchForm.bizFormCode" placeholder="选择业务表单" clearable>
-            <el-option v-for="item in launchBizFormList" :key="item.id" :label="item.name" :value="item.code" />
-          </el-select>
-        </el-form-item>
         <el-form-item label="业务数据ID" prop="dataId">
-          <el-input-number
-            v-model="launchForm.dataId"
-            :min="1"
-            :controls="false"
-            style="width: 100%"
-            placeholder="输入业务数据ID"
-          />
+          <el-input v-model="launchForm.dataId" placeholder="输入业务数据ID" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -204,7 +193,6 @@ const {
   launchLoading,
   launchForm,
   launchRules,
-  launchBizFormList,
   openLaunchModal,
   resetLaunchModal,
   submitLaunchModal,
