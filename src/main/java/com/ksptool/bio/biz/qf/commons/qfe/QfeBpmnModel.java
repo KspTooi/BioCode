@@ -360,7 +360,6 @@ public class QfeBpmnModel {
 
             }
 
-
             //处理人类型为 "发起时选人" 时的验证
             if (approveKind == AprKind.INIT_SELECTED) {
 

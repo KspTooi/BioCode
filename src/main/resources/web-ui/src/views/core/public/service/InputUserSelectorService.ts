@@ -47,7 +47,7 @@ export default {
 
       if (data || data.length > 0) {
         //拼接已选用户姓名
-        const userNames = data.map((v) => v.nickname).join("、");
+        const userNames = data.map((v) => v.nickname || v.username).join("、");
         draftCheckedUserNames.value = userNames;
       }
 
