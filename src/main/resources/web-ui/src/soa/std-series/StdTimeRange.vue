@@ -9,7 +9,7 @@
         :placeholder="startPlaceholder"
         :value-format="valueFormat"
         :format="valueFormat"
-        :disabled="disableds?.[0]"
+        :disabled="disableds"
         :disabled-date="resolveDisableStartDate"
         :disabled-hours="resolveDisableStartHours"
         :disabled-minutes="resolveDisableStartMinutes"
@@ -29,7 +29,7 @@
         :value-format="valueFormat"
         :format="valueFormat"
         clearable
-        :disabled="disableds?.[1]"
+        :disabled="disableds"
         :disabled-date="resolveDisableEndDate"
         :disabled-hours="resolveDisableEndHours"
         :disabled-minutes="resolveDisableEndMinutes"
@@ -61,7 +61,7 @@ const props = withDefaults(
     valueFormat?: string; //日期格式
     clearable?: boolean; //是否可清除
     rangeSeparator?: string; //范围分隔符
-    disableds?: boolean[]; //是否禁用
+    disableds?: boolean; //是否禁用
     showMsg?: boolean; //是否显示验证消息
     width?: string; //宽度
     isFocus?: boolean; //是否聚焦
@@ -75,7 +75,7 @@ const props = withDefaults(
     valueFormat: "YYYY-MM-DD HH:mm:ss",
     clearable: true,
     rangeSeparator: "至",
-    disableds: () => [false, false],
+    disableds: () => false,
     showMsg: true,
     width: "100%",
     isFocus: true,
