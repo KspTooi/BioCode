@@ -11,7 +11,7 @@
   <el-form-item label="跳过表达式">
     <el-input v-model="form.skipExpression" :disabled="true" placeholder="Flowable skipExpression" @change="onOtherCommit" />
   </el-form-item>
-  <el-form-item label="发起时跳过">
+  <el-form-item label="首次发起时跳过">
     <el-switch v-model="form.utGeInitSkip" active-value="1" inactive-value="0" @change="onInitSkipCommit" />
   </el-form-item>
 </template>
