@@ -275,6 +275,16 @@ public class QfeBpmnModel {
             //校验发起时跳过节点 -- 上有节点必须至少有一个"发起时跳过节点"或"开始节点"
             if (qfeUserTask.isInitSkip()) {
 
+                //处理人类型必须配置为标准
+                if(approveKind != AprKind.STANDARD){
+                    return "节点[" + utId + "][" + utName + "] 为发起时跳过节点，其处理人类型必须配置为标准。";
+                }
+
+                //处理人配置只能是"指定用户" + "发起人" 不能是抽象的人和组 否则发起时不能确定具体处理人
+                if(memberKind != MemberKind.USER && memberKind != MemberKind.INITIATOR){
+                    return "节点[" + utId + "][" + utName + "] 为发起时跳过节点，其处理人配置只能配置为指定用户或发起人。";
+                }
+
                 //上游节点中"发起时跳过节点"或"开始节点"的数量
                 var passNodeCount = 0;
 
