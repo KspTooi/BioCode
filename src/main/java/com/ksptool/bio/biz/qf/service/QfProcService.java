@@ -26,11 +26,13 @@ import com.ksptool.bio.biz.qf.repository.QfModelDeployRcdRepository;
 import com.ksptool.bio.biz.qf.repository.QfTodoRepository;
 import com.ksptool.text.PreparedPrompt;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.flowable.engine.IdentityService;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
+import org.flowable.engine.TaskService;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -53,6 +55,7 @@ import java.util.stream.Collectors;
  * 未经事先书面许可，严禁任何形式的复制或分发。
  * @since 2026-04-17
  */
+@Slf4j
 @Service
 public class QfProcService {
 
@@ -91,6 +94,9 @@ public class QfProcService {
 
     @Autowired
     private OrgRepository oRepository;
+
+    @Autowired
+    private TaskService ftService;
 
 
     /**
@@ -307,6 +313,34 @@ public class QfProcService {
                     deploy.getEngProcessDefId(),
                     lp.getDataId().toString(),
                     pv);
+
+
+            //跳过那些"首次发起时跳过节点" 
+            var guard = 0;
+            while (guard < 50) {
+                guard++;
+                var tasks = ftService.createTaskQuery()
+                        .processInstanceId(pi.getId())
+                        .active()
+                        .list();
+                if (tasks.isEmpty()) {
+                    break;
+                }
+                var skipped = false;
+                for (var task : tasks) {
+                    var ut = m.getUserTask(task.getTaskDefinitionKey());
+                    if (ut == null || !ut.isInitSkip()) {
+                        continue;
+                    }
+                    ftService.complete(task.getId());
+                    skipped = true;
+                    log.info("[QF-Launcher]跳过'首次发起时跳过节点'[" + ut.getId() + "][" + ut.getName() + "]。");
+                }
+                if (!skipped) {
+                    log.error("[QF-Launcher]未能跳过所有'首次发起时跳过节点'。");
+                    break;
+                }
+            }
 
             return pi.getId();
 
