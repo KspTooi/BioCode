@@ -39,6 +39,7 @@ const MI_VAR_PREFIX = "qfMi_";
 const MI_ELEM_VAR = "assignee";
 const TASK_ASSIGNEE_EXPR = "${assignee}";
 const INITIATOR_EXPR = "${initiator}";
+const COMP_COUNTERSIGN = "${nrOfCompletedInstances == nrOfInstances}";
 const COMP_OR_SIGN = "${nrOfCompletedInstances >= 1}";
 
 const CLEAR_ASSIGNEE_META = {
@@ -210,9 +211,11 @@ async function loadFromBpmn(_modeler: unknown, element: unknown): Promise<void> 
       const body = (comp?.body ?? "").replace(/\s+/g, "");
       if (body === "${nrOfCompletedInstances>=1}" || body === "${nrOfCompletedInstances>0}") {
         panelForm.utAprMi = "2";
+        return;
       }
       if (body === "" || body === "${nrOfCompletedInstances==nrOfInstances}") {
         panelForm.utAprMi = "1";
+        return;
       }
       if (panelForm.utAprMi === "0") {
         panelForm.utAprMi = "3";
@@ -288,6 +291,9 @@ function uploadToBpmn(modeler: unknown, element: unknown): Promise<void> {
   });
 
   let compBody = "";
+  if (mi === "1") {
+    compBody = COMP_COUNTERSIGN;
+  }
   if (mi === "2") {
     compBody = COMP_OR_SIGN;
   }
@@ -569,12 +575,12 @@ export default {
 
       //会签
       if (val === "1") {
-        panelForm.utAprMiExpress = "${nrOfCompletedInstances == nrOfInstances}";
+        panelForm.utAprMiExpress = COMP_COUNTERSIGN;
       }
 
       //或签
       if (val === "2") {
-        panelForm.utAprMiExpress = "${nrOfCompletedInstances > 0}";
+        panelForm.utAprMiExpress = COMP_OR_SIGN;
       }
 
       //自定义
