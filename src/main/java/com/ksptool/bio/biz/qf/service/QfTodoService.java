@@ -7,20 +7,23 @@ import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.bio.biz.auth.repository.UserGroupRepository;
 import com.ksptool.bio.biz.core.common.TupleMapper;
 import com.ksptool.bio.biz.core.repository.UserRepository;
+import com.ksptool.bio.biz.qf.commons.QfeVarsModel;
 import com.ksptool.bio.biz.qf.commons.qfe.QfeBpmnModel;
 import com.ksptool.bio.biz.qf.commons.qfe.QfeUserTask;
 import com.ksptool.bio.biz.qf.commons.qfe.QfeUserTask.AprAction;
 import com.ksptool.bio.biz.qf.commons.qfe.QfeUserTask.MemberKind;
 import com.ksptool.bio.biz.qf.commons.qfe.QfeUserTask.TodoStatus;
-import com.ksptool.bio.biz.qf.commons.QfeVarsModel;
 import com.ksptool.bio.biz.qf.model.qfbizform.vo.GetQfBizFormDetailsVo;
 import com.ksptool.bio.biz.qf.model.qfmodeldeployrcd.QfModelDeployRcdPo;
 import com.ksptool.bio.biz.qf.model.qftodo.QfTodoPo;
 import com.ksptool.bio.biz.qf.model.qftodo.dto.*;
-import com.ksptool.bio.biz.qf.model.qftodo.vo.*;
+import com.ksptool.bio.biz.qf.model.qftodo.vo.GetQfTodoDetailsVo;
+import com.ksptool.bio.biz.qf.model.qftodo.vo.GetQfTodoListVo;
+import com.ksptool.bio.biz.qf.model.qftodo.vo.ProcessNodeVo;
 import com.ksptool.bio.biz.qf.repository.QfModelDeployRcdRepository;
 import com.ksptool.bio.biz.qf.repository.QfTodoRepository;
 import jakarta.persistence.Tuple;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.flowable.engine.IdentityService;
@@ -31,7 +34,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -75,7 +77,6 @@ public class QfTodoService {
 
     @Autowired
     private QfBizFormService bizFormService;
-
 
 
     @Autowired
@@ -190,8 +191,8 @@ public class QfTodoService {
      * 根据表名和数据ID批量取消待办事项
      *
      * @param tableName 表名
-     * @param dataId   数据ID
-     * @param reason   取消原因
+     * @param dataId    数据ID
+     * @param reason    取消原因
      */
     @Transactional(rollbackFor = Exception.class)
     public void cancelQfTodoByData(String tableName, Long dataId, String reason) {
@@ -386,9 +387,6 @@ public class QfTodoService {
     }
 
 
-
-
-
     /**
      * 作废同流程中已被引擎取消的孤儿待办
      * <p>
@@ -463,6 +461,7 @@ public class QfTodoService {
         }
         return dataIdToUserIds;
     }
+
     /**
      * 填充待办事项的表单配置（审批操作按钮、是否允许填写意见、可编辑字段）
      * <p>

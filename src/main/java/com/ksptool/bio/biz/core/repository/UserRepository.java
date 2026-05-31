@@ -225,4 +225,16 @@ public interface UserRepository extends JpaRepository<UserPo, Long> {
                 WHERE id IN (:userIds)
             """, nativeQuery = true)
     List<UserPo> getUserListByUserIds(@Param("userIds") Set<Long> userIds);
+
+    
+    /**
+     * 根据用户ID列表统计用户数量
+     *
+     * @param userIds 用户ID列表
+     * @return 用户数量
+     */
+    @Query("""
+            SELECT COUNT(p.id) FROM UserPo p WHERE p.id IN :userIds
+            """)
+    int countByIds(@Param("userIds") List<Long> userIds);
 }

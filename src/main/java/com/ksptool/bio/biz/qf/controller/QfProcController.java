@@ -1,6 +1,7 @@
 package com.ksptool.bio.biz.qf.controller;
 
 import com.ksptool.assembly.entity.web.Result;
+import com.ksptool.bio.biz.qf.commons.LaunchParam;
 import com.ksptool.bio.biz.qf.model.qfmodeldeployrcd.dto.LaunchProcDto;
 import com.ksptool.bio.biz.qf.model.qftodo.dto.GetProcessApproveFlowDto;
 import com.ksptool.bio.biz.qf.model.qftodo.dto.GetProcessApproveFlowRecordDto;
@@ -51,7 +52,13 @@ public class QfProcController {
     @Operation(summary = "发起审批流程(测试用)")
     @PostMapping("/launchProc")
     public Result<String> launchProc(@RequestBody @Valid LaunchProcDto dto) throws Exception {
-        String processInstanceId = qfProcService.launchProc(dto.getCode(), dto.getDataId(), null);
+
+        var p = LaunchParam.builder()
+                .modelCode(dto.getCode())
+                .dataId(dto.getDataId())
+                .build();
+        
+        var processInstanceId = qfProcService.launchProc(p);
         return Result.success(processInstanceId);
     }
 

@@ -44,7 +44,10 @@ public enum QfeVarsModel {
     UT_APR_COMMENT("utAprComment"),
 
     //绑定表单可编辑字段
-    UT_FORM_ALLOW_EDIT_FIELDS("utFormAllowEditFields");
+    UT_FORM_ALLOW_EDIT_FIELDS("utFormAllowEditFields"),
+
+    //是否允许发起时跳过 0:不跳过 1:跳过
+    UT_GE_INIT_SKIP("utGeInitSkip");
 
     /** BPMN 扩展命名空间 URI，与前端 qfeDescriptor.json 一致 */
     public static final String NS_URI = "quick_flow_extstion";

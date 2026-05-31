@@ -265,4 +265,14 @@ public interface OrgRepository extends JpaRepository<OrgPo, Long> {
             """)
     List<OrgPo> getAllByOrgId(@Param("orgId") Long orgId);
 
+    /**
+     * 根据ID列表统计组织机构数量
+     *
+     * @param ids 组织机构ID列表
+     * @return 组织机构数量
+     */
+    @Query("""
+            SELECT COUNT(u) FROM OrgPo u WHERE u.id IN :ids
+            """)
+    int countByIds(@Param("ids") List<Long> ids);
 }

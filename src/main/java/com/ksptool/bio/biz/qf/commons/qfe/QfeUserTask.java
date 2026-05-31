@@ -22,9 +22,10 @@ public class QfeUserTask {
      * @param userTask UserTask
      * @return QfeUserTask
      */
-    public QfeUserTask of(UserTask userTask) {
-        this.userTask = userTask;
-        return this;
+    public static QfeUserTask of(UserTask userTask) {
+        var t = new QfeUserTask();
+        t.userTask = userTask;
+        return t;
     }
 
     /**
@@ -71,6 +72,20 @@ public class QfeUserTask {
     public boolean isMultiInstance() {
         var k = getMultiInstanceKind();
         return k != null && k != AprMi.NONE;
+    }
+
+    /**
+     * 是否允许发起时跳过
+     *
+     * @return 是否允许发起时跳过
+     */
+    public boolean isInitSkip() {
+        var attr = getAttr(QfeVarsModel.UT_GE_INIT_SKIP);
+        if (StringUtils.isBlank(attr)) {
+            return false;
+        }
+        
+        return attr.equals("1");
     }
 
 
@@ -398,5 +413,6 @@ public class QfeUserTask {
             this.value = value;
         }
     }
+    
 
 }

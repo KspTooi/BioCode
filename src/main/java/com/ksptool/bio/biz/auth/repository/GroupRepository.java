@@ -122,4 +122,15 @@ public interface GroupRepository extends JpaRepository<GroupPo, Long>, JpaSpecif
             WHERE g.id IN :ids AND g.status = :status
             """)
     List<Long> getUserGroupByIds(@Param("ids") List<Long> ids, Integer status);
+
+    /**
+     * 根据ID列表统计用户组数量
+     *
+     * @param ids 用户组ID列表
+     * @return 用户组数量
+     */
+    @Query("""
+            SELECT COUNT(g) FROM GroupPo g WHERE g.id IN :ids
+            """)
+    int countByIds(@Param("ids") List<Long> ids);
 }

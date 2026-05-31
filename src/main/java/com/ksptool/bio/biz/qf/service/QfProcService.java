@@ -2,11 +2,16 @@ package com.ksptool.bio.biz.qf.service;
 
 import com.ksptool.assembly.entity.exception.AuthException;
 import com.ksptool.assembly.entity.exception.BizException;
+import com.ksptool.bio.biz.auth.model.auth.AuthUserSession;
+import com.ksptool.bio.biz.auth.repository.GroupRepository;
+import com.ksptool.bio.biz.auth.repository.UserGroupRepository;
 import com.ksptool.bio.biz.auth.service.SessionService;
 import com.ksptool.bio.biz.core.model.user.UserPo;
+import com.ksptool.bio.biz.core.repository.OrgRepository;
 import com.ksptool.bio.biz.core.repository.UserRepository;
-import com.ksptool.bio.biz.qf.commons.QfeVarsModel;
+import com.ksptool.bio.biz.qf.commons.LaunchParam;
 import com.ksptool.bio.biz.qf.commons.QfVarsProc;
+import com.ksptool.bio.biz.qf.commons.QfeVarsModel;
 import com.ksptool.bio.biz.qf.commons.qfe.QfeBpmnModel;
 import com.ksptool.bio.biz.qf.commons.qfe.QfeUserTask;
 import com.ksptool.bio.biz.qf.commons.qfe.QfeUserTask.MemberKind;
@@ -33,10 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -73,97 +75,238 @@ public class QfProcService {
     private IdentityService fiService;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private Flowable8NodeUtil flowable8NodeUtil;
 
     @Autowired
     private QfTodoRepository qfTodoRepository;
 
+    @Autowired
+    private UserRepository uRepository;
+
+    @Autowired
+    private UserGroupRepository ugRepository;
+
+    @Autowired
+    private GroupRepository gRepository;
+
+    @Autowired
+    private OrgRepository oRepository;
+
+
     /**
-     * 按模型编码发起审批流程(测试)
+     * 取逗号分隔串的第一个元素并 trim；空串返回 null
+     */
+    private static String firstId(String csv) {
+        if (StringUtils.isBlank(csv)) {
+            return null;
+        }
+        return csv.split(",")[0].trim();
+    }
+
+    /**
+     * 按模型编码发起审批流程
      *
-     * @param modelCode   模型编码
-     * @param dataId      业务数据ID
+     * @param lp 启动流程参数
      * @return 流程实例ID
      * @throws BizException 业务异常
      */
     @Transactional(rollbackFor = Exception.class)
-    public String launchProc(String modelCode,  Long dataId, Map<String,String> datas) throws BizException, AuthException {
+    public String launchProc(LaunchParam lp) throws BizException, AuthException {
 
-        if (StringUtils.isBlank(modelCode)) {
-            throw new BizException("无法启动流程,模型编码不能为空");
+        if (lp == null) {
+            throw new BizException("启动流程失败,启动参数不能为空。");
         }
 
-        if (dataId == null) {
-            throw new BizException("无法启动流程,业务数据ID不能为空");
+        var error = lp.validate();
+
+        if (StringUtils.isNotBlank(error)) {
+            throw new BizException(error);
         }
 
-        var deploy = qmdrRepository.getLatestActiveByCode(modelCode);
-
+        //获取流程部署
+        var deploy = qmdrRepository.getLatestActiveByCode(lp.getModelCode());
 
         if (deploy == null) {
-            throw new BizException("无法启动流程,未找到可用的流程部署[code=" + modelCode + "]");
+            throw new BizException("启动流程失败,未找到可用的流程部署[code=" + lp.getModelCode() + "]");
         }
 
-        var form = qbfRepository.findById(deploy.getFormId()).get();
+        //获取业务表单
+        var form = qbfRepository.findById(deploy.getFormId())
+                .orElseThrow(() -> new BizException("启动流程失败,业务表单不存在:[" + deploy.getFormId() + "]"));
 
-        var aud = SessionService.session();
-        var rootId = aud.getRootId();
-        var deptId = aud.getDeptId();
-        var userId = aud.getUserId();
-        var nickname = aud.getNickname();
+        AuthUserSession aus = SessionService.session();
+        var rid = aus.getRootId();
+        var did = aus.getDeptId();
+        var uid = aus.getUserId();
+        var un = StringUtils.isNotBlank(aus.getNickname()) ? aus.getNickname() : aus.getUsername();
 
-        if (rootId == null || deptId == null) {
-            throw new BizException("无法启动流程,未能获取到有效的租户ID或者部门ID！");
+        if (rid == null || did == null || uid == null) {
+            throw new BizException("启动流程失败,用户信息异常。");
         }
 
-        if (userId == null) {
-            throw new BizException("无法启动流程,未能获取到有效的用户ID！");
-        }
+        //准备流程变量
+        var pv = new HashMap<String, Object>();
+        pv.put("initiator", uid.toString());
+        pv.put(QfVarsProc.ROOT_ID.getValue(), rid);
+        pv.put(QfVarsProc.DEPT_ID.getValue(), did);
+        pv.put(QfVarsProc.INITIATOR_ID.getValue(), uid);
+        pv.put(QfVarsProc.INITIATOR_NAME.getValue(), un);
+        pv.put(QfVarsProc.INITIATOR_TIME.getValue(), LocalDateTime.now().format(dtf));
+        pv.put(QfVarsProc.BIZ_FORM_ID.getValue(), form.getId());
+        pv.put(QfVarsProc.TABLE_NAME.getValue(), form.getTableName());
+        pv.put(QfVarsProc.DATA_ID.getValue(), lp.getDataId());
 
-        if (StringUtils.isBlank(nickname)) {
-            nickname = aud.getUsername();
-        }
+        //解析待办摘要
+        var summary = un + "提交的" + form.getName() + "审批";
+        var fst = form.getSummaryTemplate(); //Form Summary Template(FST)
 
-        var p = new HashMap<String, Object>();
-
-        p.put("initiator", userId.toString());
-        p.put(QfVarsProc.ROOT_ID.getValue(), rootId);
-        p.put(QfVarsProc.DEPT_ID.getValue(), deptId);
-        p.put(QfVarsProc.INITIATOR_ID.getValue(), userId);
-        p.put(QfVarsProc.INITIATOR_NAME.getValue(), nickname);
-        p.put(QfVarsProc.INITIATOR_TIME.getValue(), LocalDateTime.now().format(dtf));
-
-        p.put(QfVarsProc.BIZ_FORM_ID.getValue(), form.getId());
-        p.put(QfVarsProc.TABLE_NAME.getValue(), form.getTableName());
-        p.put(QfVarsProc.DATA_ID.getValue(), dataId);
-
-        String summary = nickname + "提交的" + form.getName() + "审批";
-        if (StringUtils.isNotBlank(form.getSummaryTemplate())) {
-            PreparedPrompt prompt = new PreparedPrompt(form.getSummaryTemplate());
-            for (var entry : datas.entrySet()) {
-                prompt.setParameter(entry.getKey(), entry.getValue());
+        //如果业务表单使用了摘要模板 且 传入了 摘要模板参数，以摘要模板为准
+        if (StringUtils.isNotBlank(fst) && !lp.getSParams().isEmpty()) {
+            var pp = new PreparedPrompt(fst);
+            for (var entry : lp.getSParams().entrySet()) {
+                pp.setParameter(entry.getKey(), entry.getValue() != null ? entry.getValue() : "");
             }
-            summary = prompt.execute();
+            summary = pp.execute();
         }
-        p.put(QfVarsProc.SUMMARY.getValue(), summary);
+        pv.put(QfVarsProc.SUMMARY.getValue(), summary);
 
-        fiService.setAuthenticatedUserId(userId.toString());
+        //设置发起人用户ID
+        fiService.setAuthenticatedUserId(uid.toString());
 
-        var qfeModel = new QfeBpmnModel().of(frpService.getBpmnModel(deploy.getEngProcessDefId()));
-        if (qfeModel.getBpmnModel() == null || qfeModel.getBpmnModel().getMainProcess() == null) {
-            throw new BizException("无法启动流程,未找到可用的流程模型[code=" + deploy.getCode() + "]");
+
+        var m = new QfeBpmnModel().of(deploy.getBpmnXml());
+
+        //----------------多实例节点处理 开始----------------
+
+        //给多实例节点注入候选人 XML里面预设了一些多实例人员 需要在这里注入到PV 后面才可以在事件中拿到(flowable原生也依赖这些变量拿人)
+        var uts = m.getUserTasks();
+        var miUts = uts.stream().filter(QfeUserTask::isMultiInstance).toList();
+
+        var mIds = new HashSet<Long>();
+        var gIds = new HashSet<Long>();
+        var oIds = new HashSet<Long>();
+
+        //搜集所有MI节点的MIDS + GIDS + OIDS
+        for (var miut : miUts) {
+
+            //0:指定人 1:组 2:组织 3:发起人 10:任意人 (多实例不支持3和10)
+            var kind = miut.getMemberKind();
+            var memberIds = miut.getMemberIds();
+
+            if (kind != MemberKind.USER && kind != MemberKind.GROUP && kind != MemberKind.DEPT) {
+                throw new BizException("启动流程失败,多实例节点配置了不受支持的处理人类型:[" + kind + "]");
+            }
+
+            if (memberIds.isEmpty()) {
+                throw new BizException("启动流程失败,多实例节点[" + miut.getId() + "]未配置候选人。");
+            }
+
+            //和前端约定好的变量名(qfMi_<节点ID>)
+            var pvKey = "qfMi_" + miut.getId();
+
+            if (kind == MemberKind.USER) {
+                mIds.addAll(memberIds);
+                pv.put(pvKey, memberIds);
+            }
+
+            if (kind == MemberKind.GROUP) {
+                gIds.addAll(memberIds);
+                pv.put(pvKey, memberIds);
+            }
+
+            if (kind == MemberKind.DEPT) {
+                oIds.addAll(memberIds);
+                pv.put(pvKey, memberIds);
+            }
+
         }
 
-        prepareUserTaskVars(qfeModel.getUserTasks(), p, datas);
+        //对M+G+O IDS做后处理校验 防止前端或XML侧带入不合法或已删除的ID
+        if (!mIds.isEmpty()) {
+            if (uRepository.countByIds(new ArrayList<>(mIds)) != mIds.size()) {
+                throw new BizException("启动流程失败,用户ID列表中包含不合法的ID。");
+            }
+        }
+        if (!gIds.isEmpty()) {
+            if (gRepository.countByIds(new ArrayList<>(gIds)) != gIds.size()) {
+                throw new BizException("启动流程失败,用户组ID列表中包含不合法的ID。");
+            }
+        }
+        if (!oIds.isEmpty()) {
+            if (oRepository.countByIds(new ArrayList<>(oIds)) != oIds.size()) {
+                throw new BizException("启动流程失败,组织机构ID列表中包含不合法的ID。");
+            }
+        }
+
+        //----------------多实例节点处理 结束----------------
+
+
+        //----------------发起时选人节点处理 开始----------------
+        //给发起时选人的节点注入候选人 由业务方传入 
+        var isUts = m.getUserTasks().stream().filter(QfeUserTask::isInitSelected).toList(); //先搜集所有"发起选人"的节点(isUts)
+
+        //先做初筛 防止后面出问题 后面不做校验
+        var isUtsSize = isUts.size();
+        var lpMembersSize = lp.getMembers().size();
+        if (isUtsSize != lpMembersSize) {
+            throw new BizException("启动流程失败,有" + isUtsSize + "个节点需在发起时指定处理人,但业务方指定的人员数量不足或过多。");
+        }
+
+        for (var isUt : isUts) {
+
+            //找出业务方传入的人
+            var lpMemberId = lp.getMemberId(isUt.getId());
+
+            if (lpMemberId == null || uRepository.countByIds(List.of(lpMemberId)) < 1) {
+                throw new BizException("启动流程失败,节点[" + isUt.getId() + "]未能找到指定处理人或处理人不合法。");
+            }
+
+            //获取这个节点允许的选人范围 只有可能是 10:任意人 0:指定人 1:组 
+            var rgr = isUt.getMemberKind();
+
+            if (rgr != MemberKind.ANYONE && rgr != MemberKind.USER && rgr != MemberKind.GROUP) {
+                throw new BizException("启动流程失败,节点[" + isUt.getId() + "]配置了不受支持的处理人类型:[" + rgr + "]");
+            }
+
+            //校验范围 前端一定会传范围 否则保存时会拦截
+            if (rgr == MemberKind.USER) {
+
+                var rgrMids = isUt.getMemberIds();
+
+                if (!rgrMids.contains(lpMemberId)) {
+                    throw new BizException("启动流程失败,节点[" + isUt.getId() + "] 所指定的处理人不合法。(用户范围超限)");
+                }
+
+            }
+
+            //组范围校验 业务方传的是单用户ID 直接校验用户有没有这个组即可
+            if (rgr == MemberKind.GROUP) {
+
+                var rgrGids = isUt.getMemberIds();
+
+                if (!ugRepository.hasAnyGroupsByUserId(lpMemberId, rgrGids)) {
+                    throw new BizException("启动流程失败,节点[" + isUt.getId() + "] 所指定的处理人不合法。(组范围超限)");
+                }
+
+            }
+
+            //所有校验通过 注入流程变量
+            pv.put("qfAprNode_" + isUt.getId(), lpMemberId);
+        }
+
+
+        //var qfeModel = new QfeBpmnModel().of(frpService.getBpmnModel(deploy.getEngProcessDefId()));
+        //if (qfeModel.getBpmnModel() == null || qfeModel.getBpmnModel().getMainProcess() == null) {
+        //    throw new BizException("无法启动流程,未找到可用的流程模型[code=" + deploy.getCode() + "]");
+        //}
+
+        //prepareUserTaskVars(qfeModel.getUserTasks(), pv, null);
 
         try {
             ProcessInstance pi = frService.startProcessInstanceById(
                     deploy.getEngProcessDefId(),
-                    dataId.toString(),
-                    p);
+                    lp.getDataId().toString(),
+                    pv);
 
             return pi.getId();
 
@@ -172,7 +315,6 @@ public class QfProcService {
         }
 
     }
-
 
     /**
      * 一次性遍历所有 UserTask，准备流程变量
@@ -305,16 +447,6 @@ public class QfProcService {
     }
 
     /**
-     * 取逗号分隔串的第一个元素并 trim；空串返回 null
-     */
-    private static String firstId(String csv) {
-        if (StringUtils.isBlank(csv)) {
-            return null;
-        }
-        return csv.split(",")[0].trim();
-    }
-
-    /**
      * 从业务数据中提取单个审批人ID
      */
     private String extractApproverId(Map<String, String> datas) {
@@ -441,7 +573,7 @@ public class QfProcService {
                     .flatMap(List::stream)
                     .distinct()
                     .toList();
-            Map<Long, String> idToName = userRepository.findAllById(allUserIds).stream()
+            Map<Long, String> idToName = uRepository.findAllById(allUserIds).stream()
                     .collect(Collectors.toMap(UserPo::getId, UserPo::getNickname, (a, b) -> a));
 
             for (var entry : nodeIdsToLookup.entrySet()) {
@@ -483,8 +615,8 @@ public class QfProcService {
         //获取代办的信息
         List<QfTodoPo> waitingList = todoList.stream().filter(todo -> (todo.getStatus() == 0 || todo.getStatus() == 10)).toList();
         Map<Long, UserPo> userMap;
-        if(!waitingList.isEmpty()) {
-            List<UserPo> userList = userRepository.findAllById(waitingList.stream().map(QfTodoPo::getMemberId).toList());
+        if (!waitingList.isEmpty()) {
+            List<UserPo> userList = uRepository.findAllById(waitingList.stream().map(QfTodoPo::getMemberId).toList());
             userMap = userList.stream().collect(Collectors.toMap(UserPo::getId, user -> user));
         } else {
             userMap = new HashMap<>();

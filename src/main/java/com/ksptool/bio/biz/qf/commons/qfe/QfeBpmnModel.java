@@ -272,20 +272,61 @@ public class QfeBpmnModel {
                 return "节点[" + utId + "][" + utName + "]至少需要有一个允许的审批操作，请配置qfe:utAprActions";
             }
 
+            //校验发起时跳过节点 -- 发起时跳过节点的上一个节点必须也是发起时跳过节点或是开始节点
+            if (qfeUserTask.isInitSkip()) {
+
+                //获取上游连接的线
+                var prevConnections = qfeUserTask.getUserTask().getIncomingFlows();
+
+                if (prevConnections.isEmpty()) {
+                    return "节点[" + utId + "][" + utName + "] 为发起时跳过节点，但未配置上游节点。";
+                }
+
+                //遍历上游连接的全部线 所有线都必须全部符合要求
+                for (var prevConn : prevConnections) {
+
+                    //连线的源节点
+                    var upRef = prevConn.getSourceRef();
+                    var upSource = bpmnModel.getFlowElement(upRef);
+
+                    //开始节点 合法
+                    if (upSource instanceof StartEvent) {
+                        continue;
+                    }
+
+                    //UT 必须也是发起时跳过节点
+                    if (upSource instanceof UserTask upUt) {
+
+                        var upQfeUt = QfeUserTask.of(upUt);
+
+                        if (!upQfeUt.isInitSkip()) {
+                            return "节点[" + utId + "][" + utName + "] 为发起时跳过节点，但上游节点[" + upQfeUt.getId() + "][" + upQfeUt.getName() + "]不是发起时跳过节点。";
+                        }
+
+                        continue;
+                    }
+
+                    //其余类型(网关/结束等)均不允许
+                    return "节点[" + utId + "][" + utName + "] 为发起时跳过节点，上游节点只能是开始节点或另一个发起时跳过节点。";
+                }
+
+            }
+
+
             //多实例校验，前端必须产出QFE+FLOWABLE两套配置
             if (qfeUserTask.isMultiInstance()) {
 
                 //只有"标准"节点 且 处理人是 "指定用户" + "用户组" + "组织机构" 时，才允许配置多实例
-                if(approveKind != AprKind.STANDARD){
+                if (approveKind != AprKind.STANDARD) {
                     return "节点[" + utId + "][" + utName + "] 处理人类型无效，不能配置为多实例。";
                 }
 
-                if(memberKind != MemberKind.USER && memberKind != MemberKind.GROUP && memberKind != MemberKind.DEPT){
+                if (memberKind != MemberKind.USER && memberKind != MemberKind.GROUP && memberKind != MemberKind.DEPT) {
                     return "节点[" + utId + "][" + utName + "] 处理人配置无效，不能配置为多实例。";
                 }
 
                 MultiInstanceLoopCharacteristics loop = qfeUserTask.getUserTask().getLoopCharacteristics();
-                
+
                 if (loop == null) {
                     return "多实例节点[" + utId + "][" + utName + "]缺少多实例配置(multiInstanceLoopCharacteristics)，请在设计器中重新保存。";
                 }
@@ -301,25 +342,25 @@ public class QfeBpmnModel {
                 var miColl = loop.getInputDataItem();
                 var miEl = loop.getElementVariable();
 
-                if(StringUtils.isBlank(miColl) || StringUtils.isBlank(miEl)){
+                if (StringUtils.isBlank(miColl) || StringUtils.isBlank(miEl)) {
                     return "节点[" + utId + "][" + utName + "] 为多实例，但内部multiInstanceLoopCharacteristics属性缺少必要配置!";
                 }
 
                 var expectMiColl = "${qfMi_" + utId + "}";
                 var expectMiEl = "assignee";
 
-                if(!miColl.equals(expectMiColl)){
+                if (!miColl.equals(expectMiColl)) {
                     return "多实例节点[" + utId + "][" + utName + "] 未配置正确的 flowable:collection。";
                 }
-                
-                if(!miEl.equals(expectMiEl)){
+
+                if (!miEl.equals(expectMiEl)) {
                     return "多实例节点[" + utId + "][" + utName + "] 未配置正确的 flowable:elementVariable。";
                 }
 
                 //检查多实例完成条件是否正确配置
                 var comp = loop.getCompletionCondition();
 
-                if(comp == null || StringUtils.isBlank(comp)){
+                if (comp == null || StringUtils.isBlank(comp)) {
                     return "节点[" + utId + "][" + utName + "] 为多实例，但内部multiInstanceLoopCharacteristics属性缺少完成条件配置!";
                 }
 
