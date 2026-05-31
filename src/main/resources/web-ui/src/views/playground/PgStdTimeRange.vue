@@ -4,11 +4,7 @@
       <el-card header="基础能力演示（日期时间范围）" style="margin-bottom: 20px">
         <el-form label-width="120px">
           <el-form-item label="时间范围">
-            <StdTimeRange
-              v-model:range-start="rangeStart"
-              v-model:range-end="rangeEnd"
-              style="width: 100%"
-            />
+            <StdTimeRange v-model:range-start="rangeStart" v-model:range-end="rangeEnd" style="width: 100%" />
           </el-form-item>
           <el-form-item label="开始时间">
             <el-tag v-if="rangeStart" type="primary">{{ rangeStart }}</el-tag>
@@ -72,15 +68,7 @@
             <StdTimeRange
               v-model:range-start="disabledStart"
               v-model:range-end="disabledEnd"
-              :disableds="[true, true]"
-              style="width: 100%"
-            />
-          </el-form-item>
-          <el-form-item label="仅禁用开始">
-            <StdTimeRange
-              v-model:range-start="disabledStart2"
-              v-model:range-end="disabledEnd2"
-              :disableds="[true, false]"
+              :disableds="true"
               style="width: 100%"
             />
           </el-form-item>
@@ -101,7 +89,9 @@
             />
           </el-form-item>
           <el-form-item label="说明">
-            <span style="color: var(--el-text-color-secondary); font-size: 13px">通过 disableStartDate / disableEndDate 禁用今天之后的日期</span>
+            <span style="color: var(--el-text-color-secondary); font-size: 13px"
+              >通过 disableStartDate / disableEndDate 禁用今天之后的日期</span
+            >
           </el-form-item>
         </el-form>
       </el-card>
@@ -161,15 +151,15 @@ const noFutureDate = (date: Date): boolean => {
 };
 
 const propsTableData = [
-  { name: "type", type: "\"daterange\" | \"datetimerange\"", required: "否", default: "\"datetimerange\"", desc: "日期范围类型" },
-  { name: "startPlaceholder", type: "string", required: "否", default: "\"开始日期\"", desc: "开始日期占位符" },
-  { name: "endPlaceholder", type: "string", required: "否", default: "\"结束日期\"", desc: "结束日期占位符" },
-  { name: "valueFormat", type: "string", required: "否", default: "\"YYYY-MM-DD HH:mm:ss\"", desc: "日期格式" },
+  { name: "type", type: '"daterange" | "datetimerange"', required: "否", default: '"datetimerange"', desc: "日期范围类型" },
+  { name: "startPlaceholder", type: "string", required: "否", default: '"开始日期"', desc: "开始日期占位符" },
+  { name: "endPlaceholder", type: "string", required: "否", default: '"结束日期"', desc: "结束日期占位符" },
+  { name: "valueFormat", type: "string", required: "否", default: '"YYYY-MM-DD HH:mm:ss"', desc: "日期格式" },
   { name: "clearable", type: "boolean", required: "否", default: "true", desc: "是否可清除（仅结束日期）" },
-  { name: "rangeSeparator", type: "string", required: "否", default: "\"至\"", desc: "范围分隔符" },
+  { name: "rangeSeparator", type: "string", required: "否", default: '"至"', desc: "范围分隔符" },
   { name: "disableds", type: "boolean[]", required: "否", default: "[false, false]", desc: "是否禁用 [开始, 结束]" },
   { name: "showMsg", type: "boolean", required: "否", default: "true", desc: "是否显示验证消息" },
-  { name: "width", type: "string", required: "否", default: "\"100%\"", desc: "日期选择器宽度" },
+  { name: "width", type: "string", required: "否", default: '"100%"', desc: "日期选择器宽度" },
   { name: "isFocus", type: "boolean", required: "否", default: "true", desc: "打开面板时是否自动聚焦" },
   { name: "disableStartDate", type: "(date: Date) => boolean", required: "否", default: "undefined", desc: "开始日期禁用逻辑" },
   { name: "disableEndDate", type: "(date: Date) => boolean", required: "否", default: "undefined", desc: "结束日期禁用逻辑" },
