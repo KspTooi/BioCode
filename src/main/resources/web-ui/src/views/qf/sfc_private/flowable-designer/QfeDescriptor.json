@@ -18,7 +18,8 @@
         { "name": "utAprActions", "isAttr": true, "type": "String" },
         { "name": "utAprActionNames", "isAttr": true, "type": "String" },
         { "name": "utAprComment", "isAttr": true, "type": "String" },
-        { "name": "utFormAllowEditFields", "isAttr": true, "type": "String" }
+        { "name": "utFormAllowEditFields", "isAttr": true, "type": "String" },
+        { "name": "utGeInitSkip", "isAttr": true, "type": "String" }
       ]
     }
   ]

@@ -1,5 +1,5 @@
 /**
- * QFD「任务配置」折叠块：dueDate / followUpDate / priority / skipExpression
+ * QFD「任务配置」折叠块：dueDate / followUpDate / priority / skipExpression / qfe:utGeInitSkip
  *
  * @author KspTool(ksptool@outlook.com)
  * @since 2026-04-10
@@ -18,6 +18,7 @@ export default {
       followUpDate: "",
       priority: "",
       skipExpression: "",
+      utGeInitSkip: "0",
     });
 
     function loadFormFromBo(): void {
@@ -30,6 +31,7 @@ export default {
       form.value.followUpDate = (b.followUpDate as string) || "";
       form.value.priority = (b.priority as string) || "";
       form.value.skipExpression = (b.skipExpression as string) || "";
+      form.value.utGeInitSkip = (b.utGeInitSkip as string) === "1" ? "1" : "0";
     }
 
     function applyProps(patch: Record<string, unknown>): void {
@@ -58,6 +60,13 @@ export default {
       });
     }
 
+    /** 写入 qfe:utGeInitSkip（1=发起时跳过，关闭时清除属性） */
+    function onInitSkipCommit(): void {
+      applyProps({
+        utGeInitSkip: form.value.utGeInitSkip === "1" ? "1" : undefined,
+      });
+    }
+
     watch(
       () => elementGetter(),
       () => {
@@ -66,6 +75,6 @@ export default {
       { immediate: true }
     );
 
-    return { form, onTaskCommit, onOtherCommit };
+    return { form, onTaskCommit, onOtherCommit, onInitSkipCommit };
   },
 };
