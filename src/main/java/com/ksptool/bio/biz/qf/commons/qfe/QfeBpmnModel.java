@@ -272,17 +272,17 @@ public class QfeBpmnModel {
                 return "节点[" + utId + "][" + utName + "]至少需要有一个允许的审批操作，请配置qfe:utAprActions";
             }
 
-            //校验发起时跳过节点 -- 上有节点必须至少有一个"发起时跳过节点"或"开始节点"
+            //校验 首次发起时跳过节点 -- 上有节点必须至少有一个"首次发起时跳过节点"或"开始节点"
             if (qfeUserTask.isInitSkip()) {
 
                 //处理人类型必须配置为标准
                 if(approveKind != AprKind.STANDARD){
-                    return "节点[" + utId + "][" + utName + "] 为发起时跳过节点，其处理人类型必须配置为标准。";
+                    return "节点[" + utId + "][" + utName + "] 为首次发起时跳过节点，其处理人类型必须配置为标准。";
                 }
 
                 //处理人配置只能是"指定用户" + "发起人" 不能是抽象的人和组 否则发起时不能确定具体处理人
                 if(memberKind != MemberKind.USER && memberKind != MemberKind.INITIATOR){
-                    return "节点[" + utId + "][" + utName + "] 为发起时跳过节点，其处理人配置只能配置为指定用户或发起人。";
+                    return "节点[" + utId + "][" + utName + "] 为首次发起时跳过节点，其处理人配置只能配置为指定用户或发起人。";
                 }
 
                 //上游节点中"发起时跳过节点"或"开始节点"的数量
@@ -292,7 +292,7 @@ public class QfeBpmnModel {
                 var prevConnections = qfeUserTask.getUserTask().getIncomingFlows();
 
                 if (prevConnections.isEmpty()) {
-                    return "节点[" + utId + "][" + utName + "] 为发起时跳过节点，但未配置上游节点。";
+                    return "节点[" + utId + "][" + utName + "] 为首次发起时跳过节点，但未配置上游节点。";
                 }
 
                 //遍历上游连接的全部线 找出"发起时跳过节点"或"开始节点"
@@ -314,7 +314,7 @@ public class QfeBpmnModel {
                         var upQfeUt = QfeUserTask.of(upUt);
 
                         if (!upQfeUt.isInitSkip()) {
-                            return "节点[" + utId + "][" + utName + "] 为发起时跳过节点，但上游节点[" + upQfeUt.getId() + "][" + upQfeUt.getName() + "]不是发起时跳过节点。";
+                            return "节点[" + utId + "][" + utName + "] 为首次发起时跳过节点，但上游节点[" + upQfeUt.getId() + "][" + upQfeUt.getName() + "]不是发起时跳过节点。";
                         }
 
                         passNodeCount++;
@@ -324,7 +324,7 @@ public class QfeBpmnModel {
                 }
 
                 if (passNodeCount < 1) {
-                    return "节点[" + utId + "][" + utName + "] 为发起时跳过节点，但未正确连接到'开始节点'或另一个'发起时跳过节点'。";
+                    return "节点[" + utId + "][" + utName + "] 为首次发起时跳过节点，但未正确连接到'开始节点'或另一个'首次发起时跳过节点'。";
                 }
 
             }
