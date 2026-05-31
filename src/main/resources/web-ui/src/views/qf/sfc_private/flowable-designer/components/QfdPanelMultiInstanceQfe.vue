@@ -77,7 +77,7 @@
         </template>
       </template>
 
-      <el-form-item v-show="panelForm.utAprKind === '0'" class="mt-4">
+      <el-form-item v-show="panelForm.utAprKind === '0' && panelForm.utAprMemberKind !== '3'" class="mt-4">
         <template #label>
           <span class="mi-form-item-label">
             <el-icon><GridIcon /></el-icon>

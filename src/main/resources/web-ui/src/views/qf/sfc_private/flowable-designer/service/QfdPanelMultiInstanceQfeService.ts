@@ -556,6 +556,7 @@ export default {
 
     //监听审批人配置变化
     const onMemberKindChanged = (val: string): void => {
+      //如果是发起人，则多实例方式必须为无
       if (val === "3") {
         panelForm.utAprMi = "0";
         panelForm.utAprMiExpress = "";
