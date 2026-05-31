@@ -275,6 +275,15 @@ public class QfeBpmnModel {
             //多实例校验，前端必须产出QFE+FLOWABLE两套配置
             if (qfeUserTask.isMultiInstance()) {
 
+                //只有"标准"节点 且 处理人是 "指定用户" + "用户组" + "组织机构" 时，才允许配置多实例
+                if(approveKind != AprKind.STANDARD){
+                    return "节点[" + utId + "][" + utName + "] 处理人类型无效，不能配置为多实例。";
+                }
+
+                if(memberKind != MemberKind.USER && memberKind != MemberKind.GROUP && memberKind != MemberKind.DEPT){
+                    return "节点[" + utId + "][" + utName + "] 处理人配置无效，不能配置为多实例。";
+                }
+
                 MultiInstanceLoopCharacteristics loop = qfeUserTask.getUserTask().getLoopCharacteristics();
                 
                 if (loop == null) {
