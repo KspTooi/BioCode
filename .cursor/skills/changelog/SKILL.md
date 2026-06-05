@@ -1,0 +1,123 @@
+---
+name: changelog
+description: 编写项目更新日志，按主版本分组输出到 blog/ 目录。使用当用户提到"更新日志/版本发布/changelog/release note"或需要整理版本历史时。
+---
+
+# 更新日志编写 Skill
+
+## 1. 选型
+
+| 业务诉求 | 使用方案 | 关键区别 |
+| --- | --- | --- |
+| 记录单次版本更新 | `blog/<tag>.md` 单文件 | 每个 CheckPoint（如 1.6Z57）独立成文 |
+| 汇总整个主版本的更新历史 | `blog/upgrade-<major>.md` 合并文件 | 按主版本号（1.5 / 1.6 / 1.7）聚合所有同级 CheckPoint |
+
+## 2. 快速接入
+
+1. 确定版本号格式：`<major>.<minor><checkpoint>[-<主题>]` —— 如 `1.6Z57`、`1.6X68-租户菜单包`
+2. 判断文件类型：单版本 → `<tag>.md`；主版本汇总 → `upgrade-<major>.md`
+3. 按 §4 对应模板写入 `blog/` 目录
+
+## 3. 参数契约
+
+| 参数 | 类型 | 必填 | 默认值 | 说明 |
+| --- | --- | --- | --- | --- |
+| 输出目录 | `string` | 否 | `blog/` | 项目根目录下的日志存放路径 |
+| 单文件命名 | `string` | 否 | `<tag>.md` | 文件名等于 Tag 名，特殊字符 `\ / : * ? " < > \|` 替换为 `_` |
+| 分组文件命名 | `string` | 否 | `upgrade-<major>.md` | `<major>` 为主版本号（1.5 / 1.6 / 1.7） |
+| 版本段标题级别 | `string` | 否 | `##` | 单版本在分组文件中的标题层级，固定 h2 |
+| 标题格式 | `string` | 否 | `<tag>[-<主题>]` | 版本号后可附带可选主题，以 `-` 连接，如 `1.6X68-租户菜单包` |
+
+## 4. 模板
+
+### 4.1 单版本文件（blog/\<tag\>.md）
+
+```markdown
+# 更新日志 - <tag>[-<主题>]
+
+Version <X.XX> CheckPoint <Y>
+
+<版本总结内容，自由分段>
+```
+
+主题为可选项，以 `-` 与版本号连接，如 `1.6X68-租户菜单包`。
+
+### 4.2 主版本汇总文件（blog/upgrade-\<major\>.md）
+
+```markdown
+# BioCode v<major> 更新日志
+
+> 版本范围：<第一个tag> → <最后一个tag>
+
+---
+
+## <tag>[-<主题>]
+
+Version <X.XX> CheckPoint <Y>
+
+<该版本总结内容>
+
+---
+
+## <tag>[-<主题>]
+
+Version <X.XX> CheckPoint <Y>
+
+<该版本总结内容>
+```
+
+单版本之间以 `---` 分隔线隔开。
+
+### 4.3 版本段严格格式
+
+每个版本段**必须**包含以下两行头部，缺一不可：
+
+1. **标题行**：`## <tag>[-<主题>]` —— 版本号后可附带可选主题，以 `-` 连接
+   - 仅版本号：`## 1.6Z57`
+   - 带主题：`## 1.6X68-租户菜单包`
+2. **版本声明行**：`Version <X.XX> CheckPoint <Y>`（如 `Version 1.6Z CheckPoint 57`）
+
+版本声明行格式说明：
+- `Version ` 后跟 `<major>.<minor>`（如 `1.6A`、`1.5P`）
+- `CheckPoint ` 后跟对应的 CheckPoint 编号（如 `1`、`26`、`57`）
+- 版本声明行**禁止**带 `Preview`、`预览` 等额外后缀
+- 标题行与版本声明行之间**必须**空一行
+
+### 4.4 版本内容结构
+
+版本声明行之后推荐使用以下三类分组，按需选用：
+
+```markdown
+## 1.6X68-租户菜单包
+
+Version 1.6X CheckPoint 68
+
+后端改进
+1.xxx
+2.xxx
+
+前端改进
+1.xxx
+2.xxx
+
+增量业务功能
+1.xxx
+2.xxx
+```
+
+## 5. 陷阱
+
+| ❌ 错误写法 | ✅ 正确写法 |
+| --- | --- |
+| 缺少版本声明行，内容直接接在标题后 | 标题 `## <tag>` 后必须空一行，然后写 `Version X.XX CheckPoint Y` |
+| `Version 1.5P CheckPoint 26 Preview` — 带 `Preview` 后缀 | `Version 1.5P CheckPoint 26` — 去除 `Preview` |
+| `1.5P CheckPoint 26 Preview` — 缺少 `Version` 前缀且带 `Preview` | `Version 1.5P CheckPoint 26` |
+| 标题带主题但不用 `-` 连接，如 `1.6X68:租户菜单包` | `1.6X68-租户菜单包` |
+| 逐条列举 commit 日志作为更新内容 | 使用 Tag 上附带的总结注解作为更新描述 |
+| 单文件与分组文件命名混用 | `blog/<tag>.md` 用于单版本，`blog/upgrade-<major>.md` 用于主版本汇总 |
+| 分组文件中单版本间无分隔符，界限模糊 | 单版本之间以 `---` 分隔线隔开 |
+
+## 6. 源码索引
+
+- `blog/` — 项目更新日志文件存放目录
+- `.cursor/skills/changelog/SKILL.md` — 本技能文件

@@ -91,3 +91,7 @@
 ## Playground 演示 Skill
 
 @.cursor/skills/web-ui/playground-demo/SKILL.md
+
+## 更新日志生成 Skill
+
+@.cursor/skills/changelog/SKILL.md
