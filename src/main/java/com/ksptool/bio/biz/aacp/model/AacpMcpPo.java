@@ -39,7 +39,7 @@ public class AacpMcpPo {
     @Column(name = "code", nullable = false, length = 16, comment = "唯一编码")
     private String code;
 
-    @Column(name = "network_kind", nullable = false, comment = "通信协议 0:HTTP+SSE 1:WS")
+    @Column(name = "network_kind", nullable = false, columnDefinition = "tinyint", comment = "通信协议 0:HTTP+SSE 1:WS")
     private Integer networkKind;
 
     @Column(name = "host", nullable = false, length = 45, comment = "主机")
@@ -48,13 +48,13 @@ public class AacpMcpPo {
     @Column(name = "port", nullable = false, comment = "端口")
     private Integer port;
 
-    @Column(name = "auth_kind", nullable = false, comment = "鉴权类型 0:无 1:PSK")
+    @Column(name = "auth_kind", nullable = false, columnDefinition = "tinyint", comment = "鉴权类型 0:无 1:PSK")
     private Integer authKind;
 
     @Column(name = "auth_psk", length = 2000, comment = "预共享密钥")
     private String authPsk;
 
-    @Column(name = "status", nullable = false, comment = "状态 0:离线 1:在线")
+    @Column(name = "status", nullable = false, columnDefinition = "tinyint", comment = "状态 0:离线 1:在线")
     private Integer status;
 
     @CreatedDate
