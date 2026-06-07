@@ -52,7 +52,7 @@ public class OrgService {
 
         //全量查询组织 按排序排序
         List<OrgPo> pos = new ArrayList<>();
-       if (dto.getOrgId() == null) {
+        if (dto.getOrgId() == null) {
             pos = repository.findAll(Sort.by(Sort.Direction.ASC, "seq"));
         }  else {
             pos = repository.getAllByOrgId(dto.getOrgId());
