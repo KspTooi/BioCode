@@ -1,5 +1,7 @@
 package com.ksptool.bio.biz.aacp.model.dto;
 
+import com.ksptool.bio.biz.core.common.aop.DtoCustomValidator;
+import com.ksptool.bio.commons.dataprocess.Str;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -10,7 +12,7 @@ import org.hibernate.validator.constraints.Range;
 
 @Getter
 @Setter
-public class AddAacpMcpDto {
+public class AddAacpMcpDto implements DtoCustomValidator {
 
     @NotBlank(message = "服务器名称不能为空")
     @Length(max = 40, message = "服务器名称长度不能超过40")
@@ -50,5 +52,18 @@ public class AddAacpMcpDto {
     @Range(min = 0, max = 1, message = "状态只能在0-1之间")
     @Schema(description = "状态 0:离线 1:在线")
     private Integer status;
+
+    /**
+     * 校验PSK鉴权时预共享密钥必填
+     *
+     * @return 错误信息 无错误返回null
+     */
+    @Override
+    public String validate() {
+        if (authKind != null && authKind == 1 && Str.isBlank(authPsk)) {
+            return "使用PSK鉴权时必须填写预共享密钥";
+        }
+        return null;
+    }
 
 }
