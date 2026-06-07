@@ -23,6 +23,7 @@ import CoreRouteRegister from "@/views/core/route/CoreRouteRegister";
 import AuditRouteRegister from "@/views/audit/route/AuditRouteRegister";
 import QtRouteRegister from "@/views/qt/route/QtRouteRegister.ts";
 import QfRouteRegister from "@/views/qf/route/QfRouteRegister.ts";
+import AssemblyRouteRegister from "@/views/assembly/route/AssemblyRouteRegister.ts";
 import PlayGroundRouteRegister from "@/views/playground/route/PlayGroundRouteRegister";
 import ComTabService from "@/soa/com-series/service/ComTabService.ts";
 import ComFramework from "@/soa/com-series/ComFramework.vue";
@@ -86,7 +87,7 @@ setupIconify();
 ComLayoutProviderService.registerLayout("default", ComFramework);
 
 //设置默认布局（路由 meta.layout 为 default 或未指定时生效）
-ComLayoutProviderService.setDefaultLayout("default-qlc");
+ComLayoutProviderService.setDefaultLayout("default");
 
 //注册多认证组件
 ComAuthProviderService.registerAuth("default", UserLogin);
@@ -119,6 +120,7 @@ addRoute(new AuditRouteRegister());
 addRoute(new QtRouteRegister());
 addRoute(new QfRouteRegister());
 addRoute(new PlayGroundRouteRegister());
+addRoute(new AssemblyRouteRegister());
 
 //初始化SOA路由服务
 initialize(app, grsFixedRoutes);
