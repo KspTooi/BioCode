@@ -28,6 +28,7 @@ import ComFramework from "@/soa/com-series/ComFramework.vue";
 import ComLayoutProviderService from "@/soa/com-series/service/ComLayoutProviderService.ts";
 import AssemblyRouteRegister from "@/views/assembly/route/AssemblyRouteRegister";
 import PlayGroundRouteRegister from "@/views/playground/route/PlayGroundRouteRegister";
+import AacpRouteRegister from "@/views/aacp/route/AacpRouteRegister";
 
 /**
  * 固定路由 这些路由不会被GenricRouteService动态注册 请注意不要随意修改这些路由，因为它们游离于业务域之外，会引发严重的路由冲突问题。
@@ -114,6 +115,7 @@ addRoute(new QtRouteRegister());
 addRoute(new AssemblyRouteRegister());
 addRoute(new QfRouteRegister());
 addRoute(new PlayGroundRouteRegister());
+addRoute(new AacpRouteRegister());
 
 //初始化SOA路由服务
 initialize(app, grsFixedRoutes);
