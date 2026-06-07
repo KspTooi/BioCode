@@ -1,7 +1,7 @@
 <template>
   <StdListContainer>
     <!-- 查询条件区域 -->
-    <StdListAreaQuery>
+    <StdListAreaQuery show-persist-tip>
       <el-form :model="listForm" inline class="flex justify-between">
         <div>
           <el-form-item label="节点名称">

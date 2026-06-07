@@ -44,7 +44,6 @@ export interface GetQfTodoDetailsVo {
   // 操作类型 0:同意 1:驳回 2:转交 3:驳回节点
   allowActions: { kind: number; name: string }[];
   allowEditFields: string[]; // 允许编辑的字段
-
   status?: number; // 待办状态 0:待办 1:已办 10:已作废
 }
 
