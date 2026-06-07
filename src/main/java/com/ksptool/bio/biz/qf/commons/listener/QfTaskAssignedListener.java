@@ -2,6 +2,7 @@ package com.ksptool.bio.biz.qf.commons.listener;
 
 import com.ksptool.bio.biz.qf.commons.QfProcTools;
 import com.ksptool.bio.biz.qf.commons.QfVarsProc;
+import com.ksptool.bio.biz.qf.commons.enums.TodoMemberCategory;
 import com.ksptool.bio.biz.qf.commons.event.QfTaskAssignedEvent;
 import com.ksptool.bio.biz.qf.model.qftodo.QfTodoPo;
 import com.ksptool.bio.biz.qf.repository.QfTodoRepository;
@@ -19,8 +20,10 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import static com.ksptool.bio.biz.qf.commons.QfProcTools.trunc;
@@ -84,9 +87,14 @@ public class QfTaskAssignedListener extends AbstractFlowableEngineEventListener 
         }
 
         //判断是否属于初始分配（任务创建后 30 秒内的 TASK_ASSIGNED 视为初始 assignee 注入）
+        //转交场景（qfIsTransfer=true）即使时间在窗口内也视为转交，不作初始分配处理
+        var isTransfer = Objects.equals(
+                taskService.getVariable(task.getId(), "qfIsTransfer"), Boolean.TRUE);
+
         var now = LocalDateTime.now();
-        var isInitial = po.getCreateTime() != null
-                && java.time.Duration.between(po.getCreateTime(), now).getSeconds() < 30;
+        var isInitial = !isTransfer
+                && po.getCreateTime() != null
+                && Duration.between(po.getCreateTime(), now).getSeconds() < 30;
 
         if (isInitial) {
             //初始分配：更新待办的 memberId 到实际办理人，不作废旧待办
@@ -101,6 +109,11 @@ public class QfTaskAssignedListener extends AbstractFlowableEngineEventListener 
         //以下是真正的转交（重新分配）：作废旧待办，创建新待办
         if (po.getStatus() != 0) {
             return;
+        }
+
+        // 清理转交标记
+        if (isTransfer) {
+            taskService.removeVariable(task.getId(), "qfIsTransfer");
         }
 
         // 作废旧待办
@@ -139,7 +152,7 @@ public class QfTaskAssignedListener extends AbstractFlowableEngineEventListener 
         var dataId = QfProcTools.varLong(vars, QfVarsProc.DATA_ID, 0L);
         var nodeName = QfProcTools.nodeName(task);
         var summary = QfProcTools.varString(vars, QfVarsProc.SUMMARY, "");
-        var memberType = memberKind.getMemberType();
+        var memberType = TodoMemberCategory.fromMemberKind(memberKind).getValue();
 
         var memberId = _memberId;
         var initiatorId = QfProcTools.varLong(vars, QfVarsProc.INITIATOR_ID, 0L);
@@ -148,7 +161,6 @@ public class QfTaskAssignedListener extends AbstractFlowableEngineEventListener 
 
         po = new QfTodoPo();
         po.setRootId(rid);
-        po.setDeptId(did);
         po.setEngTaskId(etId);
         po.setEngProcId(epId);
         po.setBizFormId(bizFormId);
