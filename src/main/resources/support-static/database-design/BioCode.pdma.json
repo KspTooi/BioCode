@@ -4,7 +4,7 @@
   "avatar": "",
   "version": "4.9.4",
   "createdTime": "2025-5-31 18:54:43",
-  "updatedTime": "2026-6-7 22:36:54",
+  "updatedTime": "2026-6-7 22:58:47",
   "dbConns": [],
   "profile": {
     "default": {
@@ -35033,7 +35033,7 @@
         },
         {
           "defKey": "host",
-          "defName": "主机地址与端口",
+          "defName": "主机",
           "comment": "",
           "type": "",
           "len": "",
@@ -35048,6 +35048,24 @@
           "extProps": {},
           "domain": "A9BB00C0-30B6-42CB-9381-D02F953BCFCF",
           "id": "77BF6ADA-A9FB-4353-8CB7-E7A16EDBE1B5"
+        },
+        {
+          "defKey": "port",
+          "defName": "端口",
+          "comment": "",
+          "type": "",
+          "len": "",
+          "scale": "",
+          "primaryKey": false,
+          "notNull": true,
+          "autoIncrement": false,
+          "defaultValue": "",
+          "hideInGraph": false,
+          "refDict": "",
+          "baseType": "03F05E70-3F80-47EE-AA1A-9348591BD47D",
+          "extProps": {},
+          "domain": "1B3F3434-1CE8-4D13-A4C3-CDAE3CDF0498",
+          "id": "EB294F57-E699-4BF4-8AD2-F504FEA8DCEB"
         },
         {
           "defKey": "auth_kind",
@@ -35087,7 +35105,7 @@
         },
         {
           "defKey": "status",
-          "defName": "状态 0:禁用 1:启用",
+          "defName": "状态 0:离线 1:在线",
           "comment": "",
           "type": "",
           "len": "",
