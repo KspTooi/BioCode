@@ -43,14 +43,14 @@ public class McpRpcDto {
         @Schema(description = "能力声明")
         public static class McpCapabilitiesDto {
 
-            @Schema(description = "Elixation 能力列表")
-            private List<Map<String, Object>> elicitation;
+            @Schema(description = "Elicitation 能力")
+            private Map<String, Object> elicitation;
 
-            @Schema(description = "Roots 能力列表")
-            private List<Map<String, Object>> roots;
+            @Schema(description = "Roots 能力")
+            private Map<String, Object> roots;
 
-            @Schema(description = "扩展能力列表")
-            private List<Map<String, Object>> extensions;
+            @Schema(description = "扩展能力")
+            private Map<String, Object> extensions;
         }
 
         @Getter
