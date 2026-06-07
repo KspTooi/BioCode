@@ -23,8 +23,8 @@ public class AddAacpMcpDto {
     private String code;
 
     @NotNull(message = "通信协议不能为空")
-    @Range(min = 0, max = 1, message = "通信协议只能在0-1之间")
-    @Schema(description = "通信协议 0:HTTP+SSE 1:WS")
+    @Range(min = 0, max = 0, message = "通信协议仅支持HTTP+SSE")
+    @Schema(description = "通信协议 0:HTTP+SSE")
     private Integer networkKind;
 
     @NotBlank(message = "主机不能为空")

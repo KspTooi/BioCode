@@ -15,12 +15,6 @@ public class GetAacpMcpListDto extends PageQuery {
     @Schema(description = "唯一编码")
     private String code;
 
-    @Schema(description = "通信协议 0:HTTP+SSE 1:WS")
-    private Integer networkKind;
-
-    @Schema(description = "预共享密钥")
-    private String authPsk;
-
     @Schema(description = "状态 0:离线 1:在线")
     private Integer status;
 
