@@ -83,7 +83,7 @@
 
 <script setup lang="ts">
 import { ref, markRaw } from "vue";
-import { View, Delete, Plus } from "@element-plus/icons-vue";
+import { View, Delete } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
 import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
@@ -93,7 +93,6 @@ import AacpCapabilityService from "@/views/aacp/service/AacpCapabilityService.ts
 
 const ViewIcon = markRaw(View);
 const DeleteIcon = markRaw(Delete);
-const PlusIcon = markRaw(Plus);
 
 const modalFormRef = ref<FormInstance>();
 
