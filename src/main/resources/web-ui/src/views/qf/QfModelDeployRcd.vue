@@ -25,7 +25,7 @@
       </el-form>
     </StdListAreaQuery>
 
-<!-- 列表表格区域 -->
+    <!-- 列表表格区域 -->
     <StdListAreaTable v-model:list-form="listForm" :list-total="listTotal" :load-list="loadList">
       <el-table v-loading="listLoading" :data="listData" stripe border height="100%">
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
@@ -33,7 +33,9 @@
         <el-table-column prop="code" label="模型编码" min-width="120" show-overflow-tooltip />
         <el-table-column label="业务表单" min-width="140" show-overflow-tooltip>
           <template #default="scope">
-            <span v-if="scope.row.bizFormName && scope.row.bizFormCode">{{ scope.row.bizFormName }}({{ scope.row.bizFormCode }})</span>
+            <span v-if="scope.row.bizFormName && scope.row.bizFormCode"
+              >{{ scope.row.bizFormName }}({{ scope.row.bizFormCode }})</span
+            >
             <span v-else>-</span>
           </template>
         </el-table-column>
@@ -125,25 +127,31 @@
     <el-dialog
       v-model="launchVisible"
       title="发起审批流程"
-      width="500px"
+      width="600px"
       :close-on-click-modal="false"
       @close="resetLaunchModal"
     >
-      <el-form
-        v-if="launchVisible"
-        ref="launchFormRef"
-        :model="launchForm"
-        :rules="launchRules"
-        label-width="110px"
-        :validate-on-rule-change="false"
-      >
-        <el-form-item label="模型编码" prop="code">
-          <el-input v-model="launchForm.code" disabled />
-        </el-form-item>
-        <el-form-item label="业务数据ID" prop="dataId">
-          <el-input v-model="launchForm.dataId" placeholder="输入业务数据ID" />
-        </el-form-item>
-      </el-form>
+      <div class="launch-modal-body">
+        <el-form
+          v-if="launchVisible"
+          ref="launchFormRef"
+          :model="launchForm"
+          :rules="launchRules"
+          label-width="110px"
+          :validate-on-rule-change="false"
+        >
+          <el-form-item label="模型编码" prop="code">
+            <el-input v-model="launchForm.code" disabled />
+          </el-form-item>
+          <el-form-item label="业务数据ID" prop="dataId">
+            <el-input v-model="launchForm.dataId" placeholder="输入业务数据ID" />
+          </el-form-item>
+        </el-form>
+
+        <el-divider content-position="left">审批流程预览</el-divider>
+
+        <QfProcDefine v-if="launchVisible && launchForm.code" :code="launchForm.code" v-model="launchForm.members" />
+      </div>
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="launchVisible = false">取消</el-button>
@@ -163,6 +171,7 @@ import StdListContainer from "@/soa/std-series/StdListContainer.vue";
 import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
 import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";
 import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
+import QfProcDefine from "@/views/qf/public/QfProcDefine.vue";
 
 const EditIcon = markRaw(Edit);
 const DeleteIcon = markRaw(Delete);
@@ -188,15 +197,13 @@ const { modalVisible, modalLoading, modalMode, modalForm, modalRules, openModal,
 
 // 发起流程模态框打包
 const launchFormRef = ref<FormInstance>();
-const {
-  launchVisible,
-  launchLoading,
-  launchForm,
-  launchRules,
-  openLaunchModal,
-  resetLaunchModal,
-  submitLaunchModal,
-} = QfModelDeployRcdService.useLaunchModal(launchFormRef, loadList);
+const { launchVisible, launchLoading, launchForm, launchRules, openLaunchModal, resetLaunchModal, submitLaunchModal } =
+  QfModelDeployRcdService.useLaunchModal(launchFormRef, loadList);
 </script>
 
-<style scoped></style>
+<style scoped>
+.launch-modal-body {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+</style>

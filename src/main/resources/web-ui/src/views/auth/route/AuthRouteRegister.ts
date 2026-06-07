@@ -14,7 +14,7 @@ export default class AuthRouteRegister extends GenricRouteRegister {
         biz: "auth",
         path: "login",
         name: "login",
-        component: () => import("@/views/auth/UserLogin.vue"),
+        component: () => import("@/soa/com-series/ComAuthProvider.vue"),
         meta: { breadcrumb: "用户登录", layout: "blank" },
       }),
       RouteEntryPo.build({

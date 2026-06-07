@@ -215,7 +215,7 @@ public interface UserRepository extends JpaRepository<UserPo, Long> {
                     SELECT u FROM UserPo u
                     LEFT JOIN OrgPo o ON u.orgId = o.id
                     WHERE u.id IN :memberIds 
-                                AND(:org is null or u.orgId = :orgId)
+                                AND(:orgId is null or u.orgId = :orgId)
             """)
     List<UserPo> getUserByIdsAndOrgId(@Param("memberIds") List<Long> memberIds, @Param("orgId") Long orgId);
 

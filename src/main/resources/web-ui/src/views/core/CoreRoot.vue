@@ -8,11 +8,12 @@
             <el-input v-model="listForm.name" placeholder="输入租户名称" clearable />
           </el-form-item>
           <el-form-item label="到期时间">
-            <StdDateRange
-              v-model:range-start="listForm.expireTimeRangeStart"
-              v-model:range-end="listForm.expireTimeRangeEnd"
-              start-placeholder="开始时间"
-              end-placeholder="结束时间"
+            <StdDateTime
+              v-model:start-time="listForm.expireTimeRangeStart"
+              v-model:end-time="listForm.expireTimeRangeEnd"
+              type="datetimerange"
+              format="YYYY-MM-DD HH:mm:ss"
+              date-format="YYYY-MM-DD HH:mm:ss"
             />
           </el-form-item>
           <el-form-item label="状态">
@@ -89,7 +90,6 @@
           </template>
         </el-table-column>
       </el-table>
-
     </StdListAreaTable>
 
     <!-- 创建/编辑模态框 -->
@@ -192,7 +192,7 @@ import type { FormInstance } from "element-plus";
 import type { GetCoreRootListVo } from "@/views/core/api/CoreRootApi.ts";
 import CoreRootService from "@/views/core/service/CoreRootService.ts";
 import RootRpModal from "@/views/core/components/RootRpModal.vue";
-import StdDateRange from "@/soa/std-series/StdDateRange.vue";
+import StdDateTime from "@/soa/std-series/StdDateTime.vue";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
 import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
 import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";

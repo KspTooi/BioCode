@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import type { Directive, DirectiveBinding } from "vue";
 import type { UserLoginDto, UserLoginVo } from "@/views/auth/api/AuthApi";
 import AuthApi from "@/views/auth/api/AuthApi";
+import ComTabService from "@/soa/com-series/service/ComTabService.ts";
 
 //超级操作权限码
 export const SA_CODE = "*:*:*";
@@ -75,6 +76,9 @@ export default {
       if (result.code === 0 && result.data) {
         AuthStore().setUserInfo(result.data);
         AuthStore().setSessionId(result.data.sessionId);
+
+        //清除用户多标签缓存
+        ComTabService.useTabService().clearTabs();
         return result.data;
       }
 

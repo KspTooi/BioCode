@@ -98,9 +98,10 @@ public class QfMemberServiceImpl implements QfMemberService {
             if (vars != null) {
                 var nodeKey = "qfAprNode_" + task.getTaskDefinitionKey();
                 if (vars.containsKey(nodeKey)) {
-                    var assignee = vars.get(nodeKey);
-                    if (assignee instanceof String s && StringUtils.isNotBlank(s) && NumberUtils.isCreatable(s)) {
-                        return Long.parseLong(s);
+                    // 发起时选人注入的是 Long，旧数据可能是 String，两者都要兼容
+                    var assignee = parseElement(vars.get(nodeKey));
+                    if (assignee != null) {
+                        return assignee;
                     }
                 }
             }
@@ -134,9 +135,10 @@ public class QfMemberServiceImpl implements QfMemberService {
             if (vars != null) {
                 var nodeKey = "qfAprGroup_" + task.getTaskDefinitionKey();
                 if (vars.containsKey(nodeKey)) {
-                    var groupId = vars.get(nodeKey);
-                    if (groupId instanceof String s && StringUtils.isNotBlank(s) && NumberUtils.isCreatable(s)) {
-                        return Long.parseLong(s);
+                    // 注入的用户组ID为 Long，旧数据可能是 String，两者都要兼容
+                    var groupId = parseElement(vars.get(nodeKey));
+                    if (groupId != null) {
+                        return groupId;
                     }
                 }
             }
@@ -165,9 +167,10 @@ public class QfMemberServiceImpl implements QfMemberService {
             if (vars != null) {
                 var nodeKey = "qfAprNode_" + task.getTaskDefinitionKey();
                 if (vars.containsKey(nodeKey)) {
-                    var assignee = vars.get(nodeKey);
-                    if (assignee instanceof String s && StringUtils.isNotBlank(s) && NumberUtils.isCreatable(s)) {
-                        return Long.parseLong(s);
+                    // 发起时选人注入的是 Long，旧数据可能是 String，两者都要兼容
+                    var assignee = parseElement(vars.get(nodeKey));
+                    if (assignee != null) {
+                        return assignee;
                     }
                 }
             }

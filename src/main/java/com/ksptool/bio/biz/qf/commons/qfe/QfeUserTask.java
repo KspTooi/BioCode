@@ -278,9 +278,6 @@ public class QfeUserTask {
 
     /**
      * QFE 审批成员类型（utAprMemberKind）
-     * <p>
-     * memberType 为待办(QfTodoPo)持久化用的归类:0=按单个用户办理、1=按组/部门办理、2=任意人认领;
-     * 发起人(INITIATOR)运行期解析为具体用户,故归入 0。
      */
     @Getter
     public enum MemberKind {
@@ -288,36 +285,34 @@ public class QfeUserTask {
         /**
          * 指定人
          */
-        USER(0, 0),
+        USER(0),
 
         /**
          * 用户组
          */
-        GROUP(1, 1),
+        GROUP(1),
 
         /**
          * 组织机构（部门）
          */
-        DEPT(2, 1),
+        DEPT(2),
 
         /**
          * 发起人
          */
-        INITIATOR(3, 0),
+        INITIATOR(3),
 
         /**
          * 任意人
          */
-        ANYONE(10, 2);
+        ANYONE(10);
 
         private final int value;
 
-        private final int memberType;
-
-        MemberKind(int value, int memberType) {
+        MemberKind(int value) {
             this.value = value;
-            this.memberType = memberType;
         }
+
     }
 
     /**
@@ -353,33 +348,6 @@ public class QfeUserTask {
         }
     }
 
-    /**
-     * 待办状态（QfTodoPo.status）
-     */
-    @Getter
-    public enum TodoStatus {
-
-        /**
-         * 待办（待处理）
-         */
-        PENDING(0),
-
-        /**
-         * 已办
-         */
-        DONE(1),
-
-        /**
-         * 已取消（作废）
-         */
-        CANCELLED(10);
-
-        private final int value;
-
-        TodoStatus(int value) {
-            this.value = value;
-        }
-    }
 
     /**
      * QFE 多实例实现类型（utAprMi）
