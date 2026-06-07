@@ -1,15 +1,15 @@
-package com.ksptool.bio.biz.aacpfunc.service;
+package com.ksptool.bio.biz.aacp.service;
 
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
-import com.ksptool.bio.biz.aacpfunc.model.AacpFuncPo;
-import com.ksptool.bio.biz.aacpfunc.model.dto.AddAacpFuncDto;
-import com.ksptool.bio.biz.aacpfunc.model.dto.EditAacpFuncDto;
-import com.ksptool.bio.biz.aacpfunc.model.dto.GetAacpFuncListDto;
-import com.ksptool.bio.biz.aacpfunc.model.vo.GetAacpFuncDetailsVo;
-import com.ksptool.bio.biz.aacpfunc.model.vo.GetAacpFuncListVo;
-import com.ksptool.bio.biz.aacpfunc.repository.AacpFuncRepository;
+import com.ksptool.bio.biz.aacp.model.AacpFuncPo;
+import com.ksptool.bio.biz.aacp.model.dto.AddAacpFuncDto;
+import com.ksptool.bio.biz.aacp.model.dto.EditAacpFuncDto;
+import com.ksptool.bio.biz.aacp.model.dto.GetAacpFuncListDto;
+import com.ksptool.bio.biz.aacp.model.vo.GetAacpFuncDetailsVo;
+import com.ksptool.bio.biz.aacp.model.vo.GetAacpFuncListVo;
+import com.ksptool.bio.biz.aacp.repository.AacpFuncRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;

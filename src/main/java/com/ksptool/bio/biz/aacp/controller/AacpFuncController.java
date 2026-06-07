@@ -1,14 +1,14 @@
-package com.ksptool.bio.biz.aacpfunc.controller;
+package com.ksptool.bio.biz.aacp.controller;
 
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.assembly.entity.web.Result;
-import com.ksptool.bio.biz.aacpfunc.model.dto.AddAacpFuncDto;
-import com.ksptool.bio.biz.aacpfunc.model.dto.EditAacpFuncDto;
-import com.ksptool.bio.biz.aacpfunc.model.dto.GetAacpFuncListDto;
-import com.ksptool.bio.biz.aacpfunc.model.vo.GetAacpFuncDetailsVo;
-import com.ksptool.bio.biz.aacpfunc.model.vo.GetAacpFuncListVo;
-import com.ksptool.bio.biz.aacpfunc.service.AacpFuncService;
+import com.ksptool.bio.biz.aacp.model.dto.AddAacpFuncDto;
+import com.ksptool.bio.biz.aacp.model.dto.EditAacpFuncDto;
+import com.ksptool.bio.biz.aacp.model.dto.GetAacpFuncListDto;
+import com.ksptool.bio.biz.aacp.model.vo.GetAacpFuncDetailsVo;
+import com.ksptool.bio.biz.aacp.model.vo.GetAacpFuncListVo;
+import com.ksptool.bio.biz.aacp.service.AacpFuncService;
 import com.ksptool.bio.commons.annotation.PrintLog;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
