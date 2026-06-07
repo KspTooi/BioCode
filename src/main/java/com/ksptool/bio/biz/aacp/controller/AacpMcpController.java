@@ -26,6 +26,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import com.ksptool.bio.biz.aacp.model.vo.McpRpcResult;
+import com.google.gson.Gson;
+import org.springframework.util.StringUtils;
+
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,6 +44,8 @@ public class AacpMcpController {
 
     // 存放 SessionID 对应的 SSE 连接
     private final Map<String, SseEmitter> sessionMap = new ConcurrentHashMap<>();
+
+    private final Gson gson = new Gson();
 
     @Autowired
     private AacpMcpService aacpMcpService;
@@ -135,14 +142,54 @@ public class AacpMcpController {
             throw new RuntimeException("Session not found");
         }
 
-        // 解析 jsonRpcMessage，分发到具体的业务逻辑 (见下文)
-        String responseMessage = "";
+        String method = jsonRpcMessage.getMethod();
+        if (StringUtils.isEmpty(method)) {
+            return;
+        }
+
+        if ("initialize".equals(method)) {
+            handleInitialize(emitter, jsonRpcMessage);
+            return;
+        }
+
+        if ("notifications/initialized".equals(method)) {
+            log.info("MCP客户端握手完成，sessionId: {}", sessionId);
+            return;
+        }
+
+        McpRpcResult<Void> error = McpRpcResult.error(
+                jsonRpcMessage.getId(),
+                McpRpcResult.McpErrorCode.METHOD_NOT_FOUND,
+                "Method not found: " + method);
+        try {
+            emitter.send(SseEmitter.event().data(gson.toJson(error)));
+        } catch (IOException e) {
+            log.error("发送JSON-RPC错误响应失败", e);
+        }
+    }
+
+    /**
+     * 处理 initialize 请求，返回服务端能力声明
+     */
+    private void handleInitialize(SseEmitter emitter, McpRpcDto dto) {
+        Map<String, Object> capabilities = new LinkedHashMap<>();
+
+        Map<String, Object> serverInfo = new LinkedHashMap<>();
+        serverInfo.put("name", "bio-code-aacp");
+        serverInfo.put("version", "1.0.0");
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("protocolVersion", "2025-11-25");
+        result.put("capabilities", capabilities);
+        result.put("serverInfo", serverInfo);
+
+        McpRpcResult<Map<String, Object>> response = McpRpcResult.success(dto.getId(), result);
 
         try {
-            // 通过 SSE 通道将响应发回给客户端
-            emitter.send(SseEmitter.event().data(responseMessage));
+            emitter.send(SseEmitter.event().data(gson.toJson(response)));
+            log.info("已发送 initialize 响应给客户端");
         } catch (IOException e) {
-            log.error("Failed to send response", e);
+            log.error("发送 initialize 响应失败", e);
         }
     }
 
