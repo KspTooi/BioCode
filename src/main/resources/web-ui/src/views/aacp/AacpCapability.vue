@@ -24,11 +24,12 @@
     </template>
 
     <template #actions>
-      <el-button type="success" @click="openModal('add', null)">新增能力包</el-button>
+      <el-button type="success" @click="openModal('add', null)">创建能力包</el-button>
     </template>
 
     <template #table>
       <el-table v-loading="listLoading" :data="listData" border row-key="id" height="100%">
+        <el-table-column type="index" label="序号" width="60" align="center" />
         <el-table-column label="能力包名称" prop="name" />
         <el-table-column label="类型" width="100" align="center">
           <template #default="scope">
@@ -36,10 +37,10 @@
           </template>
         </el-table-column>
         <el-table-column label="备注" prop="remark" show-overflow-tooltip />
-        <el-table-column label="操作" fixed="right" width="140">
+        <el-table-column label="操作" fixed="right">
           <template #default="scope">
-            <el-button link type="primary" size="small" @click="openModal('edit', scope.row)">编辑</el-button>
-            <el-button link type="danger" size="small" @click="removeList(scope.row)">删除</el-button>
+            <el-button link type="primary" size="small" :icon="ViewIcon" @click="openModal('edit', scope.row)">编辑</el-button>
+            <el-button link type="danger" size="small" :icon="DeleteIcon" @click="removeList(scope.row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -71,10 +72,13 @@
 
   <el-dialog
     v-model="modalVisible"
-    :title="modalMode === 'edit' ? '编辑能力包' : '新增能力包'"
+    :title="modalMode === 'edit' ? '编辑能力包' : '创建能力包'"
     width="550px"
     :close-on-click-modal="false"
-    @close="resetModal"
+    @close="
+      resetModal();
+      loadList();
+    "
   >
     <el-form
       v-if="modalVisible"
@@ -93,14 +97,21 @@
         </el-select>
       </el-form-item>
       <el-form-item label="备注" prop="remark">
-        <el-input v-model="modalForm.remark" placeholder="请输入备注" type="textarea" :rows="3" :maxlength="500" show-word-limit />
+        <el-input
+          v-model="modalForm.remark"
+          placeholder="请输入备注"
+          type="textarea"
+          :rows="3"
+          :maxlength="500"
+          show-word-limit
+        />
       </el-form-item>
     </el-form>
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="modalVisible = false">取消</el-button>
+        <el-button @click="modalVisible = false">关闭</el-button>
         <el-button type="primary" :loading="modalLoading" @click="submitModal">
-          {{ modalMode === "add" ? "新增" : "保存" }}
+          {{ modalMode === "add" ? "创建" : "保存" }}
         </el-button>
       </div>
     </template>
@@ -108,10 +119,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, markRaw } from "vue";
+import { View, Delete, Plus } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
 import StdListLayout from "@/soa/std-series/StdListLayout.vue";
 import AacpCapabilityService from "@/views/aacp/service/AacpCapabilityService.ts";
+
+const ViewIcon = markRaw(View);
+const DeleteIcon = markRaw(Delete);
+const PlusIcon = markRaw(Plus);
 
 const modalFormRef = ref<FormInstance>();
 

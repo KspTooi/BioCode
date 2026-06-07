@@ -32,11 +32,12 @@
     </template>
 
     <template #actions>
-      <el-button type="success" @click="openModal('add', null)">新增MCP服务器</el-button>
+      <el-button type="success" @click="openModal('add', null)">创建MCP服务器</el-button>
     </template>
 
     <template #table>
       <el-table v-loading="listLoading" :data="listData" border row-key="id" height="100%">
+        <el-table-column type="index" label="序号" width="60" align="center" />
         <el-table-column label="服务器名称" prop="name" />
         <el-table-column label="唯一编码" prop="code" width="130" />
         <el-table-column label="通信协议" width="110" align="center">
@@ -93,7 +94,7 @@
 
   <el-dialog
     v-model="modalVisible"
-    :title="modalMode === 'edit' ? '编辑MCP服务器' : '新增MCP服务器'"
+    :title="modalMode === 'edit' ? '编辑MCP服务器' : '创建MCP服务器'"
     width="550px"
     :close-on-click-modal="false"
     @close="
@@ -133,7 +134,14 @@
         </el-select>
       </el-form-item>
       <el-form-item v-show="modalForm.authKind === 1" label="预共享密钥" prop="authPsk">
-        <el-input v-model="modalForm.authPsk" placeholder="请输入预共享密钥" type="textarea" :rows="4" :maxlength="2000" show-word-limit />
+        <el-input
+          v-model="modalForm.authPsk"
+          placeholder="请输入预共享密钥"
+          type="textarea"
+          :rows="4"
+          :maxlength="2000"
+          show-word-limit
+        />
       </el-form-item>
       <el-form-item label="状态" prop="status">
         <el-select v-model="modalForm.status" placeholder="请选择状态">
@@ -144,9 +152,9 @@
     </el-form>
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="modalVisible = false">取消</el-button>
+        <el-button @click="modalVisible = false">关闭</el-button>
         <el-button type="primary" :loading="modalLoading" @click="submitModal">
-          {{ modalMode === "add" ? "新增" : "保存" }}
+          {{ modalMode === "add" ? "创建" : "保存" }}
         </el-button>
       </div>
     </template>
@@ -155,18 +163,18 @@
 
 <script setup lang="ts">
 import { ref, markRaw } from "vue";
-import { View, Delete } from "@element-plus/icons-vue";
+import { View, Delete, Plus } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
 import StdListLayout from "@/soa/std-series/StdListLayout.vue";
 import AacpMcpService from "@/views/aacp/service/AacpMcpService.ts";
 
 const ViewIcon = markRaw(View);
 const DeleteIcon = markRaw(Delete);
+const PlusIcon = markRaw(Plus);
 
 const modalFormRef = ref<FormInstance>();
 
-const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } =
-  AacpMcpService.useAacpMcpList();
+const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } = AacpMcpService.useAacpMcpList();
 
 const { modalVisible, modalLoading, modalMode, modalForm, modalRules, openModal, resetModal, submitModal } =
   AacpMcpService.useAacpMcpModal(modalFormRef, loadList);
