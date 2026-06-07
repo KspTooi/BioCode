@@ -15,7 +15,7 @@ kind: MR
 
 SFC 是视图层的**唯一载体**，只做三件事：
 
-1. **渲染 UI**：通过 `<template>` + 布局组件（`StdListLayout` 等）构建页面结构
+1. **渲染 UI**：通过 `<template>` + 布局组件（`StdListContainer` + `StdListAreaQuery` + `StdListAreaAction` + `StdListAreaTable`）构建页面结构
 2. **绑定事件**：DOM 事件 → 解构后的 Service 方法
 3. **解构 Service**：从 Service 文件解构响应式状态与方法，不自行创建业务状态
 
@@ -30,7 +30,7 @@ SFC 是视图层的**唯一载体**，只做三件事：
 ## 2. 文件骨架
 
 ```
-<template>          — 布局组件 + 插槽 + Element Plus 组件 + 事件绑定
+<template>          — StdListContainer 拼装 + StdListArea* 子组件 + Element Plus 组件 + 事件绑定
 <script setup lang="ts">  — import → 解构 Service → 本地 UI 状态 → markRaw 图标
 <style scoped>      — 仅覆盖本组件的样式，不写全局样式
 ```
@@ -41,18 +41,20 @@ SFC 是视图层的**唯一载体**，只做三件事：
 
 ## 3. 硬性规则（Must）
 
-1. Manager 页面根元素必须使用 `StdListLayout`，填充 `#query / #actions / #table / #pagination / #modal` 五个插槽
-2. Modal 弹窗根元素使用 `el-dialog`，通过 `v-if="modalVisible"` 控制挂载
-3. `el-dialog` 必须设置 `:close-on-click-modal="false"`，`@close` 统一为 `resetModal(); loadList();`
-4. `el-form` 必须设置 `:validate-on-rule-change="false"`
-5. Element Plus 图标必须 `markRaw()` 包裹后再使用
-6. `<script setup lang="ts">` 内只能有：`import` → `markRaw` 图标 → 本地 UI 状态 → 解构 Service
-7. 解构 Service 时 `useXxxModal` 的入参固定为 `(modalFormRef, loadList)`
-8. 禁止在 SFC 内声明 `interface | enum | type | const Options`
-9. 禁止在 SFC 内写业务判断（`if (mode === 'add')` 做不同逻辑）、数据转换
-10. 禁止在 SFC 内直接调用 `Http.postEntity` 或 `XxxApi.xxxMethod()`
-11. 禁止相对路径导入，统一 `@/` 前缀
-12. 禁用 `else` / `switch`
+1. Manager 页面根元素必须使用 `StdListContainer`，内部按序拼装 `StdListAreaQuery`、`StdListAreaAction`（有按钮时才保留）、`StdListAreaTable`、`el-dialog`
+2. `StdListAreaTable` 必须绑定 `v-model:list-form="listForm"`、`:list-total="listTotal"`、`:load-list="loadList"` 三个属性，不使用 `#pagination` 插槽
+3. Modal 弹窗根元素使用 `el-dialog`，通过 `v-if="modalVisible"` 控制挂载
+4. `el-dialog` 必须设置 `:close-on-click-modal="false"`，`@close` 统一为 `resetModal(); loadList();`
+5. `el-form` 必须设置 `:validate-on-rule-change="false"`
+6. `el-table` 必须设置 `height="100%"`
+7. Element Plus 图标必须 `markRaw()` 包裹后再使用
+8. `<script setup lang="ts">` 内只能有：`import` → `markRaw` 图标 → 本地 UI 状态 → 解构 Service
+9. 解构 Service 时 `useXxxModal` 的入参固定为 `(modalFormRef, loadList)`
+10. 禁止在 SFC 内声明 `interface | enum | type | const Options`
+11. 禁止在 SFC 内写业务判断（`if (mode === 'add')` 做不同逻辑）、数据转换
+12. 禁止在 SFC 内直接调用 `Http.postEntity` 或 `XxxApi.xxxMethod()`
+13. 禁止相对路径导入，统一 `@/` 前缀
+14. 禁用 `else` / `switch`
 
 ---
 
@@ -62,8 +64,8 @@ SFC 是视图层的**唯一载体**，只做三件事：
 
 ```vue
 <template>
-  <StdListLayout>
-    <template #query>
+  <StdListContainer>
+    <StdListAreaQuery>
       <el-form :model="listForm" :inline="true">
         <el-row :gutter="16">
           <el-col :span="6">
@@ -74,14 +76,14 @@ SFC 是视图层的**唯一载体**，只做三件事：
           <!-- 其他查询字段 -->
         </el-row>
       </el-form>
-    </template>
+    </StdListAreaQuery>
 
-    <template #actions>
-      <el-button type="primary" @click="openModal('add')">新增Xxx</el-button>
-    </template>
+    <StdListAreaAction>
+      <el-button type="primary" @click="openModal('add')">创建Xxx</el-button>
+    </StdListAreaAction>
 
-    <template #table>
-      <el-table :data="listData" v-loading="listLoading" border stripe>
+    <StdListAreaTable v-model:list-form="listForm" :list-total="listTotal" :load-list="loadList">
+      <el-table :data="listData" v-loading="listLoading" border stripe height="100%">
         <el-table-column type="index" label="序号" width="60" />
         <el-table-column prop="title" label="标题" show-overflow-tooltip />
         <!-- 其他列 -->
@@ -93,54 +95,44 @@ SFC 是视图层的**唯一载体**，只做三件事：
           </template>
         </el-table-column>
       </el-table>
-    </template>
+    </StdListAreaTable>
 
-    <template #pagination>
-      <el-pagination
-        v-model:current-page="listForm.pageNum"
-        v-model:page-size="listForm.pageSize"
-        :total="listTotal"
-        :page-sizes="[10, 20, 50, 100]"
-        layout="total, sizes, prev, pager, next, jumper"
-        @size-change="loadList"
-        @current-change="loadList"
-      />
-    </template>
-
-    <template #modal>
-      <el-dialog
-        v-if="modalVisible"
-        v-model="modalVisible"
-        :title="modalMode === 'add' ? '新增Xxx' : '编辑Xxx'"
-        :close-on-click-modal="false"
-        width="700px"
-        @close="resetModal(); loadList();"
+    <el-dialog
+      v-if="modalVisible"
+      v-model="modalVisible"
+      :title="modalMode === 'add' ? '创建Xxx' : '编辑Xxx'"
+      :close-on-click-modal="false"
+      width="700px"
+      @close="resetModal(); loadList();"
+    >
+      <el-form
+        ref="modalFormRef"
+        :model="modalForm"
+        :rules="modalRules"
+        :validate-on-rule-change="false"
+        label-width="100px"
       >
-        <el-form
-          ref="modalFormRef"
-          :model="modalForm"
-          :rules="modalRules"
-          :validate-on-rule-change="false"
-          label-width="100px"
-        >
-          <el-form-item label="标题" prop="title">
-            <el-input v-model="modalForm.title" placeholder="请输入标题" clearable />
-          </el-form-item>
-          <!-- 其他表单项 -->
-        </el-form>
-        <template #footer>
-          <el-button @click="resetModal(); loadList();">取消</el-button>
-          <el-button type="primary" @click="submitModal" :loading="modalLoading">确定</el-button>
-        </template>
-      </el-dialog>
-    </template>
-  </StdListLayout>
+        <el-form-item label="标题" prop="title">
+          <el-input v-model="modalForm.title" placeholder="请输入标题" clearable />
+        </el-form-item>
+        <!-- 其他表单项 -->
+      </el-form>
+      <template #footer>
+        <el-button @click="resetModal(); loadList();">取消</el-button>
+        <el-button type="primary" @click="submitModal" :loading="modalLoading">确定</el-button>
+      </template>
+    </el-dialog>
+  </StdListContainer>
 </template>
 
 <script setup lang="ts">
 import { ref, markRaw, reactive } from "vue";
 import { Edit, Delete, View } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
+import StdListContainer from "@/soa/std-series/StdListContainer.vue";
+import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
+import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";
+import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
 import XxxService from "@/views/<域>/service/XxxService.ts";
 
 const ViewIcon = markRaw(View);
@@ -287,13 +279,34 @@ const onClose = (): void => {
 ## 5. 反模式（Anti-patterns）
 
 ```vue
-<!-- ❌ 根元素不用 StdListLayout，自己写 div 排版 -->
+<!-- ❌ 根元素不用 StdListContainer，自己写 div 排版 -->
 <div class="my-page"><div class="query-area">...</div></div>
+```
+
+```vue
+<!-- ❌ StdListLayout + #pagination 旧写法，应改为 StdListContainer 拼装 + StdListAreaTable 内置分页 -->
+<StdListLayout>
+  <template #query>...</template>
+  <template #table>...</template>
+  <template #pagination><el-pagination ... /></template>
+</StdListLayout>
+```
+
+```vue
+<!-- ❌ StdListAreaTable 未绑定 list-form / list-total / load-list 三属性 -->
+<StdListAreaTable>
+  <el-table ... />
+</StdListAreaTable>
 ```
 
 ```vue
 <!-- ❌ el-dialog 不用 v-if，导致关闭后残留校验 -->
 <el-dialog v-model="modalVisible">...</el-dialog>
+```
+
+```vue
+<!-- ❌ el-table 未设置 height="100%" -->
+<el-table :data="listData" v-loading="listLoading" border stripe>...</el-table>
 ```
 
 ```vue
@@ -322,11 +335,13 @@ if (mode === 'add') { doSomethingDifferent(); }
 
 | 场景 | 组件/写法 | 必须 |
 | --- | --- | --- |
-| Manager 页面布局 | `<StdListLayout>` + 5 插槽 | 是 |
+| Manager 页面布局 | `<StdListContainer>` + `StdListAreaQuery` + `StdListAreaAction` + `StdListAreaTable` + `el-dialog` | 是 |
+| 表格区内置分页 | `<StdListAreaTable v-model:list-form="listForm" :list-total="listTotal" :load-list="loadList">` | 是 |
 | Modal 弹窗 | `<el-dialog>` + `v-if="modalVisible"` | 是 |
 | Modal 关闭 | `@close="resetModal(); loadList();"` | 是 |
 | 防止点击遮罩关闭 | `:close-on-click-modal="false"` | 是 |
 | 表单校验规则触发 | `:validate-on-rule-change="false"` | 是 |
+| 表格高度 | `el-table` `height="100%"` | 是 |
 | 图标 | `const XxxIcon = markRaw(Xxx)` | 是 |
 | Service 解构 | `const { ... } = XxxService.useXxxList()` | 是 |
 | Modal Service 入参 | `useXxxModal(modalFormRef, loadList)` | 是 |
@@ -343,11 +358,11 @@ if (mode === 'add') { doSomethingDifferent(); }
 | --- | --- |
 | `border` | true |
 | `stripe` | true |
+| `height` | `"100%"` |
 | `v-loading` | `listLoading` |
 
-| el-pagination 属性 | 值 |
+| StdListAreaTable 属性 | 值 |
 | --- | --- |
-| `layout` | `"total, sizes, prev, pager, next, jumper"` |
-| `:page-sizes` | `[10, 20, 50, 100]` |
-| `@size-change` | `loadList` |
-| `@current-change` | `loadList` |
+| `v-model:list-form` | `listForm` |
+| `:list-total` | `listTotal` |
+| `:load-list` | `loadList` |
