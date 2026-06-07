@@ -85,7 +85,7 @@
       :validate-on-rule-change="false"
     >
       <el-form-item label="能力包名称" prop="name">
-        <el-input v-model="modalForm.name" placeholder="请输入能力包名称" />
+        <el-input v-model="modalForm.name" placeholder="请输入能力包名称" :maxlength="40" show-word-limit />
       </el-form-item>
       <el-form-item label="类型" prop="kind">
         <el-select v-model="modalForm.kind" placeholder="请选择类型">
@@ -93,7 +93,7 @@
         </el-select>
       </el-form-item>
       <el-form-item label="备注" prop="remark">
-        <el-input v-model="modalForm.remark" placeholder="请输入备注" type="textarea" :rows="3" />
+        <el-input v-model="modalForm.remark" placeholder="请输入备注" type="textarea" :rows="3" :maxlength="500" show-word-limit />
       </el-form-item>
     </el-form>
     <template #footer>
