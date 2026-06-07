@@ -4,9 +4,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.ksptool.bio.biz.core.common.config.gson.LocalDateAdapter;
-import com.ksptool.bio.commons.utils.GsonUtils;
 import com.ksptool.bio.commons.annotation.PrintLog;
 import com.ksptool.bio.commons.config.LocalDateTimeAdapter;
+import com.ksptool.bio.commons.utils.GsonUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.lang.annotation.Annotation;
 import java.time.LocalDate;
@@ -109,6 +110,10 @@ public class RequestLogAspect {
 
         if (ret instanceof ResponseEntity<?> e) {
             return "ResponseEntity:" + e.getStatusCode();
+        }
+
+        if (ret instanceof SseEmitter) {
+            return "[SSE 长连接流]";
         }
 
         JsonElement json = gson.toJsonTree(ret);
