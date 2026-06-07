@@ -9,6 +9,7 @@ import com.ksptool.bio.biz.aacp.model.dto.EditAacpFuncDto;
 import com.ksptool.bio.biz.aacp.model.dto.GetAacpFuncListDto;
 import com.ksptool.bio.biz.aacp.model.vo.GetAacpFuncDetailsVo;
 import com.ksptool.bio.biz.aacp.model.vo.GetAacpFuncListVo;
+import com.ksptool.bio.biz.aacp.repository.AacpCapabilityFuncRepository;
 import com.ksptool.bio.biz.aacp.repository.AacpFuncRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -25,6 +26,9 @@ public class AacpFuncService {
 
     @Autowired
     private AacpFuncRepository repository;
+
+    @Autowired
+    private AacpCapabilityFuncRepository capabilityFuncRepository;
 
     /**
      * 查询微函数列表
@@ -93,8 +97,11 @@ public class AacpFuncService {
     @Transactional(rollbackFor = Exception.class)
     public void removeAacpFunc(CommonIdDto dto) throws BizException {
         if (dto.isBatch()) {
-            repository.deleteAllById(dto.getIds());
-            return;
+            throw new BizException("微函数不支持批量删除");
+        }
+        long refCount = capabilityFuncRepository.countByFuncId(dto.getId());
+        if (refCount > 0) {
+            throw new BizException("该微函数已被" + refCount + "个能力包使用，无法删除");
         }
         repository.deleteById(dto.getId());
     }

@@ -4,12 +4,14 @@ import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.bio.biz.aacp.model.AacpCapabilityPo;
+import com.ksptool.bio.biz.aacp.model.AacpMcpCapabilityPo;
 import com.ksptool.bio.biz.aacp.model.dto.AddAacpCapabilityDto;
 import com.ksptool.bio.biz.aacp.model.dto.EditAacpCapabilityDto;
 import com.ksptool.bio.biz.aacp.model.dto.GetAacpCapabilityListDto;
 import com.ksptool.bio.biz.aacp.model.vo.GetAacpCapabilityDetailsVo;
 import com.ksptool.bio.biz.aacp.model.vo.GetAacpCapabilityListVo;
 import com.ksptool.bio.biz.aacp.repository.AacpCapabilityRepository;
+import com.ksptool.bio.biz.aacp.repository.AacpMcpCapabilityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,9 @@ public class AacpCapabilityService {
 
     @Autowired
     private AacpCapabilityRepository repository;
+
+    @Autowired
+    private AacpMcpCapabilityRepository mcpCapabilityRepository;
 
     /**
      * 查询能力包列表
@@ -93,8 +98,11 @@ public class AacpCapabilityService {
     @Transactional(rollbackFor = Exception.class)
     public void removeAacpCapability(CommonIdDto dto) throws BizException {
         if (dto.isBatch()) {
-            repository.deleteAllById(dto.getIds());
-            return;
+            throw new BizException("能力包不支持批量删除");
+        }
+        long refCount = mcpCapabilityRepository.countByCapabilityId(dto.getId());
+        if (refCount > 0) {
+            throw new BizException("该能力包已被" + refCount + "台MCP服务器使用，无法删除");
         }
         repository.deleteById(dto.getId());
     }
