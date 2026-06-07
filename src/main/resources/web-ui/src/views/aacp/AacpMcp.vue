@@ -42,7 +42,6 @@
         <el-table-column label="通信协议" width="110" align="center">
           <template #default="scope">
             <span v-show="scope.row.networkKind === 0">HTTP+SSE</span>
-            <span v-show="scope.row.networkKind === 1">WS</span>
           </template>
         </el-table-column>
         <el-table-column label="主机" prop="host" />
@@ -59,10 +58,10 @@
             <span v-show="scope.row.status === 1" style="color: #67c23a">在线</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" fixed="right" width="140">
+        <el-table-column label="操作" fixed="right">
           <template #default="scope">
-            <el-button link type="primary" size="small" @click="openModal('edit', scope.row)">编辑</el-button>
-            <el-button link type="danger" size="small" @click="removeList(scope.row)">删除</el-button>
+            <el-button link type="primary" size="small" :icon="ViewIcon" @click="openModal('edit', scope.row)">编辑</el-button>
+            <el-button link type="danger" size="small" :icon="DeleteIcon" @click="removeList(scope.row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -97,7 +96,10 @@
     :title="modalMode === 'edit' ? '编辑MCP服务器' : '新增MCP服务器'"
     width="550px"
     :close-on-click-modal="false"
-    @close="resetModal"
+    @close="
+      resetModal();
+      loadList();
+    "
   >
     <el-form
       v-if="modalVisible"
@@ -108,10 +110,10 @@
       :validate-on-rule-change="false"
     >
       <el-form-item label="服务器名称" prop="name">
-        <el-input v-model="modalForm.name" placeholder="请输入服务器名称" />
+        <el-input v-model="modalForm.name" placeholder="请输入服务器名称" :maxlength="40" show-word-limit />
       </el-form-item>
       <el-form-item label="唯一编码" prop="code">
-        <el-input v-model="modalForm.code" placeholder="请输入唯一编码" />
+        <el-input v-model="modalForm.code" placeholder="请输入唯一编码" :maxlength="16" show-word-limit />
       </el-form-item>
       <el-form-item label="通信协议">
         <el-select v-model="modalForm.networkKind" placeholder="请选择通信协议" disabled>
@@ -119,7 +121,7 @@
         </el-select>
       </el-form-item>
       <el-form-item label="主机" prop="host">
-        <el-input v-model="modalForm.host" placeholder="请输入主机" />
+        <el-input v-model="modalForm.host" placeholder="请输入主机" :maxlength="45" show-word-limit />
       </el-form-item>
       <el-form-item label="端口" prop="port">
         <el-input v-model.number="modalForm.port" placeholder="请输入端口" type="number" />
@@ -131,7 +133,7 @@
         </el-select>
       </el-form-item>
       <el-form-item v-show="modalForm.authKind === 1" label="预共享密钥" prop="authPsk">
-        <el-input v-model="modalForm.authPsk" placeholder="请输入预共享密钥" type="textarea" :rows="4" />
+        <el-input v-model="modalForm.authPsk" placeholder="请输入预共享密钥" type="textarea" :rows="4" :maxlength="2000" show-word-limit />
       </el-form-item>
       <el-form-item label="状态" prop="status">
         <el-select v-model="modalForm.status" placeholder="请选择状态">
@@ -152,10 +154,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, markRaw } from "vue";
+import { View, Delete } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
 import StdListLayout from "@/soa/std-series/StdListLayout.vue";
 import AacpMcpService from "@/views/aacp/service/AacpMcpService.ts";
+
+const ViewIcon = markRaw(View);
+const DeleteIcon = markRaw(Delete);
 
 const modalFormRef = ref<FormInstance>();
 
