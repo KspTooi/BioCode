@@ -1,20 +1,20 @@
-package com.ksptool.bio.biz.aacpcapability.model;
+package com.ksptool.bio.biz.aacp.model;
 
 import com.ksptool.assembly.entity.exception.AuthException;
+import com.ksptool.bio.biz.auth.service.SessionService;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import java.time.LocalDateTime;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import com.ksptool.assembly.entity.exception.AuthException;
-import com.ksptool.bio.biz.auth.service.SessionService;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -36,7 +36,7 @@ public class AacpCapabilityPo {
     @Column(name = "name", nullable = false, length = 40, comment = "能力包名称")
     private String name;
 
-    @Column(name = "kind", nullable = false, comment = "类型 0:微函数")
+    @Column(name = "kind", nullable = false, columnDefinition = "tinyint", comment = "类型 0:微函数")
     private Integer kind;
 
     @Column(name = "remark", length = 500, comment = "备注")
@@ -60,7 +60,6 @@ public class AacpCapabilityPo {
 
     @Column(name = "delete_time", comment = "删除时间")
     private LocalDateTime deleteTime;
-
 
     @PrePersist
     private void onCreate() throws AuthException {
