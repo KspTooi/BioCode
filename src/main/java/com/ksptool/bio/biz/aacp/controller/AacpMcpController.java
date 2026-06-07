@@ -30,6 +30,7 @@ import com.ksptool.bio.biz.aacp.model.vo.McpRpcResult;
 import com.google.gson.Gson;
 import org.springframework.util.StringUtils;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -147,9 +148,19 @@ public class AacpMcpController {
             return;
         }
 
+        McpRpcResult<?> response = null;
+
         if ("initialize".equals(method)) {
-            handleInitialize(emitter, jsonRpcMessage);
-            return;
+            Map<String, Object> serverInfo = new LinkedHashMap<>();
+            serverInfo.put("name", "bio-code-aacp");
+            serverInfo.put("version", "1.0.0");
+
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("protocolVersion", "2025-11-25");
+            result.put("capabilities", new LinkedHashMap<>());
+            result.put("serverInfo", serverInfo);
+
+            response = McpRpcResult.success(jsonRpcMessage.getId(), result);
         }
 
         if ("notifications/initialized".equals(method)) {
@@ -157,40 +168,42 @@ public class AacpMcpController {
             return;
         }
 
-        McpRpcResult<Void> error = McpRpcResult.error(
-                jsonRpcMessage.getId(),
-                McpRpcResult.McpErrorCode.METHOD_NOT_FOUND,
-                "Method not found: " + method);
-        try {
-            emitter.send(SseEmitter.event().data(gson.toJson(error)));
-        } catch (IOException e) {
-            log.error("发送JSON-RPC错误响应失败", e);
+        if ("tools/list".equals(method)) {
+            Map<String, Object> tool = new LinkedHashMap<>();
+            tool.put("name", "test_ping");
+            tool.put("description", "测试工具：返回"测试通过"");
+
+            Map<String, Object> inputSchema = new LinkedHashMap<>();
+            inputSchema.put("type", "object");
+            inputSchema.put("properties", Collections.emptyMap());
+            tool.put("inputSchema", inputSchema);
+
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("tools", Collections.singletonList(tool));
+
+            response = McpRpcResult.success(jsonRpcMessage.getId(), result);
         }
-    }
 
-    /**
-     * 处理 initialize 请求，返回服务端能力声明
-     */
-    private void handleInitialize(SseEmitter emitter, McpRpcDto dto) {
-        Map<String, Object> capabilities = new LinkedHashMap<>();
+        if ("tools/call".equals(method)) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("content", Collections.singletonList(
+                    Collections.singletonMap("text", "测试通过")
+            ));
 
-        Map<String, Object> serverInfo = new LinkedHashMap<>();
-        serverInfo.put("name", "bio-code-aacp");
-        serverInfo.put("version", "1.0.0");
+            response = McpRpcResult.success(jsonRpcMessage.getId(), result);
+        }
 
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("protocolVersion", "2025-11-25");
-        result.put("capabilities", capabilities);
-        result.put("serverInfo", serverInfo);
-
-        McpRpcResult<Map<String, Object>> response = McpRpcResult.success(dto.getId(), result);
+        if (response == null) {
+            response = McpRpcResult.error(
+                    jsonRpcMessage.getId(),
+                    McpRpcResult.McpErrorCode.METHOD_NOT_FOUND,
+                    "Method not found: " + method);
+        }
 
         try {
             emitter.send(SseEmitter.event().data(gson.toJson(response)));
-            log.info("已发送 initialize 响应给客户端");
         } catch (IOException e) {
-            log.error("发送 initialize 响应失败", e);
+            log.error("发送SSE响应失败", e);
         }
     }
-
 }
