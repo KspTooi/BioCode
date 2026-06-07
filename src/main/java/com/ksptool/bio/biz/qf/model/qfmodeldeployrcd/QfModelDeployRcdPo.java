@@ -1,8 +1,9 @@
 package com.ksptool.bio.biz.qf.model.qfmodeldeployrcd;
 
 import com.ksptool.assembly.entity.exception.AuthException;
-import com.ksptool.bio.biz.auth.common.aop.*;
-import com.ksptool.bio.biz.auth.service.SessionService;
+import com.ksptool.bio.biz.auth.common.aop.CreatedRootId;
+import com.ksptool.bio.biz.auth.common.aop.RowScopeRootOnlyPo;
+import com.ksptool.bio.biz.auth.common.aop.RsAuditingEntityListener;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -32,14 +33,13 @@ public class QfModelDeployRcdPo extends RowScopeRootOnlyPo {
     private Long id;
 
     @CreatedRootId
-    @Column(name = "root_id", nullable = false, comment = "所属企业/租户ID")
+    @Column(name = "root_id", nullable = false, comment = "租户ID")
     private Long rootId;
-
 
     @Column(name = "model_id", nullable = false, comment = "模型ID")
     private Long modelId;
 
-    @Column(name = "form_id",nullable = false, comment = "关联表单ID")
+    @Column(name = "form_id", nullable = false, comment = "关联表单ID")
     private Long formId;
 
     @Column(name = "name", nullable = false, length = 80, comment = "模型名称")

@@ -1,8 +1,9 @@
 package com.ksptool.bio.biz.qf.model.qfmodelgroup;
 
 import com.ksptool.assembly.entity.exception.AuthException;
-import com.ksptool.bio.biz.auth.common.aop.*;
-import com.ksptool.bio.biz.auth.service.SessionService;
+import com.ksptool.bio.biz.auth.common.aop.CreatedRootId;
+import com.ksptool.bio.biz.auth.common.aop.RowScopeRootOnlyPo;
+import com.ksptool.bio.biz.auth.common.aop.RsAuditingEntityListener;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -32,9 +33,8 @@ public class QfModelGroupPo extends RowScopeRootOnlyPo {
     private Long id;
 
     @CreatedRootId
-    @Column(name = "root_id", nullable = false, comment = "所属企业/租户ID")
+    @Column(name = "root_id", nullable = false, comment = "租户ID")
     private Long rootId;
-
 
     @Column(name = "name", nullable = false, length = 80, comment = "组名称")
     private String name;
