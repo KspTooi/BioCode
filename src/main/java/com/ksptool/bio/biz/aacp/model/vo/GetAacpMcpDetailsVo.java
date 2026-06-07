@@ -20,12 +20,6 @@ public class GetAacpMcpDetailsVo {
     @Schema(description = "通信协议 0:HTTP+SSE 1:WS")
     private Integer networkKind;
 
-    @Schema(description = "主机")
-    private String host;
-
-    @Schema(description = "端口")
-    private Integer port;
-
     @Schema(description = "鉴权类型 0:无 1:PSK")
     private Integer authKind;
 

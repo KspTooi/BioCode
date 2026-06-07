@@ -4,7 +4,7 @@
   "avatar": "",
   "version": "4.9.4",
   "createdTime": "2025-5-31 18:54:43",
-  "updatedTime": "2026-6-8 02:17:10",
+  "updatedTime": "2026-6-8 03:27:30",
   "dbConns": [],
   "profile": {
     "default": {
@@ -35030,42 +35030,6 @@
           "extProps": {},
           "domain": "1B3F3434-1CE8-4D13-A4C3-CDAE3CDF0498",
           "id": "08E1C71A-3639-4678-A418-E2DADF05EBA6"
-        },
-        {
-          "defKey": "host",
-          "defName": "主机",
-          "comment": "",
-          "type": "",
-          "len": "",
-          "scale": "",
-          "primaryKey": false,
-          "notNull": true,
-          "autoIncrement": false,
-          "defaultValue": "",
-          "hideInGraph": false,
-          "refDict": "",
-          "baseType": "566FB128-DBDE-4D78-9260-24C96D09CFE0",
-          "extProps": {},
-          "domain": "A9BB00C0-30B6-42CB-9381-D02F953BCFCF",
-          "id": "77BF6ADA-A9FB-4353-8CB7-E7A16EDBE1B5"
-        },
-        {
-          "defKey": "port",
-          "defName": "端口",
-          "comment": "",
-          "type": "",
-          "len": "",
-          "scale": "",
-          "primaryKey": false,
-          "notNull": true,
-          "autoIncrement": false,
-          "defaultValue": "",
-          "hideInGraph": false,
-          "refDict": "",
-          "baseType": "D6F266BC-0AF9-4E75-BD79-56B34FA0191F",
-          "extProps": {},
-          "domain": "D209B1E4-22F0-448B-B944-33EC0844DDFC",
-          "id": "EB294F57-E699-4BF4-8AD2-F504FEA8DCEB"
         },
         {
           "defKey": "auth_kind",

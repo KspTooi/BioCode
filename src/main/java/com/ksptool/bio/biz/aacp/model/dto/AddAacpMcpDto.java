@@ -25,19 +25,9 @@ public class AddAacpMcpDto implements DtoCustomValidator {
     private String code;
 
     @NotNull(message = "通信协议不能为空")
-    @Range(min = 0, max = 0, message = "通信协议仅支持HTTP+SSE")
-    @Schema(description = "通信协议 0:HTTP+SSE")
+    @Range(min = 0, max = 1, message = "通信协议只能在0-1之间")
+    @Schema(description = "通信协议 0:HTTP+SSE 1:WS")
     private Integer networkKind;
-
-    @NotBlank(message = "主机不能为空")
-    @Length(max = 45, message = "主机长度不能超过45")
-    @Schema(description = "主机")
-    private String host;
-
-    @NotNull(message = "端口不能为空")
-    @Range(min = 1, max = 65535, message = "端口只能在1-65535之间")
-    @Schema(description = "端口")
-    private Integer port;
 
     @NotNull(message = "鉴权类型不能为空")
     @Range(min = 0, max = 1, message = "鉴权类型只能在0-1之间")

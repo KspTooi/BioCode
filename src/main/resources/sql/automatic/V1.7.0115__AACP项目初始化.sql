@@ -11,8 +11,6 @@ CREATE TABLE aacp_mcp(
     `name` VARCHAR(40) NOT NULL  COMMENT '服务器名称' ,
     `code` VARCHAR(16) NOT NULL  COMMENT '唯一编码' ,
     `network_kind` TINYINT NOT NULL  COMMENT '通信协议 0:HTTP+SSE 1:WS' ,
-    `host` VARCHAR(45) NOT NULL  COMMENT '主机' ,
-    `port` INT NOT NULL  COMMENT '端口' ,
     `auth_kind` TINYINT NOT NULL  COMMENT '鉴权类型 0:无 1:PSK' ,
     `auth_psk` VARCHAR(2000)   COMMENT '预共享密钥' ,
     `status` TINYINT NOT NULL  COMMENT '状态 0:离线 1:在线' ,
