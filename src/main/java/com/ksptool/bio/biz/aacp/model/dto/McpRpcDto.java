@@ -22,7 +22,7 @@ public class McpRpcDto {
     private String method;
 
     @Schema(description = "请求参数")
-    private McpInitializeParamsDto params;
+    private Map<String, Object> params;
 
     @Getter
     @Setter

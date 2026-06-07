@@ -1,5 +1,6 @@
 package com.ksptool.bio.biz.aacp.controller;
 
+import com.google.gson.Gson;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.assembly.entity.web.Result;
@@ -9,6 +10,7 @@ import com.ksptool.bio.biz.aacp.model.dto.GetAacpMcpListDto;
 import com.ksptool.bio.biz.aacp.model.dto.McpRpcDto;
 import com.ksptool.bio.biz.aacp.model.vo.GetAacpMcpDetailsVo;
 import com.ksptool.bio.biz.aacp.model.vo.GetAacpMcpListVo;
+import com.ksptool.bio.biz.aacp.model.vo.McpRpcResult;
 import com.ksptool.bio.biz.aacp.service.AacpMcpService;
 import com.ksptool.bio.biz.auth.common.DynamicGlobalWhiteManager;
 import com.ksptool.bio.commons.annotation.PrintLog;
@@ -22,14 +24,11 @@ import org.springframework.context.event.EventListener;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
-import com.ksptool.bio.biz.aacp.model.vo.McpRpcResult;
-import com.google.gson.Gson;
-import org.springframework.util.StringUtils;
-
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -169,27 +168,81 @@ public class AacpMcpController {
         }
 
         if ("tools/list".equals(method)) {
-            Map<String, Object> tool = new LinkedHashMap<>();
-            tool.put("name", "test_ping");
-            tool.put("description", "测试工具：返回"测试通过"");
+            Map<String, Object> tool1 = new LinkedHashMap<>();
+            tool1.put("name", "test_ping");
+            tool1.put("description", "测试工具：返回`测试通过`");
+            tool1.put("inputSchema", Collections.singletonMap("type", "object"));
 
-            Map<String, Object> inputSchema = new LinkedHashMap<>();
-            inputSchema.put("type", "object");
-            inputSchema.put("properties", Collections.emptyMap());
-            tool.put("inputSchema", inputSchema);
+            Map<String, Object> tool2 = new LinkedHashMap<>();
+            tool2.put("name", "get_current_time");
+            tool2.put("description", "获取服务器当前时间");
+            tool2.put("inputSchema", Collections.singletonMap("type", "object"));
+
+            Map<String, Object> tool3 = new LinkedHashMap<>();
+            tool3.put("name", "echo");
+            tool3.put("description", "回声工具：复读输入内容");
+
+            Map<String, Object> echoSchema = new LinkedHashMap<>();
+            echoSchema.put("type", "object");
+            Map<String, Object> echoProps = new LinkedHashMap<>();
+            echoProps.put("message", Collections.singletonMap("type", "string"));
+            echoSchema.put("properties", echoProps);
+            tool3.put("inputSchema", echoSchema);
+
+            Map<String, Object> tool4 = new LinkedHashMap<>();
+            tool4.put("name", "count_chars");
+            tool4.put("description", "统计输入文本的字符数");
+
+            Map<String, Object> countSchema = new LinkedHashMap<>();
+            countSchema.put("type", "object");
+            Map<String, Object> countProps = new LinkedHashMap<>();
+            countProps.put("text", Collections.singletonMap("type", "string"));
+            countSchema.put("properties", countProps);
+            tool4.put("inputSchema", countSchema);
 
             Map<String, Object> result = new LinkedHashMap<>();
-            result.put("tools", Collections.singletonList(tool));
-
+            result.put("tools", java.util.List.of(tool1, tool2, tool3, tool4));
             response = McpRpcResult.success(jsonRpcMessage.getId(), result);
         }
 
         if ("tools/call".equals(method)) {
-            Map<String, Object> result = new LinkedHashMap<>();
-            result.put("content", Collections.singletonList(
-                    Collections.singletonMap("text", "测试通过")
-            ));
+            Map<String, Object> contentItem = new LinkedHashMap<>();
+            contentItem.put("type", "text");
 
+            String toolName = null;
+            Map<String, Object> arguments = null;
+            if (jsonRpcMessage.getParams() != null) {
+                toolName = (String) jsonRpcMessage.getParams().get("name");
+                Object argsObj = jsonRpcMessage.getParams().get("arguments");
+                if (argsObj instanceof Map) {
+                    arguments = (Map<String, Object>) argsObj;
+                }
+            }
+
+            if ("test_ping".equals(toolName)) {
+                contentItem.put("text", "测试通过");
+            }
+
+            if ("get_current_time".equals(toolName)) {
+                contentItem.put("text", new java.util.Date().toString());
+            }
+
+            if ("echo".equals(toolName)) {
+                String input = arguments != null ? (String) arguments.getOrDefault("message", "") : "";
+                contentItem.put("text", "Echo: " + input);
+            }
+
+            if ("count_chars".equals(toolName)) {
+                String input = arguments != null ? (String) arguments.getOrDefault("text", "") : "";
+                contentItem.put("text", "字符数: " + input.length());
+            }
+
+            if (contentItem.get("text") == null) {
+                contentItem.put("text", "未知工具: " + toolName);
+            }
+
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("content", Collections.singletonList(contentItem));
             response = McpRpcResult.success(jsonRpcMessage.getId(), result);
         }
 
