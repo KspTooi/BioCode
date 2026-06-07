@@ -4,6 +4,7 @@ import type { GetQfTodoListDto, GetQfTodoListVo, GetQfTodoDetailsVo, EditQfTodoD
 import QfTodoApi from "@/views/qf/api/QfTodoApi.ts";
 import { Result } from "@/commons/model/Result";
 import { ElMessage, ElMessageBox } from "element-plus";
+import QueryPersistService from "@/commons/service/QueryPersistService.ts";
 
 type ModalMode = "edit";
 
@@ -31,6 +32,7 @@ export default {
       if (Result.isSuccess(result)) {
         listData.value = result.data;
         listTotal.value = result.total;
+        QueryPersistService.persistQuery("qf-todo", listForm.value);
       }
 
       if (Result.isError(result)) {
@@ -46,6 +48,7 @@ export default {
       listForm.value.nodeName = "";
       listForm.value.bizFormId = "";
       listForm.value.status = 0;
+      QueryPersistService.clearQuery("qf-todo");
       loadList();
     };
 
@@ -70,6 +73,7 @@ export default {
     };
 
     onMounted(async () => {
+      QueryPersistService.loadQuery("qf-todo", listForm.value);
       await loadList();
     });
 
