@@ -14,9 +14,7 @@ export interface GetAacpMcpListVo {
   id: string; //主键ID
   name: string; //服务器名称
   code: string; //唯一编码
-  networkKind: number; //通信协议 0:HTTP+SSE
-  host: string; //主机
-  port: number; //端口
+  networkKind: number; //通信协议 0:HTTP+SSE 1:WS
   authKind: number; //鉴权类型 0:无 1:PSK
   authPsk: string; //预共享密钥
   status: number; //状态 0:离线 1:在线
@@ -25,9 +23,7 @@ export interface GetAacpMcpListVo {
 export interface AddAacpMcpDto {
   name: string | null; //服务器名称
   code: string | null; //唯一编码
-  networkKind: number | null; //通信协议 0:HTTP+SSE
-  host: string | null; //主机
-  port: number | null; //端口
+  networkKind: number | null; //通信协议 0:HTTP+SSE 1:WS
   authKind: number | null; //鉴权类型 0:无 1:PSK
   authPsk: string | null; //预共享密钥
   status: number | null; //状态 0:离线 1:在线
@@ -37,9 +33,7 @@ export interface EditAacpMcpDto {
   id: string | null; //主键ID
   name: string | null; //服务器名称
   code: string | null; //唯一编码
-  networkKind: number | null; //通信协议 0:HTTP+SSE
-  host: string | null; //主机
-  port: number | null; //端口
+  networkKind: number | null; //通信协议 0:HTTP+SSE 1:WS
   authKind: number | null; //鉴权类型 0:无 1:PSK
   authPsk: string | null; //预共享密钥
   status: number | null; //状态 0:离线 1:在线
@@ -49,9 +43,7 @@ export interface GetAacpMcpDetailsVo {
   id: string | null; //主键ID
   name: string | null; //服务器名称
   code: string | null; //唯一编码
-  networkKind: number | null; //通信协议 0:HTTP+SSE
-  host: string | null; //主机
-  port: number | null; //端口
+  networkKind: number | null; //通信协议 0:HTTP+SSE 1:WS
   authKind: number | null; //鉴权类型 0:无 1:PSK
   authPsk: string | null; //预共享密钥
   status: number | null; //状态 0:离线 1:在线

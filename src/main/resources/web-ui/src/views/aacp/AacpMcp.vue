@@ -37,8 +37,6 @@
             <span v-show="scope.row.networkKind === 0">HTTP+SSE</span>
           </template>
         </el-table-column>
-        <el-table-column label="主机" prop="host" />
-        <el-table-column label="端口" prop="port" width="80" align="center" />
         <el-table-column label="鉴权类型" width="100" align="center">
           <template #default="scope">
             <span v-show="scope.row.authKind === 0">无</span>
@@ -85,15 +83,10 @@
           <el-input v-model="modalForm.code" placeholder="请输入唯一编码" :maxlength="16" show-word-limit />
         </el-form-item>
         <el-form-item label="通信协议">
-          <el-select v-model="modalForm.networkKind" placeholder="请选择通信协议" disabled>
+          <el-select v-model="modalForm.networkKind" placeholder="请选择通信协议">
             <el-option label="HTTP+SSE" :value="0" />
+            <el-option label="WS" :value="1" />
           </el-select>
-        </el-form-item>
-        <el-form-item label="主机" prop="host">
-          <el-input v-model="modalForm.host" placeholder="请输入主机" :maxlength="45" show-word-limit />
-        </el-form-item>
-        <el-form-item label="端口" prop="port">
-          <el-input v-model.number="modalForm.port" placeholder="请输入端口" type="number" />
         </el-form-item>
         <el-form-item label="鉴权类型" prop="authKind">
           <el-select v-model="modalForm.authKind" placeholder="请选择鉴权类型">

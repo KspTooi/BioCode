@@ -96,8 +96,6 @@ export default {
       name: null,
       code: null,
       networkKind: null,
-      host: null,
-      port: null,
       authKind: null,
       authPsk: null,
       status: null,
@@ -115,18 +113,6 @@ export default {
       networkKind: [
         { required: true, message: "请选择通信协议", trigger: "change" },
       ],
-      host: [
-        { required: true, message: "请输入主机", trigger: "blur" },
-        { max: 45, message: "主机长度不能超过45", trigger: "blur" },
-      ],
-      port: [
-        { required: true, message: "请输入端口", trigger: "blur" },
-        {
-          pattern: /^([1-9]\d{0,4})$|^([1-5]\d{4})$|^(6[0-4]\d{3})$|^(65[0-4]\d{2})$|^(655[0-2]\d)$|^(6553[0-5])$/,
-          message: "端口必须在1-65535之间",
-          trigger: "blur",
-        },
-      ],
       authKind: [
         { required: true, message: "请选择鉴权类型", trigger: "change" },
       ],
@@ -143,8 +129,6 @@ export default {
       modalForm.name = null;
       modalForm.code = null;
       modalForm.networkKind = 0;
-      modalForm.host = "0.0.0.0";
-      modalForm.port = 40000;
       modalForm.authKind = 0;
       modalForm.authPsk = null;
       modalForm.status = 1;
@@ -161,8 +145,6 @@ export default {
           modalForm.name = res.name;
           modalForm.code = res.code;
           modalForm.networkKind = res.networkKind;
-          modalForm.host = res.host;
-          modalForm.port = res.port;
           modalForm.authKind = res.authKind;
           modalForm.authPsk = res.authPsk;
           modalForm.status = res.status;
@@ -190,8 +172,6 @@ export default {
             name: modalForm.name,
             code: modalForm.code,
             networkKind: modalForm.networkKind,
-            host: modalForm.host,
-            port: modalForm.port,
             authKind: modalForm.authKind,
             authPsk: modalForm.authPsk,
             status: modalForm.status,
@@ -206,8 +186,6 @@ export default {
             name: modalForm.name,
             code: modalForm.code,
             networkKind: modalForm.networkKind,
-            host: modalForm.host,
-            port: modalForm.port,
             authKind: modalForm.authKind,
             authPsk: modalForm.authPsk,
             status: modalForm.status,
