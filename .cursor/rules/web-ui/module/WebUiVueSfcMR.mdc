@@ -48,16 +48,26 @@ SFC 是视图层的**唯一载体**，只做三件事：
 5. `el-dialog` 必须设置 `:close-on-click-modal="false"`，`@close` 统一为 `resetModal(); loadList();`
 6. 模态框 Footer 取消按钮文案为 `关闭`，点击设为 `modalVisible = false`；提交按钮文案使用 `{{ modalMode === "add" ? "创建" : "保存" }}`
 7. `el-form` 必须设置 `:validate-on-rule-change="false"`
-8. `el-table` 必须设置 `height="100%"`
-9. Element Plus 图标必须 `markRaw()` 包裹后再使用
-10. `<script setup lang="ts">` 内只能有：`import` → `markRaw` 图标 → 本地 UI 状态 → 解构 Service
-11. 解构 Service 时 `useXxxModal` 的入参固定为 `(modalFormRef, loadList)`
-12. 禁止在 SFC 内声明 `interface | enum | type | const Options`
-13. 禁止在 SFC 内写业务判断（`if (mode === 'add')` 做不同逻辑）、数据转换
-14. 禁止在 SFC 内直接调用 `Http.postEntity` 或 `XxxApi.xxxMethod()`
-15. 模态框内 `el-input` 必须设置 `maxlength` + `show-word-limit`（需与后端 `@Size` / `@Length` 对齐，形成三位一体校验）
-16. 禁止相对路径导入，统一 `@/` 前缀
-17. 禁用 `else` / `switch`
+8. `StdListAreaAction` 中的基本按钮（创建、删除、批量操作等）不得带 `:icon` 属性，仅使用纯文字
+9. `el-table` 必须设置 `height="100%"`
+10. Element Plus 图标必须 `markRaw()` 包裹后再使用
+11. `<script setup lang="ts">` 内只能有：`import` → `markRaw` 图标 → 本地 UI 状态 → 解构 Service
+12. 解构 Service 时 `useXxxModal` 的入参固定为 `(modalFormRef, loadList)`
+13. 禁止在 SFC 内声明 `interface | enum | type | const Options`
+14. 禁止在 SFC 内写业务判断（`if (mode === 'add')` 做不同逻辑）、数据转换
+15. 禁止在 SFC 内直接调用 `Http.postEntity` 或 `XxxApi.xxxMethod()`
+16. 模态框内 `el-input` 必须设置 `maxlength` + `show-word-limit`（需与后端 `@Size` / `@Length` 对齐，形成三位一体校验）
+17. 创建类操作文案统一用「创建」，禁用「新增」「新建」
+18. 禁止相对路径导入，统一 `@/` 前缀
+19. 禁用 `else` / `switch`
+
+### 3.1 特殊布局例外（Exceptions）
+
+以下场景对上述硬性规则有明确例外，需按本节执行：
+
+1. **Splitpanes 左树右表页**（如 `UserManager.vue`、`RegistryManager.vue`）：列表区的 `StdListContainer` 嵌于右侧 `<pane>` 内；业务 CRUD 的 `el-dialog` 允许置于页面根级（与 `Splitpanes` 同级），不强制放入 Pane 内的 `StdListContainer` 中（豁免规则 1）。
+2. **客户端树表 / 无服务端分页**（如 `OrgManager.vue`）：当列表为客户端过滤的树表、`listForm` 不含 `pageNum/pageSize`、翻页不经 `loadList` 时，`StdListAreaTable` 可不绑定 `v-model:list-form`、`:list-total`、`:load-list` 三属性，也不使用内置分页（豁免规则 3）。
+3. 例外仅限上述两类布局；除被豁免的具体条款外，其余硬性规则（查询区布局、模态框 `v-if`/Footer/校验、Action 无图标、`maxlength` 三位一体、术语等）仍须遵守。
 
 ---
 
@@ -173,112 +183,6 @@ const {
 <style scoped></style>
 ```
 
-### Modal 组件 SFC
-
-```vue
-<template>
-  <el-dialog
-    v-model="visible"
-    title="选择用户"
-    :close-on-click-modal="false"
-    width="800px"
-    @close="onClose"
-  >
-    <el-form :model="queryForm" :inline="true">
-      <el-form-item label="用户名" prop="username">
-        <el-input v-model="queryForm.username" placeholder="请输入" clearable />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="loadList">查询</el-button>
-        <el-button @click="resetQuery">重置</el-button>
-      </el-form-item>
-    </el-form>
-
-    <el-table
-      :data="listData"
-      v-loading="listLoading"
-      border
-      highlight-current-row
-      @row-click="onRowClick"
-    >
-      <el-table-column prop="username" label="用户名" />
-      <!-- 其他列 -->
-    </el-table>
-
-    <el-pagination
-      v-model:current-page="queryForm.pageNum"
-      v-model:page-size="queryForm.pageSize"
-      :total="listTotal"
-      layout="prev, pager, next"
-      @current-change="loadList"
-    />
-
-    <template #footer>
-      <el-button @click="visible = false">关闭</el-button>
-    </template>
-  </el-dialog>
-</template>
-
-<script setup lang="ts">
-import { reactive, ref, watch } from "vue";
-import type { GetUserListDto, GetUserListVo } from "@/views/<域>/api/UserApi.ts";
-import UserApi from "@/views/<域>/api/UserApi.ts";
-import { Result } from "@/commons/model/Result.ts";
-import { ElMessage } from "element-plus";
-
-interface Props {
-  modelValue: boolean;
-}
-interface Emits {
-  (e: "update:modelValue", value: boolean): void;
-  (e: "onSelected", value: GetUserListVo): void;
-}
-
-const props = defineProps<Props>();
-const emit = defineEmits<Emits>();
-
-const visible = ref(false);
-const listData = ref<GetUserListVo[]>([]);
-const listTotal = ref(0);
-const listLoading = ref(false);
-const queryForm = reactive<GetUserListDto>({ pageNum: 1, pageSize: 10 });
-
-watch(() => props.modelValue, (val) => { visible.value = val; if (val) loadList(); });
-watch(visible, (val) => { emit("update:modelValue", val); });
-
-const loadList = async (): Promise<void> => {
-  listLoading.value = true;
-  const result = await UserApi.getUserList(queryForm);
-  listLoading.value = false;
-  if (Result.isSuccess(result)) {
-    listData.value = result.data.records;
-    listTotal.value = result.data.total;
-    return;
-  }
-  ElMessage.error(result.message);
-};
-
-const resetQuery = (): void => {
-  queryForm.pageNum = 1;
-  queryForm.username = "";
-  loadList();
-};
-
-const onRowClick = (row: GetUserListVo): void => {
-  emit("onSelected", row);
-  visible.value = false;
-};
-
-const onClose = (): void => {
-  resetQuery();
-};
-</script>
-
-<style scoped>
-:deep(.selectable-row) { cursor: pointer; }
-</style>
-```
-
 ---
 
 ## 5. 反模式（Anti-patterns）
@@ -332,6 +236,14 @@ const onClose = (): void => {
 ```
 
 ```vue
+<!-- ❌ StdListAreaAction 基本按钮带图标 -->
+<StdListAreaAction>
+  <el-button type="primary" :icon="PlusIcon">创建租户</el-button>
+  <el-button type="danger" :icon="DeleteIcon">删除</el-button>
+</StdListAreaAction>
+```
+
+```vue
 <!-- ❌ el-table 未设置 height="100%" -->
 <el-table :data="listData" v-loading="listLoading" border stripe>...</el-table>
 ```
@@ -370,6 +282,7 @@ if (mode === 'add') { doSomethingDifferent(); }
 | Manager 页面布局 | `<StdListContainer>` + `StdListAreaQuery` + `StdListAreaAction` + `StdListAreaTable` + `el-dialog` | 是 |
 | 查询区布局 | `el-form` `inline class="flex justify-between"` + `<div>` 包裹字段 + 按钮 `<el-form-item>` | 是 |
 | 查询按钮 | `:disabled="listLoading"` | 是 |
+| Action 基本按钮 | 纯文字，不带 `:icon` | 是 |
 | 表格区内置分页 | `<StdListAreaTable v-model:list-form="listForm" :list-total="listTotal" :load-list="loadList">` | 是 |
 | Modal 弹窗 | `<el-dialog v-model="modalVisible">` + `<el-form v-if="modalVisible">` | 是 |
 | Modal 关闭回调 | `@close="resetModal(); loadList();"` | 是 |
