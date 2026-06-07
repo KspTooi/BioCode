@@ -47,7 +47,9 @@
         <el-table-column prop="code" label="模型编码" min-width="120" show-overflow-tooltip />
         <el-table-column label="业务表单" min-width="140" show-overflow-tooltip>
           <template #default="scope">
-            <span v-if="scope.row.bizFormName && scope.row.bizFormCode">{{ scope.row.bizFormName }}({{ scope.row.bizFormCode }})</span>
+            <span v-if="scope.row.bizFormName && scope.row.bizFormCode"
+              >{{ scope.row.bizFormName }}({{ scope.row.bizFormCode }})</span
+            >
             <span v-else>-</span>
           </template>
         </el-table-column>
@@ -223,7 +225,6 @@ import StdListContainer from "@/soa/std-series/StdListContainer.vue";
 import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
 import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";
 import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
-import type { GetQfModelListVo } from "@/views/qf/api/QfModelApi.ts";
 import QfModelApi from "@/views/qf/api/QfModelApi.ts";
 import ComDirectRouteContext from "@/soa/com-series/service/ComDirectRouteContext.ts";
 import ComSeqFixer from "@/soa/com-series/ComSeqFixer.vue";
