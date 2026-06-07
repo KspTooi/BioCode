@@ -42,20 +42,22 @@ SFC 是视图层的**唯一载体**，只做三件事：
 ## 3. 硬性规则（Must）
 
 1. Manager 页面根元素必须使用 `StdListContainer`，内部按序拼装 `StdListAreaQuery`、`StdListAreaAction`（有按钮时才保留）、`StdListAreaTable`、`el-dialog`
-2. `StdListAreaTable` 必须绑定 `v-model:list-form="listForm"`、`:list-total="listTotal"`、`:load-list="loadList"` 三个属性，不使用 `#pagination` 插槽
-3. Modal 弹窗根元素使用 `el-dialog`，通过 `v-if="modalVisible"` 控制挂载
-4. `el-dialog` 必须设置 `:close-on-click-modal="false"`，`@close` 统一为 `resetModal(); loadList();`
-5. `el-form` 必须设置 `:validate-on-rule-change="false"`
-6. `el-table` 必须设置 `height="100%"`
-7. Element Plus 图标必须 `markRaw()` 包裹后再使用
-8. `<script setup lang="ts">` 内只能有：`import` → `markRaw` 图标 → 本地 UI 状态 → 解构 Service
-9. 解构 Service 时 `useXxxModal` 的入参固定为 `(modalFormRef, loadList)`
-10. 禁止在 SFC 内声明 `interface | enum | type | const Options`
-11. 禁止在 SFC 内写业务判断（`if (mode === 'add')` 做不同逻辑）、数据转换
-12. 禁止在 SFC 内直接调用 `Http.postEntity` 或 `XxxApi.xxxMethod()`
-13. 模态框内 `el-input` 必须设置 `maxlength` + `show-word-limit`（需与后端 `@Size` / `@Length` 对齐，形成三位一体校验）
-14. 禁止相对路径导入，统一 `@/` 前缀
-15. 禁用 `else` / `switch`
+2. 查询区 `el-form` 必须使用 `inline class="flex justify-between"`，查询字段用 `<div>` 包裹，按钮放在右侧单独 `<el-form-item>` 中，按钮必须 `:disabled="listLoading"`
+3. `StdListAreaTable` 必须绑定 `v-model:list-form="listForm"`、`:list-total="listTotal"`、`:load-list="loadList"` 三个属性，不使用 `#pagination` 插槽
+4. 模态框内 `v-if="modalVisible"` 必须放在 `<el-form>` 上（而非 `el-dialog`），用于关闭弹窗时销毁表单消除残留校验
+5. `el-dialog` 必须设置 `:close-on-click-modal="false"`，`@close` 统一为 `resetModal(); loadList();`
+6. 模态框 Footer 取消按钮文案为 `关闭`，点击设为 `modalVisible = false`；提交按钮文案使用 `{{ modalMode === "add" ? "创建" : "保存" }}`
+7. `el-form` 必须设置 `:validate-on-rule-change="false"`
+8. `el-table` 必须设置 `height="100%"`
+9. Element Plus 图标必须 `markRaw()` 包裹后再使用
+10. `<script setup lang="ts">` 内只能有：`import` → `markRaw` 图标 → 本地 UI 状态 → 解构 Service
+11. 解构 Service 时 `useXxxModal` 的入参固定为 `(modalFormRef, loadList)`
+12. 禁止在 SFC 内声明 `interface | enum | type | const Options`
+13. 禁止在 SFC 内写业务判断（`if (mode === 'add')` 做不同逻辑）、数据转换
+14. 禁止在 SFC 内直接调用 `Http.postEntity` 或 `XxxApi.xxxMethod()`
+15. 模态框内 `el-input` 必须设置 `maxlength` + `show-word-limit`（需与后端 `@Size` / `@Length` 对齐，形成三位一体校验）
+16. 禁止相对路径导入，统一 `@/` 前缀
+17. 禁用 `else` / `switch`
 
 ---
 
@@ -67,15 +69,17 @@ SFC 是视图层的**唯一载体**，只做三件事：
 <template>
   <StdListContainer>
     <StdListAreaQuery>
-      <el-form :model="listForm" :inline="true">
-        <el-row :gutter="16">
-          <el-col :span="6">
-            <el-form-item label="标题" prop="title">
-              <el-input v-model="listForm.title" placeholder="请输入标题" clearable />
-            </el-form-item>
-          </el-col>
+      <el-form :model="listForm" inline class="flex justify-between">
+        <div>
+          <el-form-item label="标题">
+            <el-input v-model="listForm.title" placeholder="输入标题" clearable />
+          </el-form-item>
           <!-- 其他查询字段 -->
-        </el-row>
+        </div>
+        <el-form-item>
+          <el-button type="primary" :disabled="listLoading" @click="loadList">查询</el-button>
+          <el-button :disabled="listLoading" @click="resetList">重置</el-button>
+        </el-form-item>
       </el-form>
     </StdListAreaQuery>
 
@@ -99,7 +103,6 @@ SFC 是视图层的**唯一载体**，只做三件事：
     </StdListAreaTable>
 
     <el-dialog
-      v-if="modalVisible"
       v-model="modalVisible"
       :title="modalMode === 'add' ? '创建Xxx' : '编辑Xxx'"
       :close-on-click-modal="false"
@@ -107,6 +110,7 @@ SFC 是视图层的**唯一载体**，只做三件事：
       @close="resetModal(); loadList();"
     >
       <el-form
+        v-if="modalVisible"
         ref="modalFormRef"
         :model="modalForm"
         :rules="modalRules"
@@ -119,15 +123,17 @@ SFC 是视图层的**唯一载体**，只做三件事：
         <!-- 其他表单项 -->
       </el-form>
       <template #footer>
-        <el-button @click="resetModal(); loadList();">取消</el-button>
-        <el-button type="primary" @click="submitModal" :loading="modalLoading">确定</el-button>
+        <el-button @click="modalVisible = false">关闭</el-button>
+        <el-button type="primary" @click="submitModal" :loading="modalLoading">
+          {{ modalMode === "add" ? "创建" : "保存" }}
+        </el-button>
       </template>
     </el-dialog>
   </StdListContainer>
 </template>
 
 <script setup lang="ts">
-import { ref, markRaw, reactive } from "vue";
+import { ref, markRaw } from "vue";
 import { Edit, Delete, View } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
@@ -139,8 +145,6 @@ import XxxService from "@/views/<域>/service/XxxService.ts";
 const ViewIcon = markRaw(View);
 const EditIcon = markRaw(Edit);
 const DeleteIcon = markRaw(Delete);
-
-const uiState = reactive({ isAdvancedSearch: false });
 
 const {
   listForm,
@@ -301,8 +305,30 @@ const onClose = (): void => {
 ```
 
 ```vue
-<!-- ❌ el-dialog 不用 v-if，导致关闭后残留校验 -->
-<el-dialog v-model="modalVisible">...</el-dialog>
+<!-- ❌ el-dialog 上放 v-if（应放在 el-form 上），导致关闭后残留校验 -->
+<el-dialog v-if="modalVisible" v-model="modalVisible">...</el-dialog>
+```
+
+```vue
+<!-- ❌ v-if 应在 el-form 上，不在 el-dialog 上 -->
+<el-dialog v-model="modalVisible">
+  <el-form ref="modalFormRef">...</el-form>
+</el-dialog>
+```
+
+```vue
+<!-- ❌ 查询区用 el-row/el-col 栅格布局（应改为 flex justify-between + div 包裹） -->
+<el-form :model="listForm" :inline="true">
+  <el-row :gutter="16"><el-col :span="6">...</el-col></el-row>
+</el-form>
+```
+
+```vue
+<!-- ❌ 模态框 Footer 用"取消/确定"旧文案 -->
+<template #footer>
+  <el-button @click="resetModal(); loadList();">取消</el-button>
+  <el-button type="primary" @click="submitModal">确定</el-button>
+</template>
 ```
 
 ```vue
@@ -342,9 +368,13 @@ if (mode === 'add') { doSomethingDifferent(); }
 | 场景 | 组件/写法 | 必须 |
 | --- | --- | --- |
 | Manager 页面布局 | `<StdListContainer>` + `StdListAreaQuery` + `StdListAreaAction` + `StdListAreaTable` + `el-dialog` | 是 |
+| 查询区布局 | `el-form` `inline class="flex justify-between"` + `<div>` 包裹字段 + 按钮 `<el-form-item>` | 是 |
+| 查询按钮 | `:disabled="listLoading"` | 是 |
 | 表格区内置分页 | `<StdListAreaTable v-model:list-form="listForm" :list-total="listTotal" :load-list="loadList">` | 是 |
-| Modal 弹窗 | `<el-dialog>` + `v-if="modalVisible"` | 是 |
-| Modal 关闭 | `@close="resetModal(); loadList();"` | 是 |
+| Modal 弹窗 | `<el-dialog v-model="modalVisible">` + `<el-form v-if="modalVisible">` | 是 |
+| Modal 关闭回调 | `@close="resetModal(); loadList();"` | 是 |
+| Modal Footer 取消 | `<el-button @click="modalVisible = false">关闭</el-button>` | 是 |
+| Modal Footer 提交 | `<el-button>{{ modalMode === "add" ? "创建" : "保存" }}</el-button>` | 是 |
 | 防止点击遮罩关闭 | `:close-on-click-modal="false"` | 是 |
 | 表单校验规则触发 | `:validate-on-rule-change="false"` | 是 |
 | 表格高度 | `el-table` `height="100%"` | 是 |
