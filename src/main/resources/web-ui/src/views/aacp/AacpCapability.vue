@@ -1,25 +1,21 @@
 <template>
   <StdListContainer>
     <StdListAreaQuery>
-      <el-form :model="listForm">
-        <el-row>
-          <el-col :span="5" :offset="1">
-            <el-form-item label="能力包名称">
-              <el-input v-model="listForm.name" placeholder="请输入能力包名称" clearable style="width: 200px" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="5" :offset="1">
-            <el-form-item label="类型">
-              <el-select v-model="listForm.kind" placeholder="请选择" clearable style="width: 200px">
-                <el-option label="微函数" :value="0" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="8" :offset="4" style="display: flex; justify-content: flex-end">
-            <el-button type="primary" :disabled="listLoading" @click="loadList">查询</el-button>
-            <el-button :disabled="listLoading" @click="resetList">重置</el-button>
-          </el-col>
-        </el-row>
+      <el-form :model="listForm" inline class="flex justify-between">
+        <div>
+          <el-form-item label="能力包名称">
+            <el-input v-model="listForm.name" placeholder="请输入能力包名称" clearable />
+          </el-form-item>
+          <el-form-item label="类型">
+            <el-select v-model="listForm.kind" placeholder="请选择" clearable>
+              <el-option label="微函数" :value="0" />
+            </el-select>
+          </el-form-item>
+        </div>
+        <el-form-item>
+          <el-button type="primary" :disabled="listLoading" @click="loadList">查询</el-button>
+          <el-button :disabled="listLoading" @click="resetList">重置</el-button>
+        </el-form-item>
       </el-form>
     </StdListAreaQuery>
 
@@ -47,7 +43,6 @@
     </StdListAreaTable>
 
     <el-dialog
-      v-if="modalVisible"
       v-model="modalVisible"
       :title="modalMode === 'edit' ? '编辑能力包' : '创建能力包'"
       width="550px"
@@ -55,6 +50,7 @@
       @close="resetModal(); loadList();"
     >
       <el-form
+        v-if="modalVisible"
         ref="modalFormRef"
         :model="modalForm"
         :rules="modalRules"

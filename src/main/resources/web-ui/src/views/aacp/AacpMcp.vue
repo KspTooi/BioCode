@@ -1,33 +1,25 @@
 <template>
   <StdListContainer>
     <StdListAreaQuery>
-      <el-form :model="listForm">
-        <el-row>
-          <el-col :span="5" :offset="1">
-            <el-form-item label="服务器名称">
-              <el-input v-model="listForm.name" placeholder="请输入服务器名称" clearable style="width: 200px" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="5" :offset="1">
-            <el-form-item label="唯一编码">
-              <el-input v-model="listForm.code" placeholder="请输入唯一编码" clearable style="width: 200px" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="5" :offset="1">
-            <el-form-item label="状态">
-              <el-select v-model="listForm.status" placeholder="请选择" clearable style="width: 200px">
-                <el-option label="离线" :value="0" />
-                <el-option label="在线" :value="1" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="8" :offset="4" style="display: flex; justify-content: flex-end">
-            <el-button type="primary" :disabled="listLoading" @click="loadList">查询</el-button>
-            <el-button :disabled="listLoading" @click="resetList">重置</el-button>
-          </el-col>
-        </el-row>
+      <el-form :model="listForm" inline class="flex justify-between">
+        <div>
+          <el-form-item label="服务器名称">
+            <el-input v-model="listForm.name" placeholder="请输入服务器名称" clearable />
+          </el-form-item>
+          <el-form-item label="唯一编码">
+            <el-input v-model="listForm.code" placeholder="请输入唯一编码" clearable />
+          </el-form-item>
+          <el-form-item label="状态">
+            <el-select v-model="listForm.status" placeholder="请选择" clearable>
+              <el-option label="离线" :value="0" />
+              <el-option label="在线" :value="1" />
+            </el-select>
+          </el-form-item>
+        </div>
+        <el-form-item>
+          <el-button type="primary" :disabled="listLoading" @click="loadList">查询</el-button>
+          <el-button :disabled="listLoading" @click="resetList">重置</el-button>
+        </el-form-item>
       </el-form>
     </StdListAreaQuery>
 
@@ -69,7 +61,6 @@
     </StdListAreaTable>
 
     <el-dialog
-      v-if="modalVisible"
       v-model="modalVisible"
       :title="modalMode === 'edit' ? '编辑MCP服务器' : '创建MCP服务器'"
       width="550px"
@@ -80,6 +71,7 @@
       "
     >
       <el-form
+        v-if="modalVisible"
         ref="modalFormRef"
         :model="modalForm"
         :rules="modalRules"

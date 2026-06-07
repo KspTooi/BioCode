@@ -1,30 +1,22 @@
 <template>
   <StdListContainer>
     <StdListAreaQuery>
-      <el-form :model="listForm">
-        <el-row>
-          <el-col :span="5" :offset="1">
-            <el-form-item label="微函数名称">
-              <el-input v-model="listForm.name" placeholder="请输入微函数名称" clearable style="width: 200px" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="5" :offset="1">
-            <el-form-item label="微函数标识">
-              <el-input v-model="listForm.code" placeholder="请输入微函数标识" clearable style="width: 200px" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="5" :offset="1">
-            <el-form-item label="意图词">
-              <el-input v-model="listForm.description" placeholder="请输入意图词" clearable style="width: 200px" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8" :offset="4" style="display: flex; justify-content: flex-end">
-            <el-button type="primary" :disabled="listLoading" @click="loadList">查询</el-button>
-            <el-button :disabled="listLoading" @click="resetList">重置</el-button>
-          </el-col>
-        </el-row>
+      <el-form :model="listForm" inline class="flex justify-between">
+        <div>
+          <el-form-item label="微函数名称">
+            <el-input v-model="listForm.name" placeholder="请输入微函数名称" clearable />
+          </el-form-item>
+          <el-form-item label="微函数标识">
+            <el-input v-model="listForm.code" placeholder="请输入微函数标识" clearable />
+          </el-form-item>
+          <el-form-item label="意图词">
+            <el-input v-model="listForm.description" placeholder="请输入意图词" clearable />
+          </el-form-item>
+        </div>
+        <el-form-item>
+          <el-button type="primary" :disabled="listLoading" @click="loadList">查询</el-button>
+          <el-button :disabled="listLoading" @click="resetList">重置</el-button>
+        </el-form-item>
       </el-form>
     </StdListAreaQuery>
 
@@ -48,7 +40,6 @@
     </StdListAreaTable>
 
     <el-dialog
-      v-if="modalVisible"
       v-model="modalVisible"
       :title="modalMode === 'edit' ? '编辑微函数' : '创建微函数'"
       width="600px"
@@ -59,6 +50,7 @@
       "
     >
       <el-form
+        v-if="modalVisible"
         ref="modalFormRef"
         :model="modalForm"
         :rules="modalRules"
