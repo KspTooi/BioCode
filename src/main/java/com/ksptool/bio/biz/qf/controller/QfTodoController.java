@@ -8,6 +8,8 @@ import com.ksptool.bio.biz.qf.model.qftodo.vo.GetQfTodoDetailsVo;
 import com.ksptool.bio.biz.qf.model.qftodo.vo.GetQfTodoListVo;
 import com.ksptool.bio.biz.qf.model.qftodo.vo.ProcessNodeVo;
 import com.ksptool.bio.biz.qf.service.QfTodoService;
+import com.ksptool.bio.biz.auth.common.aop.RowScope;
+import com.ksptool.bio.biz.auth.common.aop.SystemScope;
 import com.ksptool.bio.commons.annotation.PrintLog;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -38,6 +40,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/qfTodo")
 @Tag(name = "QF-待办事项", description = "QF-待办事项")
 @Slf4j
+@RowScope(mode = RowScope.Mode.ROOT_ONLY)
 public class QfTodoController {
 
     @Autowired

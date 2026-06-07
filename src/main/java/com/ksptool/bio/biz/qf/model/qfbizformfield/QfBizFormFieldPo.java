@@ -1,6 +1,7 @@
 package com.ksptool.bio.biz.qf.model.qfbizformfield;
 
 import com.ksptool.assembly.entity.exception.AuthException;
+import com.ksptool.bio.biz.auth.common.aop.*;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -18,15 +19,19 @@ import org.hibernate.annotations.SQLRestriction;
 @Setter
 @Entity
 @Table(name = "qf_biz_form_field")
-@EntityListeners(AuditingEntityListener.class)
+@EntityListeners({AuditingEntityListener.class, RsAuditingEntityListener.class})
 @SQLDelete(sql = "UPDATE qf_biz_form_field SET delete_time = NOW() WHERE id = ?")
 @SQLRestriction("delete_time IS NULL")
-public class QfBizFormFieldPo {
+public class QfBizFormFieldPo extends RowScopeRootOnlyPo {
 
     @Id
     @SnowflakeIdGenerated
     @Column(name = "id", nullable = false, comment = "主键ID")
     private Long id;
+    
+    @CreatedRootId
+    @Column(name = "root_id", nullable = false, comment = "租户ID")
+    private Long rootId;
 
     @Column(name = "form_id", nullable = false, comment = "业务表ID")
     private Long formId;

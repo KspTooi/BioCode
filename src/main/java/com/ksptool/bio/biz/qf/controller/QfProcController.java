@@ -5,10 +5,12 @@ import com.ksptool.bio.biz.qf.commons.LaunchParam;
 import com.ksptool.bio.biz.qf.model.qfmodeldeployrcd.dto.LaunchProcDto;
 import com.ksptool.bio.biz.qf.model.qftodo.dto.GetProcessApproveFlowDto;
 import com.ksptool.bio.biz.qf.model.qftodo.dto.GetProcessApproveFlowRecordDto;
-import com.ksptool.bio.biz.qf.model.qftodo.dto.GetProcessNodeConfigsDto;
+import com.ksptool.bio.biz.qf.model.qftodo.dto.GetProcNodeDefineDto;
 import com.ksptool.bio.biz.qf.model.qftodo.vo.ApproveFlowRecordVo;
-import com.ksptool.bio.biz.qf.model.qftodo.vo.ProcessNodeConfigVo;
+import com.ksptool.bio.biz.qf.model.qftodo.vo.GetProcNodeDefineVo;
 import com.ksptool.bio.biz.qf.service.QfProcService;
+import com.ksptool.bio.biz.auth.common.aop.RowScope;
+import com.ksptool.bio.biz.auth.common.aop.SystemScope;
 import com.ksptool.bio.commons.annotation.PrintLog;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -43,6 +45,7 @@ import java.util.List;
 @RequestMapping("/qfProc")
 @Tag(name = "QF-流程与任务", description = "QF-流程与任务")
 @Slf4j
+@RowScope(mode = RowScope.Mode.ROOT_ONLY)
 public class QfProcController {
 
     @Autowired
@@ -58,15 +61,20 @@ public class QfProcController {
                 .dataId(dto.getDataId())
                 .build();
         
+        //加入启动成员参数
+        for (var member : dto.getMembers()) {
+            p.addMember(member.getNodeId(), member.getMemberId());
+        }
+        
         var processInstanceId = qfProcService.launchProc(p);
         return Result.success(processInstanceId);
     }
 
     @PreAuthorize("@auth.hasCode('qf:model:deploy:edit')")
     @Operation(summary = "获取流程节点配置列表（发起流程时使用）")
-    @PostMapping("/getProcessNodeConfigs")
-    public Result<List<ProcessNodeConfigVo>> getProcessNodeConfigs(@RequestBody @Valid GetProcessNodeConfigsDto dto) throws Exception {
-        List<ProcessNodeConfigVo> nodes = qfProcService.getProcessNodeConfigs(dto.getCode());
+    @PostMapping("/getProcNodeDefine")
+    public Result<List<GetProcNodeDefineVo>> getProcNodeDefine(@RequestBody @Valid GetProcNodeDefineDto dto) throws Exception {
+        List<GetProcNodeDefineVo> nodes = qfProcService.getProcNodeDefine(dto.getCode());
         if (nodes == null || nodes.isEmpty()) {
             return Result.error("未找到流程节点");
         }
