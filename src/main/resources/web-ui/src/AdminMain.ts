@@ -26,7 +26,7 @@ import QfRouteRegister from "@/views/qf/route/QfRouteRegister.ts";
 import AssemblyRouteRegister from "@/views/assembly/route/AssemblyRouteRegister.ts";
 import PlayGroundRouteRegister from "@/views/playground/route/PlayGroundRouteRegister";
 import ComTabService from "@/soa/com-series/service/ComTabService.ts";
-import ComFramework from "@/soa/com-series/ComFramework.vue";
+import DefaultLayout from "@/soa/layout-series-default/DefaultLayout.vue";
 import ComLayoutProviderService from "@/soa/com-series/service/ComLayoutProviderService.ts";
 import ComAuthProviderService from "@/soa/com-series/service/ComAuthProvider.ts";
 import UserLogin from "@/views/auth/UserLogin.vue";
@@ -84,7 +84,7 @@ const ctsFixedTabs = [
 setupIconify();
 
 //注册多布局
-ComLayoutProviderService.registerLayout("default", ComFramework);
+ComLayoutProviderService.registerLayout("default", DefaultLayout);
 
 //设置默认布局（路由 meta.layout 为 default 或未指定时生效）
 ComLayoutProviderService.setDefaultLayout("default");
