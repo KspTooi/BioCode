@@ -53,8 +53,9 @@ SFC 是视图层的**唯一载体**，只做三件事：
 10. 禁止在 SFC 内声明 `interface | enum | type | const Options`
 11. 禁止在 SFC 内写业务判断（`if (mode === 'add')` 做不同逻辑）、数据转换
 12. 禁止在 SFC 内直接调用 `Http.postEntity` 或 `XxxApi.xxxMethod()`
-13. 禁止相对路径导入，统一 `@/` 前缀
-14. 禁用 `else` / `switch`
+13. 模态框内 `el-input` 必须设置 `maxlength` + `show-word-limit`（需与后端 `@Size` / `@Length` 对齐，形成三位一体校验）
+14. 禁止相对路径导入，统一 `@/` 前缀
+15. 禁用 `else` / `switch`
 
 ---
 
@@ -113,7 +114,7 @@ SFC 是视图层的**唯一载体**，只做三件事：
         label-width="100px"
       >
         <el-form-item label="标题" prop="title">
-          <el-input v-model="modalForm.title" placeholder="请输入标题" clearable />
+          <el-input v-model="modalForm.title" placeholder="请输入标题" clearable maxlength="100" show-word-limit />
         </el-form-item>
         <!-- 其他表单项 -->
       </el-form>
@@ -310,6 +311,11 @@ const onClose = (): void => {
 ```
 
 ```vue
+<!-- ❌ 输入框未设置 maxlength + show-word-limit，缺少三位一体校验 -->
+<el-input v-model="modalForm.title" placeholder="请输入标题" clearable />
+```
+
+```vue
 <!-- ❌ 图标未 markRaw -->
 <el-button :icon="Edit" />
 ```
@@ -346,6 +352,7 @@ if (mode === 'add') { doSomethingDifferent(); }
 | Service 解构 | `const { ... } = XxxService.useXxxList()` | 是 |
 | Modal Service 入参 | `useXxxModal(modalFormRef, loadList)` | 是 |
 | 表单引用 | `const modalFormRef = ref<FormInstance>()` | 是 |
+| 输入框三位一体 | `maxlength` + `show-word-limit` + 后端 `@Size`/`@Length` | 是 |
 | 导入 | `import type { ... }` + `@/` 前缀 | 是 |
 
 | el-table 操作列 | 图标 | class |
