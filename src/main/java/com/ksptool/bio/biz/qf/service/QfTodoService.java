@@ -8,11 +8,11 @@ import com.ksptool.bio.biz.auth.repository.UserGroupRepository;
 import com.ksptool.bio.biz.core.common.TupleMapper;
 import com.ksptool.bio.biz.core.repository.UserRepository;
 import com.ksptool.bio.biz.qf.commons.QfeVarsModel;
+import com.ksptool.bio.biz.qf.commons.enums.TodoMemberCategory;
+import com.ksptool.bio.biz.qf.commons.enums.TodoStatus;
 import com.ksptool.bio.biz.qf.commons.qfe.QfeBpmnModel;
 import com.ksptool.bio.biz.qf.commons.qfe.QfeUserTask;
 import com.ksptool.bio.biz.qf.commons.qfe.QfeUserTask.AprAction;
-import com.ksptool.bio.biz.qf.commons.qfe.QfeUserTask.MemberKind;
-import com.ksptool.bio.biz.qf.commons.qfe.QfeUserTask.TodoStatus;
 import com.ksptool.bio.biz.qf.model.qfbizform.vo.GetQfBizFormDetailsVo;
 import com.ksptool.bio.biz.qf.model.qfmodeldeployrcd.QfModelDeployRcdPo;
 import com.ksptool.bio.biz.qf.model.qftodo.QfTodoPo;
@@ -156,7 +156,46 @@ public class QfTodoService {
         GetQfTodoDetailsVo details = as(po, GetQfTodoDetailsVo.class);
         details.setRouteMobile(getQfBizFormDetailsVo.getRouteMobile());
         details.setRoutePc(getQfBizFormDetailsVo.getRoutePc());
-        fillQfTodoFormConfig(po, details);
+        details.setAllowComment(1);
+
+        List<GetQfTodoDetailsVo.OperationConfig> operations = new ArrayList<>();
+
+        QfeUserTask ut = findDeployUserTaskByName(po.getEngProcessDefId(), po.getNodeName());
+        if (ut != null) {
+            // utAprComment：1=允许填写审批意见, 0=不允许；缺省按允许处理
+        details.setAllowComment(NumberUtils.toInt(ut.getAttr(QfeVarsModel.UT_APR_COMMENT), 1));
+
+            List<String> editFields = ut.getFormAllowEditFields();
+            if (!editFields.isEmpty()) {
+                details.setAllowEditFields(editFields);
+            }
+
+            // utAprActions(操作值) 与 utAprActionNames(显示名) 按下标一一对应
+            List<Integer> actions = ut.getActions();
+            List<String> actionNames = ut.getActionNames();
+            int len = Math.min(actions.size(), actionNames.size());
+            for (int i = 0; i < len; i++) {
+                var op = new GetQfTodoDetailsVo.OperationConfig();
+                op.setKind(actions.get(i));
+                op.setName(actionNames.get(i));
+                operations.add(op);
+            }
+        }
+
+        // 若未从扩展属性中读到有效按钮，使用默认值（同意/驳回）
+        if (operations.isEmpty()) {
+            var agree = new GetQfTodoDetailsVo.OperationConfig();
+            agree.setKind(AprAction.AGREE.getValue());
+            agree.setName("同意");
+            operations.add(agree);
+
+            var reject = new GetQfTodoDetailsVo.OperationConfig();
+            reject.setKind(AprAction.REJECT.getValue());
+            reject.setName("驳回");
+            operations.add(reject);
+        }
+
+        details.setAllowActions(operations);
 
         return details;
     }
@@ -218,6 +257,34 @@ public class QfTodoService {
     }
 
     /**
+     * 根据表名和数据ID删除待办并终止流程（删除业务数据时使用）
+     *
+     * @param tableName 表名
+     * @param dataId    数据ID
+     * @param reason    删除原因
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteQfTodoByData(String tableName, Long dataId, String reason) {
+        List<QfTodoPo> todoList = repository.getByTableNameAndDataId(tableName, dataId);
+        Set<String> deletedProcIds = new HashSet<>();
+        for (QfTodoPo po : todoList) {
+            if (po.getStatus() != TodoStatus.PENDING.getValue()) {
+                continue;
+            }
+            String engProcId = po.getEngProcId();
+            if (StringUtils.isNotBlank(engProcId) && !deletedProcIds.contains(engProcId)) {
+                try {
+                    runtimeService.deleteProcessInstance(engProcId, reason);
+                    deletedProcIds.add(engProcId);
+                } catch (Exception e) {
+                    log.error("[deleteQfTodoByData] 终止Flowable流程实例失败, processInstanceId: {}", engProcId, e);
+                }
+            }
+        }
+        repository.deleteAll(todoList);
+    }
+
+    /**
      * 删除待办事项
      *
      * @param dto 删除条件
@@ -272,11 +339,12 @@ public class QfTodoService {
 
         var aud = session();
         var uid = aud.getUserId();
+
         var userPo = userRepository.findById(uid)
                 .orElseThrow(() -> new BizException("审批失败,当前用户不存在."));
 
         //判断是不是我的待办
-        if (updatePo.getMemberType() == MemberKind.USER.getMemberType()) {
+        if (updatePo.getMemberType() == TodoMemberCategory.USER.getValue()) {
 
             //如果待办是给用户的，判断我是不是这个用户
             if (!Objects.equals(updatePo.getMemberId(), uid)) {
@@ -286,9 +354,9 @@ public class QfTodoService {
         }
 
         //如果待办是给用户组的，判断我是不是这个用户组的一员
-        if (updatePo.getMemberType() == MemberKind.GROUP.getMemberType()) {
-            var groupIds = qfMemberService.getMemberGroupIds(updatePo.getMemberId());
-            if (!groupIds.contains(uid)) {
+        if (updatePo.getMemberType() == TodoMemberCategory.GROUP.getValue()) {
+            var groupIds = qfMemberService.getMemberGroupIds(uid);
+            if (!groupIds.contains(updatePo.getMemberId())) {
                 throw new BizException("该待办属于用户组:" + updatePo.getMemberId() + "，审批人不是该用户组的一员，无法审批.");
             }
 
@@ -317,6 +385,14 @@ public class QfTodoService {
             }
 
             ftService.addComment(task.getId(), task.getProcessInstanceId(), comment);
+
+            // 同步更新流程变量 qfAprNode_<taskDefKey>，否则监听器读取该变量仍返回旧用户
+            var nodeVarKey = "qfAprNode_" + task.getTaskDefinitionKey();
+            ftService.setVariable(task.getId(), nodeVarKey, targetUid);
+
+            // 设置转交标记，让监听器跳过 30 秒初始分配检查（连续转交时新待办创建时间在窗口内）
+            ftService.setVariable(task.getId(), "qfIsTransfer", true);
+
             ftService.setAssignee(task.getId(), String.valueOf(targetUid));
             return;
         }
@@ -325,6 +401,27 @@ public class QfTodoService {
             // 驳回到节点：使用 changeActivityState 迁移到指定节点
             if (StringUtils.isBlank(dto.getNodeId())) {
                 throw new BizException("驳回到节点时节点ID不能为空");
+            }
+
+            // 校验目标节点必须是已办过的历史节点，不能驳回到未来节点
+            QfeBpmnModel model = loadDeployModel(updatePo.getEngProcessDefId());
+            if (model == null) {
+                throw new BizException("驳回失败,无法加载流程模型.");
+            }
+            Map<String, String> upstreamNodeIds = new HashMap<>();
+            for (var ut : model.getUpstreamUserTasks(updatePo.getNodeName())) {
+                upstreamNodeIds.putIfAbsent(ut.getName(), ut.getId());
+            }
+            List<QfTodoPo> historyTodos = repository.findAllByEngProcIdAndStatus(updatePo.getEngProcId(), TodoStatus.DONE.getValue());
+            Set<String> visitedNodeIds = new HashSet<>();
+            for (var todo : historyTodos) {
+                String nodeId = upstreamNodeIds.get(todo.getNodeName());
+                if (nodeId != null) {
+                    visitedNodeIds.add(nodeId);
+                }
+            }
+            if (!visitedNodeIds.contains(dto.getNodeId())) {
+                throw new BizException("驳回失败,目标节点不是已办过的历史节点,无法驳回到该节点.");
             }
 
             fiService.setAuthenticatedUserId(String.valueOf(uid));
@@ -336,7 +433,7 @@ public class QfTodoService {
 
                 updatePo.setStatus(TodoStatus.DONE.getValue());
                 updatePo.setFinMemberId(uid);
-                updatePo.setFinMemberName(userPo.getNickname());
+                updatePo.setFinMemberName(StringUtils.isNotBlank(userPo.getNickname()) ? userPo.getNickname() : userPo.getUsername());
                 updatePo.setFinTime(LocalDateTime.now());
                 updatePo.setAction(dto.getAction());
                 updatePo.setComment(comment);
@@ -374,7 +471,7 @@ public class QfTodoService {
             //更新实际办理人
             updatePo.setFinMemberId(uid);
             //todo 获取用户昵称 目前临时从core域获取，以后还是会从auth域session中获取
-            updatePo.setFinMemberName(userPo.getNickname());
+            updatePo.setFinMemberName(StringUtils.isNotBlank(userPo.getNickname()) ? userPo.getNickname() : userPo.getUsername());
             updatePo.setFinTime(LocalDateTime.now());
             updatePo.setAction(dto.getAction());
             updatePo.setComment(comment);
@@ -422,96 +519,6 @@ public class QfTodoService {
         }
     }
 
-    /**
-     * 按业务数据ID批量汇总各数据当前待办的办理用户ID
-     * <p>
-     * 用户/任意人类型直接取 memberId;用户组类型批量展开为组内成员用户ID。
-     *
-     * @param dataIds 业务数据ID列表
-     * @return dataId -> 办理用户ID列表
-     */
-    public Map<Long, List<Long>> getQfTodoListByIds(List<Long> dataIds) {
-        Map<Long, List<Long>> dataIdToUserIds = new HashMap<>();
-        List<QfTodoPo> qfTodoPos = repository.getAllByDataIdAndStatus(dataIds, TodoStatus.PENDING.getValue());
-        List<QfTodoPo> groupTodos = qfTodoPos.stream().filter(v -> v.getMemberType() == MemberKind.GROUP.getMemberType()).toList();
-        List<QfTodoPo> userTodos = qfTodoPos.stream().filter(v -> v.getMemberType() == MemberKind.USER.getMemberType()).toList();
-        List<QfTodoPo> anyoneTodos = qfTodoPos.stream().filter(v -> v.getMemberType() == MemberKind.ANYONE.getMemberType()).toList();
-
-        //用户类型：直接按 dataId 归集 memberId
-        for (QfTodoPo todo : userTodos) {
-            dataIdToUserIds.computeIfAbsent(todo.getDataId(), k -> new ArrayList<>()).add(todo.getMemberId());
-        }
-        //任意人类型：直接按 dataId 归集 memberId
-        for (QfTodoPo todo : anyoneTodos) {
-            dataIdToUserIds.computeIfAbsent(todo.getDataId(), k -> new ArrayList<>()).add(todo.getMemberId());
-        }
-        //用户组类型：批量查询组成员，内存按 groupId 分组后展开
-        if (!groupTodos.isEmpty()) {
-            List<Long> groupIds = groupTodos.stream().map(QfTodoPo::getMemberId).distinct().toList();
-            Map<Long, List<Long>> groupUserMap = new HashMap<>();
-            userGroupRepository.findAllByGroupIds(groupIds).forEach(ug ->
-                    groupUserMap.computeIfAbsent(ug.getGroupId(), k -> new ArrayList<>()).add(ug.getUserId())
-            );
-            for (QfTodoPo todo : groupTodos) {
-                List<Long> userIds = groupUserMap.get(todo.getMemberId());
-                if (userIds != null && !userIds.isEmpty()) {
-                    dataIdToUserIds.computeIfAbsent(todo.getDataId(), k -> new ArrayList<>()).addAll(userIds);
-                }
-            }
-        }
-        return dataIdToUserIds;
-    }
-
-    /**
-     * 填充待办事项的表单配置（审批操作按钮、是否允许填写意见、可编辑字段）
-     * <p>
-     * 从 qf_model_deploy_rcd 部署表的 BPMN XML 中按节点名称定位 UserTask，读取其 QFE 扩展属性。
-     *
-     * @param po 待办记录
-     * @param vo 待填充的详情 Vo
-     */
-    private void fillQfTodoFormConfig(QfTodoPo po, GetQfTodoDetailsVo vo) {
-        vo.setAllowComment(1);
-
-        List<GetQfTodoDetailsVo.OperationConfig> operations = new ArrayList<>();
-
-        QfeUserTask ut = findDeployUserTaskByName(po.getEngProcessDefId(), po.getNodeName());
-        if (ut != null) {
-            // utAprComment：1=允许填写审批意见, 0=不允许；缺省按允许处理
-            vo.setAllowComment(NumberUtils.toInt(ut.getAttr(QfeVarsModel.UT_APR_COMMENT), 1));
-
-            List<String> editFields = ut.getFormAllowEditFields();
-            if (!editFields.isEmpty()) {
-                vo.setAllowEditFields(editFields);
-            }
-
-            // utAprActions(操作值) 与 utAprActionNames(显示名) 按下标一一对应
-            List<Integer> actions = ut.getActions();
-            List<String> actionNames = ut.getActionNames();
-            int len = Math.min(actions.size(), actionNames.size());
-            for (int i = 0; i < len; i++) {
-                var op = new GetQfTodoDetailsVo.OperationConfig();
-                op.setKind(actions.get(i));
-                op.setName(actionNames.get(i));
-                operations.add(op);
-            }
-        }
-
-        // 若未从扩展属性中读到有效按钮，使用默认值（同意/驳回）
-        if (operations.isEmpty()) {
-            var agree = new GetQfTodoDetailsVo.OperationConfig();
-            agree.setKind(AprAction.AGREE.getValue());
-            agree.setName("同意");
-            operations.add(agree);
-
-            var reject = new GetQfTodoDetailsVo.OperationConfig();
-            reject.setKind(AprAction.REJECT.getValue());
-            reject.setName("驳回");
-            operations.add(reject);
-        }
-
-        vo.setAllowActions(operations);
-    }
 
     /**
      * 从部署表 BPMN XML 中按节点名称定位 QFE UserTask 包装

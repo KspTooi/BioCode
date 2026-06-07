@@ -43,7 +43,8 @@ public class GetQfTodoDetailsVo {
     @Schema(description = "流程ID")
     private String engProcId;
 
-
+    @Schema(description = "待办状态 0:待办 1:已办 10:已作废")
+    private Integer status;
     /**
      * 是否允许填写审批意见: 0=不允许, 1=允许
      */
