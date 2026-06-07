@@ -18,8 +18,6 @@ export default {
     const listForm = reactive<GetAacpMcpListDto>({
       name: null,
       code: null,
-      networkKind: null,
-      authPsk: null,
       status: null,
       pageNum: 1,
       pageSize: 20,
@@ -46,8 +44,6 @@ export default {
     const resetList = (): void => {
       listForm.name = null;
       listForm.code = null;
-      listForm.networkKind = null;
-      listForm.authPsk = null;
       listForm.status = null;
       listForm.pageNum = 1;
       listForm.pageSize = 20;
@@ -146,9 +142,9 @@ export default {
       modalForm.id = null;
       modalForm.name = null;
       modalForm.code = null;
-      modalForm.networkKind = null;
-      modalForm.host = null;
-      modalForm.port = null;
+      modalForm.networkKind = 0;
+      modalForm.host = "0.0.0.0";
+      modalForm.port = 40000;
       modalForm.authKind = 0;
       modalForm.authPsk = null;
       modalForm.status = 1;
