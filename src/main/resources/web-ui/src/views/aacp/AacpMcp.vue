@@ -13,14 +13,6 @@
               <el-input v-model="listForm.code" placeholder="请输入唯一编码" clearable style="width: 200px" />
             </el-form-item>
           </el-col>
-          <el-col :span="5" :offset="1">
-            <el-form-item label="通信协议">
-              <el-select v-model="listForm.networkKind" placeholder="请选择" clearable style="width: 200px">
-                <el-option label="HTTP+SSE" :value="0" />
-                <el-option label="WS" :value="1" />
-              </el-select>
-            </el-form-item>
-          </el-col>
         </el-row>
         <el-row>
           <el-col :span="5" :offset="1">
@@ -121,10 +113,9 @@
       <el-form-item label="唯一编码" prop="code">
         <el-input v-model="modalForm.code" placeholder="请输入唯一编码" />
       </el-form-item>
-      <el-form-item label="通信协议" prop="networkKind">
-        <el-select v-model="modalForm.networkKind" placeholder="请选择通信协议">
+      <el-form-item label="通信协议">
+        <el-select v-model="modalForm.networkKind" placeholder="请选择通信协议" disabled>
           <el-option label="HTTP+SSE" :value="0" />
-          <el-option label="WS" :value="1" />
         </el-select>
       </el-form-item>
       <el-form-item label="主机" prop="host">
@@ -140,7 +131,7 @@
         </el-select>
       </el-form-item>
       <el-form-item v-show="modalForm.authKind === 1" label="预共享密钥" prop="authPsk">
-        <el-input v-model="modalForm.authPsk" placeholder="请输入预共享密钥" type="password" show-password />
+        <el-input v-model="modalForm.authPsk" placeholder="请输入预共享密钥" type="textarea" :rows="4" />
       </el-form-item>
       <el-form-item label="状态" prop="status">
         <el-select v-model="modalForm.status" placeholder="请选择状态">
