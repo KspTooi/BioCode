@@ -20,7 +20,7 @@
     </StdListAreaQuery>
 
     <StdListAreaAction>
-      <el-button type="success" :icon="PlusIcon" @click="openModal('add', null)">创建能力包</el-button>
+      <el-button type="success" @click="openModal('add', null)">创建能力包</el-button>
     </StdListAreaAction>
 
     <StdListAreaTable v-model:list-form="listForm" :list-total="listTotal" :load-list="loadList">
