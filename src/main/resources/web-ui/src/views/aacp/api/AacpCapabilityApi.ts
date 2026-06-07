@@ -71,7 +71,9 @@ export default {
    * @returns 能力包详情
    */
   getAacpCapabilityDetails: async (id: string): Promise<GetAacpCapabilityDetailsVo> => {
-    const ret = await Http.postEntity<Result<GetAacpCapabilityDetailsVo>>("/aacpCapability/getAacpCapabilityDetails", { id: id } as CommonIdDto);
+    const ret = await Http.postEntity<Result<GetAacpCapabilityDetailsVo>>("/aacpCapability/getAacpCapabilityDetails", {
+      id: id,
+    } as CommonIdDto);
     return ret.data;
   },
 
