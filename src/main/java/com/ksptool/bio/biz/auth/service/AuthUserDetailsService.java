@@ -178,6 +178,17 @@ public class AuthUserDetailsService implements UserDetailsService {
             return aus;
 
         } catch (Exception e) {
+
+            if(e instanceof RootUnavailableException){
+                throw e;
+            }
+            if(e instanceof DisabledException){
+                throw e;
+            }
+            if(e instanceof AuthUnavailableException){
+                throw e;
+            }
+
             log.error(e.getMessage(), e);
             //出现内部错误时抛出认证不可用异常
             throw new AuthUnavailableException("当前认证系统暂时不可用,请稍后再试!");
