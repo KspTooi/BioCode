@@ -11,6 +11,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AacpMcpRepository extends JpaRepository<AacpMcpPo, Long> {
 
+    /**
+     * 根据唯一编码查询MCP服务器
+     */
+    AacpMcpPo findByCode(String code);
+
     @Query("""
             SELECT u FROM AacpMcpPo u
             WHERE

@@ -1,4 +1,4 @@
-package com.ksptool.bio.biz.aacp.model.vo;
+package com.ksptool.bio.biz.aacp.commons;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
@@ -27,12 +27,6 @@ public class McpRpcResult<T> {
     @Schema(description = "失败的错误信息")
     private McpErrorDto error;
 
-    /**
-     * 构造成功响应
-     *
-     * @param id     请求ID
-     * @param result 响应数据
-     */
     public static <T> McpRpcResult<T> success(Integer id, T result) {
         McpRpcResult<T> r = new McpRpcResult<>();
         r.id = id;
@@ -40,13 +34,6 @@ public class McpRpcResult<T> {
         return r;
     }
 
-    /**
-     * 构造错误响应
-     *
-     * @param id      请求ID
-     * @param code    错误码，建议使用 {@link McpErrorCode} 中定义的常量
-     * @param message 错误描述
-     */
     public static <T> McpRpcResult<T> error(Integer id, int code, String message) {
         McpRpcResult<T> r = new McpRpcResult<>();
         r.id = id;
@@ -57,23 +44,12 @@ public class McpRpcResult<T> {
         return r;
     }
 
-    /**
-     * 构造携带附加数据的错误响应
-     *
-     * @param id      请求ID
-     * @param code    错误码
-     * @param message 错误描述
-     * @param data    附加错误数据
-     */
     public static <T> McpRpcResult<T> error(Integer id, int code, String message, Object data) {
         McpRpcResult<T> r = error(id, code, message);
         r.error.setData(data);
         return r;
     }
 
-    /**
-     * JSON-RPC 2.0 标准错误码常量
-     */
     public static final class McpErrorCode {
 
         private McpErrorCode() {
