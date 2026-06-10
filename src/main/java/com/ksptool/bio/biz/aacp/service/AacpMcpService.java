@@ -13,7 +13,6 @@ import com.ksptool.bio.biz.aacp.model.vo.GetAacpMcpListVo;
 import com.ksptool.bio.biz.aacp.repository.AacpMcpCapabilityRepository;
 import com.ksptool.bio.biz.aacp.repository.AacpMcpRepository;
 import com.ksptool.bio.biz.core.common.IdsDiff;
-import com.ksptool.entities.TupleMapper;
 import jakarta.persistence.Tuple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -22,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static com.ksptool.bio.biz.core.common.TupleMapper.tupleAs;
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
 
@@ -50,7 +50,7 @@ public class AacpMcpService {
             return PageResult.successWithEmpty();
         }
 
-        List<GetAacpMcpListVo> vos = TupleMapper.tupleAs(page.getContent(), GetAacpMcpListVo.class);
+        List<GetAacpMcpListVo> vos = tupleAs(page.getContent(), GetAacpMcpListVo.class);
         return PageResult.success(vos, (int) page.getTotalElements());
     }
 
