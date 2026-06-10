@@ -42,7 +42,7 @@ public class AacpFuncPo {
     @Column(name = "description", nullable = false, length = 1000, comment = "意图词")
     private String description;
 
-    @Column(name = "schema", comment = "入参规范")
+    @Column(name = "`schema`", comment = "入参规范")
     private String schema;
 
     @Column(name = "target", nullable = false, length = 1000, comment = "调用目标Bean")
