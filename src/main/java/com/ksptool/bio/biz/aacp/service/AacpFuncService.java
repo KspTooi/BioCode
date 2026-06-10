@@ -134,7 +134,7 @@ public class AacpFuncService {
         List<GetMicroFuncListVo> vos = new ArrayList<>();
         for (MicroFuncDefinition def : microFuncRegistry.getAll()) {
             GetMicroFuncListVo vo = new GetMicroFuncListVo();
-            vo.setCode(def.getTarget());
+            vo.setTarget(def.getTarget());
             vo.setName(def.getName());
             vo.setDescription(def.getDescription());
             vo.setParameterCount(def.getParameterTypes().length);

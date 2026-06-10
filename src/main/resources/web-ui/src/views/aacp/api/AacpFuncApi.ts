@@ -50,7 +50,7 @@ export interface GetAacpFuncDetailsVo {
  * 已注册微函数列表VO
  */
 export interface GetMicroFuncListVo {
-  code: string; //微函数标识
+  target: string; //微函数标识
   name: string; //微函数名称
   description: string; //微函数描述
   parameterCount: number; //参数数量

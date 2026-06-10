@@ -86,8 +86,8 @@
             allow-create
             style="width: 100%"
           >
-            <el-option v-for="item in microFuncListData" :key="item.code" :label="item.code" :value="item.code">
-              <span>{{ item.code }}</span>
+            <el-option v-for="item in microFuncListData" :key="item.target" :label="item.target" :value="item.target">
+              <span>{{ item.target }}</span>
               <span class="text-gray-400 text-sm ml-2">{{ item.name }}</span>
             </el-option>
           </el-select>

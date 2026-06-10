@@ -15,7 +15,7 @@ import java.util.List;
 public class GetMicroFuncListVo {
 
     @Schema(description = "微函数标识")
-    private String code;
+    private String target;
 
     @Schema(description = "微函数名称")
     private String name;
