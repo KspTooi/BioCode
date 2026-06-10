@@ -39,6 +39,17 @@ public interface AacpFuncRepository extends JpaRepository<AacpFuncPo, Long> {
     int countByCodeExcludeId(@Param("code") String code, @Param("id") Long id);
 
     /**
+     * 根据标识获取微函数
+     *
+     * @param code 微函数标识
+     * @return 微函数，不存在返回null
+     */
+    @Query("""
+            SELECT u FROM AacpFuncPo u WHERE u.code = :code
+            """)
+    AacpFuncPo getByCode(@Param("code") String code);
+
+    /**
      * 根据能力包ID列表获取微函数列表
      *
      * @param ids 能力包ID列表

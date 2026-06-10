@@ -7,6 +7,7 @@ import com.ksptool.bio.biz.aacp.commons.annotation.MicroFunc;
 import com.ksptool.bio.biz.aacp.commons.jrpc.vo.ToolsCallVo;
 import com.ksptool.bio.biz.aacp.commons.jrpc.vo.ToolsListVo;
 import com.ksptool.bio.biz.aacp.model.AacpFuncPo;
+import com.ksptool.bio.biz.aacp.repository.AacpFuncRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -14,15 +15,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.*;
 
 /**
- * 微函数业务逻辑：启动扫描 + DTO 注入调用 + Schema 生成（对应 QT 的 invoke + Q_ARG）
+ * 微函数业务逻辑：启动扫描 + DTO 注入调用（对应 QT 的 invoke + Q_ARG）
  * <p>
  * 在 ApplicationReadyEvent 时扫描所有 Bean 上的 @MicroFunc 方法并注册到 MicroFuncRegistry，
  * 为 MCP 协议层提供 tools/list 与 tools/call 能力。
@@ -39,6 +37,9 @@ public class MicroFuncService {
 
     @Autowired
     private MicroFuncRegistry registry;
+
+    @Autowired
+    private AacpFuncRepository aacpFuncRepository;
 
     @EventListener(ApplicationReadyEvent.class)
     public void scanMicroFunctions() {
@@ -79,111 +80,25 @@ public class MicroFuncService {
         log.info("[MicroFunc] 扫描完成，共注册 {} 个微函数，总计 {} 个", count, registry.size());
     }
 
-    public ToolsListVo buildToolsList() {
-        ToolsListVo vo = new ToolsListVo();
-        List<ToolsListVo.Tool> tools = new ArrayList<>();
-
-        for (MicroFuncDefinition def : registry.getAll()) {
-            ToolsListVo.Tool tool = new ToolsListVo.Tool();
-            tool.setName(def.getTarget());
-            tool.setDescription(def.getDescription());
-
-            Map<String, Object> schema = new LinkedHashMap<>();
-            schema.put("type", "object");
-
-            Map<String, Object> properties = new LinkedHashMap<>();
-            List<String> required = new ArrayList<>();
-
-            for (int i = 0; i < def.getParameterTypes().length; i++) {
-                Class<?> paramType = def.getParameterTypes()[i];
-                java.lang.reflect.Parameter param = def.getMethod().getParameters()[i];
-                String paramName = param.getName();
-
-                properties.put(paramName, resolveTypeToSchema(paramType));
-                if (paramType.isPrimitive()
-                        || paramType == String.class
-                        || paramType == Long.class || paramType == Integer.class || paramType == Short.class
-                        || paramType == Double.class || paramType == Float.class
-                        || paramType == Boolean.class) {
-                    required.add(paramName);
-                }
-            }
-
-            schema.put("properties", properties);
-            if (!required.isEmpty()) {
-                schema.put("required", required);
-            }
-            tool.setInputSchema(schema);
-            tools.add(tool);
-        }
-
-        vo.setTools(tools);
-        return vo;
-    }
-
-    /**
-     * 根据数据库中的微函数列表构建工具列表（仅返回注册表中存在的 target）
-     */
-    public ToolsListVo buildToolsListByFuncs(List<AacpFuncPo> funcs) {
-        ToolsListVo vo = new ToolsListVo();
-        List<ToolsListVo.Tool> tools = new ArrayList<>();
-        if (funcs == null || funcs.isEmpty()) {
-            vo.setTools(tools);
-            return vo;
-        }
-
-        for (AacpFuncPo fpo : funcs) {
-            MicroFuncDefinition def = registry.get(fpo.getCode());
-            if (def == null) {
-                log.warn("[AACP] 微函数未注册: target={}", fpo.getCode());
-                continue;
-            }
-
-            ToolsListVo.Tool tool = new ToolsListVo.Tool();
-            tool.setName(def.getTarget());
-            tool.setDescription(def.getDescription());
-
-            Map<String, Object> schema = new LinkedHashMap<>();
-            schema.put("type", "object");
-
-            Map<String, Object> properties = new LinkedHashMap<>();
-            List<String> required = new ArrayList<>();
-
-            for (int i = 0; i < def.getParameterTypes().length; i++) {
-                Class<?> paramType = def.getParameterTypes()[i];
-                java.lang.reflect.Parameter param = def.getMethod().getParameters()[i];
-                String paramName = param.getName();
-
-                properties.put(paramName, resolveTypeToSchema(paramType));
-                if (paramType.isPrimitive()
-                        || paramType == String.class
-                        || paramType == Long.class || paramType == Integer.class || paramType == Short.class
-                        || paramType == Double.class || paramType == Float.class
-                        || paramType == Boolean.class) {
-                    required.add(paramName);
-                }
-            }
-
-            schema.put("properties", properties);
-            if (!required.isEmpty()) {
-                schema.put("required", required);
-            }
-            tool.setInputSchema(schema);
-            tools.add(tool);
-        }
-
-        vo.setTools(tools);
-        return vo;
-    }
-
     public ToolsCallVo call(String name, Map<String, Object> arguments) {
-        MicroFuncDefinition def = registry.get(name);
-        if (def == null) {
+        //查DB获取target，再查注册中心
+        AacpFuncPo funcPo = aacpFuncRepository.getByCode(name);
+        if (funcPo == null) {
             ToolsCallVo errVo = new ToolsCallVo();
             errVo.setIsError(true);
             ToolsCallVo.Content errContent = new ToolsCallVo.Content();
             errContent.setType("text");
             errContent.setText("微函数不存在: " + name);
+            errVo.setContent(Collections.singletonList(errContent));
+            return errVo;
+        }
+        MicroFuncDefinition def = registry.get(funcPo.getTarget());
+        if (def == null) {
+            ToolsCallVo errVo = new ToolsCallVo();
+            errVo.setIsError(true);
+            ToolsCallVo.Content errContent = new ToolsCallVo.Content();
+            errContent.setType("text");
+            errContent.setText("微函数未注册: " + funcPo.getTarget());
             errVo.setContent(Collections.singletonList(errContent));
             return errVo;
         }
@@ -241,66 +156,5 @@ public class MicroFuncService {
             errVo.setContent(Collections.singletonList(errContent));
             return errVo;
         }
-    }
-
-    //Java类型→JSON Schema（自递归，无法内联）
-
-    private Map<String, Object> resolveTypeToSchema(Class<?> type) {
-        Map<String, Object> prop = new LinkedHashMap<>();
-
-        if (type == String.class) {
-            prop.put("type", "string");
-            return prop;
-        }
-        if (type == Long.class || type == long.class
-                || type == Integer.class || type == int.class
-                || type == Short.class || type == short.class) {
-            prop.put("type", "integer");
-            return prop;
-        }
-        if (type == Double.class || type == double.class
-                || type == Float.class || type == float.class) {
-            prop.put("type", "number");
-            return prop;
-        }
-        if (type == Boolean.class || type == boolean.class) {
-            prop.put("type", "boolean");
-            return prop;
-        }
-        if (type == List.class || type.isArray()) {
-            prop.put("type", "array");
-            return prop;
-        }
-        if (type == Map.class) {
-            prop.put("type", "object");
-            return prop;
-        }
-
-        //反射Dto字段（原resolveDtoFieldsToSchema + resolveFieldToSchema内联）
-        prop.put("type", "object");
-        Map<String, Object> fieldProperties = new LinkedHashMap<>();
-        for (Field field : type.getDeclaredFields()) {
-            if (Modifier.isStatic(field.getModifiers())) {
-                continue;
-            }
-            Map<String, Object> fieldProp;
-            Class<?> fieldType = field.getType();
-            if (fieldType == List.class) {
-                fieldProp = new LinkedHashMap<>();
-                fieldProp.put("type", "array");
-                Type genericType = field.getGenericType();
-                if (genericType instanceof ParameterizedType pt) {
-                    Type itemType = pt.getActualTypeArguments()[0];
-                    if (itemType instanceof Class<?> itemClass) {
-                        fieldProp.put("items", resolveTypeToSchema(itemClass));
-                    }
-                }
-            } else {
-                fieldProp = resolveTypeToSchema(fieldType);
-            }
-            fieldProperties.put(field.getName(), fieldProp);
-        }
-        prop.put("properties", fieldProperties);
-        return prop;
     }
 }
