@@ -50,7 +50,7 @@ public interface AacpMcpCapabilityRepository extends JpaRepository<AacpMcpCapabi
     /**
      * 根据MCP服务器ID和能力包ID列表删除关联
      *
-     * @param mcpId MCP服务器ID
+     * @param mcpId         MCP服务器ID
      * @param capabilityIds 能力包ID列表
      */
     @Modifying(clearAutomatically = true)

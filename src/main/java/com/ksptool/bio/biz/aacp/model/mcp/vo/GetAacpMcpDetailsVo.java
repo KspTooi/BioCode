@@ -1,12 +1,14 @@
-package com.ksptool.bio.biz.aacp.model.vo;
+package com.ksptool.bio.biz.aacp.model.mcp.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
-public class GetAacpMcpListVo {
+public class GetAacpMcpDetailsVo {
 
     @Schema(description = "主键ID")
     private Long id;
@@ -29,10 +31,7 @@ public class GetAacpMcpListVo {
     @Schema(description = "状态 0:离线 1:在线")
     private Integer status;
 
-    @Schema(description = "关联能力包数量")
-    private Long capabilityCount;
-
-    @Schema(description = "关联微函数数量")
-    private Long funcCount;
+    @Schema(description = "关联的能力包ID列表")
+    private List<Long> capabilityIds;
 
 }

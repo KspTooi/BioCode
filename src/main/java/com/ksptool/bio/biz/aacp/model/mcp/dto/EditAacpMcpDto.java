@@ -1,4 +1,4 @@
-package com.ksptool.bio.biz.aacp.model.dto;
+package com.ksptool.bio.biz.aacp.model.mcp.dto;
 
 import com.ksptool.bio.biz.core.common.aop.DtoCustomValidator;
 import com.ksptool.bio.commons.dataprocess.Str;

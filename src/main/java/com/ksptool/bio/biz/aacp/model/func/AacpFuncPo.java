@@ -1,4 +1,4 @@
-package com.ksptool.bio.biz.aacp.model;
+package com.ksptool.bio.biz.aacp.model.func;
 
 import com.ksptool.assembly.entity.exception.AuthException;
 import com.ksptool.bio.biz.auth.service.SessionService;
@@ -19,11 +19,11 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Entity
-@Table(name = "aacp_capability")
+@Table(name = "accp_func")
 @EntityListeners(AuditingEntityListener.class)
-@SQLDelete(sql = "UPDATE aacp_capability SET delete_time = NOW() WHERE id = ?")
+@SQLDelete(sql = "UPDATE accp_func SET delete_time = NOW() WHERE id = ?")
 @SQLRestriction("delete_time IS NULL")
-public class AacpCapabilityPo {
+public class AacpFuncPo {
 
     @Id
     @SnowflakeIdGenerated
@@ -33,11 +33,20 @@ public class AacpCapabilityPo {
     @Column(name = "root_id", nullable = false, comment = "租户ID")
     private Long rootId;
 
-    @Column(name = "name", nullable = false, length = 40, comment = "能力包名称")
+    @Column(name = "name", nullable = false, length = 40, comment = "微函数名称")
     private String name;
 
-    @Column(name = "kind", nullable = false, columnDefinition = "tinyint", comment = "类型 0:微函数")
-    private Integer kind;
+    @Column(name = "code", nullable = false, length = 32, comment = "微函数标识")
+    private String code;
+
+    @Column(name = "description", nullable = false, length = 1000, comment = "意图词")
+    private String description;
+
+    @Column(name = "`schema`", comment = "入参规范")
+    private String schema;
+
+    @Column(name = "target", nullable = false, length = 1000, comment = "调用目标Bean")
+    private String target;
 
     @Column(name = "remark", length = 500, comment = "备注")
     private String remark;

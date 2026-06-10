@@ -1,19 +1,14 @@
-package com.ksptool.bio.biz.aacp.model.dto;
+package com.ksptool.bio.biz.aacp.model.func.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
 @Getter
 @Setter
-public class EditAacpFuncDto {
-
-    @NotNull(message = "主键ID不能为空")
-    @Schema(description = "主键ID")
-    private Long id;
+public class AddAacpFuncDto {
 
     @NotBlank(message = "微函数名称不能为空")
     @Length(max = 40, message = "微函数名称长度不能超过40")

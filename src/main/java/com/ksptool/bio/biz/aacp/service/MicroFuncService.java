@@ -5,8 +5,7 @@ import com.ksptool.bio.biz.aacp.commons.MicroFuncDefinition;
 import com.ksptool.bio.biz.aacp.commons.MicroFuncRegistry;
 import com.ksptool.bio.biz.aacp.commons.annotation.MicroFunc;
 import com.ksptool.bio.biz.aacp.commons.jrpc.vo.ToolsCallVo;
-import com.ksptool.bio.biz.aacp.commons.jrpc.vo.ToolsListVo;
-import com.ksptool.bio.biz.aacp.model.AacpFuncPo;
+import com.ksptool.bio.biz.aacp.model.func.AacpFuncPo;
 import com.ksptool.bio.biz.aacp.repository.AacpFuncRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +16,8 @@ import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * 微函数业务逻辑：启动扫描 + DTO 注入调用（对应 QT 的 invoke + Q_ARG）

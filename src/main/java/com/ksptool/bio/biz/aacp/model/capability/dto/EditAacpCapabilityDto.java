@@ -1,4 +1,4 @@
-package com.ksptool.bio.biz.aacp.model.dto;
+package com.ksptool.bio.biz.aacp.model.capability.dto;
 
 import com.ksptool.bio.biz.core.common.aop.DtoCustomValidator;
 import io.swagger.v3.oas.annotations.media.Schema;

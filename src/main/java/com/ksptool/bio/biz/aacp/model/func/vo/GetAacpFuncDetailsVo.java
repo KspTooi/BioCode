@@ -1,4 +1,4 @@
-package com.ksptool.bio.biz.aacp.model.vo;
+package com.ksptool.bio.biz.aacp.model.func.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class GetAacpFuncListVo {
+public class GetAacpFuncDetailsVo {
 
     @Schema(description = "主键ID")
     private Long id;
@@ -19,5 +19,14 @@ public class GetAacpFuncListVo {
 
     @Schema(description = "意图词")
     private String description;
+
+    @Schema(description = "入参规范")
+    private String schema;
+
+    @Schema(description = "调用目标Bean")
+    private String target;
+
+    @Schema(description = "备注")
+    private String remark;
 
 }

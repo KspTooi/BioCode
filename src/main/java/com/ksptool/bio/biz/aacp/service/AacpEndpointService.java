@@ -12,7 +12,7 @@ import com.ksptool.bio.biz.aacp.commons.jrpc.vo.InitializeVo;
 import com.ksptool.bio.biz.aacp.commons.jrpc.vo.PingVo;
 import com.ksptool.bio.biz.aacp.commons.jrpc.vo.ToolsCallVo;
 import com.ksptool.bio.biz.aacp.commons.jrpc.vo.ToolsListVo;
-import com.ksptool.bio.biz.aacp.model.AacpCapabilityPo;
+import com.ksptool.bio.biz.aacp.model.capability.AacpCapabilityPo;
 import com.ksptool.bio.biz.aacp.repository.AacpCapabilityFuncRepository;
 import com.ksptool.bio.biz.aacp.repository.AacpCapabilityRepository;
 import com.ksptool.bio.biz.aacp.repository.AacpFuncRepository;
@@ -21,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -115,7 +114,7 @@ public class AacpEndpointService {
                 //查找已注册的微函数
                 MicroFuncDefinition def = mfRegistry.get(fPo.getTarget());
 
-                if(def == null){
+                if (def == null) {
                     continue;
                 }
 

@@ -1,4 +1,4 @@
-package com.ksptool.bio.biz.aacp.model.vo;
+package com.ksptool.bio.biz.aacp.model.func.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;

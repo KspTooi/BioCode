@@ -1,6 +1,6 @@
 package com.ksptool.bio.biz.aacp.repository;
 
-import com.ksptool.bio.biz.aacp.model.AacpMcpPo;
+import com.ksptool.bio.biz.aacp.model.mcp.AacpMcpPo;
 import jakarta.persistence.Tuple;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

@@ -4,12 +4,12 @@ import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.bio.biz.aacp.model.AacpCapabilityFuncPo;
-import com.ksptool.bio.biz.aacp.model.AacpCapabilityPo;
-import com.ksptool.bio.biz.aacp.model.dto.AddAacpCapabilityDto;
-import com.ksptool.bio.biz.aacp.model.dto.EditAacpCapabilityDto;
-import com.ksptool.bio.biz.aacp.model.dto.GetAacpCapabilityListDto;
-import com.ksptool.bio.biz.aacp.model.vo.GetAacpCapabilityDetailsVo;
-import com.ksptool.bio.biz.aacp.model.vo.GetAacpCapabilityListVo;
+import com.ksptool.bio.biz.aacp.model.capability.AacpCapabilityPo;
+import com.ksptool.bio.biz.aacp.model.capability.dto.AddAacpCapabilityDto;
+import com.ksptool.bio.biz.aacp.model.capability.dto.EditAacpCapabilityDto;
+import com.ksptool.bio.biz.aacp.model.capability.dto.GetAacpCapabilityListDto;
+import com.ksptool.bio.biz.aacp.model.capability.vo.GetAacpCapabilityDetailsVo;
+import com.ksptool.bio.biz.aacp.model.capability.vo.GetAacpCapabilityListVo;
 import com.ksptool.bio.biz.aacp.repository.AacpCapabilityFuncRepository;
 import com.ksptool.bio.biz.aacp.repository.AacpCapabilityRepository;
 import com.ksptool.bio.biz.aacp.repository.AacpMcpCapabilityRepository;
@@ -118,7 +118,7 @@ public class AacpCapabilityService {
         var vo = as(po, GetAacpCapabilityDetailsVo.class);
 
         //微函数能力包
-        if(po.getKind() == 0){
+        if (po.getKind() == 0) {
             vo.setFuncIds(capabilityFuncRepository.getFidsByCid(po.getId()));
         }
 

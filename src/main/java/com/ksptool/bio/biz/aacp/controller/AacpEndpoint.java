@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.bio.biz.aacp.commons.McpClientSession;
 import com.ksptool.bio.biz.aacp.commons.McpParser;
-import com.ksptool.bio.biz.aacp.model.AacpMcpPo;
+import com.ksptool.bio.biz.aacp.model.mcp.AacpMcpPo;
 import com.ksptool.bio.biz.aacp.repository.AacpMcpRepository;
 import com.ksptool.bio.biz.aacp.service.AacpEndpointService;
 import com.ksptool.bio.biz.auth.common.DynamicGlobalWhiteManager;

@@ -1,4 +1,4 @@
-package com.ksptool.bio.biz.aacp.model;
+package com.ksptool.bio.biz.aacp.model.mcp;
 
 import com.ksptool.assembly.entity.exception.AuthException;
 import com.ksptool.bio.biz.auth.service.SessionService;

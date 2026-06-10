@@ -1,6 +1,6 @@
 package com.ksptool.bio.biz.aacp.repository;
 
-import com.ksptool.bio.biz.aacp.model.AacpCapabilityPo;
+import com.ksptool.bio.biz.aacp.model.capability.AacpCapabilityPo;
 import jakarta.persistence.Tuple;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,7 +42,7 @@ public interface AacpCapabilityRepository extends JpaRepository<AacpCapabilityPo
      * 根据MCP服务器ID获取已绑定的能力包列表
      *
      * @param mcpId MCP服务器ID
-     * @param kind 能力包类型 0:微函数
+     * @param kind  能力包类型 0:微函数
      * @return 能力包列表
      */
     @Query("""
@@ -52,5 +52,5 @@ public interface AacpCapabilityRepository extends JpaRepository<AacpCapabilityPo
             ) AND (:#{#kind} IS NULL OR c.kind = :#{#kind} )
             ORDER BY c.createTime DESC
             """)
-    List<AacpCapabilityPo> getByMcpId(@Param("mcpId") Long mcpId,Integer kind);
+    List<AacpCapabilityPo> getByMcpId(@Param("mcpId") Long mcpId, Integer kind);
 }

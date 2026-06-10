@@ -1,10 +1,10 @@
-package com.ksptool.bio.biz.aacp.model.vo;
-
-import java.util.List;
+package com.ksptool.bio.biz.aacp.model.capability.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -24,5 +24,5 @@ public class GetAacpCapabilityDetailsVo {
 
     @Schema(description = "关联的微函数ID列表")
     private List<Long> funcIds;
-    
+
 }
