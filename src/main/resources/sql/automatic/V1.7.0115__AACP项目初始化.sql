@@ -64,8 +64,9 @@ CREATE TABLE accp_func(
 -- ----------------------------
 -- Table structure for aacp_mcp_capablity
 -- ----------------------------
+
 DROP TABLE IF EXISTS aacp_mcp_capablity;
-CREATE TABLE aacp_mcp_capablity(
+CREATE TABLE aacp_mcp_capability(
     `mcp_id` BIGINT NOT NULL  COMMENT 'MID' ,
     `capability_id` BIGINT NOT NULL  COMMENT 'CID' ,
     PRIMARY KEY (mcp_id,capability_id)
@@ -75,7 +76,7 @@ CREATE TABLE aacp_mcp_capablity(
 -- Table structure for aacp_capablity_func
 -- ----------------------------
 DROP TABLE IF EXISTS aacp_capablity_func;
-CREATE TABLE aacp_capablity_func(
+CREATE TABLE aacp_capability_func(
     `capability_id` BIGINT NOT NULL  COMMENT 'CID' ,
     `func_id` BIGINT NOT NULL  COMMENT 'FID' ,
     PRIMARY KEY (capability_id,func_id)
