@@ -30,7 +30,7 @@ import java.util.*;
 @Service
 public class MicroFuncService {
 
-    // JSON 序列化/反序列化工具
+    //JSON序列化/反序列化工具
     private static final Gson gson = new Gson();
 
     @Autowired
@@ -39,12 +39,8 @@ public class MicroFuncService {
     @Autowired
     private MicroFuncRegistry registry;
 
-    /**
-     * 启动扫描：遍历所有 Spring Bean，将标注 @MicroFunc 的方法注册到容器
-     */
     @EventListener(ApplicationReadyEvent.class)
     public void scanMicroFunctions() {
-        //---- 1. 遍历所有 Bean ----
         String[] beanNames = applicationContext.getBeanDefinitionNames();
         int count = 0;
 
@@ -52,7 +48,6 @@ public class MicroFuncService {
             Object bean = applicationContext.getBean(beanName);
             Class<?> clazz = bean.getClass();
 
-            //---- 2. CGLIB 代理取真实目标类；跳过 JDK 内部类 ----
             if (clazz.getName().contains("$$")) {
                 clazz = clazz.getSuperclass();
                 if (clazz == null || clazz == Object.class) {
@@ -63,7 +58,6 @@ public class MicroFuncService {
                 continue;
             }
 
-            //---- 3. 扫描 @MicroFunc 方法 ----
             for (Method method : clazz.getDeclaredMethods()) {
                 MicroFunc anno = method.getAnnotation(MicroFunc.class);
                 if (anno == null) {
@@ -84,11 +78,6 @@ public class MicroFuncService {
         log.info("[MicroFunc] 扫描完成，共注册 {} 个微函数，总计 {} 个", count, registry.size());
     }
 
-    /**
-     * 构建 tools/list 响应：列出所有已注册微函数及其入参 Schema
-     *
-     * @return tools/list 标准响应
-     */
     public ToolsListVo buildToolsList() {
         ToolsListVo vo = new ToolsListVo();
         List<ToolsListVo.Tool> tools = new ArrayList<>();
@@ -97,7 +86,33 @@ public class MicroFuncService {
             ToolsListVo.Tool tool = new ToolsListVo.Tool();
             tool.setName(def.getCode());
             tool.setDescription(def.getDescription());
-            tool.setInputSchema(buildInputSchema(def));
+
+            Map<String, Object> schema = new LinkedHashMap<>();
+            schema.put("type", "object");
+
+            Map<String, Object> properties = new LinkedHashMap<>();
+            List<String> required = new ArrayList<>();
+
+            for (int i = 0; i < def.getParameterTypes().length; i++) {
+                Class<?> paramType = def.getParameterTypes()[i];
+                java.lang.reflect.Parameter param = def.getMethod().getParameters()[i];
+                String paramName = param.getName();
+
+                properties.put(paramName, resolveTypeToSchema(paramType));
+                if (paramType.isPrimitive()
+                        || paramType == String.class
+                        || paramType == Long.class || paramType == Integer.class || paramType == Short.class
+                        || paramType == Double.class || paramType == Float.class
+                        || paramType == Boolean.class) {
+                    required.add(paramName);
+                }
+            }
+
+            schema.put("properties", properties);
+            if (!required.isEmpty()) {
+                schema.put("required", required);
+            }
+            tool.setInputSchema(schema);
             tools.add(tool);
         }
 
@@ -105,21 +120,19 @@ public class MicroFuncService {
         return vo;
     }
 
-    /**
-     * 执行 tools/call：查找微函数 → JSON 反序列化注入 Dto → 反射调用
-     *
-     * @param name      微函数 code
-     * @param arguments 调用参数 Map
-     * @return tools/call 标准响应
-     */
     public ToolsCallVo call(String name, Map<String, Object> arguments) {
         MicroFuncDefinition def = registry.get(name);
         if (def == null) {
-            return buildErrorResult("微函数不存在: " + name);
+            ToolsCallVo errVo = new ToolsCallVo();
+            errVo.setIsError(true);
+            ToolsCallVo.Content errContent = new ToolsCallVo.Content();
+            errContent.setType("text");
+            errContent.setText("微函数不存在: " + name);
+            errVo.setContent(Collections.singletonList(errContent));
+            return errVo;
         }
 
         try {
-            //---- 1. DTO 注入与调用 ----
             Object result = null;
             int paramCount = def.getParameterTypes().length;
 
@@ -127,18 +140,36 @@ public class MicroFuncService {
                 result = def.invoke();
             }
             if (paramCount == 1) {
-                Object dto = deserializeDto(arguments, def.getParameterTypes()[0]);
+                Object dto;
+                if (arguments == null || arguments.isEmpty()) {
+                    dto = gson.fromJson("{}", def.getParameterTypes()[0]);
+                } else {
+                    dto = gson.fromJson(gson.toJson(arguments), def.getParameterTypes()[0]);
+                }
                 result = def.invoke(dto);
             }
             if (paramCount > 1) {
-                Object[] dtoArgs = resolveMultiParams(def, arguments);
-                result = def.invoke(dtoArgs);
+                Class<?>[] types = def.getParameterTypes();
+                Object[] args = new Object[types.length];
+                java.lang.reflect.Parameter[] params = def.getMethod().getParameters();
+                for (int i = 0; i < types.length; i++) {
+                    String paramName = params[i].getName();
+                    Object argValue = (arguments != null) ? arguments.get(paramName) : null;
+                    if (argValue == null) {
+                        args[i] = gson.fromJson("{}", types[i]);
+                        continue;
+                    }
+                    if (types[i].isInstance(argValue)) {
+                        args[i] = argValue;
+                        continue;
+                    }
+                    args[i] = gson.fromJson(gson.toJson(argValue), types[i]);
+                }
+                result = def.invoke(args);
             }
 
-            //---- 2. 构建成功响应 ----
             ToolsCallVo vo = new ToolsCallVo();
             vo.setIsError(false);
-
             ToolsCallVo.Content content = new ToolsCallVo.Content();
             content.setType("text");
             content.setText(result != null ? gson.toJson(result) : "null");
@@ -146,91 +177,18 @@ public class MicroFuncService {
             return vo;
         } catch (Exception e) {
             log.error("[MicroFunc] 调用微函数失败: code={} error={}", name, e.getMessage(), e);
-            return buildErrorResult("调用失败: " + e.getMessage());
+            ToolsCallVo errVo = new ToolsCallVo();
+            errVo.setIsError(true);
+            ToolsCallVo.Content errContent = new ToolsCallVo.Content();
+            errContent.setType("text");
+            errContent.setText("调用失败: " + e.getMessage());
+            errVo.setContent(Collections.singletonList(errContent));
+            return errVo;
         }
     }
 
-    // ==================== 辅助方法（满足方法抽取四问中的条件②：屏蔽第三方 API quirk） ====================
+    //Java类型→JSON Schema（自递归，无法内联）
 
-    /**
-     * 将 Map 参数 JSON 反序列化为目标 Dto 类型（屏蔽 Gson API quirk）
-     *
-     * @param arguments  调用参数 Map
-     * @param targetType 目标 Dto 类型
-     * @return 反序列化后的 Dto 实例
-     */
-    private Object deserializeDto(Map<String, Object> arguments, Class<?> targetType) {
-        if (arguments == null || arguments.isEmpty()) {
-            return gson.fromJson("{}", targetType);
-        }
-        return gson.fromJson(gson.toJson(arguments), targetType);
-    }
-
-    /**
-     * 多参数场景：按参数名匹配 Map 值并逐一反序列化
-     *
-     * @param def       微函数定义
-     * @param arguments 调用参数 Map
-     * @return 已注入的参数数组
-     */
-    private Object[] resolveMultiParams(MicroFuncDefinition def, Map<String, Object> arguments) {
-        Class<?>[] types = def.getParameterTypes();
-        Object[] args = new Object[types.length];
-        java.lang.reflect.Parameter[] params = def.getMethod().getParameters();
-
-        for (int i = 0; i < types.length; i++) {
-            String paramName = params[i].getName();
-            Object argValue = (arguments != null) ? arguments.get(paramName) : null;
-
-            if (argValue == null) {
-                args[i] = gson.fromJson("{}", types[i]);
-                continue;
-            }
-            if (types[i].isInstance(argValue)) {
-                args[i] = argValue;
-                continue;
-            }
-            args[i] = gson.fromJson(gson.toJson(argValue), types[i]);
-        }
-
-        return args;
-    }
-
-    /**
-     * 为单个微函数构建 JSON Schema 入参描述
-     */
-    private Map<String, Object> buildInputSchema(MicroFuncDefinition def) {
-        Map<String, Object> schema = new LinkedHashMap<>();
-        schema.put("type", "object");
-
-        Map<String, Object> properties = new LinkedHashMap<>();
-        List<String> required = new ArrayList<>();
-
-        for (int i = 0; i < def.getParameterTypes().length; i++) {
-            Class<?> paramType = def.getParameterTypes()[i];
-            java.lang.reflect.Parameter param = def.getMethod().getParameters()[i];
-            String paramName = param.getName();
-
-            properties.put(paramName, resolveTypeToSchema(paramType));
-            if (paramType.isPrimitive()
-                    || paramType == String.class
-                    || paramType == Long.class || paramType == Integer.class || paramType == Short.class
-                    || paramType == Double.class || paramType == Float.class
-                    || paramType == Boolean.class) {
-                required.add(paramName);
-            }
-        }
-
-        schema.put("properties", properties);
-        if (!required.isEmpty()) {
-            schema.put("required", required);
-        }
-        return schema;
-    }
-
-    /**
-     * 将 Java 类型递归解析为 JSON Schema 片段（仅构建 buildInputSchema 时调用）
-     */
     private Map<String, Object> resolveTypeToSchema(Class<?> type) {
         Map<String, Object> prop = new LinkedHashMap<>();
 
@@ -262,62 +220,31 @@ public class MicroFuncService {
             return prop;
         }
 
-        return resolveDtoFieldsToSchema(type);
-    }
-
-    /**
-     * 反射 Dto 字段生成 JSON Schema 对象属性描述
-     */
-    private Map<String, Object> resolveDtoFieldsToSchema(Class<?> dtoType) {
-        Map<String, Object> schema = new LinkedHashMap<>();
-        schema.put("type", "object");
-
-        Map<String, Object> properties = new LinkedHashMap<>();
-        for (Field field : dtoType.getDeclaredFields()) {
+        //反射Dto字段（原resolveDtoFieldsToSchema + resolveFieldToSchema内联）
+        prop.put("type", "object");
+        Map<String, Object> fieldProperties = new LinkedHashMap<>();
+        for (Field field : type.getDeclaredFields()) {
             if (Modifier.isStatic(field.getModifiers())) {
                 continue;
             }
-            Map<String, Object> fieldProp = resolveFieldToSchema(field);
-            properties.put(field.getName(), fieldProp);
-        }
-
-        schema.put("properties", properties);
-        return schema;
-    }
-
-    /**
-     * 解析单字段类型 Schema（含 List 泛型内嵌类型）
-     */
-    private Map<String, Object> resolveFieldToSchema(Field field) {
-        Class<?> fieldType = field.getType();
-
-        if (fieldType == List.class) {
-            Map<String, Object> prop = new LinkedHashMap<>();
-            prop.put("type", "array");
-            Type genericType = field.getGenericType();
-            if (genericType instanceof ParameterizedType pt) {
-                Type itemType = pt.getActualTypeArguments()[0];
-                if (itemType instanceof Class<?> itemClass) {
-                    prop.put("items", resolveTypeToSchema(itemClass));
+            Map<String, Object> fieldProp;
+            Class<?> fieldType = field.getType();
+            if (fieldType == List.class) {
+                fieldProp = new LinkedHashMap<>();
+                fieldProp.put("type", "array");
+                Type genericType = field.getGenericType();
+                if (genericType instanceof ParameterizedType pt) {
+                    Type itemType = pt.getActualTypeArguments()[0];
+                    if (itemType instanceof Class<?> itemClass) {
+                        fieldProp.put("items", resolveTypeToSchema(itemClass));
+                    }
                 }
+            } else {
+                fieldProp = resolveTypeToSchema(fieldType);
             }
-            return prop;
+            fieldProperties.put(field.getName(), fieldProp);
         }
-
-        return resolveTypeToSchema(fieldType);
-    }
-
-    /**
-     * 构建失败调用结果（满足条件①：被 call() 中两处错误路径复用）
-     */
-    private ToolsCallVo buildErrorResult(String errorMsg) {
-        ToolsCallVo vo = new ToolsCallVo();
-        vo.setIsError(true);
-
-        ToolsCallVo.Content content = new ToolsCallVo.Content();
-        content.setType("text");
-        content.setText(errorMsg);
-        vo.setContent(Collections.singletonList(content));
-        return vo;
+        prop.put("properties", fieldProperties);
+        return prop;
     }
 }
