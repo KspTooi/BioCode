@@ -54,9 +54,13 @@ public class AacpCapabilityService {
      * 新增能力包
      *
      * @param dto 新增条件
+     * @throws BizException 业务异常
      */
     @Transactional(rollbackFor = Exception.class)
-    public void addAacpCapability(AddAacpCapabilityDto dto) {
+    public void addAacpCapability(AddAacpCapabilityDto dto) throws BizException {
+        if (repository.countByNameExcludeId(dto.getName(), null) > 0) {
+            throw new BizException("能力包名称已存在,请更换后重试.");
+        }
         AacpCapabilityPo insertPo = as(dto, AacpCapabilityPo.class);
         repository.save(insertPo);
     }
@@ -69,6 +73,9 @@ public class AacpCapabilityService {
      */
     @Transactional(rollbackFor = Exception.class)
     public void editAacpCapability(EditAacpCapabilityDto dto) throws BizException {
+        if (repository.countByNameExcludeId(dto.getName(), dto.getId()) > 0) {
+            throw new BizException("能力包名称已存在,请更换后重试.");
+        }
         AacpCapabilityPo updatePo = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("更新失败,数据不存在或无权限访问."));
 

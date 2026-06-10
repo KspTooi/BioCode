@@ -19,4 +19,17 @@ public interface AacpCapabilityRepository extends JpaRepository<AacpCapabilityPo
             ORDER BY u.createTime DESC
             """)
     Page<AacpCapabilityPo> getAacpCapabilityList(@Param("po") AacpCapabilityPo po, Pageable pageable);
+
+    /**
+     * 根据名称统计能力包数量，排除指定ID（id为null时不排除）
+     *
+     * @param name 能力包名称
+     * @param id   排除的ID，可为null
+     * @return 数量
+     */
+    @Query("""
+            SELECT COUNT(t) FROM AacpCapabilityPo t
+            WHERE t.name = :name AND (:#{#id} IS NULL OR t.id != :id)
+            """)
+    int countByNameExcludeId(@Param("name") String name, @Param("id") Long id);
 }
