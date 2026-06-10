@@ -53,9 +53,13 @@ public class AacpFuncService {
      * 新增微函数
      *
      * @param dto 新增条件
+     * @throws BizException 业务异常
      */
     @Transactional(rollbackFor = Exception.class)
-    public void addAacpFunc(AddAacpFuncDto dto) {
+    public void addAacpFunc(AddAacpFuncDto dto) throws BizException {
+        if (repository.countByCodeExcludeId(dto.getCode(), null) > 0) {
+            throw new BizException("微函数标识已存在,请更换后重试.");
+        }
         AacpFuncPo insertPo = as(dto, AacpFuncPo.class);
         repository.save(insertPo);
     }
@@ -68,6 +72,9 @@ public class AacpFuncService {
      */
     @Transactional(rollbackFor = Exception.class)
     public void editAacpFunc(EditAacpFuncDto dto) throws BizException {
+        if (repository.countByCodeExcludeId(dto.getCode(), dto.getId()) > 0) {
+            throw new BizException("微函数标识已存在,请更换后重试.");
+        }
         AacpFuncPo updatePo = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("更新失败,数据不存在或无权限访问."));
 

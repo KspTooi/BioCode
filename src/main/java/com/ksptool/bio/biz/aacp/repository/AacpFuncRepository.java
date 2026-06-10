@@ -20,4 +20,17 @@ public interface AacpFuncRepository extends JpaRepository<AacpFuncPo, Long> {
             ORDER BY u.createTime DESC
             """)
     Page<AacpFuncPo> getAacpFuncList(@Param("po") AacpFuncPo po, Pageable pageable);
+
+    /**
+     * 根据标识统计微函数数量，排除指定ID（id为null时不排除）
+     *
+     * @param code 微函数标识
+     * @param id   排除的ID，可为null
+     * @return 数量
+     */
+    @Query("""
+            SELECT COUNT(t) FROM AacpFuncPo t
+            WHERE t.code = :code AND (:#{#id} IS NULL OR t.id != :id)
+            """)
+    int countByCodeExcludeId(@Param("code") String code, @Param("id") Long id);
 }
