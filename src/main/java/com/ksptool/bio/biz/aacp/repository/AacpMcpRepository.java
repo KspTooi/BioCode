@@ -1,6 +1,7 @@
 package com.ksptool.bio.biz.aacp.repository;
 
 import com.ksptool.bio.biz.aacp.model.AacpMcpPo;
+import jakarta.persistence.Tuple;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,16 +26,21 @@ public interface AacpMcpRepository extends JpaRepository<AacpMcpPo, Long> {
     Long countByCodeExcludeId(@Param("code") String code, @Param("id") Long id);
 
     @Query("""
-            SELECT u FROM AacpMcpPo u
+            SELECT u.id AS id, u.name AS name, u.code AS code,
+                   u.networkKind AS networkKind, u.authKind AS authKind,
+                   u.authPsk AS authPsk, u.status AS status,
+                   COALESCE((SELECT COUNT(mc.capabilityId) FROM AacpMcpCapabilityPo mc WHERE mc.mcpId = u.id), 0) AS capabilityCount,
+                   COALESCE((SELECT COUNT(cf.funcId) FROM AacpMcpCapabilityPo mc
+                             LEFT JOIN AacpCapabilityFuncPo cf ON mc.capabilityId = cf.capabilityId
+                             WHERE mc.mcpId = u.id), 0) AS funcCount
+            FROM AacpMcpPo u
             WHERE
             (:#{#po.name} IS NULL OR u.name LIKE CONCAT('%', :#{#po.name}, '%'))
             AND (:#{#po.code} IS NULL OR u.code LIKE CONCAT('%', :#{#po.code}, '%'))
-            AND (:#{#po.networkKind} IS NULL OR u.networkKind = :#{#po.networkKind} )
-            AND (:#{#po.authPsk} IS NULL OR u.authPsk LIKE CONCAT('%', :#{#po.authPsk}, '%'))
             AND (:#{#po.status} IS NULL OR u.status = :#{#po.status} )
             ORDER BY u.createTime DESC
             """)
-    Page<AacpMcpPo> getAacpMcpList(@Param("po") AacpMcpPo po, Pageable pageable);
+    Page<Tuple> getAacpMcpList(@Param("po") AacpMcpPo po, Pageable pageable);
 
     /**
      * 根据编码查询MCP服务器

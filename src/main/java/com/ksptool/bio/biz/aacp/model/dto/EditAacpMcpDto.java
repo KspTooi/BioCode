@@ -10,6 +10,8 @@ import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.Range;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class EditAacpMcpDto implements DtoCustomValidator {
@@ -47,6 +49,10 @@ public class EditAacpMcpDto implements DtoCustomValidator {
     @Schema(description = "状态 0:离线 1:在线")
     private Integer status;
 
+    @NotNull(message = "能力包ID列表不能为空")
+    @Schema(description = "能力包ID列表")
+    private List<Long> capabilityIds;
+
     /**
      * 校验PSK鉴权时预共享密钥必填
      *
@@ -56,6 +62,9 @@ public class EditAacpMcpDto implements DtoCustomValidator {
     public String validate() {
         if (authKind != null && authKind == 1 && Str.isBlank(authPsk)) {
             return "使用PSK鉴权时必须填写预共享密钥";
+        }
+        if (capabilityIds.size() > 50) {
+            return "一台MCP服务器最多绑定50个能力包";
         }
         return null;
     }

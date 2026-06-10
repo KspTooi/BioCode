@@ -29,4 +29,10 @@ public class GetAacpMcpListVo {
     @Schema(description = "状态 0:离线 1:在线")
     private Integer status;
 
+    @Schema(description = "关联能力包数量")
+    private Long capabilityCount;
+
+    @Schema(description = "关联微函数数量")
+    private Long funcCount;
+
 }

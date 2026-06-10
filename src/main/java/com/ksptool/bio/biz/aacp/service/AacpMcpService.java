@@ -3,13 +3,18 @@ package com.ksptool.bio.biz.aacp.service;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
+import com.ksptool.bio.biz.aacp.model.AacpMcpCapabilityPo;
 import com.ksptool.bio.biz.aacp.model.AacpMcpPo;
 import com.ksptool.bio.biz.aacp.model.dto.AddAacpMcpDto;
 import com.ksptool.bio.biz.aacp.model.dto.EditAacpMcpDto;
 import com.ksptool.bio.biz.aacp.model.dto.GetAacpMcpListDto;
 import com.ksptool.bio.biz.aacp.model.vo.GetAacpMcpDetailsVo;
 import com.ksptool.bio.biz.aacp.model.vo.GetAacpMcpListVo;
+import com.ksptool.bio.biz.aacp.repository.AacpMcpCapabilityRepository;
 import com.ksptool.bio.biz.aacp.repository.AacpMcpRepository;
+import com.ksptool.bio.biz.core.common.IdsDiff;
+import com.ksptool.entities.TupleMapper;
+import jakarta.persistence.Tuple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -27,6 +32,9 @@ public class AacpMcpService {
     @Autowired
     private AacpMcpRepository repository;
 
+    @Autowired
+    private AacpMcpCapabilityRepository mcpCapabilityRepository;
+
     /**
      * 查询MCP服务器列表
      *
@@ -37,12 +45,12 @@ public class AacpMcpService {
         AacpMcpPo query = new AacpMcpPo();
         assign(dto, query);
 
-        Page<AacpMcpPo> page = repository.getAacpMcpList(query, dto.pageRequest());
+        Page<Tuple> page = repository.getAacpMcpList(query, dto.pageRequest());
         if (page.isEmpty()) {
             return PageResult.successWithEmpty();
         }
 
-        List<GetAacpMcpListVo> vos = as(page.getContent(), GetAacpMcpListVo.class);
+        List<GetAacpMcpListVo> vos = TupleMapper.tupleAs(page.getContent(), GetAacpMcpListVo.class);
         return PageResult.success(vos, (int) page.getTotalElements());
     }
 
@@ -58,6 +66,13 @@ public class AacpMcpService {
         }
         AacpMcpPo insertPo = as(dto, AacpMcpPo.class);
         repository.save(insertPo);
+
+        var cids = dto.getCapabilityIds();
+        if (cids != null && !cids.isEmpty()) {
+            var pos = cids.stream()
+                    .map(cid -> new AacpMcpCapabilityPo(insertPo.getId(), cid)).toList();
+            mcpCapabilityRepository.saveAll(pos);
+        }
     }
 
     /**
@@ -73,8 +88,22 @@ public class AacpMcpService {
         }
         AacpMcpPo updatePo = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("更新失败,数据不存在或无权限访问."));
+
         assign(dto, updatePo);
         repository.save(updatePo);
+
+        List<Long> existIds = mcpCapabilityRepository.getCapabilityIdsByMcpId(dto.getId());
+        var idsDiff = new IdsDiff(existIds, dto.getCapabilityIds());
+
+        if (idsDiff.hasAdd()) {
+            var toAdd = idsDiff.getAddIds().stream()
+                    .map(cid -> new AacpMcpCapabilityPo(dto.getId(), cid)).toList();
+            mcpCapabilityRepository.saveAll(toAdd);
+        }
+
+        if (idsDiff.hasRemove()) {
+            mcpCapabilityRepository.removeByMcpIdAndCapabilityIds(dto.getId(), idsDiff.getRemoveIds());
+        }
     }
 
     /**
@@ -102,6 +131,7 @@ public class AacpMcpService {
             repository.deleteAllById(dto.getIds());
             return;
         }
+        mcpCapabilityRepository.removeByMcpId(dto.getId());
         repository.deleteById(dto.getId());
     }
 
