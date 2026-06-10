@@ -9,6 +9,8 @@ import com.ksptool.bio.biz.qf.model.qfcc.dto.GetQfCcListDto;
 import com.ksptool.bio.biz.qf.model.qfcc.vo.GetQfCcDetailsVo;
 import com.ksptool.bio.biz.qf.model.qfcc.vo.GetQfCcListVo;
 import com.ksptool.bio.biz.qf.service.QfCcService;
+import com.ksptool.bio.biz.auth.common.aop.RowScope;
+import com.ksptool.bio.biz.auth.common.aop.SystemScope;
 import com.ksptool.bio.commons.annotation.PrintLog;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -36,6 +38,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/qfCc")
 @Tag(name = "QF-抄送", description = "抄送")
 @Slf4j
+@RowScope(mode = RowScope.Mode.ROOT_ONLY)
+@SystemScope
 public class QfCcController {
 
     @Autowired

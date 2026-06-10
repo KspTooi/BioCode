@@ -3,7 +3,7 @@
     <el-container class="h-full w-full overflow-hidden min-h-0">
       <!-- 桌面版侧边栏 -->
       <component
-        :is="isMenuCollapse ? ComLeftMenuShort : ComLeftMenu"
+        :is="isMenuCollapse ? DefaultMenuShort : DefaultMenu"
         title="EAS服务管理控制台"
         :version="`版本:${appVersion}`"
       />
@@ -58,11 +58,11 @@ import { ElBreadcrumb, ElBreadcrumbItem, ElContainer, ElHeader, ElMain } from "e
 import { useRoute } from "vue-router";
 import { computed } from "vue";
 import ComTabService from "@/soa/com-series/service/ComTabService.ts";
-import ComFrameworkService from "@/soa/com-series/service/ComFrameworkService.ts";
+import DefaultLayoutService from "@/soa/layout-series-default/service/DefaultLayoutService.ts";
 import ComMultiTab from "@/soa/com-series/components/ComMultiTab.vue";
-import ComLeftMenu from "@/soa/com-series/components/ComLeftMenu.vue";
+import DefaultMenu from "@/soa/layout-series-default/DefaultMenu.vue";
 import ComUserProfile from "@/soa/com-series/components/ComUserProfile.vue";
-import ComLeftMenuShort from "@/soa/com-series/components/ComLeftMenuShort.vue";
+import DefaultMenuShort from "@/soa/layout-series-default/DefaultMenuShort.vue";
 import CoreUserNoticeDropMenu from "@/views/core/components/public/CoreUserNoticeDropMenu.vue";
 import UserAuthService from "@/views/auth/service/UserAuthService.ts";
 import ComBreadcrumb from "@/soa/com-series/ComBreadcrumb.vue";
@@ -76,10 +76,10 @@ const { refreshCounter } = ComTabService.useRouterTabService();
 const viewKey = computed(() => `${route.fullPath}__${refreshCounter.value}`);
 
 //初始化框架快捷键服务 这是为了CTRL+1~9 快速切换标签
-ComFrameworkService.useComTabHotkey();
+DefaultLayoutService.useComTabHotkey();
 
 //获取框架服务(这包含菜单折叠、菜单展开、面包屑导航等)
-const { isMenuCollapse, toggleMenu, autoBreadcrumbs } = ComFrameworkService.useComFramework();
+const { isMenuCollapse, toggleMenu, autoBreadcrumbs } = DefaultLayoutService.useComFramework();
 
 //获取用户信息
 const authStore = UserAuthService.AuthStore();

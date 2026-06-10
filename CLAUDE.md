@@ -5,9 +5,9 @@
 
 ## 元规范
 
-@.cursor/rules/_meta/RuleSkeleton.mdc
-@.cursor/rules/_meta/Glossary.mdc
-@.cursor/skills/_meta/SkillSkeleton.mdc
+@.cursor/rules/\_meta/RuleSkeleton.mdc
+@.cursor/rules/\_meta/Glossary.mdc
+@.cursor/skills/\_meta/SkillSkeleton.mdc
 
 ## 全局通用规则
 
@@ -23,41 +23,41 @@
 8. 注释格式：`//直接写注释`，`//` 后无空格，禁止数字序号（`1.` `2.`）、中文顺序词（`先` `后` `首先` `最后`）、`----` 分隔线
 9. 用户无明确指示时严禁：拆分函数、新建组件/脚本/全局模块，所有逻辑优先内联在当前作用域
 
-## 后端 Service 规范（**/service/*Service.java）
+## 后端 Service 规范（\**/service/*Service.java）
 
 @.cursor/rules/web-service/module/WebServiceServiceMR.mdc
 
 @.cursor/rules/web-service/module/WebServiceDtoMR.mdc
 
-## 后端 Vo 规范（**/vo/*Vo.java）
+## 后端 Vo 规范（\**/vo/*Vo.java）
 
 @.cursor/rules/web-service/module/WebServiceVoMR.mdc
 
-## 后端 Controller 规范（**/controller/*Controller.java）
+## 后端 Controller 规范（\**/controller/*Controller.java）
 
 @.cursor/rules/web-service/module/WebServiceControllerMR.mdc
 
-## 后端 Service 规范（**/service/*Service.java）
+## 后端 Service 规范（\**/service/*Service.java）
 
 @.cursor/rules/web-service/module/WebServiceServiceMR.mdc
 
-## 后端 Repository 规范（**/repository/*Repository.java）
+## 后端 Repository 规范（\**/repository/*Repository.java）
 
 @.cursor/rules/web-service/module/WebServiceRepositoryMR.mdc
 
-## 后端方法尺度与控制流规范（**/*.java）
+## 后端方法尺度与控制流规范（\*_/_.java）
 
 @.cursor/rules/web-service/module/WebServiceMethodMR.mdc
 
-## 前端通用规范（*.ts / *.js / *.vue）
+## 前端通用规范（_.ts / _.js / \*.vue）
 
 @.cursor/rules/web-ui/WebUI.mdc
 
-## 前端 Api 层规范（src/main/resources/web-ui/src/views/**/api/*Api.ts）
+## 前端 Api 层规范（src/main/resources/web-ui/src/views/\**/api/*Api.ts）
 
 @.cursor/rules/web-ui/WebUiApi.mdc
 
-## 前端 Service 层规范（src/main/resources/web-ui/src/views/**/service/*Service.ts）
+## 前端 Service 层规范（src/main/resources/web-ui/src/views/\**/service/*Service.ts）
 
 @.cursor/rules/web-ui/WebUIService.mdc
 
@@ -77,6 +77,7 @@
 ## SOA 通用组件 Skill
 
 @.cursor/skills/web-ui/com-seq-fixer/SKILL.md
+@.cursor/skills/web-ui/std-date-time/SKILL.md
 
 ## 布局管理器 Skill
 
@@ -89,6 +90,10 @@
 @.cursor/skills/web-ui/std-list-area-action/SKILL.md
 @.cursor/skills/web-ui/std-list-area-table/SKILL.md
 @.cursor/skills/web-ui/std-list-page-refactor/SKILL.md
+
+## 查询持久化 Skill
+
+@.cursor/skills/web-ui/query-persist/SKILL.md
 
 ## Playground 演示 Skill
 

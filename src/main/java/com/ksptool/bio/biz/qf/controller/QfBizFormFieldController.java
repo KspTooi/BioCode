@@ -19,6 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
+import com.ksptool.bio.biz.auth.common.aop.RowScope;
+import com.ksptool.bio.biz.auth.common.aop.SystemScope;
 import com.ksptool.bio.commons.annotation.PrintLog;
 
 
@@ -28,6 +30,7 @@ import com.ksptool.bio.commons.annotation.PrintLog;
 @RequestMapping("/QfBizFormField")
 @Tag(name = "流程表单字段配置", description = "流程表单字段配置")
 @Slf4j
+@RowScope(mode = RowScope.Mode.ROOT_ONLY)
 public class QfBizFormFieldController {
 
     @Autowired

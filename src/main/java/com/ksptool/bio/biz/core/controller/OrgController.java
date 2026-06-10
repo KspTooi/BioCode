@@ -51,7 +51,8 @@ public class OrgController {
     @PostMapping("/getOrgList")
     @Operation(summary = "查询组织机构树列表")
     public PageResult<GetOrgListVo> getOrgList(@RequestBody @Valid GetOrgListDto dto) throws Exception {
-       return orgService.getOrgList(dto);
+
+       return  orgService.getOrgList(dto);
     }
 
     @PreAuthorize("@auth.hasCode('core:org:add')")

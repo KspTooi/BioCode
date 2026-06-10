@@ -1,6 +1,9 @@
 package com.ksptool.bio.biz.qf.model.qfbizform;
 
 import com.ksptool.assembly.entity.exception.AuthException;
+import com.ksptool.bio.biz.auth.common.aop.CreatedRootId;
+import com.ksptool.bio.biz.auth.common.aop.RowScopeRootOnlyPo;
+import com.ksptool.bio.biz.auth.common.aop.RsAuditingEntityListener;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -19,15 +22,19 @@ import java.time.LocalDateTime;
 @Setter
 @Entity
 @Table(name = "qf_biz_form")
-@EntityListeners(AuditingEntityListener.class)
+@EntityListeners({AuditingEntityListener.class, RsAuditingEntityListener.class})
 @SQLDelete(sql = "UPDATE qf_biz_form SET delete_time = NOW() WHERE id = ?")
 @SQLRestriction("delete_time IS NULL")
-public class QfBizFormPo {
+public class QfBizFormPo extends RowScopeRootOnlyPo {
 
     @Id
     @SnowflakeIdGenerated
     @Column(name = "id", nullable = false, comment = "主键ID")
     private Long id;
+
+    @CreatedRootId
+    @Column(name = "root_id", nullable = false, comment = "租户ID")
+    private Long rootId;
 
     @Column(name = "name", nullable = false, length = 40, comment = "业务名称(如采购申请)")
     private String name;
@@ -58,6 +65,7 @@ public class QfBizFormPo {
 
     @Column(name = "summary_template", length = 200, comment = "摘要模板")
     private String summaryTemplate;
+
     @CreatedDate
     @Column(name = "create_time", nullable = false, comment = "创建时间")
     private LocalDateTime createTime;

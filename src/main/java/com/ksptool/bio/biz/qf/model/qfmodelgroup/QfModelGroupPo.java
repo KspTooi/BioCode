@@ -1,7 +1,9 @@
 package com.ksptool.bio.biz.qf.model.qfmodelgroup;
 
 import com.ksptool.assembly.entity.exception.AuthException;
-import com.ksptool.bio.biz.auth.service.SessionService;
+import com.ksptool.bio.biz.auth.common.aop.CreatedRootId;
+import com.ksptool.bio.biz.auth.common.aop.RowScopeRootOnlyPo;
+import com.ksptool.bio.biz.auth.common.aop.RsAuditingEntityListener;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -20,21 +22,19 @@ import java.time.LocalDateTime;
 @Setter
 @Entity
 @Table(name = "qf_model_group")
-@EntityListeners(AuditingEntityListener.class)
+@EntityListeners({AuditingEntityListener.class, RsAuditingEntityListener.class})
 @SQLDelete(sql = "UPDATE qf_model_group SET delete_time = NOW() WHERE id = ?")
 @SQLRestriction("delete_time IS NULL")
-public class QfModelGroupPo {
+public class QfModelGroupPo extends RowScopeRootOnlyPo {
 
     @Id
     @SnowflakeIdGenerated
     @Column(name = "id", nullable = false, comment = "主键ID")
     private Long id;
 
-    @Column(name = "root_id", nullable = false, comment = "所属企业/租户ID")
+    @CreatedRootId
+    @Column(name = "root_id", nullable = false, comment = "租户ID")
     private Long rootId;
-
-    @Column(name = "dept_id", nullable = false, comment = "所属部门ID")
-    private Long deptId;
 
     @Column(name = "name", nullable = false, length = 80, comment = "组名称")
     private String name;
@@ -70,13 +70,7 @@ public class QfModelGroupPo {
 
     @PrePersist
     private void onCreate() throws AuthException {
-        var session = SessionService.session();
-        if (this.rootId == null) {
-            this.rootId = session.getRootId();
-        }
-        if (this.deptId == null) {
-            this.deptId = session.getDeptId();
-        }
+
     }
 
     @PreUpdate

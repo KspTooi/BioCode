@@ -345,6 +345,18 @@ export default {
       refreshCounter.value++;
     };
 
+    /**
+     * 清除所有标签并重置状态
+     */
+    const clearTabs = (): void => {
+      tabs.value = [...fixedTabs];
+      if (fixedTabs.length === 0) {
+        activeTabId.value = null;
+        return;
+      }
+      activeTab(fixedTabs[0].id);
+    };
+
     return {
       //标签列表
       tabs,
@@ -387,6 +399,9 @@ export default {
 
       //刷新当前激活标签(只刷标签,不刷浏览器)
       refreshActiveTab,
+
+      //清除所有标签并重置状态
+      clearTabs,
     };
   },
 

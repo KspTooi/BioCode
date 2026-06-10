@@ -17,7 +17,7 @@
       </el-tab-pane>
     </el-tabs>
 
-    <!-- 审批区域：仅在流程表单 tab 时显示，置于 tabs 外固定底部 -->
+    <!-- 审批区域：仅在流程表单 tab + 审批模式时显示，置于 tabs 外固定底部 -->
     <div v-if="details && !detailsLoading" v-show="activeTab === 'form' && row._mode === 'approve'" class="approve-section">
       <div v-if="details.allowComment === 1" class="approve-body">
         <div class="approve-title">
@@ -78,6 +78,13 @@
         >
           {{ details.allowActions?.find((a) => a.kind === 3)?.name ?? "驳回节点" }}
         </el-button>
+      </div>
+    </div>
+
+    <!-- 查看模式底部：仅显示返回按钮 -->
+    <div v-if="details && !detailsLoading" v-show="activeTab === 'form' && row._mode !== 'approve'" class="view-footer">
+      <div class="approve-footer">
+        <el-button size="large" type="primary" :icon="CircleCloseIcon" @click="onBack()"> 返回 </el-button>
       </div>
     </div>
   </div>
@@ -199,7 +206,7 @@ const onApprove = async (action: number, memberId = ""): Promise<void> => {
       nodeId: "",
       memberId,
     });
-    ElMessage.success(msg || "操作成功");
+    ElMessage.success("操作成功");
     approveComment.value = "";
     closeTab(activeTabId.value);
     redirect("qfTodo");
@@ -278,6 +285,13 @@ onMounted(async () => {
 }
 
 .approve-section {
+  flex-shrink: 0;
+  border-top: 1px solid var(--el-border-color-light);
+  background: var(--el-bg-color);
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.04);
+}
+
+.view-footer {
   flex-shrink: 0;
   border-top: 1px solid var(--el-border-color-light);
   background: var(--el-bg-color);

@@ -3,6 +3,7 @@ package com.ksptool.bio.biz.qf.commons.listener;
 import com.ksptool.bio.biz.qf.commons.qfe.QfeUserTask.MemberKind;
 import com.ksptool.bio.biz.qf.commons.QfProcTools;
 import com.ksptool.bio.biz.qf.commons.QfVarsProc;
+import com.ksptool.bio.biz.qf.commons.enums.TodoMemberCategory;
 import com.ksptool.bio.biz.qf.commons.event.QfTaskStartedEvent;
 import com.ksptool.bio.biz.qf.model.qftodo.QfTodoPo;
 import com.ksptool.bio.biz.qf.repository.QfTodoRepository;
@@ -107,7 +108,7 @@ public class QfTaskCreatedListener extends AbstractFlowableEngineEventListener {
         var dataId = QfProcTools.varLong(vars, QfVarsProc.DATA_ID, 0L);
         var nodeName = QfProcTools.nodeName(task);
         var summary = QfProcTools.varString(vars, QfVarsProc.SUMMARY, "");
-        var memberType = memberKind.getMemberType();
+        var memberType = TodoMemberCategory.fromMemberKind(memberKind).getValue();
 
         var memberId = _memberId;
         if (memberId == null) {
@@ -120,7 +121,6 @@ public class QfTaskCreatedListener extends AbstractFlowableEngineEventListener {
         //创建待办数据
         QfTodoPo po = new QfTodoPo();
         po.setRootId(rid);
-        po.setDeptId(did);
         po.setEngTaskId(etId);
         po.setEngProcId(epId);
         po.setBizFormId(bizFormId);

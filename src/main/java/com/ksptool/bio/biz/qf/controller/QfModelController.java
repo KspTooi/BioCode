@@ -11,6 +11,8 @@ import com.ksptool.bio.biz.qf.model.qfmodel.dto.GetQfModelListDto;
 import com.ksptool.bio.biz.qf.model.qfmodel.vo.GetQfModelDetailsVo;
 import com.ksptool.bio.biz.qf.model.qfmodel.vo.GetQfModelListVo;
 import com.ksptool.bio.biz.qf.service.QfModelService;
+import com.ksptool.bio.biz.auth.common.aop.RowScope;
+import com.ksptool.bio.biz.auth.common.aop.SystemScope;
 import com.ksptool.bio.commons.annotation.PrintLog;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -37,6 +39,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/qfModel")
 @Tag(name = "QF-流程模型", description = "QF-流程模型")
 @Slf4j
+@RowScope(mode = RowScope.Mode.ROOT_ONLY)
 public class QfModelController {
 
     @Autowired

@@ -23,13 +23,14 @@ import CoreRouteRegister from "@/views/core/route/CoreRouteRegister";
 import AuditRouteRegister from "@/views/audit/route/AuditRouteRegister";
 import QtRouteRegister from "@/views/qt/route/QtRouteRegister.ts";
 import QfRouteRegister from "@/views/qf/route/QfRouteRegister.ts";
-import ComTabService from "@/soa/com-series/service/ComTabService.ts";
-import ComFramework from "@/soa/com-series/ComFramework.vue";
-import ComLayoutProviderService from "@/soa/com-series/service/ComLayoutProviderService.ts";
-import AssemblyRouteRegister from "@/views/assembly/route/AssemblyRouteRegister";
+import AssemblyRouteRegister from "@/views/assembly/route/AssemblyRouteRegister.ts";
 import PlayGroundRouteRegister from "@/views/playground/route/PlayGroundRouteRegister";
+import ComTabService from "@/soa/com-series/service/ComTabService.ts";
+import DefaultLayout from "@/soa/layout-series-default/DefaultLayout.vue";
+import ComLayoutProviderService from "@/soa/com-series/service/ComLayoutProviderService.ts";
 import AacpRouteRegister from "@/views/aacp/route/AacpRouteRegister";
-
+import ComAuthProviderService from "@/soa/com-series/service/ComAuthProvider.ts";
+import UserLogin from "@/views/auth/UserLogin.vue";
 /**
  * 固定路由 这些路由不会被GenricRouteService动态注册 请注意不要随意修改这些路由，因为它们游离于业务域之外，会引发严重的路由冲突问题。
  */
@@ -83,11 +84,17 @@ const ctsFixedTabs = [
 //初始化 Iconify
 setupIconify();
 
-//注册布局
-ComLayoutProviderService.registerLayout("default", ComFramework);
+//注册多布局
+ComLayoutProviderService.registerLayout("default", DefaultLayout);
 
 //设置默认布局（路由 meta.layout 为 default 或未指定时生效）
 ComLayoutProviderService.setDefaultLayout("default");
+
+//注册多认证组件
+ComAuthProviderService.registerAuth("default", UserLogin);
+
+//设置默认认证组件
+ComAuthProviderService.setDefaultAuth("default");
 
 //创建应用实例
 const app = createApp(AdminRoot);
@@ -112,10 +119,10 @@ addRoute(new AuthRouteRegister());
 addRoute(new CoreRouteRegister());
 addRoute(new AuditRouteRegister());
 addRoute(new QtRouteRegister());
-addRoute(new AssemblyRouteRegister());
 addRoute(new QfRouteRegister());
 addRoute(new PlayGroundRouteRegister());
 addRoute(new AacpRouteRegister());
+addRoute(new AssemblyRouteRegister());
 
 //初始化SOA路由服务
 initialize(app, grsFixedRoutes);

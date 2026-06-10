@@ -1,7 +1,9 @@
 package com.ksptool.bio.biz.qf.model.qfmodeldeployrcd;
 
 import com.ksptool.assembly.entity.exception.AuthException;
-import com.ksptool.bio.biz.auth.service.SessionService;
+import com.ksptool.bio.biz.auth.common.aop.CreatedRootId;
+import com.ksptool.bio.biz.auth.common.aop.RowScopeRootOnlyPo;
+import com.ksptool.bio.biz.auth.common.aop.RsAuditingEntityListener;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -20,26 +22,24 @@ import java.time.LocalDateTime;
 @Setter
 @Entity
 @Table(name = "qf_model_deploy_rcd")
-@EntityListeners(AuditingEntityListener.class)
+@EntityListeners({AuditingEntityListener.class, RsAuditingEntityListener.class})
 @SQLDelete(sql = "UPDATE qf_model_deploy_rcd SET delete_time = NOW() WHERE id = ?")
 @SQLRestriction("delete_time IS NULL")
-public class QfModelDeployRcdPo {
+public class QfModelDeployRcdPo extends RowScopeRootOnlyPo {
 
     @Id
     @SnowflakeIdGenerated
     @Column(name = "id", nullable = false, comment = "主键ID")
     private Long id;
 
-    @Column(name = "root_id", nullable = false, comment = "所属企业/租户ID")
+    @CreatedRootId
+    @Column(name = "root_id", nullable = false, comment = "租户ID")
     private Long rootId;
-
-    @Column(name = "dept_id", nullable = false, comment = "所属部门ID")
-    private Long deptId;
 
     @Column(name = "model_id", nullable = false, comment = "模型ID")
     private Long modelId;
 
-    @Column(name = "form_id",nullable = false, comment = "关联表单ID")
+    @Column(name = "form_id", nullable = false, comment = "关联表单ID")
     private Long formId;
 
     @Column(name = "name", nullable = false, length = 80, comment = "模型名称")
@@ -88,13 +88,7 @@ public class QfModelDeployRcdPo {
 
     @PrePersist
     private void onCreate() throws AuthException {
-        var session = SessionService.session();
-        if (this.rootId == null) {
-            this.rootId = session.getRootId();
-        }
-        if (this.deptId == null) {
-            this.deptId = session.getDeptId();
-        }
+
     }
 
     @PreUpdate

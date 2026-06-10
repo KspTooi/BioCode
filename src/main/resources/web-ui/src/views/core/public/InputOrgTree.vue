@@ -4,12 +4,12 @@
   * 所有属性都会透传给ModalOrgTree组件 具体参考ModalOrgTree组件的属性
 -->
 <template>
-  <div style="display: inline-flex; width: 100%">
+  <div class="input-org-tree" style="display: inline-flex; width: 100%">
     <el-input :model-value="bindCheckedOrgNames" :placeholder="props.placeholder" readonly style="flex: 1">
       <template #append>
-        <el-button type="primary" :disabled="disabled" @click="modalVisible = true">{{
-          props.readonly ? "查看" : "选择"
-        }}</el-button>
+        <el-button type="primary" :disabled="disabled" @click="modalVisible = true">
+          {{ props.readonly ? "查看" : "选择" }}
+        </el-button>
       </template>
     </el-input>
     <ModalOrgTree
@@ -52,3 +52,5 @@ const bindCheckedOrgNames = defineModel<string>("checkedOrgNames", { default: ""
 //输入组织机构选择器打包
 const { modalVisible, onSubmitEntity } = InputOrgTreeService.useInputOrgTree(emit, bindCheckedOrgNames);
 </script>
+
+<style scoped></style>

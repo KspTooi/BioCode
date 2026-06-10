@@ -290,7 +290,6 @@ public class QfModelService {
         //到这里说明万无一失了，开始创建一条部署记录
         var rcd = new QfModelDeployRcdPo();
         rcd.setRootId(po.getRootId());
-        rcd.setDeptId(po.getDeptId());
         rcd.setFormId(po.getFormId());
         rcd.setModelId(po.getId());
         rcd.setName(po.getName());

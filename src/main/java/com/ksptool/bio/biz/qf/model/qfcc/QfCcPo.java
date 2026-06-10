@@ -1,6 +1,7 @@
 package com.ksptool.bio.biz.qf.model.qfcc;
 
 import com.ksptool.assembly.entity.exception.AuthException;
+import com.ksptool.bio.biz.auth.common.aop.*;
 import com.ksptool.bio.biz.auth.service.SessionService;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
 import jakarta.persistence.*;
@@ -23,21 +24,19 @@ import java.time.LocalDateTime;
 @Setter
 @Entity
 @Table(name = "qf_cc")
-@EntityListeners(AuditingEntityListener.class)
+@EntityListeners({AuditingEntityListener.class, RsAuditingEntityListener.class})
 @SQLDelete(sql = "UPDATE qf_cc SET delete_time = NOW() WHERE id = ?")
 @SQLRestriction("delete_time IS NULL")
-public class QfCcPo {
+public class QfCcPo extends RowScopeRootOnlyPo {
 
     @Id
     @SnowflakeIdGenerated
     @Column(name = "id", nullable = false, comment = "主键ID")
     private Long id;
 
+    @CreatedRootId
     @Column(name = "root_id", nullable = false, comment = "租户ID")
     private Long rootId;
-
-    @Column(name = "dept_id", nullable = false, comment = "部门ID")
-    private Long deptId;
 
     @Column(name = "eng_proc_id", nullable = false, length = 200, comment = "引擎流程ID")
     private String engProcId;
@@ -82,13 +81,8 @@ public class QfCcPo {
 
     @PrePersist
     private void onCreate() throws AuthException {
-        var session = SessionService.session();
-        if (this.rootId == null) {
-            this.rootId = session.getRootId();
-        }
-        if (this.deptId == null) {
-            this.deptId = session.getDeptId();
-        }
+
+
     }
 
     @PreUpdate

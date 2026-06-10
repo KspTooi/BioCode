@@ -43,7 +43,7 @@ public class LaunchParam implements DtoCustomValidator{
     @Getter
     @Setter
     @AllArgsConstructor
-    public class LaunchMemberParam {
+    public static class LaunchMemberParam {
         //节点ID
         private String nodeId;
 
@@ -80,6 +80,31 @@ public class LaunchParam implements DtoCustomValidator{
      */
     public Long getMemberId(String nodeId) {
         return members.stream().filter(n -> n.getNodeId().equals(nodeId)).findFirst().map(n -> n.getMemberId()).orElse(null);
+    }
+
+    /**
+     * 添加摘要模板参数
+     * @param key 参数键
+     * @param value 参数值
+     */
+    public void addParams(String key, String value) {
+        sParams.put(key, value);
+    }
+
+    /**
+     * 获取所有摘要模板参数
+     * @return 参数Map
+     */
+    public Map<String, String> getParams() {
+        return sParams;
+    }
+
+    /**
+     * 获取所有摘要模板参数
+     * @return 参数Map
+     */
+    public String getParamsByKey(String key) {
+        return sParams.getOrDefault(key,"");
     }
 
     /**

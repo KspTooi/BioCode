@@ -146,6 +146,48 @@ public class QfeBpmnModel {
     }
 
     /**
+     * 按流程执行顺序获取所有 UserTask（从开始节点沿 sequenceFlow 正向遍历）
+     * <p>
+     * 遇网关则穿透继续，遇 UserTask 即收集，遇结束事件则终止该分支。
+     * 主要用于前端按流程顺序展示节点列表等需要拓扑有序的场景。
+     *
+     * @return 按流程顺序排列的 UserTask 列表；bpmnModel 未初始化时返回空列表
+     */
+    public List<QfeUserTask> getUserTasksInFlowOrder() {
+        if (bpmnModel == null || bpmnModel.getMainProcess() == null) {
+            return Collections.emptyList();
+        }
+        var startEvent = getStartEvent();
+        if (startEvent == null) {
+            return Collections.emptyList();
+        }
+
+        List<QfeUserTask> result = new ArrayList<>();
+        Set<String> visited = new HashSet<>();
+        var stack = new ArrayDeque<String>();
+        stack.push(startEvent.getId());
+
+        while (!stack.isEmpty()) {
+            var nodeId = stack.pop();
+            if (!visited.add(nodeId)) {
+                continue;
+            }
+            var element = bpmnModel.getFlowElement(nodeId);
+            if (element instanceof UserTask ut) {
+                result.add(QfeUserTask.of(ut));
+            }
+            if (element instanceof FlowNode flowNode) {
+                for (var flow : flowNode.getOutgoingFlows()) {
+                    if (StringUtils.isNotBlank(flow.getTargetRef())) {
+                        stack.push(flow.getTargetRef());
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
      * 按任务定义键获取单个 UserTask 包装；不存在或非 UserTask 时返回 null
      *
      * @param taskDefKey 任务定义键（BPMN UserTask 的 id）
@@ -272,16 +314,16 @@ public class QfeBpmnModel {
                 return "节点[" + utId + "][" + utName + "]至少需要有一个允许的审批操作，请配置qfe:utAprActions";
             }
 
-            //校验 首次发起时跳过节点 -- 上有节点必须至少有一个"首次发起时跳过节点"或"开始节点"
+            //校验 首次发起时跳过节点 -- 上游节点必须至少有一个"首次发起时跳过节点"或"开始节点"
             if (qfeUserTask.isInitSkip()) {
 
                 //处理人类型必须配置为标准
-                if(approveKind != AprKind.STANDARD){
+                if (approveKind != AprKind.STANDARD) {
                     return "节点[" + utId + "][" + utName + "] 为首次发起时跳过节点，其处理人类型必须配置为标准。";
                 }
 
                 //处理人配置只能是"指定用户" + "发起人" 不能是抽象的人和组 否则发起时不能确定具体处理人
-                if(memberKind != MemberKind.USER && memberKind != MemberKind.INITIATOR){
+                if (memberKind != MemberKind.USER && memberKind != MemberKind.INITIATOR) {
                     return "节点[" + utId + "][" + utName + "] 为首次发起时跳过节点，其处理人配置只能配置为指定用户或发起人。";
                 }
 

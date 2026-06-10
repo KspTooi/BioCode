@@ -248,6 +248,7 @@ export default {
     const launchForm = reactive<LaunchProcDto>({
       code: "",
       dataId: "",
+      members: [],
     });
 
     const launchRules: FormRules = {
@@ -262,6 +263,7 @@ export default {
       launchRow.value = row;
       launchForm.code = row.code;
       launchForm.dataId = "";
+      launchForm.members = [];
       launchVisible.value = true;
     };
 
@@ -274,6 +276,7 @@ export default {
       }
       launchForm.code = "";
       launchForm.dataId = "";
+      launchForm.members = [];
       launchRow.value = null;
     };
 

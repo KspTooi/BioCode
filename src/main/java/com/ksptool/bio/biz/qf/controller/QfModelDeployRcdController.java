@@ -8,6 +8,8 @@ import com.ksptool.bio.biz.qf.model.qfmodeldeployrcd.vo.GetQfModelDeployRcdDetai
 import com.ksptool.bio.biz.qf.model.qfmodeldeployrcd.vo.GetQfModelDeployRcdListVo;
 import com.ksptool.bio.biz.qf.service.QfModelDeployRcdService;
 import com.ksptool.bio.biz.qf.service.QfProcService;
+import com.ksptool.bio.biz.auth.common.aop.RowScope;
+import com.ksptool.bio.biz.auth.common.aop.SystemScope;
 import com.ksptool.bio.commons.annotation.PrintLog;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,6 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/qfModelDeployRcd")
 @Tag(name = "QF-流程模型部署", description = "QF-流程模型部署")
 @Slf4j
+@RowScope(mode = RowScope.Mode.ROOT_ONLY)
 public class QfModelDeployRcdController {
 
     @Autowired

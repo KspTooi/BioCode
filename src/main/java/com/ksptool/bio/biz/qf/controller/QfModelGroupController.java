@@ -9,6 +9,8 @@ import com.ksptool.bio.biz.qf.model.qfmodelgroup.dto.GetQfModelGroupListDto;
 import com.ksptool.bio.biz.qf.model.qfmodelgroup.vo.GetQfModelGroupDetailsVo;
 import com.ksptool.bio.biz.qf.model.qfmodelgroup.vo.GetQfModelGroupListVo;
 import com.ksptool.bio.biz.qf.service.QfModelGroupService;
+import com.ksptool.bio.biz.auth.common.aop.RowScope;
+import com.ksptool.bio.biz.auth.common.aop.SystemScope;
 import com.ksptool.bio.commons.annotation.PrintLog;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,6 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/qfModelGroup")
 @Tag(name = "QF-流程模型分组", description = "QF-流程模型分组")
 @Slf4j
+@RowScope(mode = RowScope.Mode.ROOT_ONLY)
 public class QfModelGroupController {
 
     @Autowired

@@ -11,7 +11,6 @@ import com.ksptool.bio.biz.core.repository.OrgRepository;
 import com.ksptool.bio.biz.core.repository.UserRepository;
 import com.ksptool.bio.biz.qf.commons.LaunchParam;
 import com.ksptool.bio.biz.qf.commons.QfVarsProc;
-import com.ksptool.bio.biz.qf.commons.QfeVarsModel;
 import com.ksptool.bio.biz.qf.commons.qfe.QfeBpmnModel;
 import com.ksptool.bio.biz.qf.commons.qfe.QfeUserTask;
 import com.ksptool.bio.biz.qf.commons.qfe.QfeUserTask.MemberKind;
@@ -20,7 +19,7 @@ import com.ksptool.bio.biz.qf.model.qftodo.QfTodoPo;
 import com.ksptool.bio.biz.qf.model.qftodo.dto.GetProcessApproveFlowDto;
 import com.ksptool.bio.biz.qf.model.qftodo.dto.GetProcessApproveFlowRecordDto;
 import com.ksptool.bio.biz.qf.model.qftodo.vo.ApproveFlowRecordVo;
-import com.ksptool.bio.biz.qf.model.qftodo.vo.ProcessNodeConfigVo;
+import com.ksptool.bio.biz.qf.model.qftodo.vo.GetProcNodeDefineVo;
 import com.ksptool.bio.biz.qf.repository.QfBizFormRepository;
 import com.ksptool.bio.biz.qf.repository.QfModelDeployRcdRepository;
 import com.ksptool.bio.biz.qf.repository.QfTodoRepository;
@@ -28,7 +27,6 @@ import com.ksptool.text.PreparedPrompt;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.flowable.engine.IdentityService;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
@@ -251,6 +249,9 @@ public class QfProcService {
         //给发起时选人的节点注入候选人 由业务方传入 
         var isUts = m.getUserTasks().stream().filter(QfeUserTask::isInitSelected).toList(); //先搜集所有"发起选人"的节点(isUts)
 
+        log.info("[QF-Launcher] 发起时选人节点数量: {}, 传入的成员参数数量: {}", isUts.size(), lp.getMembers().size());
+        log.info("[QF-Launcher] 传入的成员参数: {}", lp.getMembers());
+
         //先做初筛 防止后面出问题 后面不做校验
         var isUtsSize = isUts.size();
         var lpMembersSize = lp.getMembers().size();
@@ -262,6 +263,7 @@ public class QfProcService {
 
             //找出业务方传入的人
             var lpMemberId = lp.getMemberId(isUt.getId());
+            log.info("[QF-Launcher] 节点[{}] 获取到的成员ID: {}", isUt.getId(), lpMemberId);
 
             if (lpMemberId == null || uRepository.countByIds(List.of(lpMemberId)) < 1) {
                 throw new BizException("启动流程失败,节点[" + isUt.getId() + "]未能找到指定处理人或处理人不合法。");
@@ -269,6 +271,7 @@ public class QfProcService {
 
             //获取这个节点允许的选人范围 只有可能是 10:任意人 0:指定人 1:组 
             var rgr = isUt.getMemberKind();
+            log.info("[QF-Launcher] 节点[{}] 的成员类型: {}", isUt.getId(), rgr);
 
             if (rgr != MemberKind.ANYONE && rgr != MemberKind.USER && rgr != MemberKind.GROUP) {
                 throw new BizException("启动流程失败,节点[" + isUt.getId() + "]配置了不受支持的处理人类型:[" + rgr + "]");
@@ -297,16 +300,11 @@ public class QfProcService {
             }
 
             //所有校验通过 注入流程变量
-            pv.put("qfAprNode_" + isUt.getId(), lpMemberId);
+            String varKey = "qfAprNode_" + isUt.getId();
+            pv.put(varKey, lpMemberId);
+            log.info("[QF-Launcher] 注入流程变量: {} = {}", varKey, lpMemberId);
         }
 
-
-        //var qfeModel = new QfeBpmnModel().of(frpService.getBpmnModel(deploy.getEngProcessDefId()));
-        //if (qfeModel.getBpmnModel() == null || qfeModel.getBpmnModel().getMainProcess() == null) {
-        //    throw new BizException("无法启动流程,未找到可用的流程模型[code=" + deploy.getCode() + "]");
-        //}
-
-        //prepareUserTaskVars(qfeModel.getUserTasks(), pv, null);
 
         try {
             ProcessInstance pi = frService.startProcessInstanceById(
@@ -351,192 +349,6 @@ public class QfProcService {
     }
 
     /**
-     * 一次性遍历所有 UserTask，准备流程变量
-     * <p>
-     * 发起时选人节点（utAprKind=1）从业务数据注入发起人所选办理人；其余多实例节点从模型配置注入候选人。
-     */
-    private void prepareUserTaskVars(List<QfeUserTask> userTasks, Map<String, Object> p, Map<String, String> datas) throws BizException {
-        if (userTasks.isEmpty()) {
-            return;
-        }
-
-        for (QfeUserTask ut : userTasks) {
-            boolean isMulti = ut.isMultiInstance();
-
-            // 发起时选人：从业务数据注入发起人所选办理人
-            if (ut.isInitSelected()) {
-                var memberKind = ut.getMemberKind();
-                if (memberKind == null) {
-                    throw new BizException("节点[" + ut.getId() + "]配置为发起时选人,但无法解析审批人类型");
-                }
-                if (isMulti) {
-                    injectMultiInstanceApprover(ut, "qfMi_" + ut.getId(), memberKind, p, datas);
-                } else {
-                    injectSingleApprover(ut, memberKind, p, datas);
-                }
-            }
-
-            // 多实例且未通过发起时选人设置：从模型配置注入候选人
-            if (isMulti && !p.containsKey("qfMi_" + ut.getId())) {
-                var values = ut.getMemberIds();
-                if (values.isEmpty()) {
-                    throw new BizException("多实例节点[" + ut.getId() + "]未配置候选人");
-                }
-                p.put("qfMi_" + ut.getId(), values.stream().map(String::valueOf).toList());
-            }
-        }
-    }
-
-    /**
-     * 单实例发起时选人：取发起人所选，按节点范围（utAprMemberIds）校验后注入节点级流程变量
-     * <p>
-     * 选人结果以节点独立流程变量带入(qfAprNode_&lt;节点ID&gt; / qfAprGroup_&lt;节点ID&gt;)，
-     * 任务创建时由 QfMemberService.getMemberId 据此解析办理人，故下游节点同样生效；
-     * 节点范围仅用于校验发起人所选是否越界，不作为候选直接注入；
-     * 仅支持 任意人 / 指定用户 / 用户组（与 QfeBpmnModel.validateUserTasks 的约束一致）。
-     */
-    private void injectSingleApprover(QfeUserTask ut, MemberKind memberKind,
-                                      Map<String, Object> p, Map<String, String> datas) throws BizException {
-        // 任意人：发起人任选一人，无范围校验
-        if (memberKind == MemberKind.ANYONE) {
-            String id = firstId(extractApproverId(datas));
-            if (StringUtils.isBlank(id)) {
-                throw new BizException("节点[" + ut.getId() + "]为任意人审批,业务表单数据中必须包含审批人ID(approverId)");
-            }
-            p.put("qfAprNode_" + ut.getId(), id);
-            return;
-        }
-
-        // 指定用户：发起人从范围内选人，校验所选用户在范围内
-        if (memberKind == MemberKind.USER) {
-            String id = firstId(extractApproverId(datas));
-            if (StringUtils.isBlank(id)) {
-                throw new BizException("节点[" + ut.getId() + "]为发起时指定用户,业务表单数据中必须包含审批人ID(approverId)");
-            }
-            validateInScope(ut, id);
-            p.put("qfAprNode_" + ut.getId(), id);
-            return;
-        }
-
-        // 用户组：发起人从范围内选组，校验所选组在范围内
-        if (memberKind == MemberKind.GROUP) {
-            String groupId = firstId(extractGroupIds(datas));
-            if (StringUtils.isBlank(groupId)) {
-                throw new BizException("节点[" + ut.getId() + "]为发起时指定用户组,业务表单数据中必须包含用户组ID(groupIds)");
-            }
-            validateInScope(ut, groupId);
-            p.put("qfAprGroup_" + ut.getId(), groupId);
-        }
-    }
-
-    /**
-     * 多实例任务注入：把发起人所选的用户/用户组ID集合注入 collection 变量（qfMi_<节点ID>）
-     */
-    private void injectMultiInstanceApprover(QfeUserTask ut, String varName, MemberKind memberKind,
-                                             Map<String, Object> p, Map<String, String> datas) throws BizException {
-
-        // 任意人 / 指定用户：注入用户ID集合，指定用户需逐个校验在范围内
-        if (memberKind == MemberKind.ANYONE || memberKind == MemberKind.USER) {
-            List<String> approverIds = parseApproverIds(extractApproverId(datas));
-            if (approverIds.isEmpty()) {
-                throw new BizException("节点[" + ut.getId() + "]业务表单数据中必须包含审批人ID列表");
-            }
-            if (memberKind == MemberKind.USER) {
-                for (String id : approverIds) {
-                    validateInScope(ut, id);
-                }
-            }
-            p.put(varName, approverIds);
-            return;
-        }
-
-        // 用户组：注入用户组ID集合，逐个校验在范围内
-        if (memberKind == MemberKind.GROUP) {
-            List<String> groupIds = parseApproverIds(extractGroupIds(datas));
-            if (groupIds.isEmpty()) {
-                throw new BizException("节点[" + ut.getId() + "]为发起时指定用户组,业务表单数据中必须包含用户组ID(groupIds)");
-            }
-            for (String id : groupIds) {
-                validateInScope(ut, id);
-            }
-            p.put(varName, groupIds);
-        }
-    }
-
-    /**
-     * 校验发起人所选ID是否在节点配置的范围（utAprMemberIds）内
-     *
-     * @param ut         发起时选人节点
-     * @param selectedId 发起人所选的用户ID或用户组ID
-     * @throws BizException ID 格式错误或不在允许范围内时抛出
-     */
-    private void validateInScope(QfeUserTask ut, String selectedId) throws BizException {
-        long id = NumberUtils.toLong(selectedId, 0L);
-        if (id == 0L) {
-            throw new BizException("ID格式错误: " + selectedId);
-        }
-        if (!ut.isInMemberScope(id)) {
-            throw new BizException("选择的[" + selectedId + "]不在节点[" + ut.getId() + "]允许的范围内");
-        }
-    }
-
-    /**
-     * 从业务数据中提取单个审批人ID
-     */
-    private String extractApproverId(Map<String, String> datas) {
-        if (datas == null) {
-            return null;
-        }
-
-        return datas.get("approverId");
-    }
-
-    /**
-     * 从业务数据中提取组/部门ID列表(逗号分隔)
-     */
-    private String extractGroupIds(Map<String, String> datas) {
-        if (datas == null) {
-            return null;
-        }
-        String ids = datas.get("groupIds");
-        if (StringUtils.isBlank(ids)) {
-            ids = datas.get("deptIds");
-        }
-        if (StringUtils.isBlank(ids)) {
-            ids = datas.get("candidateGroupIds");
-        }
-        return ids;
-    }
-
-    /**
-     * 解析审批人ID列表(逗号分隔)
-     */
-    private List<String> parseApproverIds(String idsStr) throws BizException {
-        if (StringUtils.isBlank(idsStr)) {
-            return List.of();
-        }
-        String[] parts = idsStr.split(",");
-        List<String> result = new ArrayList<>();
-        for (String part : parts) {
-            String trimmed = part.trim();
-            if (StringUtils.isBlank(trimmed)) {
-                continue;
-            }
-            long id;
-            try {
-                id = Long.parseLong(trimmed);
-            } catch (NumberFormatException e) {
-                throw new BizException("审批人ID格式错误: " + trimmed);
-            }
-            if (id == 0L) {
-                continue;
-            }
-            result.add(trimmed);
-        }
-        return result;
-    }
-
-    /**
      * 获取流程所有节点的审批配置（发起流程时使用）
      * <p>
      * 遍历 BPMN 模型中的所有 UserTask 节点，返回每个节点的基本信息及办理成员配置。
@@ -546,7 +358,7 @@ public class QfProcService {
      * @return 节点配置列表
      * @throws BizException 业务异常
      */
-    public List<ProcessNodeConfigVo> getProcessNodeConfigs(String modelCode) throws BizException {
+    public List<GetProcNodeDefineVo> getProcNodeDefine(String modelCode) throws BizException {
 
         if (StringUtils.isBlank(modelCode)) {
             throw new BizException("模型编码不能为空");
@@ -562,12 +374,14 @@ public class QfProcService {
             return List.of();
         }
 
-        List<ProcessNodeConfigVo> result = new ArrayList<>();
-        // 收集需要查询名称的用户ID（memberKind=USER 且 BPMN 无 memberNames 时）
-        Map<Integer, List<Long>> nodeIdsToLookup = new HashMap<>();
+        List<GetProcNodeDefineVo> result = new ArrayList<>();
+        // 按类型收集需要查询名称的节点信息（key=result index, value=member IDs）
+        Map<Integer, List<Long>> userIdsToLookup = new HashMap<>();
+        Map<Integer, List<Long>> groupIdsToLookup = new HashMap<>();
+        Map<Integer, List<Long>> deptIdsToLookup = new HashMap<>();
 
-        for (QfeUserTask ut : qfeModel.getUserTasks()) {
-            var vo = new ProcessNodeConfigVo();
+        for (QfeUserTask ut : qfeModel.getUserTasksInFlowOrder()) {
+            var vo = new GetProcNodeDefineVo();
             vo.setNodeId(ut.getId());
             vo.setNodeName(ut.getName());
 
@@ -580,37 +394,64 @@ public class QfProcService {
             var memberIds = ut.getMemberIds();
             vo.setMemberIds(memberIds.stream().map(String::valueOf).toList());
 
-            var memberNamesStr = ut.getAttr(QfeVarsModel.UT_APR_MEMBER_NAMES);
-            if (StringUtils.isNotBlank(memberNamesStr)) {
-                List<String> names = new ArrayList<>();
-                for (String n : StringUtils.split(memberNamesStr, ",")) {
-                    String t = StringUtils.trim(n);
-                    if (StringUtils.isNotBlank(t)) {
-                        names.add(t);
-                    }
+            // 通过ID查询最新的名称，不从模型读取（模型中的名称可能过期）
+            if (!memberIds.isEmpty()) {
+                if (memberKind == MemberKind.USER) {
+                    userIdsToLookup.put(result.size(), memberIds);
+                } else if (memberKind == MemberKind.GROUP) {
+                    groupIdsToLookup.put(result.size(), memberIds);
+                } else if (memberKind == MemberKind.DEPT) {
+                    deptIdsToLookup.put(result.size(), memberIds);
                 }
-                vo.setMemberNames(names);
-            } else if (memberKind == MemberKind.USER && !memberIds.isEmpty()) {
-                // BPMN 无名称且为指定用户类型，标记为待 lookup
-                nodeIdsToLookup.put(result.size(), memberIds);
-                vo.setMemberNames(List.of());
-            } else {
-                vo.setMemberNames(List.of());
             }
+            vo.setMemberNames(List.of());
 
             result.add(vo);
         }
 
         // 批量查询用户名称
-        if (!nodeIdsToLookup.isEmpty()) {
-            var allUserIds = nodeIdsToLookup.values().stream()
+        if (!userIdsToLookup.isEmpty()) {
+            var allUserIds = userIdsToLookup.values().stream()
                     .flatMap(List::stream)
                     .distinct()
                     .toList();
             Map<Long, String> idToName = uRepository.findAllById(allUserIds).stream()
-                    .collect(Collectors.toMap(UserPo::getId, UserPo::getNickname, (a, b) -> a));
+                    .collect(Collectors.toMap(UserPo::getId, u -> StringUtils.isNotBlank(u.getNickname()) ? u.getNickname() : u.getUsername(), (a, b) -> a));
+            for (var entry : userIdsToLookup.entrySet()) {
+                var vo = result.get(entry.getKey());
+                var names = entry.getValue().stream()
+                        .map(id -> idToName.getOrDefault(id, String.valueOf(id)))
+                        .toList();
+                vo.setMemberNames(names);
+            }
+        }
 
-            for (var entry : nodeIdsToLookup.entrySet()) {
+        // 批量查询用户组名称
+        if (!groupIdsToLookup.isEmpty()) {
+            var allGroupIds = groupIdsToLookup.values().stream()
+                    .flatMap(List::stream)
+                    .distinct()
+                    .toList();
+            Map<Long, String> idToName = gRepository.getGroupsByIds(allGroupIds).stream()
+                    .collect(Collectors.toMap(g -> g.getId(), g -> g.getName(), (a, b) -> a));
+            for (var entry : groupIdsToLookup.entrySet()) {
+                var vo = result.get(entry.getKey());
+                var names = entry.getValue().stream()
+                        .map(id -> idToName.getOrDefault(id, String.valueOf(id)))
+                        .toList();
+                vo.setMemberNames(names);
+            }
+        }
+
+        // 批量查询组织名称
+        if (!deptIdsToLookup.isEmpty()) {
+            var allDeptIds = deptIdsToLookup.values().stream()
+                    .flatMap(List::stream)
+                    .distinct()
+                    .toList();
+            Map<Long, String> idToName = oRepository.getByIds(allDeptIds).stream()
+                    .collect(Collectors.toMap(o -> o.getId(), o -> o.getName(), (a, b) -> a));
+            for (var entry : deptIdsToLookup.entrySet()) {
                 var vo = result.get(entry.getKey());
                 var names = entry.getValue().stream()
                         .map(id -> idToName.getOrDefault(id, String.valueOf(id)))
@@ -646,15 +487,21 @@ public class QfProcService {
         List<QfTodoPo> todoList = qfTodoRepository.findAllByEngProcIdOrderByCreateTimeAsc(dto.getEngProcId());
 
         //获取所有人的用户信息
-        //获取代办的信息
-        List<QfTodoPo> waitingList = todoList.stream().filter(todo -> (todo.getStatus() == 0 || todo.getStatus() == 10)).toList();
-        Map<Long, UserPo> userMap;
-        if (!waitingList.isEmpty()) {
-            List<UserPo> userList = uRepository.findAllById(waitingList.stream().map(QfTodoPo::getMemberId).toList());
-            userMap = userList.stream().collect(Collectors.toMap(UserPo::getId, user -> user));
-        } else {
-            userMap = new HashMap<>();
+        //从所有待办记录中收集需要查询的用户ID（包括已办 status=1，其 finMemberName 可能为空）
+        Set<Long> needUserIds = new HashSet<>();
+        for (var todo : todoList) {
+            if (StringUtils.isBlank(todo.getFinMemberName())) {
+                if (todo.getMemberId() != null) {
+                    needUserIds.add(todo.getMemberId());
+                }
+                if (todo.getFinMemberId() != null) {
+                    needUserIds.add(todo.getFinMemberId());
+                }
+            }
         }
+        Map<Long, UserPo> userMap = needUserIds.isEmpty() ? new HashMap<>()
+                : uRepository.findAllById(new ArrayList<>(needUserIds)).stream()
+                .collect(Collectors.toMap(UserPo::getId, u -> u, (a, b) -> a));
         return todoList.stream().map(todo -> {
             ApproveFlowRecordVo vo = new ApproveFlowRecordVo();
             vo.setNodeName(todo.getNodeName());
@@ -662,7 +509,7 @@ public class QfProcService {
                 vo.setFinMemberName(todo.getFinMemberName());
             } else {
                 var userPo = userMap.get(todo.getMemberId());
-                vo.setFinMemberName(userPo != null ? userPo.getNickname() : null);
+                vo.setFinMemberName(userPo == null ? null : (StringUtils.isNotBlank(userPo.getNickname()) ? userPo.getNickname() : userPo.getUsername()));
             }
             vo.setFinTime(todo.getFinTime());
             vo.setAction(todo.getAction());

@@ -54,7 +54,7 @@ public class OrgService {
         List<OrgPo> pos = new ArrayList<>();
         if (dto.getOrgId() == null) {
             pos = repository.findAll(Sort.by(Sort.Direction.ASC, "seq"));
-        } else {
+        }  else {
             pos = repository.getAllByOrgId(dto.getOrgId());
         }
 
