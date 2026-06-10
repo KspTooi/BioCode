@@ -109,7 +109,7 @@ public class AacpEndpointService {
             var funcCapIds = funcCapPos.stream().map(AacpCapabilityPo::getId).collect(Collectors.toSet());
 
             //获取能力包中的微函数
-            var funcPos = aacpFuncRepository.findAllById(funcCapIds);
+            var funcPos = aacpFuncRepository.getFuncListByCapabilityIds(funcCapIds);
 
             //获取已注册的微函数Bean列表
             var mfBeanNames = mfRegistry.getAll().stream().map(MicroFuncDefinition::getBean).collect(Collectors.toSet());

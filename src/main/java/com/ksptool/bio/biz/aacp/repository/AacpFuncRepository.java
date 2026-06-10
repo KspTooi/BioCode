@@ -1,6 +1,10 @@
 package com.ksptool.bio.biz.aacp.repository;
 
 import com.ksptool.bio.biz.aacp.model.AacpFuncPo;
+
+import java.util.Collection;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -33,4 +37,20 @@ public interface AacpFuncRepository extends JpaRepository<AacpFuncPo, Long> {
             WHERE t.code = :code AND (:#{#id} IS NULL OR t.id != :id)
             """)
     int countByCodeExcludeId(@Param("code") String code, @Param("id") Long id);
+
+    /**
+     * 根据能力包ID列表获取微函数列表
+     *
+     * @param ids 能力包ID列表
+     * @return 微函数列表
+     */
+    @Query("""
+            SELECT u FROM AacpFuncPo u
+            WHERE u.id IN (
+                SELECT cf.funcId FROM AacpCapabilityFuncPo cf WHERE cf.capabilityId IN :ids
+            )
+            ORDER BY u.createTime DESC
+            """)
+    List<AacpFuncPo> getFuncListByCapabilityIds(@Param("ids") Collection<Long> ids);
+
 }
