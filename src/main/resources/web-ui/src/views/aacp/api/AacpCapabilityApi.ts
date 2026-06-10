@@ -32,11 +32,11 @@ export interface EditAacpCapabilityDto {
 }
 
 export interface GetAacpCapabilityDetailsVo {
-  id: number | null; //主键ID
+  id: string; //主键ID
   name: string | null; //能力包名称
   kind: number | null; //类型 0:微函数
   remark: string | null; //备注
-  funcIds: number[]; //关联的微函数ID列表
+  funcIds: string[]; //关联的微函数ID列表
 }
 
 export default {

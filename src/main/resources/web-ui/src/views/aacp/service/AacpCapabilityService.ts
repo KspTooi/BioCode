@@ -140,7 +140,13 @@ export default {
       }
       funcLoading.value = true;
       try {
-        const res = await AacpFuncApi.getAacpFuncList({ name: null, code: null, description: null, pageNum: 1, pageSize: 10000 });
+        const res = await AacpFuncApi.getAacpFuncList({
+          name: null,
+          code: null,
+          description: null,
+          pageNum: 1,
+          pageSize: 10000,
+        });
         funcOptions.value = res.data;
       } catch {
         ElMessage.error("加载微函数列表失败");
@@ -162,7 +168,7 @@ export default {
           modalForm.name = res.name;
           modalForm.kind = res.kind;
           modalForm.remark = res.remark;
-          modalForm.funcIds = (res.funcIds || []).map(String);
+          modalForm.funcIds = res.funcIds;
         } catch (error: any) {
           ElMessage.error(error.message);
           return;
