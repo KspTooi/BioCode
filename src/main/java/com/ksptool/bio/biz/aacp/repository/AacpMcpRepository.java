@@ -35,4 +35,16 @@ public interface AacpMcpRepository extends JpaRepository<AacpMcpPo, Long> {
             ORDER BY u.createTime DESC
             """)
     Page<AacpMcpPo> getAacpMcpList(@Param("po") AacpMcpPo po, Pageable pageable);
+
+    /**
+     * 根据编码查询MCP服务器
+     *
+     * @param code 唯一编码
+     * @return MCP服务器
+     */
+    @Query("""
+            SELECT u FROM AacpMcpPo u
+            WHERE u.code = :code
+            """)
+    AacpMcpPo getByCode(@Param("code") String code);
 }

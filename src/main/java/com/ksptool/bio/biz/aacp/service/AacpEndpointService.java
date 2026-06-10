@@ -1,60 +1,58 @@
 package com.ksptool.bio.biz.aacp.service;
 
-import com.google.gson.Gson;
-import com.ksptool.assembly.entity.exception.BizException;
+import com.ksptool.bio.biz.aacp.commons.McpClientSession;
 import com.ksptool.bio.biz.aacp.commons.McpParser;
 import com.ksptool.bio.biz.aacp.commons.jrpc.InputMethods;
 import com.ksptool.bio.biz.aacp.commons.jrpc.RpcInput;
 import com.ksptool.bio.biz.aacp.commons.jrpc.RpcOutput;
 import com.ksptool.bio.biz.aacp.commons.jrpc.dto.InitializeDto;
-import com.ksptool.bio.biz.aacp.model.AacpMcpPo;
-import com.ksptool.bio.biz.aacp.repository.AacpMcpRepository;
+import com.ksptool.bio.biz.aacp.model.AacpCapabilityPo;
+import com.ksptool.bio.biz.aacp.repository.AacpCapabilityRepository;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
- * MCP  业务逻辑层
+ * MCP 业务逻辑层
  */
 @Slf4j
 @Service
 public class AacpEndpointService {
 
-    private final Gson g = new Gson();
-
     @Autowired
-    private AacpMcpRepository aacpMcpRepository;
+    private AacpCapabilityRepository aacpCapabilityRepository;
 
     /**
-     * 校验 MCP 编码是否合法且可接受连接
+     * 处理入向 JSON-RPC 请求
      */
-    public void validateCode(String code) throws BizException {
-        AacpMcpPo po = aacpMcpRepository.findByCode(code);
-        if (po == null) {
-            throw new BizException("MCP服务器不存在:" + code);
-        }
-        if (po.getStatus() != 1) {
-            throw new BizException("MCP服务器当前不接受连接请求:" + code);
-        }
-    }
-
-   /**
-    * 处理入向 JSON-RPC 请求
-    */
-    public RpcOutput<?> inbound(RpcInput<String> input) {
+    public RpcOutput<?> inbound(McpClientSession session, RpcInput<String> input) {
 
         var p = McpParser.of(input);
 
-        //---- 生命周期 ----
+        //---- 客户端握手 ----
         if (p.getMethod() == InputMethods.INITIALIZE) {
-
-            var initializeDto = p.as(InitializeDto.class);
-
-            log.info("MCP客户端握手: {}", g.toJson(input));
-
+            p.as(InitializeDto.class);
+            log.info("[AACP] 初始化 Inbound => {}", session.getSessionId());
         }
 
-        throw new RuntimeException("Method not found: " + p.getMethod().getKey());
+        //---- 客户端就绪 ----
+        if (p.getMethod() == InputMethods.INITIALIZED_NOTIFICATION) {
+            session.setStatus(1);
+            log.info("[AACP] 客户端已就绪 Inbound => {}", session.getSessionId());
+        }
+
+        //---- 请求工具列表 ----
+        if (p.getMethod() == InputMethods.TOOLS_LIST) {
+            log.info("[AACP] 客户端请求工具列表 Inbound => {}", session.getSessionId());
+
+            List<AacpCapabilityPo> capabilities = aacpCapabilityRepository.getByMcpId(session.getServerId());
+
+            log.info("[AACP] 获取到能力包数量: {}", capabilities.size());
+        }
+
+        return null;
     }
 }
