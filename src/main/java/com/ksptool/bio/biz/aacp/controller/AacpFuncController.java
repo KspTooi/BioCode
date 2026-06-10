@@ -8,6 +8,7 @@ import com.ksptool.bio.biz.aacp.model.dto.EditAacpFuncDto;
 import com.ksptool.bio.biz.aacp.model.dto.GetAacpFuncListDto;
 import com.ksptool.bio.biz.aacp.model.vo.GetAacpFuncDetailsVo;
 import com.ksptool.bio.biz.aacp.model.vo.GetAacpFuncListVo;
+import com.ksptool.bio.biz.aacp.model.vo.GetMicroFuncListVo;
 import com.ksptool.bio.biz.aacp.service.AacpFuncService;
 import com.ksptool.bio.commons.annotation.PrintLog;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,6 +21,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @PrintLog
 @RestController
@@ -71,6 +74,13 @@ public class AacpFuncController {
     public Result<String> removeAacpFunc(@RequestBody @Valid CommonIdDto dto) throws Exception {
         aacpFuncService.removeAacpFunc(dto);
         return Result.success("操作成功");
+    }
+
+    @PreAuthorize("@auth.hasCode('accp:func:view')")
+    @Operation(summary = "获取已注册微函数列表")
+    @PostMapping("/getMicroFuncList")
+    public Result<List<GetMicroFuncListVo>> getMicroFuncList() throws Exception {
+        return Result.success(aacpFuncService.getMicroFuncList());
     }
 
 }

@@ -3,12 +3,15 @@ package com.ksptool.bio.biz.aacp.service;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
+import com.ksptool.bio.biz.aacp.commons.MicroFuncDefinition;
+import com.ksptool.bio.biz.aacp.commons.MicroFuncRegistry;
 import com.ksptool.bio.biz.aacp.model.AacpFuncPo;
 import com.ksptool.bio.biz.aacp.model.dto.AddAacpFuncDto;
 import com.ksptool.bio.biz.aacp.model.dto.EditAacpFuncDto;
 import com.ksptool.bio.biz.aacp.model.dto.GetAacpFuncListDto;
 import com.ksptool.bio.biz.aacp.model.vo.GetAacpFuncDetailsVo;
 import com.ksptool.bio.biz.aacp.model.vo.GetAacpFuncListVo;
+import com.ksptool.bio.biz.aacp.model.vo.GetMicroFuncListVo;
 import com.ksptool.bio.biz.aacp.repository.AacpCapabilityFuncRepository;
 import com.ksptool.bio.biz.aacp.repository.AacpFuncRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.ksptool.entities.Entities.as;
@@ -29,6 +33,9 @@ public class AacpFuncService {
 
     @Autowired
     private AacpCapabilityFuncRepository capabilityFuncRepository;
+
+    @Autowired
+    private MicroFuncRegistry microFuncRegistry;
 
     /**
      * 查询微函数列表
@@ -111,6 +118,30 @@ public class AacpFuncService {
             throw new BizException("该微函数已被" + refCount + "个能力包使用，无法删除");
         }
         repository.deleteById(dto.getId());
+    }
+
+    /**
+     * 获取已注册微函数列表（从 MicroFuncRegistry 查询 @MicroFunc 注入的函数）
+     *
+     * @return 已注册微函数列表
+     */
+    public List<GetMicroFuncListVo> getMicroFuncList() {
+        List<GetMicroFuncListVo> vos = new ArrayList<>();
+        for (MicroFuncDefinition def : microFuncRegistry.getAll()) {
+            GetMicroFuncListVo vo = new GetMicroFuncListVo();
+            vo.setCode(def.getCode());
+            vo.setName(def.getName());
+            vo.setDescription(def.getDescription());
+            vo.setParameterCount(def.getParameterTypes().length);
+
+            List<String> typeNames = new ArrayList<>();
+            for (Class<?> type : def.getParameterTypes()) {
+                typeNames.add(type.getName());
+            }
+            vo.setParameterTypes(typeNames);
+            vos.add(vo);
+        }
+        return vos;
     }
 
 }
