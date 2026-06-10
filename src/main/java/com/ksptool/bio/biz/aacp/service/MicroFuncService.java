@@ -111,13 +111,16 @@ public class MicroFuncService {
                 result = def.invoke();
             }
             if (paramCount == 1) {
-                Object dto;
-                if (arguments == null || arguments.isEmpty()) {
-                    dto = gson.fromJson("{}", def.getParameterTypes()[0]);
+                Class<?> paramType = def.getParameterTypes()[0];
+                String paramName = def.getMethod().getParameters()[0].getName();
+                Object argValue = (arguments != null) ? arguments.get(paramName) : null;
+                if (argValue == null) {
+                    result = def.invoke(gson.fromJson("{}", paramType));
+                } else if (paramType.isInstance(argValue)) {
+                    result = def.invoke(argValue);
                 } else {
-                    dto = gson.fromJson(gson.toJson(arguments), def.getParameterTypes()[0]);
+                    result = def.invoke(gson.fromJson(gson.toJson(argValue), paramType));
                 }
-                result = def.invoke(dto);
             }
             if (paramCount > 1) {
                 Class<?>[] types = def.getParameterTypes();
