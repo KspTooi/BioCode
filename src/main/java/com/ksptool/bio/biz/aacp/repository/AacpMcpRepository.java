@@ -12,9 +12,17 @@ import org.springframework.stereotype.Repository;
 public interface AacpMcpRepository extends JpaRepository<AacpMcpPo, Long> {
 
     /**
-     * 根据唯一编码查询MCP服务器
+     * 根据编码统计MCP服务器数量，排除指定ID（id为null时不排除）
+     *
+     * @param code 唯一编码
+     * @param id   排除的ID，可为null
+     * @return 数量
      */
-    AacpMcpPo findByCode(String code);
+    @Query("""
+            SELECT COUNT(t) FROM AacpMcpPo t
+            WHERE t.code = :code AND (:#{#id} IS NULL OR t.id != :id)
+            """)
+    Long countByCodeExcludeId(@Param("code") String code, @Param("id") Long id);
 
     @Query("""
             SELECT u FROM AacpMcpPo u

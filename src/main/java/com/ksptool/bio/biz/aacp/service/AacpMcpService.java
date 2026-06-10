@@ -52,7 +52,10 @@ public class AacpMcpService {
      * @param dto 新增条件
      */
     @Transactional(rollbackFor = Exception.class)
-    public void addAacpMcp(AddAacpMcpDto dto) {
+    public void addAacpMcp(AddAacpMcpDto dto) throws BizException {
+        if (repository.countByCodeExcludeId(dto.getCode(), null) > 0) {
+            throw new BizException("唯一编码已存在,请更换后重试.");
+        }
         AacpMcpPo insertPo = as(dto, AacpMcpPo.class);
         repository.save(insertPo);
     }
@@ -65,9 +68,11 @@ public class AacpMcpService {
      */
     @Transactional(rollbackFor = Exception.class)
     public void editAacpMcp(EditAacpMcpDto dto) throws BizException {
+        if (repository.countByCodeExcludeId(dto.getCode(), dto.getId()) > 0) {
+            throw new BizException("唯一编码已存在,请更换后重试.");
+        }
         AacpMcpPo updatePo = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("更新失败,数据不存在或无权限访问."));
-
         assign(dto, updatePo);
         repository.save(updatePo);
     }
