@@ -3,6 +3,7 @@ package com.ksptool.bio.biz.aacp.service;
 import com.ksptool.bio.biz.aacp.commons.McpClientSession;
 import com.ksptool.bio.biz.aacp.commons.McpParser;
 import com.ksptool.bio.biz.aacp.commons.MicroFuncDefinition;
+import com.ksptool.bio.biz.aacp.commons.MicroFuncRegistry;
 import com.ksptool.bio.biz.aacp.commons.jrpc.InputMethods;
 import com.ksptool.bio.biz.aacp.commons.jrpc.RpcInput;
 import com.ksptool.bio.biz.aacp.commons.jrpc.RpcOutput;
@@ -12,22 +13,16 @@ import com.ksptool.bio.biz.aacp.commons.jrpc.vo.PingVo;
 import com.ksptool.bio.biz.aacp.commons.jrpc.vo.ToolsCallVo;
 import com.ksptool.bio.biz.aacp.commons.jrpc.vo.ToolsListVo;
 import com.ksptool.bio.biz.aacp.model.AacpCapabilityPo;
-import com.ksptool.bio.biz.aacp.model.AacpFuncPo;
 import com.ksptool.bio.biz.aacp.repository.AacpCapabilityFuncRepository;
 import com.ksptool.bio.biz.aacp.repository.AacpCapabilityRepository;
 import com.ksptool.bio.biz.aacp.repository.AacpFuncRepository;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
-import com.ksptool.bio.biz.aacp.commons.MicroFuncRegistry;
 
 /**
  * MCP 协议业务逻辑：JSON-RPC 方法路由分发
@@ -105,30 +100,29 @@ public class AacpEndpointService {
             var ret = new ToolsListVo();
 
             //获取微函数能力包
-            var funcCapPos = aacpCapabilityRepository.getByMcpId(session.getServerId(),0);
+            var funcCapPos = aacpCapabilityRepository.getByMcpId(session.getServerId(), 0);
             var funcCapIds = funcCapPos.stream().map(AacpCapabilityPo::getId).collect(Collectors.toSet());
 
             //获取能力包中的微函数
             var funcPos = aacpFuncRepository.getFuncListByCapabilityIds(funcCapIds);
 
-            //获取已注册的微函数name列表
-            var mfNames = mfRegistry.getAll().stream().map(MicroFuncDefinition::getName).collect(Collectors.toSet());
-
             //直接组装为工具列表
             var tools = new ArrayList<ToolsListVo.Tool>();
-            
 
-            for(var fPo : funcPos){
 
-                //如果数据库中的微函数对应的name不存在 则跳过
-                if(!mfNames.contains(fPo.getCode())){
+            for (var fPo : funcPos) {
+
+                //查找已注册的微函数
+                MicroFuncDefinition def = mfRegistry.get(fPo.getTarget());
+
+                if(def == null){
                     continue;
                 }
 
                 var t = new ToolsListVo.Tool();
                 t.setName(fPo.getCode());
                 t.setDescription(fPo.getDescription());
-                t.setInputSchema(new LinkedHashMap<>());
+                t.setInputSchema(def.getInputSchema());
                 tools.add(t);
             }
 

@@ -134,7 +134,7 @@ public class AacpFuncService {
         List<GetMicroFuncListVo> vos = new ArrayList<>();
         for (MicroFuncDefinition def : microFuncRegistry.getAll()) {
             GetMicroFuncListVo vo = new GetMicroFuncListVo();
-            vo.setCode(def.getCode());
+            vo.setCode(def.getTarget());
             vo.setName(def.getName());
             vo.setDescription(def.getDescription());
             vo.setParameterCount(def.getParameterTypes().length);
@@ -149,27 +149,27 @@ public class AacpFuncService {
         return vos;
     }
 
-    @MicroFunc(code = "test.hello", name = "问候", description = "返回一句问候语")
+    @MicroFunc(target = "test.hello", name = "问候", description = "返回一句问候语")
     public String sayHello() {
         return "你好，微函数系统已就绪！";
     }
 
-    @MicroFunc(code = "test.add", name = "加法计算", description = "对两个整数执行加法运算")
+    @MicroFunc(target = "test.add", name = "加法计算", description = "对两个整数执行加法运算")
     public int addNumbers(int a, int b) {
         return a + b;
     }
 
-    @MicroFunc(code = "test.time", name = "获取时间", description = "返回当前服务器时间")
+    @MicroFunc(target = "test.time", name = "获取时间", description = "返回当前服务器时间")
     public String getCurrentTime() {
         return LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
     }
 
-    @MicroFunc(code = "test.echo", name = "回声", description = "将输入的消息原样返回")
+    @MicroFunc(target = "test.echo", name = "回声", description = "将输入的消息原样返回")
     public String echo(String message) {
         return message;
     }
 
-    @MicroFunc(code = "test.status", name = "状态列表", description = "返回系统状态项列表")
+    @MicroFunc(target = "test.status", name = "状态列表", description = "返回系统状态项列表")
     public List<String> listStatus() {
         return Arrays.asList("运行中", "正常", "微函数数量：" + microFuncRegistry.size());
     }

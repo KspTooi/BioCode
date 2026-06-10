@@ -16,7 +16,7 @@ public @interface MicroFunc {
     /**
      * 微函数唯一标识，如 "user.query"、"order.create"
      */
-    String code();
+    String target();
 
     /**
      * 微函数名称（简短中文描述）

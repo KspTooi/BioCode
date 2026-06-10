@@ -70,7 +70,7 @@ public class MicroFuncService {
                 }
 
                 MicroFuncDefinition def = new MicroFuncDefinition(
-                        anno.code(), anno.name(), anno.description(), bean, method);
+                        anno.target(), anno.name(), anno.description(), bean, method);
                 registry.register(def);
                 count++;
             }
@@ -85,7 +85,7 @@ public class MicroFuncService {
 
         for (MicroFuncDefinition def : registry.getAll()) {
             ToolsListVo.Tool tool = new ToolsListVo.Tool();
-            tool.setName(def.getCode());
+            tool.setName(def.getTarget());
             tool.setDescription(def.getDescription());
 
             Map<String, Object> schema = new LinkedHashMap<>();
@@ -122,7 +122,7 @@ public class MicroFuncService {
     }
 
     /**
-     * 根据数据库中的微函数列表构建工具列表（仅返回注册表中存在的 code）
+     * 根据数据库中的微函数列表构建工具列表（仅返回注册表中存在的 target）
      */
     public ToolsListVo buildToolsListByFuncs(List<AacpFuncPo> funcs) {
         ToolsListVo vo = new ToolsListVo();
@@ -135,12 +135,12 @@ public class MicroFuncService {
         for (AacpFuncPo fpo : funcs) {
             MicroFuncDefinition def = registry.get(fpo.getCode());
             if (def == null) {
-                log.warn("[AACP] 微函数未注册: code={}", fpo.getCode());
+                log.warn("[AACP] 微函数未注册: target={}", fpo.getCode());
                 continue;
             }
 
             ToolsListVo.Tool tool = new ToolsListVo.Tool();
-            tool.setName(def.getCode());
+            tool.setName(def.getTarget());
             tool.setDescription(def.getDescription());
 
             Map<String, Object> schema = new LinkedHashMap<>();

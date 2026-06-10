@@ -13,14 +13,14 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * 微函数注册容器：持有所有 @MicroFunc 运行时定义（对应 QT 的 QMetaObject）
  * <p>
- * 职责仅限于注册与按 code 查询，不含任何业务逻辑（Schema 生成、DTO 注入、调用执行均由 MicroFuncService 负责）。
+ * 职责仅限于注册与按 target 查询，不含任何业务逻辑（Schema 生成、DTO 注入、调用执行均由 MicroFuncService 负责）。
  * 线程安全，供 MCP 协议层并发查询。
  */
 @Slf4j
 @Component
 public class MicroFuncRegistry {
 
-    // code → MicroFuncDefinition 映射，线程安全
+    // target → MicroFuncDefinition 映射，线程安全
     private final Map<String, MicroFuncDefinition> registry = new ConcurrentHashMap<>();
 
     /**
@@ -32,12 +32,12 @@ public class MicroFuncRegistry {
         if (def == null) {
             return;
         }
-        MicroFuncDefinition existed = registry.put(def.getCode(), def);
+        MicroFuncDefinition existed = registry.put(def.getTarget(), def);
         if (existed != null) {
-            log.warn("[MicroFunc] 微函数 {} 被覆盖: {} -> {}", def.getCode(), existed.getName(), def.getName());
+            log.warn("[MicroFunc] 微函数 {} 被覆盖: {} -> {}", def.getTarget(), existed.getName(), def.getName());
             return;
         }
-        log.info("[MicroFunc] 注册微函数: code={} name={} params={}", def.getCode(), def.getName(), def.getParameterTypes().length);
+        log.info("[MicroFunc] 注册微函数: target={} name={} params={}", def.getTarget(), def.getName(), def.getParameterTypes().length);
     }
 
     /**
@@ -55,16 +55,16 @@ public class MicroFuncRegistry {
     }
 
     /**
-     * 按 code 查找
+     * 按 target 查找
      *
-     * @param code 微函数标识
+     * @param target 微函数标识
      * @return 微函数定义，不存在返回 null
      */
-    public MicroFuncDefinition get(String code) {
-        if (StringUtils.isBlank(code)) {
+    public MicroFuncDefinition get(String target) {
+        if (StringUtils.isBlank(target)) {
             return null;
         }
-        return registry.get(code);
+        return registry.get(target);
     }
 
     /**
