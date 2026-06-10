@@ -14,6 +14,7 @@ export interface GetAacpCapabilityListVo {
   name: string; //能力包名称
   kind: number; //类型 0:微函数
   remark: string; //备注
+  funcCount: number; //关联微函数数量
 }
 
 export interface AddAacpCapabilityDto {
