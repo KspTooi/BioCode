@@ -111,8 +111,8 @@ public class AacpEndpointService {
             //获取能力包中的微函数
             var funcPos = aacpFuncRepository.getFuncListByCapabilityIds(funcCapIds);
 
-            //获取已注册的微函数Bean列表
-            var mfBeanNames = mfRegistry.getAll().stream().map(MicroFuncDefinition::getBean).collect(Collectors.toSet());
+            //获取已注册的微函数name列表
+            var mfNames = mfRegistry.getAll().stream().map(MicroFuncDefinition::getName).collect(Collectors.toSet());
 
             //直接组装为工具列表
             var tools = new ArrayList<ToolsListVo.Tool>();
@@ -120,8 +120,8 @@ public class AacpEndpointService {
 
             for(var fPo : funcPos){
 
-                //如果数据库中的微函数对应的Bean不存在 则跳过
-                if(!mfBeanNames.contains(fPo.getTarget())){
+                //如果数据库中的微函数对应的name不存在 则跳过
+                if(!mfNames.contains(fPo.getCode())){
                     continue;
                 }
 
