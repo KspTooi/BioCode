@@ -21,6 +21,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ksptool.bio.biz.aacp.commons.annotation.MicroFunc;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -172,5 +177,37 @@ public class AacpFuncService {
     @MicroFunc(target = "test.status", name = "状态列表", description = "返回系统状态项列表")
     public List<String> listStatus() {
         return Arrays.asList("运行中", "正常", "微函数数量：" + microFuncRegistry.size());
+    }
+
+    /**
+     * 发起HTTP GET请求并返回响应体，供AI代理访问外部API或网页
+     * <p>
+     * 使用 Java 11 HttpClient，连接超时10秒，读取超时30秒。
+     * HTTP 4xx/5xx响应不会抛异常，直接返回状态码与响应体。
+     *
+     * @param url 目标URL（需https或http协议头）
+     * @return 格式化的响应信息（状态码 + 响应体前2000字符）
+     */
+    @MicroFunc(target = "test.curl", name = "HTTP请求", description = "向指定URL发起GET请求并返回响应内容，支持代理访问网页或API")
+    public String httpGet(String url) throws Exception {
+        HttpClient client = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(10))
+                .build();
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .timeout(Duration.ofSeconds(30))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        String body = response.body();
+        if (body == null) {
+            body = "";
+        }
+        if (body.length() > 2000) {
+            body = body.substring(0, 2000) + "\n...[响应已截断，原文长度:" + body.length() + "]";
+        }
+        return "状态码: " + response.statusCode() + "\n" + body;
     }
 }
