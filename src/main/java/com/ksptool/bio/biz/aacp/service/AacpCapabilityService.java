@@ -115,7 +115,14 @@ public class AacpCapabilityService {
     public GetAacpCapabilityDetailsVo getAacpCapabilityDetails(CommonIdDto dto) throws BizException {
         AacpCapabilityPo po = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("查询详情失败,数据不存在或无权限访问."));
-        return as(po, GetAacpCapabilityDetailsVo.class);
+        var vo = as(po, GetAacpCapabilityDetailsVo.class);
+
+        //微函数能力包
+        if(po.getKind() == 0){
+            vo.setFuncIds(capabilityFuncRepository.getFidsByCid(po.getId()));
+        }
+
+        return vo;
     }
 
     /**

@@ -32,8 +32,8 @@
             <span v-show="scope.row.kind === 0">微函数</span>
           </template>
         </el-table-column>
+        <el-table-column label="微函数数量" prop="funcCount" width="120" align="center" />
         <el-table-column label="备注" prop="remark" show-overflow-tooltip />
-        <el-table-column label="微函数" prop="funcCount" width="80" align="center" />
         <el-table-column label="操作" fixed="right" width="140">
           <template #default="scope">
             <el-button link type="primary" size="small" :icon="ViewIcon" @click="openModal('edit', scope.row)">编辑</el-button>

@@ -91,7 +91,7 @@ export default {
     const modalVisible = ref(false);
     const modalLoading = ref(false);
     const modalMode = ref<ModalMode>("add");
-    const modalForm = reactive<GetAacpCapabilityDetailsVo & { funcIds: string[] }>({
+    const modalForm = reactive<GetAacpCapabilityDetailsVo>({
       id: null,
       name: null,
       kind: null,
@@ -126,10 +126,10 @@ export default {
 
     const resetModal = (): void => {
       modalForm.id = null;
-      modalForm.funcIds = [];
       modalForm.name = null;
       modalForm.kind = 0;
       modalForm.remark = null;
+      modalForm.funcIds = [];
       funcOptions.value = [];
     };
 
