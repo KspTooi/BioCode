@@ -52,9 +52,12 @@ public class MicroFuncService {
             Object bean = applicationContext.getBean(beanName);
             Class<?> clazz = bean.getClass();
 
-            //---- 2. 跳过 Spring 代理与 JDK 内部类 ----
+            //---- 2. CGLIB 代理取真实目标类；跳过 JDK 内部类 ----
             if (clazz.getName().contains("$$")) {
-                continue;
+                clazz = clazz.getSuperclass();
+                if (clazz == null || clazz == Object.class) {
+                    continue;
+                }
             }
             if (clazz.getName().startsWith("java.") || clazz.getName().startsWith("org.springframework.")) {
                 continue;
