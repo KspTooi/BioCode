@@ -2,7 +2,8 @@ import { onMounted, reactive, ref, type Ref } from "vue";
 import type { FormInstance, FormRules } from "element-plus";
 import { ElMessage, ElMessageBox } from "element-plus";
 import AacpFuncApi from "@/views/aacp/api/AacpFuncApi.ts";
-import type { GetAacpFuncListDto, GetAacpFuncListVo, GetAacpFuncDetailsVo } from "@/views/aacp/api/AacpFuncApi.ts";
+import type { GetAacpFuncListDto, GetAacpFuncListVo, GetAacpFuncDetailsVo, GetMicroFuncListVo } from "@/views/aacp/api/AacpFuncApi.ts";
+import { Result } from "@/commons/model/Result.ts";
 import QueryPersistService from "@/commons/service/QueryPersistService.ts";
 
 const PERSIST_KEY = "aacp-func";
@@ -97,6 +98,9 @@ export default {
       remark: null,
     });
 
+    const microFuncListData = ref<GetMicroFuncListVo[]>([]);
+    const microFuncListLoading = ref(false);
+
     const modalRules: FormRules = {
       name: [
         { required: true, message: "请输入微函数名称", trigger: "blur" },
@@ -117,6 +121,26 @@ export default {
       remark: [{ max: 500, message: "备注长度不能超过500", trigger: "blur" }],
     };
 
+    /**
+     * 加载已注册微函数列表
+     */
+    const loadMicroFuncList = async (): Promise<void> => {
+      try {
+        microFuncListLoading.value = true;
+        const result = await AacpFuncApi.getMicroFuncList();
+        if (Result.isSuccess(result)) {
+          microFuncListData.value = result.data;
+        }
+        if (Result.isError(result)) {
+          ElMessage.error(result.message);
+        }
+      } catch (error: any) {
+        ElMessage.error(error.message);
+      } finally {
+        microFuncListLoading.value = false;
+      }
+    };
+
     const resetModal = (): void => {
       modalForm.id = null;
       modalForm.name = null;
@@ -130,6 +154,7 @@ export default {
     const openModal = async (mode: ModalMode, row: GetAacpFuncListVo | null): Promise<void> => {
       modalMode.value = mode;
       resetModal();
+      loadMicroFuncList();
 
       if (mode === "edit" && row) {
         try {
@@ -200,6 +225,8 @@ export default {
       modalMode,
       modalForm,
       modalRules,
+      microFuncListData,
+      microFuncListLoading,
       openModal,
       resetModal,
       submitModal,

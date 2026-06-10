@@ -70,7 +70,20 @@
           <el-input v-model="modalForm.schema" placeholder="请输入入参规范(JSON)" type="textarea" :rows="4" />
         </el-form-item>
         <el-form-item label="调用目标Bean" prop="target">
-          <el-input v-model="modalForm.target" placeholder="请输入调用目标Bean" :maxlength="1000" show-word-limit />
+          <el-select
+            v-model="modalForm.target"
+            v-loading="microFuncListLoading"
+            placeholder="请选择已注册微函数"
+            clearable
+            filterable
+            allow-create
+            style="width: 100%"
+          >
+            <el-option v-for="item in microFuncListData" :key="item.code" :label="item.code" :value="item.code">
+              <span>{{ item.code }}</span>
+              <span class="text-gray-400 text-sm ml-2">{{ item.name }}</span>
+            </el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="备注" prop="remark">
           <el-input v-model="modalForm.remark" placeholder="请输入备注" type="textarea" :rows="3" :maxlength="500" show-word-limit />
@@ -106,7 +119,7 @@ const modalFormRef = ref<FormInstance>();
 const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } =
   AacpFuncService.useAacpFuncList();
 
-const { modalVisible, modalLoading, modalMode, modalForm, modalRules, openModal, resetModal, submitModal } =
+const { modalVisible, modalLoading, modalMode, modalForm, modalRules, microFuncListData, microFuncListLoading, openModal, resetModal, submitModal } =
   AacpFuncService.useAacpFuncModal(modalFormRef, loadList);
 </script>
 
