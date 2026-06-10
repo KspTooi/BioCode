@@ -1,0 +1,15 @@
+---
+alwaysApply: true
+---
+
+# CodeGraph 优先
+
+项目已接入 CodeGraph 代码知识图谱，**所有代码探索任务（定位符号、理解流程、追踪调用链）优先使用 CodeGraph**。
+
+- "X 在哪里 / X 是什么 / X 如何工作" → `codegraph_explore`
+- "谁调用了 X / X 调用了谁" → `codegraph_callers` / `codegraph_callees`
+- "修改 X 会影响什么" → `codegraph_impact`
+- 搜索符号名 → `codegraph_search`
+- 查看目录文件 → `codegraph_files`
+
+**严禁**用 Grep/Read 替代 CodeGraph 做代码探索。`codegraph_explore` 一次调用 = 几十次 Grep+Read，且返回完整源码。
