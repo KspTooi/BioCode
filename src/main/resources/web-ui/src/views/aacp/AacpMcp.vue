@@ -112,6 +112,17 @@
             <el-option label="在线" :value="1" />
           </el-select>
         </el-form-item>
+        <el-form-item label="绑定能力包" prop="capabilityIds">
+          <el-select
+            v-model="modalForm.capabilityIds"
+            multiple
+            filterable
+            :loading="capabilityLoading"
+            placeholder="请选择能力包"
+          >
+            <el-option v-for="item in capabilityOptions" :key="item.id" :label="item.name" :value="item.id" />
+          </el-select>
+        </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -142,8 +153,18 @@ const modalFormRef = ref<FormInstance>();
 
 const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } = AacpMcpService.useAacpMcpList();
 
-const { modalVisible, modalLoading, modalMode, modalForm, modalRules, openModal, resetModal, submitModal } =
-  AacpMcpService.useAacpMcpModal(modalFormRef, loadList);
+const {
+  modalVisible,
+  modalLoading,
+  modalMode,
+  modalForm,
+  modalRules,
+  capabilityOptions,
+  capabilityLoading,
+  openModal,
+  resetModal,
+  submitModal,
+} = AacpMcpService.useAacpMcpModal(modalFormRef, loadList);
 </script>
 
 <style scoped></style>

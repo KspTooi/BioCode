@@ -116,7 +116,9 @@ public class AacpMcpService {
     public GetAacpMcpDetailsVo getAacpMcpDetails(CommonIdDto dto) throws BizException {
         AacpMcpPo po = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("查询详情失败,数据不存在或无权限访问."));
-        return as(po, GetAacpMcpDetailsVo.class);
+        GetAacpMcpDetailsVo vo = as(po, GetAacpMcpDetailsVo.class);
+        vo.setCapabilityIds(mcpCapabilityRepository.getCapabilityIdsByMcpId(dto.getId()));
+        return vo;
     }
 
     /**

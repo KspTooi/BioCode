@@ -29,6 +29,7 @@ export interface AddAacpMcpDto {
   authKind: number | null; //鉴权类型 0:无 1:PSK
   authPsk: string | null; //预共享密钥
   status: number | null; //状态 0:离线 1:在线
+  capabilityIds: string[]; //能力包ID列表
 }
 
 export interface EditAacpMcpDto {
@@ -39,6 +40,7 @@ export interface EditAacpMcpDto {
   authKind: number | null; //鉴权类型 0:无 1:PSK
   authPsk: string | null; //预共享密钥
   status: number | null; //状态 0:离线 1:在线
+  capabilityIds: string[]; //能力包ID列表
 }
 
 export interface GetAacpMcpDetailsVo {
@@ -49,6 +51,7 @@ export interface GetAacpMcpDetailsVo {
   authKind: number | null; //鉴权类型 0:无 1:PSK
   authPsk: string | null; //预共享密钥
   status: number | null; //状态 0:离线 1:在线
+  capabilityIds: string[]; //关联的能力包ID列表
 }
 
 export default {

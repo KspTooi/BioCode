@@ -2,7 +2,9 @@ import { onMounted, reactive, ref, type Ref } from "vue";
 import type { FormInstance, FormRules } from "element-plus";
 import { ElMessage, ElMessageBox } from "element-plus";
 import AacpMcpApi from "@/views/aacp/api/AacpMcpApi.ts";
+import AacpCapabilityApi from "@/views/aacp/api/AacpCapabilityApi.ts";
 import type { GetAacpMcpListDto, GetAacpMcpListVo, GetAacpMcpDetailsVo } from "@/views/aacp/api/AacpMcpApi.ts";
+import type { GetAacpCapabilityListVo } from "@/views/aacp/api/AacpCapabilityApi.ts";
 import QueryPersistService from "@/commons/service/QueryPersistService.ts";
 
 const PERSIST_KEY = "aacp-mcp-server";
@@ -95,7 +97,12 @@ export default {
       authKind: null,
       authPsk: null,
       status: null,
+      capabilityIds: [],
     });
+
+    // 能力包选择器
+    const capabilityOptions = ref<GetAacpCapabilityListVo[]>([]);
+    const capabilityLoading = ref(false);
 
     const modalRules: FormRules = {
       name: [
@@ -110,6 +117,39 @@ export default {
       authKind: [{ required: true, message: "请选择鉴权类型", trigger: "change" }],
       authPsk: [{ max: 2000, message: "预共享密钥长度不能超过2000", trigger: "blur" }],
       status: [{ required: true, message: "请选择状态", trigger: "change" }],
+      capabilityIds: [
+        {
+          validator: (_rule, _value, callback) => {
+            if (modalForm.capabilityIds.length > 50) {
+              callback(new Error("一台MCP服务器最多绑定50个能力包"));
+              return;
+            }
+            callback();
+          },
+          trigger: "change",
+        },
+      ],
+    };
+
+    /** 一次全量加载能力包选项（pageSize 写死 10000） */
+    const loadCapabilityOptions = async (): Promise<void> => {
+      if (capabilityOptions.value.length > 0) {
+        return;
+      }
+      capabilityLoading.value = true;
+      try {
+        const res = await AacpCapabilityApi.getAacpCapabilityList({
+          name: null,
+          kind: null,
+          pageNum: 1,
+          pageSize: 10000,
+        });
+        capabilityOptions.value = res.data;
+      } catch {
+        ElMessage.error("加载能力包列表失败");
+      } finally {
+        capabilityLoading.value = false;
+      }
     };
 
     const resetModal = (): void => {
@@ -120,11 +160,15 @@ export default {
       modalForm.authKind = 0;
       modalForm.authPsk = null;
       modalForm.status = 1;
+      modalForm.capabilityIds = [];
+      capabilityOptions.value = [];
     };
 
     const openModal = async (mode: ModalMode, row: GetAacpMcpListVo | null): Promise<void> => {
       modalMode.value = mode;
       resetModal();
+
+      await loadCapabilityOptions();
 
       if (mode === "edit" && row) {
         try {
@@ -136,6 +180,7 @@ export default {
           modalForm.authKind = res.authKind;
           modalForm.authPsk = res.authPsk;
           modalForm.status = res.status;
+          modalForm.capabilityIds = res.capabilityIds;
         } catch (error: any) {
           ElMessage.error(error.message);
           return;
@@ -163,6 +208,7 @@ export default {
             authKind: modalForm.authKind,
             authPsk: modalForm.authPsk,
             status: modalForm.status,
+            capabilityIds: modalForm.capabilityIds,
           });
           ElMessage.success("新增MCP服务器成功");
         }
@@ -176,6 +222,7 @@ export default {
             authKind: modalForm.authKind,
             authPsk: modalForm.authPsk,
             status: modalForm.status,
+            capabilityIds: modalForm.capabilityIds,
           });
           ElMessage.success("编辑MCP服务器成功");
         }
@@ -195,6 +242,8 @@ export default {
       modalMode,
       modalForm,
       modalRules,
+      capabilityOptions,
+      capabilityLoading,
       openModal,
       resetModal,
       submitModal,
