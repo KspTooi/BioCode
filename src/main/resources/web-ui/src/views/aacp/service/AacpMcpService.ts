@@ -2,11 +2,7 @@ import { onMounted, reactive, ref, type Ref } from "vue";
 import type { FormInstance, FormRules } from "element-plus";
 import { ElMessage, ElMessageBox } from "element-plus";
 import AacpMcpApi from "@/views/aacp/api/AacpMcpApi.ts";
-import type {
-  GetAacpMcpListDto,
-  GetAacpMcpListVo,
-  GetAacpMcpDetailsVo,
-} from "@/views/aacp/api/AacpMcpApi.ts";
+import type { GetAacpMcpListDto, GetAacpMcpListVo, GetAacpMcpDetailsVo } from "@/views/aacp/api/AacpMcpApi.ts";
 import QueryPersistService from "@/commons/service/QueryPersistService.ts";
 
 const PERSIST_KEY = "aacp-mcp-server";
@@ -110,18 +106,10 @@ export default {
         { required: true, message: "请输入唯一编码", trigger: "blur" },
         { max: 16, message: "唯一编码长度不能超过16", trigger: "blur" },
       ],
-      networkKind: [
-        { required: true, message: "请选择通信协议", trigger: "change" },
-      ],
-      authKind: [
-        { required: true, message: "请选择鉴权类型", trigger: "change" },
-      ],
-      authPsk: [
-        { max: 2000, message: "预共享密钥长度不能超过2000", trigger: "blur" },
-      ],
-      status: [
-        { required: true, message: "请选择状态", trigger: "change" },
-      ],
+      networkKind: [{ required: true, message: "请选择通信协议", trigger: "change" }],
+      authKind: [{ required: true, message: "请选择鉴权类型", trigger: "change" }],
+      authPsk: [{ max: 2000, message: "预共享密钥长度不能超过2000", trigger: "blur" }],
+      status: [{ required: true, message: "请选择状态", trigger: "change" }],
     };
 
     const resetModal = (): void => {
@@ -177,7 +165,6 @@ export default {
             status: modalForm.status,
           });
           ElMessage.success("新增MCP服务器成功");
-          resetModal();
         }
 
         if (modalMode.value === "edit") {
@@ -194,6 +181,7 @@ export default {
         }
 
         reloadCallback();
+        modalVisible.value = false;
       } catch (error: any) {
         ElMessage.error(error.message);
       } finally {

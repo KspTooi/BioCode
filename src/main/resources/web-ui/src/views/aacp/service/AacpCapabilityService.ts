@@ -101,12 +101,8 @@ export default {
         { required: true, message: "请输入能力包名称", trigger: "blur" },
         { max: 40, message: "能力包名称长度不能超过40", trigger: "blur" },
       ],
-      kind: [
-        { required: true, message: "请选择类型", trigger: "change" },
-      ],
-      remark: [
-        { max: 500, message: "备注长度不能超过500", trigger: "blur" },
-      ],
+      kind: [{ required: true, message: "请选择类型", trigger: "change" }],
+      remark: [{ max: 500, message: "备注长度不能超过500", trigger: "blur" }],
     };
 
     const resetModal = (): void => {
@@ -153,7 +149,6 @@ export default {
             remark: modalForm.remark,
           });
           ElMessage.success("新增能力包成功");
-          resetModal();
         }
 
         if (modalMode.value === "edit") {
@@ -167,6 +162,7 @@ export default {
         }
 
         reloadCallback();
+        modalVisible.value = false;
       } catch (error: any) {
         ElMessage.error(error.message);
       } finally {

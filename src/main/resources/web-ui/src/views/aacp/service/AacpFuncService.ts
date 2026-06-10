@@ -2,11 +2,7 @@ import { onMounted, reactive, ref, type Ref } from "vue";
 import type { FormInstance, FormRules } from "element-plus";
 import { ElMessage, ElMessageBox } from "element-plus";
 import AacpFuncApi from "@/views/aacp/api/AacpFuncApi.ts";
-import type {
-  GetAacpFuncListDto,
-  GetAacpFuncListVo,
-  GetAacpFuncDetailsVo,
-} from "@/views/aacp/api/AacpFuncApi.ts";
+import type { GetAacpFuncListDto, GetAacpFuncListVo, GetAacpFuncDetailsVo } from "@/views/aacp/api/AacpFuncApi.ts";
 import QueryPersistService from "@/commons/service/QueryPersistService.ts";
 
 const PERSIST_KEY = "aacp-func";
@@ -118,9 +114,7 @@ export default {
         { required: true, message: "请输入调用目标Bean", trigger: "blur" },
         { max: 1000, message: "调用目标Bean长度不能超过1000", trigger: "blur" },
       ],
-      remark: [
-        { max: 500, message: "备注长度不能超过500", trigger: "blur" },
-      ],
+      remark: [{ max: 500, message: "备注长度不能超过500", trigger: "blur" }],
     };
 
     const resetModal = (): void => {
@@ -176,7 +170,6 @@ export default {
             remark: modalForm.remark,
           });
           ElMessage.success("新增微函数成功");
-          resetModal();
         }
 
         if (modalMode.value === "edit") {
@@ -193,6 +186,7 @@ export default {
         }
 
         reloadCallback();
+        modalVisible.value = false;
       } catch (error: any) {
         ElMessage.error(error.message);
       } finally {
