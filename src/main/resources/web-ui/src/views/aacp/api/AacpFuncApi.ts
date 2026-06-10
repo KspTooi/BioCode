@@ -46,6 +46,17 @@ export interface GetAacpFuncDetailsVo {
   remark: string | null; //备注
 }
 
+/**
+ * 已注册微函数列表VO
+ */
+export interface GetMicroFuncListVo {
+  code: string; //微函数标识
+  name: string; //微函数名称
+  description: string; //微函数描述
+  parameterCount: number; //参数数量
+  parameterTypes: string[]; //参数类型列表
+}
+
 export default {
   /**
    * 获取微函数列表
@@ -92,5 +103,13 @@ export default {
    */
   removeAacpFunc: async (id: string): Promise<Result<void>> => {
     return await Http.postEntity<Result<void>>("/aacpFunc/removeAacpFunc", { id: id } as CommonIdDto);
+  },
+
+  /**
+   * 获取已注册微函数列表
+   * @returns 已注册微函数列表
+   */
+  getMicroFuncList: async (): Promise<Result<GetMicroFuncListVo[]>> => {
+    return await Http.postEntity<Result<GetMicroFuncListVo[]>>("/aacpFunc/getMicroFuncList", {});
   },
 };

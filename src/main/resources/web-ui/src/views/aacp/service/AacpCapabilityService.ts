@@ -2,11 +2,13 @@ import { onMounted, reactive, ref, type Ref } from "vue";
 import type { FormInstance, FormRules } from "element-plus";
 import { ElMessage, ElMessageBox } from "element-plus";
 import AacpCapabilityApi from "@/views/aacp/api/AacpCapabilityApi.ts";
+import AacpFuncApi from "@/views/aacp/api/AacpFuncApi.ts";
 import type {
   GetAacpCapabilityListDto,
   GetAacpCapabilityListVo,
   GetAacpCapabilityDetailsVo,
 } from "@/views/aacp/api/AacpCapabilityApi.ts";
+import type { GetAacpFuncListVo } from "@/views/aacp/api/AacpFuncApi.ts";
 import QueryPersistService from "@/commons/service/QueryPersistService.ts";
 
 const PERSIST_KEY = "aacp-capability";
@@ -89,12 +91,17 @@ export default {
     const modalVisible = ref(false);
     const modalLoading = ref(false);
     const modalMode = ref<ModalMode>("add");
-    const modalForm = reactive<GetAacpCapabilityDetailsVo>({
+    const modalForm = reactive<GetAacpCapabilityDetailsVo & { funcIds: string[] }>({
       id: null,
       name: null,
       kind: null,
       remark: null,
+      funcIds: [],
     });
+
+    // 微函数选择器
+    const funcOptions = ref<GetAacpFuncListVo[]>([]);
+    const funcLoading = ref(false);
 
     const modalRules: FormRules = {
       name: [
@@ -102,19 +109,51 @@ export default {
         { max: 40, message: "能力包名称长度不能超过40", trigger: "blur" },
       ],
       kind: [{ required: true, message: "请选择类型", trigger: "change" }],
+      funcIds: [
+        {
+          validator: (_rule, _value, callback) => {
+            if (modalForm.funcIds.length > 50) {
+              callback(new Error("一个能力包最多绑定50个微函数"));
+              return;
+            }
+            callback();
+          },
+          trigger: "change",
+        },
+      ],
       remark: [{ max: 500, message: "备注长度不能超过500", trigger: "blur" }],
     };
 
     const resetModal = (): void => {
       modalForm.id = null;
+      modalForm.funcIds = [];
       modalForm.name = null;
       modalForm.kind = 0;
       modalForm.remark = null;
+      funcOptions.value = [];
+    };
+
+    /** 一次全量加载微函数选项（pageSize 写死 10000） */
+    const loadFuncOptions = async (): Promise<void> => {
+      if (funcOptions.value.length > 0) {
+        return;
+      }
+      funcLoading.value = true;
+      try {
+        const res = await AacpFuncApi.getAacpFuncList({ name: null, code: null, description: null, pageNum: 1, pageSize: 10000 });
+        funcOptions.value = res.data;
+      } catch {
+        ElMessage.error("加载微函数列表失败");
+      } finally {
+        funcLoading.value = false;
+      }
     };
 
     const openModal = async (mode: ModalMode, row: GetAacpCapabilityListVo | null): Promise<void> => {
       modalMode.value = mode;
       resetModal();
+
+      await loadFuncOptions();
 
       if (mode === "edit" && row) {
         try {
@@ -123,6 +162,7 @@ export default {
           modalForm.name = res.name;
           modalForm.kind = res.kind;
           modalForm.remark = res.remark;
+          modalForm.funcIds = (res.funcIds || []).map(String);
         } catch (error: any) {
           ElMessage.error(error.message);
           return;
@@ -147,6 +187,7 @@ export default {
             name: modalForm.name,
             kind: modalForm.kind,
             remark: modalForm.remark,
+            funcIds: modalForm.funcIds,
           });
           ElMessage.success("新增能力包成功");
         }
@@ -157,6 +198,7 @@ export default {
             name: modalForm.name,
             kind: modalForm.kind,
             remark: modalForm.remark,
+            funcIds: modalForm.funcIds,
           });
           ElMessage.success("编辑能力包成功");
         }
@@ -176,6 +218,8 @@ export default {
       modalMode,
       modalForm,
       modalRules,
+      funcOptions,
+      funcLoading,
       openModal,
       resetModal,
       submitModal,

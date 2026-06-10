@@ -20,6 +20,7 @@ export interface AddAacpCapabilityDto {
   name: string | null; //能力包名称
   kind: number | null; //类型 0:微函数
   remark: string | null; //备注
+  funcIds: string[]; //微函数ID列表
 }
 
 export interface EditAacpCapabilityDto {
@@ -27,13 +28,15 @@ export interface EditAacpCapabilityDto {
   name: string | null; //能力包名称
   kind: number | null; //类型 0:微函数
   remark: string | null; //备注
+  funcIds: string[]; //微函数ID列表
 }
 
 export interface GetAacpCapabilityDetailsVo {
-  id: string | null; //主键ID
+  id: number | null; //主键ID
   name: string | null; //能力包名称
   kind: number | null; //类型 0:微函数
   remark: string | null; //备注
+  funcIds: number[]; //关联的微函数ID列表
 }
 
 export default {

@@ -45,7 +45,7 @@
     <el-dialog
       v-model="modalVisible"
       :title="modalMode === 'edit' ? '编辑能力包' : '创建能力包'"
-      width="550px"
+      width="600px"
       :close-on-click-modal="false"
       @close="resetModal(); loadList();"
     >
@@ -63,6 +63,17 @@
         <el-form-item label="类型" prop="kind">
           <el-select v-model="modalForm.kind" placeholder="请选择类型">
             <el-option label="微函数" :value="0" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="绑定微函数" prop="funcIds">
+          <el-select
+            v-model="modalForm.funcIds"
+            multiple
+            filterable
+            :loading="funcLoading"
+            placeholder="请选择微函数"
+          >
+            <el-option v-for="item in funcOptions" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
         <el-form-item label="备注" prop="remark">
@@ -99,8 +110,18 @@ const modalFormRef = ref<FormInstance>();
 const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } =
   AacpCapabilityService.useAacpCapabilityList();
 
-const { modalVisible, modalLoading, modalMode, modalForm, modalRules, openModal, resetModal, submitModal } =
-  AacpCapabilityService.useAacpCapabilityModal(modalFormRef, loadList);
+const {
+  modalVisible,
+  modalLoading,
+  modalMode,
+  modalForm,
+  modalRules,
+  funcOptions,
+  funcLoading,
+  openModal,
+  resetModal,
+  submitModal,
+} = AacpCapabilityService.useAacpCapabilityModal(modalFormRef, loadList);
 </script>
 
 <style scoped></style>
