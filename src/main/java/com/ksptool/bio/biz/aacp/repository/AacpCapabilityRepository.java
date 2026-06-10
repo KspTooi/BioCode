@@ -1,6 +1,7 @@
 package com.ksptool.bio.biz.aacp.repository;
 
 import com.ksptool.bio.biz.aacp.model.AacpCapabilityPo;
+import jakarta.persistence.Tuple;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,13 +15,15 @@ import java.util.List;
 public interface AacpCapabilityRepository extends JpaRepository<AacpCapabilityPo, Long> {
 
     @Query("""
-            SELECT u FROM AacpCapabilityPo u
+            SELECT u.id AS id, u.name AS name, u.kind AS kind, u.remark AS remark,
+                   COALESCE((SELECT COUNT(cf.funcId) FROM AacpCapabilityFuncPo cf WHERE cf.capabilityId = u.id), 0) AS funcCount
+            FROM AacpCapabilityPo u
             WHERE
             (:#{#po.name} IS NULL OR u.name LIKE CONCAT('%', :#{#po.name}, '%'))
             AND (:#{#po.kind} IS NULL OR u.kind = :#{#po.kind} )
             ORDER BY u.createTime DESC
             """)
-    Page<AacpCapabilityPo> getAacpCapabilityList(@Param("po") AacpCapabilityPo po, Pageable pageable);
+    Page<Tuple> getAacpCapabilityList(@Param("po") AacpCapabilityPo po, Pageable pageable);
 
     /**
      * 根据名称统计能力包数量，排除指定ID（id为null时不排除）

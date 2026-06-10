@@ -14,14 +14,15 @@ import com.ksptool.bio.biz.aacp.repository.AacpCapabilityFuncRepository;
 import com.ksptool.bio.biz.aacp.repository.AacpCapabilityRepository;
 import com.ksptool.bio.biz.aacp.repository.AacpMcpCapabilityRepository;
 import com.ksptool.bio.biz.core.common.IdsDiff;
+import jakarta.persistence.Tuple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import static com.ksptool.bio.biz.core.common.TupleMapper.tupleAs;
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
 
@@ -47,12 +48,12 @@ public class AacpCapabilityService {
         AacpCapabilityPo query = new AacpCapabilityPo();
         assign(dto, query);
 
-        Page<AacpCapabilityPo> page = repository.getAacpCapabilityList(query, dto.pageRequest());
+        Page<Tuple> page = repository.getAacpCapabilityList(query, dto.pageRequest());
         if (page.isEmpty()) {
             return PageResult.successWithEmpty();
         }
 
-        List<GetAacpCapabilityListVo> vos = as(page.getContent(), GetAacpCapabilityListVo.class);
+        List<GetAacpCapabilityListVo> vos = tupleAs(page.getContent(), GetAacpCapabilityListVo.class);
         return PageResult.success(vos, (int) page.getTotalElements());
     }
 

@@ -20,4 +20,7 @@ public class GetAacpCapabilityListVo {
     @Schema(description = "备注")
     private String remark;
 
+    @Schema(description = "关联微函数数量")
+    private Long funcCount;
+
 }
