@@ -28,6 +28,7 @@ import PlayGroundRouteRegister from "@/views/playground/route/PlayGroundRouteReg
 import ComTabService from "@/soa/com-series/service/ComTabService.ts";
 import DefaultLayout from "@/soa/layout-series-default/DefaultLayout.vue";
 import ComLayoutProviderService from "@/soa/com-series/service/ComLayoutProviderService.ts";
+import AacpRouteRegister from "@/views/aacp/route/AacpRouteRegister";
 import ComAuthProviderService from "@/soa/com-series/service/ComAuthProvider.ts";
 import UserLogin from "@/views/auth/UserLogin.vue";
 /**
@@ -120,6 +121,7 @@ addRoute(new AuditRouteRegister());
 addRoute(new QtRouteRegister());
 addRoute(new QfRouteRegister());
 addRoute(new PlayGroundRouteRegister());
+addRoute(new AacpRouteRegister());
 addRoute(new AssemblyRouteRegister());
 
 //初始化SOA路由服务

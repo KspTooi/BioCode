@@ -11,8 +11,6 @@ CREATE TABLE aacp_mcp(
     `name` VARCHAR(40) NOT NULL  COMMENT '服务器名称' ,
     `code` VARCHAR(16) NOT NULL  COMMENT '唯一编码' ,
     `network_kind` TINYINT NOT NULL  COMMENT '通信协议 0:HTTP+SSE 1:WS' ,
-    `host` VARCHAR(45) NOT NULL  COMMENT '主机' ,
-    `port` TINYINT NOT NULL  COMMENT '端口' ,
     `auth_kind` TINYINT NOT NULL  COMMENT '鉴权类型 0:无 1:PSK' ,
     `auth_psk` VARCHAR(2000)   COMMENT '预共享密钥' ,
     `status` TINYINT NOT NULL  COMMENT '状态 0:离线 1:在线' ,
@@ -66,8 +64,9 @@ CREATE TABLE accp_func(
 -- ----------------------------
 -- Table structure for aacp_mcp_capablity
 -- ----------------------------
+
 DROP TABLE IF EXISTS aacp_mcp_capablity;
-CREATE TABLE aacp_mcp_capablity(
+CREATE TABLE aacp_mcp_capability(
     `mcp_id` BIGINT NOT NULL  COMMENT 'MID' ,
     `capability_id` BIGINT NOT NULL  COMMENT 'CID' ,
     PRIMARY KEY (mcp_id,capability_id)
@@ -77,7 +76,7 @@ CREATE TABLE aacp_mcp_capablity(
 -- Table structure for aacp_capablity_func
 -- ----------------------------
 DROP TABLE IF EXISTS aacp_capablity_func;
-CREATE TABLE aacp_capablity_func(
+CREATE TABLE aacp_capability_func(
     `capability_id` BIGINT NOT NULL  COMMENT 'CID' ,
     `func_id` BIGINT NOT NULL  COMMENT 'FID' ,
     PRIMARY KEY (capability_id,func_id)

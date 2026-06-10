@@ -46,8 +46,9 @@ Dto 是**前端 → 后端**的请求参数载体，只描述入参字段，不�
 6. 删除 / 详情查询入参统一使用 `CommonIdDto`（`com.ksptool.assembly.entity.web`），禁止新建 `RemoveXxxDto`
 7. `AddXxxDto` 不含 `id`；`EditXxxDto` 必须含 `Long id` 且 `@NotNull`
 8. 必填 / 长度 / 范围约束写在 Dto 字段上（`@NotNull`、`@Size` 等），Controller 入参配合 `@Valid`
-9. 禁止在 Dto 中编写业务逻辑、`validate()` 以外的实例方法（导入专用基类除外）
-10. 禁止引用 Entity（Po）、Repository、Service、Controller
+9. Dto 中集合字段（`List`、`Set`、`Map`）必须加 `@NotNull(message = "...")`，前端禁止传 null，仅允许空数组 `[]` 或空对象 `{}`
+10. 禁止在 Dto 中编写业务逻辑、`validate()` 以外的实例方法（导入专用基类除外）
+11. 禁止引用 Entity（Po）、Repository、Service、Controller
 
 ---
 

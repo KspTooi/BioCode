@@ -34,6 +34,7 @@ Service         ──不感知──▶  DOM / 模板表达式 / 按钮样式 /
 5. SFC 解构 Service 时，不得出现 `getXxxType` / `formatXxx` / `isXxx` 等纯展示辅助函数；这类逻辑要么模板内联，要么下沉到通用 util，不经过 Service
 6. Service 内"用户动作"必须一个动作一个 `onXxx`，禁止拆出仅供 `onXxx` 调用一次的中间桥接函数（如 `xxxActionByKind` + `onXxxByKind` + `onXxx` 三段式）
 7. SFC 不得直接读取 `props` 之外的领域数据再做派生判断；要派生先回 Service 加 `computed`（满足规则 4）或回数据源加字段
+8. 集合字段（数组、对象）禁止传 `null` 给后端，Service 组装 Dto 时必须使用空数组 `[]`、空对象 `{}` 或可选链 `?? []` 兜底
 
 ---
 

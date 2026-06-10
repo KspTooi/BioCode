@@ -43,12 +43,14 @@ Repository 是**数据库访问的唯一出口**，只定义查询与持久化�
 3. 必须为 `interface`，加 `@Repository`；禁止实现类（无特殊说明）
 4. 自定义查询统一 `@Query` + 文本块 `""" JPQL """`；参数必须 `@Param` 命名绑定
 5. **方法命名**：无 `@Query` 的 Spring Data **派生查询**可用 `find*` / `findAll*`；凡手写 `@Query`（JPQL / `nativeQuery`）的方法名**禁止** `find` 前缀，统一 `get*`（如 `getXxxList`、`getXxxByCode`）；`count*` / `update*` / `delete*` 不受此限；继承自 `JpaRepository` 的 `findById` 等框架方法除外
-6. 列表分页方法签名包含 `Pageable`，返回 `Page<XxxPo>` 或 `Page<Tuple>`；`@Query` 列表方法与 Service 对齐，命名 `getXxxList`
-7. 动态条件用 SpEL：`(:#{#po.field} IS NULL OR u.field = :#{#po.field})`；模糊查询 `LIKE CONCAT('%', :#{#po.xxx}, '%')`
-8. 关联 / 投影查询：`SELECT 别名.xxx AS fieldName`（`AS` 与 Vo 字段 camelCase 一致），返回 `Page<Tuple>` 或 `List<Tuple>`
-9. 简单列表可直接查 `Page<Po>`，入参用 `XxxPo` 或 `GetXxxListDto` 作 `@Param("po")`
-10. `@Modifying` 仅用于 `UPDATE` / `DELETE`；禁止在 Repository 上声明 `@Transactional`，事务由 Service 承担
-11. 禁止引用 Controller / Service；禁止在 Repository 内做业务判断、组装 Vo（`SELECT new ...Vo(...)` 仅存量允许，新代码优先 Tuple + Service 映射）
+6. **返回禁止 Optional**：所有自定义查询方法禁止返回 `Optional<T>`，直接返回 `T` 或 `null`；继承自 `JpaRepository` 的 `findById` 等框架方法除外
+7. **派生查询条件上限**：派生查询（无 `@Query`）的条件参数不得超过 **2 个**；超出的必须改用 `@Query` 手写 JPQL
+8. 列表分页方法签名包含 `Pageable`，返回 `Page<XxxPo>` 或 `Page<Tuple>`；`@Query` 列表方法与 Service 对齐，命名 `getXxxList`
+9. 动态条件用 SpEL：`(:#{#po.field} IS NULL OR u.field = :#{#po.field})`；模糊查询 `LIKE CONCAT('%', :#{#po.xxx}, '%')`
+10. 关联 / 投影查询：`SELECT 别名.xxx AS fieldName`（`AS` 与 Vo 字段 camelCase 一致），返回 `Page<Tuple>` 或 `List<Tuple>`
+11. 简单列表可直接查 `Page<Po>`，入参用 `XxxPo` 或 `GetXxxListDto` 作 `@Param("po")`
+12. `@Modifying` 仅用于 `UPDATE` / `DELETE`；禁止在 Repository 上声明 `@Transactional`，事务由 Service 承担
+13. 禁止引用 Controller / Service；禁止在 Repository 内做业务判断、组装 Vo（`SELECT new ...Vo(...)` 仅存量允许，新代码优先 Tuple + Service 映射）
 
 ---
 
@@ -107,9 +109,9 @@ Integer countByParentId(@Param("parentId") Long parentId);
 ### 派生查询（无 @Query，可用 find）
 
 ```java
-// 由方法名自动生成 SQL，不加 @Query
+// 由方法名自动生成 SQL，不加 @Query（条件参数不超过 2 个）
 List<XxxPo> findByPlanId(Long planId);
-Optional<XxxPo> findByCode(String code);
+XxxPo findByCode(String code);
 ```
 
 ### 手写 JPQL 单条查询（get 前缀）
@@ -167,6 +169,16 @@ void updateStatus(@Param("id") Long id);
 ```
 
 ```java
+// ❌ 返回 Optional
+Optional<XxxPo> findByCode(String code);
+```
+
+```java
+// ❌ 派生查询条件超过 2 个（应改用 @Query）
+XxxPo findByCodeAndStatusAndType(String code, Integer status, String type);
+```
+
+```java
 // ❌ @Query 方法使用 find 前缀
 @Query("SELECT u FROM XxxPo u WHERE u.code = :code")
 XxxPo findXxxByCode(@Param("code") String code);
@@ -178,7 +190,7 @@ XxxPo findXxxByCode(@Param("code") String code);
 
 | 场景         | 返回类型              | 入参                       | 备注                        |
 | ------------ | --------------------- | -------------------------- | --------------------------- |
-| 标准 CRUD    | `Po` / `Optional<Po>` | id                         | 继承 JpaRepository          |
+| 标准 CRUD    | `Po`                  | id                         | 继承 JpaRepository          |
 | 单表分页列表 | `Page<Po>`            | `Po` 或 `Dto` + `Pageable` | SpEL 动态条件               |
 | 关联列表     | `Page<Tuple>`         | `Dto` + `Pageable`         | `AS` 对齐 Vo 字段           |
 | 导出全量     | `List<Tuple>`         | `Dto`                      | 无 Pageable                 |

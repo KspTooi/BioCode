@@ -135,4 +135,12 @@ public class DynamicGlobalWhiteManager implements AuthorizationManager<RequestAu
         isIntegratedDeploy = resourceLoader.getResource("classpath:/web-static/index.html").exists();
         return isIntegratedDeploy;
     }
+
+    /**
+     * 获取白名单匹配器
+     * @return 白名单匹配器列表
+     */
+    public List<PathPatternRequestMatcher> getWhiteListMatchers() {
+        return whiteListMatchers;
+    }
 }

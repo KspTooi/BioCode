@@ -8,7 +8,11 @@ SpringBoot版本3.3.5
 2.不允许三元表达式,使用普通IF
 3.需要为接口创建单独的Dto用于接收数据，Vo用于响应数据,所有的Controller的输入都是Dto而响应都为Vo
 4.后端校验参数使用HibernateValidation注解
-5.Vo、Dto使用单行注释，Po使用org.hibernate.annotations.Comment注释
+5.字段注释按类角色分层：
+  - Dto/Vo：必须使用Swagger @Schema(description="...")注解
+  - Po：使用org.hibernate.annotations.Comment注解
+  - 普通结构体（Session、Context等内部类）：单行//注释
+  - 方法统一使用Javadoc（/** */）
 6.尽可能少使用StreamAPI,除非必须使用它.
 7.使用多个if-return组合或多个if代替else
 8.Service中的简单查询统一使用Example，复杂查询使用JPQL投影到一个单独的Vo

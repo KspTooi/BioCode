@@ -20,7 +20,7 @@ public interface UserRequestEnvRepository extends JpaRepository<UserRequestEnvPo
                 u.remark,
                 u.createTime,
                 u.updateTime,
-                CASE WHEN EXISTS(SELECT 1 FROM UserPo u2 WHERE u2.id = :userId AND u2.activeEnv.id = u.id) THEN 1 ELSE 0 END
+                CASE WHEN EXISTS(SELECT 1 FROM UserPo u2 WHERE u2.id = :userId AND u2.id = u.id) THEN 1 ELSE 0 END
             )
             FROM UserRequestEnvPo u
             WHERE
