@@ -3,20 +3,23 @@ package com.ksptool.bio.biz.aacp.service;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
+import com.ksptool.bio.biz.aacp.model.AacpCapabilityFuncPo;
 import com.ksptool.bio.biz.aacp.model.AacpCapabilityPo;
-import com.ksptool.bio.biz.aacp.model.AacpMcpCapabilityPo;
 import com.ksptool.bio.biz.aacp.model.dto.AddAacpCapabilityDto;
 import com.ksptool.bio.biz.aacp.model.dto.EditAacpCapabilityDto;
 import com.ksptool.bio.biz.aacp.model.dto.GetAacpCapabilityListDto;
 import com.ksptool.bio.biz.aacp.model.vo.GetAacpCapabilityDetailsVo;
 import com.ksptool.bio.biz.aacp.model.vo.GetAacpCapabilityListVo;
+import com.ksptool.bio.biz.aacp.repository.AacpCapabilityFuncRepository;
 import com.ksptool.bio.biz.aacp.repository.AacpCapabilityRepository;
 import com.ksptool.bio.biz.aacp.repository.AacpMcpCapabilityRepository;
+import com.ksptool.bio.biz.core.common.IdsDiff;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.ksptool.entities.Entities.as;
@@ -30,6 +33,9 @@ public class AacpCapabilityService {
 
     @Autowired
     private AacpMcpCapabilityRepository mcpCapabilityRepository;
+
+    @Autowired
+    private AacpCapabilityFuncRepository capabilityFuncRepository;
 
     /**
      * 查询能力包列表
@@ -63,6 +69,8 @@ public class AacpCapabilityService {
         }
         AacpCapabilityPo insertPo = as(dto, AacpCapabilityPo.class);
         repository.save(insertPo);
+
+        bindFuncIds(insertPo.getId(), dto.getFuncIds());
     }
 
     /**
@@ -81,6 +89,19 @@ public class AacpCapabilityService {
 
         assign(dto, updatePo);
         repository.save(updatePo);
+
+        List<Long> existIds = capabilityFuncRepository.getFidsByCid(dto.getId());
+        var idsDiff = new IdsDiff(existIds, dto.getFuncIds());
+
+        if (idsDiff.hasAdd()) {
+            var toAdd = idsDiff.getAddIds().stream()
+                    .map(fid -> new AacpCapabilityFuncPo(dto.getId(), fid)).toList();
+            capabilityFuncRepository.saveAll(toAdd);
+        }
+
+        if (idsDiff.hasRemove()) {
+            capabilityFuncRepository.removeByCidAndFids(dto.getId(), idsDiff.getRemoveIds());
+        }
     }
 
     /**
@@ -111,7 +132,20 @@ public class AacpCapabilityService {
         if (refCount > 0) {
             throw new BizException("该能力包已被" + refCount + "台MCP服务器使用，无法删除");
         }
+        capabilityFuncRepository.removeByCapabilityId(dto.getId());
         repository.deleteById(dto.getId());
+    }
+
+    /**
+     * 绑定微函数到能力包
+     */
+    private void bindFuncIds(Long capabilityId, List<Long> funcIds) {
+        if (funcIds == null || funcIds.isEmpty()) {
+            return;
+        }
+        var pos = funcIds.stream()
+                .map(fid -> new AacpCapabilityFuncPo(capabilityId, fid)).toList();
+        capabilityFuncRepository.saveAll(pos);
     }
 
 }

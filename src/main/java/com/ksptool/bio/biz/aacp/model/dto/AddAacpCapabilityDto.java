@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class AddAacpCapabilityDto {
@@ -23,5 +25,9 @@ public class AddAacpCapabilityDto {
     @Length(max = 500, message = "备注长度不能超过500")
     @Schema(description = "备注")
     private String remark;
+
+    @NotNull(message = "微函数ID列表不能为空")
+    @Schema(description = "微函数ID列表")
+    private List<Long> funcIds;
 
 }
