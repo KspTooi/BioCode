@@ -43,6 +43,8 @@
             <span v-show="scope.row.authKind === 1">PSK</span>
           </template>
         </el-table-column>
+        <el-table-column label="能力包" prop="capabilityCount" width="80" align="center" />
+        <el-table-column label="微函数" prop="funcCount" width="80" align="center" />
         <el-table-column label="状态" width="80" align="center">
           <template #default="scope">
             <span v-show="scope.row.status === 0" style="color: #999">离线</span>

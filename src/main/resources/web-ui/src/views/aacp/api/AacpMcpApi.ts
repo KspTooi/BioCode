@@ -18,6 +18,8 @@ export interface GetAacpMcpListVo {
   authKind: number; //鉴权类型 0:无 1:PSK
   authPsk: string; //预共享密钥
   status: number; //状态 0:离线 1:在线
+  capabilityCount: number; //关联能力包数量
+  funcCount: number; //关联微函数数量
 }
 
 export interface AddAacpMcpDto {
