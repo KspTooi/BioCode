@@ -39,14 +39,15 @@ public interface AacpCapabilityRepository extends JpaRepository<AacpCapabilityPo
      * 根据MCP服务器ID获取已绑定的能力包列表
      *
      * @param mcpId MCP服务器ID
+     * @param kind 能力包类型 0:微函数
      * @return 能力包列表
      */
     @Query("""
             SELECT c FROM AacpCapabilityPo c
             WHERE c.id IN (
                 SELECT m.capabilityId FROM AacpMcpCapabilityPo m WHERE m.mcpId = :mcpId
-            )
+            ) AND (:#{#kind} IS NULL OR c.kind = :#{#kind} )
             ORDER BY c.createTime DESC
             """)
-    List<AacpCapabilityPo> getByMcpId(@Param("mcpId") Long mcpId);
+    List<AacpCapabilityPo> getByMcpId(@Param("mcpId") Long mcpId,Integer kind);
 }

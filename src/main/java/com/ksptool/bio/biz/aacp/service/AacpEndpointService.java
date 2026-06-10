@@ -2,6 +2,7 @@ package com.ksptool.bio.biz.aacp.service;
 
 import com.ksptool.bio.biz.aacp.commons.McpClientSession;
 import com.ksptool.bio.biz.aacp.commons.McpParser;
+import com.ksptool.bio.biz.aacp.commons.MicroFuncDefinition;
 import com.ksptool.bio.biz.aacp.commons.jrpc.InputMethods;
 import com.ksptool.bio.biz.aacp.commons.jrpc.RpcInput;
 import com.ksptool.bio.biz.aacp.commons.jrpc.RpcOutput;
@@ -10,10 +11,23 @@ import com.ksptool.bio.biz.aacp.commons.jrpc.vo.InitializeVo;
 import com.ksptool.bio.biz.aacp.commons.jrpc.vo.PingVo;
 import com.ksptool.bio.biz.aacp.commons.jrpc.vo.ToolsCallVo;
 import com.ksptool.bio.biz.aacp.commons.jrpc.vo.ToolsListVo;
+import com.ksptool.bio.biz.aacp.model.AacpCapabilityPo;
+import com.ksptool.bio.biz.aacp.model.AacpFuncPo;
+import com.ksptool.bio.biz.aacp.repository.AacpCapabilityFuncRepository;
+import com.ksptool.bio.biz.aacp.repository.AacpCapabilityRepository;
+import com.ksptool.bio.biz.aacp.repository.AacpFuncRepository;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import com.ksptool.bio.biz.aacp.commons.MicroFuncRegistry;
 
 /**
  * MCP 协议业务逻辑：JSON-RPC 方法路由分发
@@ -28,6 +42,18 @@ public class AacpEndpointService {
     @Autowired
     private MicroFuncService microFuncService;
 
+    @Autowired
+    private AacpCapabilityRepository aacpCapabilityRepository;
+
+    @Autowired
+    private AacpCapabilityFuncRepository capabilityFuncRepository;
+
+    @Autowired
+    private AacpFuncRepository aacpFuncRepository;
+
+    @Autowired
+    private MicroFuncRegistry mfRegistry;
+
     /**
      * 处理入向 JSON-RPC 请求，按方法名路由分发
      *
@@ -39,31 +65,75 @@ public class AacpEndpointService {
 
         var p = McpParser.of(input);
 
-        //---- 客户端握手 ----
+        //客户端握手
         if (p.getMethod() == InputMethods.INITIALIZE) {
             log.info("[AACP] 初始化 Inbound => {}", session.getSessionId());
-            InitializeVo vo = buildInitializeVo();
-            return RpcOutput.success(input.getId(), vo);
+
+            var ret = new InitializeVo();
+            ret.setProtocolVersion("2025-11-25");
+
+            var caps = new InitializeVo.ServerCapabilities();
+            var toolsCaps = new InitializeVo.CapabilityListChanged();
+            toolsCaps.setListChanged(true);
+            caps.setTools(toolsCaps);
+
+            var serverInfo = new InitializeVo.ServerInfo();
+            serverInfo.setName("AACP-VIA-BIO-SERVER");
+            serverInfo.setVersion("1.7B(1)");
+            ret.setServerInfo(serverInfo);
+            ret.setCapabilities(caps);
+            return RpcOutput.success(input.getId(), ret);
         }
 
-        //---- 客户端就绪（通知，无需响应） ----
+        //客户端就绪
         if (p.getMethod() == InputMethods.INITIALIZED_NOTIFICATION) {
             session.setStatus(1);
             log.info("[AACP] 客户端已就绪 Inbound => {}", session.getSessionId());
             return null;
         }
 
-        //---- 心跳 ----
+        //心跳检测
         if (p.getMethod() == InputMethods.PING) {
             PingVo vo = new PingVo();
             return RpcOutput.success(input.getId(), vo);
         }
 
-        //---- 工具列表 ----
+        //工具列表
         if (p.getMethod() == InputMethods.TOOLS_LIST) {
             log.info("[AACP] 客户端请求工具列表 Inbound => {}", session.getSessionId());
-            ToolsListVo vo = microFuncService.buildToolsList();
-            return RpcOutput.success(input.getId(), vo);
+
+            var ret = new ToolsListVo();
+
+            //获取微函数能力包
+            var funcCapPos = aacpCapabilityRepository.getByMcpId(session.getServerId(),0);
+            var funcCapIds = funcCapPos.stream().map(AacpCapabilityPo::getId).collect(Collectors.toSet());
+
+            //获取能力包中的微函数
+            var funcPos = aacpFuncRepository.findAllById(funcCapIds);
+
+            //获取已注册的微函数Bean列表
+            var mfBeanNames = mfRegistry.getAll().stream().map(MicroFuncDefinition::getBean).collect(Collectors.toSet());
+
+            //直接组装为工具列表
+            var tools = new ArrayList<ToolsListVo.Tool>();
+            
+
+            for(var fPo : funcPos){
+
+                //如果数据库中的微函数对应的Bean不存在 则跳过
+                if(!mfBeanNames.contains(fPo.getTarget())){
+                    continue;
+                }
+
+                var t = new ToolsListVo.Tool();
+                t.setName(fPo.getCode());
+                t.setDescription(fPo.getDescription());
+                t.setInputSchema(new LinkedHashMap<>());
+                tools.add(t);
+            }
+
+            ret.setTools(tools);
+            return RpcOutput.success(input.getId(), ret);
         }
 
         //---- 工具调用 ----
@@ -80,23 +150,5 @@ public class AacpEndpointService {
         return RpcOutput.error(input.getId(), -32601, "Method not found: " + input.getMethod());
     }
 
-    /**
-     * 构建 initialize 握手响应 Vo（屏蔽 InitializeVo 内嵌结构构造复杂度）
-     */
-    private InitializeVo buildInitializeVo() {
-        InitializeVo vo = new InitializeVo();
-        vo.setProtocolVersion("2024-11-05");
 
-        InitializeVo.ServerCapabilities caps = new InitializeVo.ServerCapabilities();
-        InitializeVo.CapabilityListChanged toolsCaps = new InitializeVo.CapabilityListChanged();
-        toolsCaps.setListChanged(true);
-        caps.setTools(toolsCaps);
-
-        InitializeVo.ServerInfo serverInfo = new InitializeVo.ServerInfo();
-        serverInfo.setName("AACP-Server");
-        serverInfo.setVersion("1.0.0");
-        vo.setServerInfo(serverInfo);
-
-        return vo;
-    }
 }

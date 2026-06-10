@@ -14,6 +14,9 @@ import lombok.Setter;
 @Schema(description = "JSON-RPC 通用响应")
 public class RpcOutput<T> {
 
+    @Schema(description = "JSON-RPC版本号")
+    private String jsonrpc = "2.0";
+
     @Schema(description = "请求ID，与请求中的ID一致")
     private Integer id;
 

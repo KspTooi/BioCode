@@ -6,6 +6,7 @@ import com.ksptool.bio.biz.aacp.commons.MicroFuncRegistry;
 import com.ksptool.bio.biz.aacp.commons.annotation.MicroFunc;
 import com.ksptool.bio.biz.aacp.commons.jrpc.vo.ToolsCallVo;
 import com.ksptool.bio.biz.aacp.commons.jrpc.vo.ToolsListVo;
+import com.ksptool.bio.biz.aacp.model.AacpFuncPo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -83,6 +84,61 @@ public class MicroFuncService {
         List<ToolsListVo.Tool> tools = new ArrayList<>();
 
         for (MicroFuncDefinition def : registry.getAll()) {
+            ToolsListVo.Tool tool = new ToolsListVo.Tool();
+            tool.setName(def.getCode());
+            tool.setDescription(def.getDescription());
+
+            Map<String, Object> schema = new LinkedHashMap<>();
+            schema.put("type", "object");
+
+            Map<String, Object> properties = new LinkedHashMap<>();
+            List<String> required = new ArrayList<>();
+
+            for (int i = 0; i < def.getParameterTypes().length; i++) {
+                Class<?> paramType = def.getParameterTypes()[i];
+                java.lang.reflect.Parameter param = def.getMethod().getParameters()[i];
+                String paramName = param.getName();
+
+                properties.put(paramName, resolveTypeToSchema(paramType));
+                if (paramType.isPrimitive()
+                        || paramType == String.class
+                        || paramType == Long.class || paramType == Integer.class || paramType == Short.class
+                        || paramType == Double.class || paramType == Float.class
+                        || paramType == Boolean.class) {
+                    required.add(paramName);
+                }
+            }
+
+            schema.put("properties", properties);
+            if (!required.isEmpty()) {
+                schema.put("required", required);
+            }
+            tool.setInputSchema(schema);
+            tools.add(tool);
+        }
+
+        vo.setTools(tools);
+        return vo;
+    }
+
+    /**
+     * 根据数据库中的微函数列表构建工具列表（仅返回注册表中存在的 code）
+     */
+    public ToolsListVo buildToolsListByFuncs(List<AacpFuncPo> funcs) {
+        ToolsListVo vo = new ToolsListVo();
+        List<ToolsListVo.Tool> tools = new ArrayList<>();
+        if (funcs == null || funcs.isEmpty()) {
+            vo.setTools(tools);
+            return vo;
+        }
+
+        for (AacpFuncPo fpo : funcs) {
+            MicroFuncDefinition def = registry.get(fpo.getCode());
+            if (def == null) {
+                log.warn("[AACP] 微函数未注册: code={}", fpo.getCode());
+                continue;
+            }
+
             ToolsListVo.Tool tool = new ToolsListVo.Tool();
             tool.setName(def.getCode());
             tool.setDescription(def.getDescription());
