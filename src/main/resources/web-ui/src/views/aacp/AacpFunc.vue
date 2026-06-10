@@ -30,7 +30,7 @@
         <el-table-column label="微函数名称" prop="name" />
         <el-table-column label="微函数标识" prop="code" width="160" />
         <el-table-column label="意图词" prop="description" show-overflow-tooltip />
-        <el-table-column label="操作" fixed="right">
+        <el-table-column label="操作" fixed="right" width="140">
           <template #default="scope">
             <el-button link type="primary" size="small" :icon="ViewIcon" @click="openModal('edit', scope.row)">编辑</el-button>
             <el-button link type="danger" size="small" :icon="DeleteIcon" @click="removeList(scope.row)">删除</el-button>
@@ -64,7 +64,14 @@
           <el-input v-model="modalForm.code" placeholder="请输入微函数标识" :maxlength="32" show-word-limit />
         </el-form-item>
         <el-form-item label="意图词" prop="description">
-          <el-input v-model="modalForm.description" placeholder="请输入意图词" type="textarea" :rows="3" :maxlength="1000" show-word-limit />
+          <el-input
+            v-model="modalForm.description"
+            placeholder="请输入意图词"
+            type="textarea"
+            :rows="3"
+            :maxlength="1000"
+            show-word-limit
+          />
         </el-form-item>
         <el-form-item label="入参规范" prop="schema">
           <el-input v-model="modalForm.schema" placeholder="请输入入参规范(JSON)" type="textarea" :rows="4" />
@@ -86,7 +93,14 @@
           </el-select>
         </el-form-item>
         <el-form-item label="备注" prop="remark">
-          <el-input v-model="modalForm.remark" placeholder="请输入备注" type="textarea" :rows="3" :maxlength="500" show-word-limit />
+          <el-input
+            v-model="modalForm.remark"
+            placeholder="请输入备注"
+            type="textarea"
+            :rows="3"
+            :maxlength="500"
+            show-word-limit
+          />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -116,11 +130,20 @@ const DeleteIcon = markRaw(Delete);
 
 const modalFormRef = ref<FormInstance>();
 
-const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } =
-  AacpFuncService.useAacpFuncList();
+const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } = AacpFuncService.useAacpFuncList();
 
-const { modalVisible, modalLoading, modalMode, modalForm, modalRules, microFuncListData, microFuncListLoading, openModal, resetModal, submitModal } =
-  AacpFuncService.useAacpFuncModal(modalFormRef, loadList);
+const {
+  modalVisible,
+  modalLoading,
+  modalMode,
+  modalForm,
+  modalRules,
+  microFuncListData,
+  microFuncListLoading,
+  openModal,
+  resetModal,
+  submitModal,
+} = AacpFuncService.useAacpFuncModal(modalFormRef, loadList);
 </script>
 
 <style scoped></style>

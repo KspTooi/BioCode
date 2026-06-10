@@ -33,7 +33,7 @@
           </template>
         </el-table-column>
         <el-table-column label="备注" prop="remark" show-overflow-tooltip />
-        <el-table-column label="操作" fixed="right">
+        <el-table-column label="操作" fixed="right" width="140">
           <template #default="scope">
             <el-button link type="primary" size="small" :icon="ViewIcon" @click="openModal('edit', scope.row)">编辑</el-button>
             <el-button link type="danger" size="small" :icon="DeleteIcon" @click="removeList(scope.row)">删除</el-button>
@@ -47,7 +47,10 @@
       :title="modalMode === 'edit' ? '编辑能力包' : '创建能力包'"
       width="600px"
       :close-on-click-modal="false"
-      @close="resetModal(); loadList();"
+      @close="
+        resetModal();
+        loadList();
+      "
     >
       <el-form
         v-if="modalVisible"
@@ -66,18 +69,19 @@
           </el-select>
         </el-form-item>
         <el-form-item label="绑定微函数" prop="funcIds">
-          <el-select
-            v-model="modalForm.funcIds"
-            multiple
-            filterable
-            :loading="funcLoading"
-            placeholder="请选择微函数"
-          >
+          <el-select v-model="modalForm.funcIds" multiple filterable :loading="funcLoading" placeholder="请选择微函数">
             <el-option v-for="item in funcOptions" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
         <el-form-item label="备注" prop="remark">
-          <el-input v-model="modalForm.remark" placeholder="请输入备注" type="textarea" :rows="3" :maxlength="500" show-word-limit />
+          <el-input
+            v-model="modalForm.remark"
+            placeholder="请输入备注"
+            type="textarea"
+            :rows="3"
+            :maxlength="500"
+            show-word-limit
+          />
         </el-form-item>
       </el-form>
       <template #footer>

@@ -49,7 +49,7 @@
             <span v-show="scope.row.status === 1" style="color: #67c23a">在线</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" fixed="right">
+        <el-table-column label="操作" fixed="right" width="140">
           <template #default="scope">
             <el-button link type="primary" size="small" :icon="ViewIcon" @click="openModal('edit', scope.row)">编辑</el-button>
             <el-button link type="danger" size="small" :icon="DeleteIcon" @click="removeList(scope.row)">删除</el-button>
@@ -95,7 +95,14 @@
           </el-select>
         </el-form-item>
         <el-form-item v-show="modalForm.authKind === 1" label="预共享密钥" prop="authPsk">
-          <el-input v-model="modalForm.authPsk" placeholder="请输入预共享密钥" type="textarea" :rows="4" :maxlength="2000" show-word-limit />
+          <el-input
+            v-model="modalForm.authPsk"
+            placeholder="请输入预共享密钥"
+            type="textarea"
+            :rows="4"
+            :maxlength="2000"
+            show-word-limit
+          />
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-select v-model="modalForm.status" placeholder="请选择状态">
@@ -131,8 +138,7 @@ const DeleteIcon = markRaw(Delete);
 
 const modalFormRef = ref<FormInstance>();
 
-const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } =
-  AacpMcpService.useAacpMcpList();
+const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } = AacpMcpService.useAacpMcpList();
 
 const { modalVisible, modalLoading, modalMode, modalForm, modalRules, openModal, resetModal, submitModal } =
   AacpMcpService.useAacpMcpModal(modalFormRef, loadList);
