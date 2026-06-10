@@ -1,63 +1,60 @@
 package com.ksptool.bio.biz.aacp.service;
 
+import com.google.gson.Gson;
 import com.ksptool.assembly.entity.exception.BizException;
+import com.ksptool.bio.biz.aacp.commons.McpParser;
+import com.ksptool.bio.biz.aacp.commons.jrpc.InputMethods;
+import com.ksptool.bio.biz.aacp.commons.jrpc.RpcInput;
+import com.ksptool.bio.biz.aacp.commons.jrpc.RpcOutput;
+import com.ksptool.bio.biz.aacp.commons.jrpc.dto.InitializeDto;
 import com.ksptool.bio.biz.aacp.model.AacpMcpPo;
 import com.ksptool.bio.biz.aacp.repository.AacpMcpRepository;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-
-import java.io.IOException;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-
+/**
+ * MCP  业务逻辑层
+ */
 @Slf4j
 @Service
 public class AacpEndpointService {
 
-    /** 存放 SessionID 对应的 SSE 连接 */
-    private final Map<String, SseEmitter> sessionMap = new ConcurrentHashMap<>();
+    private final Gson g = new Gson();
 
     @Autowired
     private AacpMcpRepository aacpMcpRepository;
 
     /**
-     * 建立 SSE 连接：校验 MCP 编码 → 生成 SessionID → 创建 Emitter → 下发 endpoint URI
-     *
-     * @param code MCP 唯一编码
-     * @return SSE 连接
-     * @throws BizException 
+     * 校验 MCP 编码是否合法且可接受连接
      */
-    public SseEmitter upstream(String code) throws BizException {
-
+    public void validateCode(String code) throws BizException {
         AacpMcpPo po = aacpMcpRepository.findByCode(code);
-
         if (po == null) {
             throw new BizException("MCP服务器不存在:" + code);
         }
-
         if (po.getStatus() != 1) {
             throw new BizException("MCP服务器当前不接受连接请求:" + code);
         }
+    }
 
-        String sessionId = UUID.randomUUID().toString();
-        SseEmitter emitter = new SseEmitter(3600000L);
+   /**
+    * 处理入向 JSON-RPC 请求
+    */
+    public RpcOutput<?> inbound(RpcInput<String> input) {
 
-        sessionMap.put(sessionId, emitter);
+        var p = McpParser.of(input);
 
-        emitter.onCompletion(() -> sessionMap.remove(sessionId));
-        emitter.onTimeout(() -> sessionMap.remove(sessionId));
+        //---- 生命周期 ----
+        if (p.getMethod() == InputMethods.INITIALIZE) {
 
-        try {
-            emitter.send(SseEmitter.event()
-                    .name("endpoint")
-                    .data("/aacpMcp/request?sessionId=" + sessionId));
-        } catch (IOException e) {
-            sessionMap.remove(sessionId);
+            var initializeDto = p.as(InitializeDto.class);
+
+            log.info("MCP客户端握手: {}", g.toJson(input));
+
         }
-        return emitter;
+
+        throw new RuntimeException("Method not found: " + p.getMethod().getKey());
     }
 }

@@ -1,5 +1,7 @@
 package com.ksptool.bio.biz.aacp.commons.jrpc;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * MCP 入向方法枚举（客户端 → 服务端）
  */
@@ -45,5 +47,20 @@ public enum InputMethods {
 
     public String getDescription() {
         return description;
+    }
+
+
+    public static InputMethods getMethod(String method) {
+
+        if (StringUtils.isBlank(method)) {
+            return null;
+        }
+
+        for (InputMethods m : InputMethods.values()) {
+            if (m.getKey().equals(method)) {
+                return m;
+            }
+        }
+        return null;
     }
 }
