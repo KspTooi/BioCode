@@ -1,5 +1,6 @@
 package com.ksptool.bio.biz.aacp.model.dto;
 
+import com.ksptool.bio.biz.core.common.aop.DtoCustomValidator;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -11,7 +12,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class EditAacpCapabilityDto {
+public class EditAacpCapabilityDto implements DtoCustomValidator {
 
     @NotNull(message = "主键ID不能为空")
     @Schema(description = "主键ID")
@@ -34,4 +35,11 @@ public class EditAacpCapabilityDto {
     @Schema(description = "微函数ID列表")
     private List<Long> funcIds;
 
+    @Override
+    public String validate() {
+        if (funcIds.size() > 50) {
+            return "一个能力包最多绑定50个微函数";
+        }
+        return null;
+    }
 }
