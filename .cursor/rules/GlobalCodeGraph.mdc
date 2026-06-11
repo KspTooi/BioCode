@@ -2,9 +2,11 @@
 alwaysApply: true
 ---
 
-# CodeGraph 优先
+# CodeGraph 优先（强制）
 
-项目已接入 CodeGraph 代码知识图谱，**所有代码探索任务（定位符号、理解流程、追踪调用链）优先使用 CodeGraph**。
+项目已接入 CodeGraph 代码知识图谱。**任何代码探索、定位、理解、追踪任务，必须优先且默认使用 CodeGraph 工具**，而不是子代理、Grep、Glob 或 Read。
+
+## 任务 → 工具映射
 
 - "X 在哪里 / X 是什么 / X 如何工作" → `codegraph_explore`
 - "谁调用了 X / X 调用了谁" → `codegraph_callers` / `codegraph_callees`
@@ -12,4 +14,36 @@ alwaysApply: true
 - 搜索符号名 → `codegraph_search`
 - 查看目录文件 → `codegraph_files`
 
-**严禁**用 Grep/Read 替代 CodeGraph 做代码探索。`codegraph_explore` 一次调用 = 几十次 Grep+Read，且返回完整源码。
+## 硬性禁止
+
+1. **严禁**为了"探索代码库""查找符号""理解调用链"而启动子代理（Task / explore / generalPurpose 等 subagent）。这类任务一律改用 CodeGraph 工具直接完成。
+2. **严禁**用 `Grep` / `Glob` 搜索符号、函数、类、调用关系或理解代码结构。
+3. **严禁**用 `Read` 逐文件翻找来理解代码流程。
+4. 仅当满足以下任一情况，才允许使用 Grep/Glob/Read/子代理：
+   - CodeGraph 已返回目标，需要 `Read` 查看其上下文或做编辑前的精确确认；
+   - 查找的是非代码内容（配置、文档、日志、文本字面量）；
+   - CodeGraph 明确返回"无结果/未索引"后的兜底补充。
+
+## 为什么
+
+`codegraph_explore` 一次调用 ≈ 几十次 Grep+Read，且直接返回完整源码与关系。先用 CodeGraph 建立全局认知，再用 Read 做局部精读，是最快且最准的路径。子代理和 Grep 会重复造轮子、遗漏调用链，速度更慢、结果更碎。
+
+**默认动作：拿到代码探索问题，第一步就调用对应的 `codegraph_*` 工具。**
+
+## 回退策略（CodeGraph 未接入 / 不可用时）
+
+仅当确认 CodeGraph 无法使用时，才解除上述禁止，按传统工具探索。判定"不可用"的依据（满足任一）：
+
+- `codegraph_*` 工具不存在 / 未启用；
+- 调用返回"项目未初始化"或 `.codegraph/` 不存在（索引未构建）；
+- `codegraph_status` 显示索引未就绪 / 损坏，或工具持续报错无法恢复。
+
+确认不可用后的回退顺序：
+
+1. **先告知用户** CodeGraph 不可用，并在需要时建议构建索引（如 `codegraph init -i`）——但**不要擅自执行任何命令**（见项目命令禁令）。
+2. 用 `Glob` 按文件名/路径定位文件。
+3. 用 `Grep` 按符号名、调用关系做精确文本检索。
+4. 用 `Read` 精读关键文件。
+5. 探索范围大、步骤多时，才考虑启动 `explore` 子代理。
+
+**重要：回退是例外，不是默认。** 不得因为"嫌麻烦"或"不确定"就跳过 CodeGraph 直接回退；必须先实际尝试 CodeGraph，确认不可用后再回退。一旦 CodeGraph 恢复可用，立即切回 CodeGraph 优先。
