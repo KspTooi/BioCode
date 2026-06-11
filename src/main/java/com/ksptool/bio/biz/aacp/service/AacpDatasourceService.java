@@ -11,6 +11,7 @@ import com.ksptool.bio.biz.aacp.model.datasource.dto.GetAacpDatasourceListDto;
 import com.ksptool.bio.biz.aacp.model.datasource.vo.GetAacpDatasourceDetailsVo;
 import com.ksptool.bio.biz.aacp.model.datasource.vo.GetAacpDatasourceListVo;
 import com.ksptool.bio.biz.aacp.repository.AacpDatasourceRepository;
+import com.ksptool.bio.biz.aacp.repository.CapDatasourceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,9 @@ public class AacpDatasourceService {
 
     @Autowired
     private AacpDatasourceRepository repository;
+
+    @Autowired
+    private CapDatasourceRepository capDatasourceRepository;
 
     /**
      * 查询AACP数据源列表
@@ -104,6 +108,10 @@ public class AacpDatasourceService {
     public void removeAacpDatasource(CommonIdDto dto) throws BizException {
         if (dto.isBatch()) {
             throw new BizException("数据源不支持批量删除");
+        }
+        long refCount = capDatasourceRepository.countByDatasourceId(dto.getId());
+        if (refCount > 0) {
+            throw new BizException("该数据源已被" + refCount + "个能力包使用，无法删除");
         }
         repository.deleteById(dto.getId());
     }
