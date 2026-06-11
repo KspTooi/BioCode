@@ -9,7 +9,7 @@ export default class AacpRouteRegister extends GenricRouteRegister {
         path: "mcp-server",
         name: "mcp-server",
         component: () => import("@/views/aacp/AacpAgentHub.vue"),
-        meta: { breadcrumb: "MCP服务器" },
+        meta: { breadcrumb: "智能体枢纽" },
       }),
       RouteEntryPo.build({
         biz: "aacp",

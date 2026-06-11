@@ -24,7 +24,7 @@
     </StdListAreaQuery>
 
     <StdListAreaAction>
-      <el-button type="success" @click="openModal('add', null)">创建MCP服务器</el-button>
+      <el-button type="success" @click="openModal('add', null)">创建智能体枢纽</el-button>
     </StdListAreaAction>
 
     <StdListAreaTable v-model:list-form="listForm" :list-total="listTotal" :load-list="loadList">
@@ -62,7 +62,7 @@
 
     <el-dialog
       v-model="modalVisible"
-      :title="modalMode === 'edit' ? '编辑MCP服务器' : '创建MCP服务器'"
+      :title="modalMode === 'edit' ? '编辑智能体枢纽' : '创建智能体枢纽'"
       width="550px"
       :close-on-click-modal="false"
       @close="

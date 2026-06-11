@@ -33,7 +33,7 @@ export default {
         listTotal.value = res.total;
         QueryPersistService.persistQuery(PERSIST_KEY, listForm);
       } catch {
-        ElMessage.error("加载MCP服务器列表失败");
+        ElMessage.error("加载智能体枢纽列表失败");
       } finally {
         listLoading.value = false;
       }
@@ -51,7 +51,7 @@ export default {
 
     const removeList = async (row: GetAgentHubListVo): Promise<void> => {
       try {
-        await ElMessageBox.confirm(`确定删除MCP服务器 [${row.name}] 吗？`, "提示", {
+        await ElMessageBox.confirm(`确定删除智能体枢纽 [${row.name}] 吗？`, "提示", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning",
@@ -62,7 +62,7 @@ export default {
 
       try {
         await AacpAgentHubApi.removeAgentHub(row.id.toString());
-        ElMessage.success("删除MCP服务器成功");
+        ElMessage.success("删除智能体枢纽成功");
         loadList();
       } catch (error: any) {
         ElMessage.error(error.message);
@@ -121,7 +121,7 @@ export default {
         {
           validator: (_rule, _value, callback) => {
             if (modalForm.capabilityIds.length > 50) {
-              callback(new Error("一台MCP服务器最多绑定50个能力包"));
+              callback(new Error("一个智能体枢纽最多绑定50个能力包"));
               return;
             }
             callback();
@@ -210,7 +210,7 @@ export default {
             status: modalForm.status,
             capabilityIds: modalForm.capabilityIds,
           });
-          ElMessage.success("新增MCP服务器成功");
+          ElMessage.success("新增智能体枢纽成功");
         }
 
         if (modalMode.value === "edit") {
@@ -224,7 +224,7 @@ export default {
             status: modalForm.status,
             capabilityIds: modalForm.capabilityIds,
           });
-          ElMessage.success("编辑MCP服务器成功");
+          ElMessage.success("编辑智能体枢纽成功");
         }
 
         reloadCallback();
