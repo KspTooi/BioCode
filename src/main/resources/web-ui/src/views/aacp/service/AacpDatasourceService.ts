@@ -157,13 +157,13 @@ export default {
         modalForm.name = "";
         modalForm.code = "";
         modalForm.kind = 0;
-        modalForm.drive = "";
-        modalForm.url = "";
+        modalForm.drive = "com.mysql.cj.jdbc.Driver";
+        modalForm.url = "jdbc:mysql://localhost:3306/";
         modalForm.username = "";
         modalForm.password = "";
         modalForm.defaultDb = "";
-        modalForm.queryMaxRows = 0;
-        modalForm.executeBatch = 0;
+        modalForm.queryMaxRows = 1000;
+        modalForm.executeBatch = 1;
         modalVisible.value = true;
         return;
       }
@@ -209,7 +209,7 @@ export default {
       modalForm.password = "";
       modalForm.defaultDb = "";
       modalForm.queryMaxRows = 0;
-      modalForm.executeBatch = 0;
+      modalForm.executeBatch = 1;
     };
 
     const submitModal = async (): Promise<void> => {

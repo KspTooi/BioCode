@@ -63,7 +63,7 @@
         ref="modalFormRef"
         :model="modalForm"
         :rules="modalRules"
-        label-width="100px"
+        label-width="120px"
         :validate-on-rule-change="false"
       >
         <el-form-item label="数据源名称" prop="name">
@@ -109,10 +109,10 @@
           <el-input-number v-model="modalForm.queryMaxRows" placeholder="最大查询行数" :min="0" />
         </el-form-item>
         <el-form-item label="支持批处理" prop="executeBatch">
-          <el-select v-model="modalForm.executeBatch" placeholder="请选择">
-            <el-option label="不支持" :value="0" />
-            <el-option label="支持" :value="1" />
-          </el-select>
+          <el-radio-group v-model="modalForm.executeBatch">
+            <el-radio :value="1">支持</el-radio>
+            <el-radio :value="0">不支持</el-radio>
+          </el-radio-group>
         </el-form-item>
       </el-form>
       <template #footer>
