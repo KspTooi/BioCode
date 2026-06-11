@@ -26,6 +26,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -111,6 +112,15 @@ public class AacpAccessService {
             return;
         }
         session.getEmitter().complete();
+    }
+
+    /**
+     * 获取所有在线会话列表
+     *
+     * @return 在线会话列表
+     */
+    public List<McpClientSession> getOnlineSessionList() {
+        return new ArrayList<>(sessionMap.values());
     }
 
     /**
