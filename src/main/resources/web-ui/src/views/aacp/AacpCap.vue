@@ -74,6 +74,11 @@
             <el-option v-for="item in funcOptions" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
+        <el-form-item label="绑定数据源" prop="datasourceIds">
+          <el-select v-model="modalForm.datasourceIds" multiple filterable :loading="datasourceLoading" placeholder="请选择数据源">
+            <el-option v-for="item in datasourceOptions" :key="item.id" :label="item.name" :value="item.id" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="备注" prop="remark">
           <el-input
             v-model="modalForm.remark"
@@ -123,6 +128,8 @@ const {
   modalRules,
   funcOptions,
   funcLoading,
+  datasourceOptions,
+  datasourceLoading,
   openModal,
   resetModal,
   submitModal,

@@ -3,8 +3,10 @@ import type { FormInstance, FormRules } from "element-plus";
 import { ElMessage, ElMessageBox } from "element-plus";
 import AacpCapApi from "@/views/aacp/api/AacpCapApi.ts";
 import AacpMicroFuncApi from "@/views/aacp/api/AacpMicroFuncApi.ts";
+import AacpDatasourceApi from "@/views/aacp/api/AacpDatasourceApi.ts";
 import type { GetCapListDto, GetCapListVo, GetCapDetailsVo } from "@/views/aacp/api/AacpCapApi.ts";
 import type { GetMicroFuncListVo } from "@/views/aacp/api/AacpMicroFuncApi.ts";
+import type { GetAacpDatasourceListVo } from "@/views/aacp/api/AacpDatasourceApi.ts";
 import QueryPersistService from "@/commons/service/QueryPersistService.ts";
 
 const PERSIST_KEY = "aacp-cap";
@@ -93,11 +95,16 @@ export default {
       kind: null,
       remark: null,
       funcIds: [],
+      datasourceIds: [],
     });
 
     // 微函数选择器
     const funcOptions = ref<GetMicroFuncListVo[]>([]);
     const funcLoading = ref(false);
+
+    // 数据源选择器
+    const datasourceOptions = ref<GetAacpDatasourceListVo[]>([]);
+    const datasourceLoading = ref(false);
 
     const modalRules: FormRules = {
       name: [
@@ -117,6 +124,18 @@ export default {
           trigger: "change",
         },
       ],
+      datasourceIds: [
+        {
+          validator: (_rule, _value, callback) => {
+            if (modalForm.datasourceIds.length > 3) {
+              callback(new Error("一个能力包最多绑定3个数据源"));
+              return;
+            }
+            callback();
+          },
+          trigger: "change",
+        },
+      ],
       remark: [{ max: 500, message: "备注长度不能超过500", trigger: "blur" }],
     };
 
@@ -126,7 +145,9 @@ export default {
       modalForm.kind = 0;
       modalForm.remark = null;
       modalForm.funcIds = [];
+      modalForm.datasourceIds = [];
       funcOptions.value = [];
+      datasourceOptions.value = [];
     };
 
     /** 一次全量加载微函数选项（pageSize 写死 10000） */
@@ -151,11 +172,33 @@ export default {
       }
     };
 
+    /** 一次全量加载数据源选项（pageSize 写死 10000） */
+    const loadDatasourceOptions = async (): Promise<void> => {
+      if (datasourceOptions.value.length > 0) {
+        return;
+      }
+      datasourceLoading.value = true;
+      try {
+        const res = await AacpDatasourceApi.getAacpDatasourceList({
+          name: null,
+          code: null,
+          pageNum: 1,
+          pageSize: 10000,
+        });
+        datasourceOptions.value = res.data;
+      } catch {
+        ElMessage.error("加载数据源列表失败");
+      } finally {
+        datasourceLoading.value = false;
+      }
+    };
+
     const openModal = async (mode: ModalMode, row: GetCapListVo | null): Promise<void> => {
       modalMode.value = mode;
       resetModal();
 
       await loadFuncOptions();
+      await loadDatasourceOptions();
 
       if (mode === "edit" && row) {
         try {
@@ -165,6 +208,7 @@ export default {
           modalForm.kind = res.kind;
           modalForm.remark = res.remark;
           modalForm.funcIds = res.funcIds;
+          modalForm.datasourceIds = res.datasourceIds;
         } catch (error: any) {
           ElMessage.error(error.message);
           return;
@@ -190,6 +234,7 @@ export default {
             kind: modalForm.kind,
             remark: modalForm.remark,
             funcIds: modalForm.funcIds,
+            datasourceIds: modalForm.datasourceIds,
           });
           ElMessage.success("新增能力包成功");
         }
@@ -201,6 +246,7 @@ export default {
             kind: modalForm.kind,
             remark: modalForm.remark,
             funcIds: modalForm.funcIds,
+            datasourceIds: modalForm.datasourceIds,
           });
           ElMessage.success("编辑能力包成功");
         }
@@ -222,6 +268,8 @@ export default {
       modalRules,
       funcOptions,
       funcLoading,
+      datasourceOptions,
+      datasourceLoading,
       openModal,
       resetModal,
       submitModal,

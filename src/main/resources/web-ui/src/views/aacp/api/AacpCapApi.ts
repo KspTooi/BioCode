@@ -22,6 +22,7 @@ export interface AddCapDto {
   kind: number | null; //类型 0:微函数
   remark: string | null; //备注
   funcIds: string[]; //微函数ID列表
+  datasourceIds: string[]; //数据源ID列表
 }
 
 export interface EditCapDto {
@@ -30,6 +31,7 @@ export interface EditCapDto {
   kind: number | null; //类型 0:微函数
   remark: string | null; //备注
   funcIds: string[]; //微函数ID列表
+  datasourceIds: string[]; //数据源ID列表
 }
 
 export interface GetCapDetailsVo {
@@ -38,6 +40,7 @@ export interface GetCapDetailsVo {
   kind: number | null; //类型 0:微函数
   remark: string | null; //备注
   funcIds: string[]; //关联的微函数ID列表
+  datasourceIds: string[]; //关联的数据源ID列表
 }
 
 export default {
