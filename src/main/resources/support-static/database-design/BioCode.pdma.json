@@ -4,7 +4,7 @@
   "avatar": "",
   "version": "4.9.4",
   "createdTime": "2025-5-31 18:54:43",
-  "updatedTime": "2026-6-8 03:27:30",
+  "updatedTime": "2026-6-11 12:31:12",
   "dbConns": [],
   "profile": {
     "default": {
@@ -33291,8 +33291,8 @@
           "codeRoot": ""
         }
       },
-      "defKey": "aacp_mcp",
-      "defName": "MCP服务器表",
+      "defKey": "aacp_agent_hub",
+      "defName": "智能体枢纽表",
       "comment": "",
       "properties": {
         "partitioned by": "(date string)",
@@ -33680,7 +33680,7 @@
           "codeRoot": ""
         }
       },
-      "defKey": "aacp_capability",
+      "defKey": "aacp_cap",
       "defName": "能力包表",
       "comment": "",
       "properties": {
@@ -34015,8 +34015,8 @@
           "codeRoot": ""
         }
       },
-      "defKey": "aacp_mcp_capablity",
-      "defName": "MC表",
+      "defKey": "accp_agent_hub_cap",
+      "defName": "AHC表",
       "comment": "",
       "properties": {
         "partitioned by": "(date string)",
@@ -34158,8 +34158,8 @@
       ],
       "fields": [
         {
-          "defKey": "mcp_id",
-          "defName": "MID",
+          "defKey": "hub_id",
+          "defName": "HID",
           "comment": "",
           "type": "",
           "len": "",
@@ -34176,7 +34176,7 @@
           "id": "F15D1875-6EC7-418E-BD68-61F07AD63CAC"
         },
         {
-          "defKey": "capability_id",
+          "defKey": "cap_id",
           "defName": "CID",
           "comment": "",
           "type": "",
@@ -34206,7 +34206,7 @@
           "codeRoot": ""
         }
       },
-      "defKey": "accp_func",
+      "defKey": "accp_micro_func",
       "defName": "微函数",
       "comment": "",
       "properties": {
@@ -34595,8 +34595,8 @@
           "codeRoot": ""
         }
       },
-      "defKey": "aacp_capablity_func",
-      "defName": "CF表",
+      "defKey": "aacp_cap_micro_func",
+      "defName": "CMF表",
       "comment": "",
       "properties": {
         "partitioned by": "(date string)",
@@ -34738,7 +34738,7 @@
       ],
       "fields": [
         {
-          "defKey": "capability_id",
+          "defKey": "cap_id",
           "defName": "CID",
           "comment": "",
           "type": "",
@@ -34756,8 +34756,8 @@
           "id": "8BD543BD-3A7F-438D-A4E9-53FF5E9E75A3"
         },
         {
-          "defKey": "func_id",
-          "defName": "FID",
+          "defKey": "micro_func_id",
+          "defName": "MFID",
           "comment": "",
           "type": "",
           "len": "",
