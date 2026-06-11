@@ -50,7 +50,7 @@ public class AddAgentHubDto implements DtoCustomValidator {
     private List<Long> capIds;
 
     /**
-     * 校验通信协议和PSK鉴权约束
+     * 校验PSK鉴权约束
      *
      * @return 错误信息 无错误返回null
      */
