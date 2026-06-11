@@ -3,6 +3,7 @@ package com.ksptool.bio.biz.aacp.service;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
+import com.ksptool.bio.biz.aacp.model.AacpCapDatasourcePo;
 import com.ksptool.bio.biz.aacp.model.AacpCapMicroFuncPo;
 import com.ksptool.bio.biz.aacp.model.cap.AacpCapPo;
 import com.ksptool.bio.biz.aacp.model.cap.dto.AddCapDto;
@@ -10,6 +11,7 @@ import com.ksptool.bio.biz.aacp.model.cap.dto.EditCapDto;
 import com.ksptool.bio.biz.aacp.model.cap.dto.GetCapListDto;
 import com.ksptool.bio.biz.aacp.model.cap.vo.GetCapDetailsVo;
 import com.ksptool.bio.biz.aacp.model.cap.vo.GetCapListVo;
+import com.ksptool.bio.biz.aacp.repository.CapDatasourceRepository;
 import com.ksptool.bio.biz.aacp.repository.CapMicroFuncRepository;
 import com.ksptool.bio.biz.aacp.repository.CapRepository;
 import com.ksptool.bio.biz.aacp.repository.AgentHubCapRepository;
@@ -37,6 +39,9 @@ public class CapService {
 
     @Autowired
     private CapMicroFuncRepository capMicroFuncRepository;
+
+    @Autowired
+    private CapDatasourceRepository capDatasourceRepository;
 
     /**
      * 查询能力包列表
@@ -74,6 +79,13 @@ public class CapService {
         var pos = dto.getFuncIds().stream()
                 .map(fid -> new AacpCapMicroFuncPo(insertPo.getId(), fid)).toList();
         capMicroFuncRepository.saveAll(pos);
+
+        var dss = dto.getDatasourceIds();
+        if (dss != null && !dss.isEmpty()) {
+            var dsPos = dss.stream()
+                    .map(did -> new AacpCapDatasourcePo(insertPo.getId(), did)).toList();
+            capDatasourceRepository.saveAll(dsPos);
+        }
     }
 
     /**
@@ -105,6 +117,22 @@ public class CapService {
         if (idsDiff.hasRemove()) {
             capMicroFuncRepository.removeByCapIdAndMicroFuncIds(dto.getId(), idsDiff.getRemoveIds());
         }
+
+        var dss = dto.getDatasourceIds();
+        if (dss != null) {
+            List<Long> existDsIds = capDatasourceRepository.getDatasourceIdsByCapId(dto.getId());
+            var dsIdsDiff = new IdsDiff(existDsIds, dss);
+
+            if (dsIdsDiff.hasAdd()) {
+                var toAdd = dsIdsDiff.getAddIds().stream()
+                        .map(did -> new AacpCapDatasourcePo(dto.getId(), did)).toList();
+                capDatasourceRepository.saveAll(toAdd);
+            }
+
+            if (dsIdsDiff.hasRemove()) {
+                capDatasourceRepository.removeByCapIdAndDatasourceIds(dto.getId(), dsIdsDiff.getRemoveIds());
+            }
+        }
     }
 
     /**
@@ -122,6 +150,11 @@ public class CapService {
         //微函数能力包
         if (po.getKind() == 0) {
             vo.setFuncIds(capMicroFuncRepository.getMicroFuncIdsByCapId(po.getId()));
+        }
+
+        //数据源能力包
+        if (po.getKind() == 1) {
+            vo.setDatasourceIds(capDatasourceRepository.getDatasourceIdsByCapId(po.getId()));
         }
 
         return vo;
@@ -143,6 +176,7 @@ public class CapService {
             throw new BizException("该能力包已被" + refCount + "台智能体枢纽使用，无法删除");
         }
         capMicroFuncRepository.removeByCapId(dto.getId());
+        capDatasourceRepository.removeByCapId(dto.getId());
         repository.deleteById(dto.getId());
     }
 

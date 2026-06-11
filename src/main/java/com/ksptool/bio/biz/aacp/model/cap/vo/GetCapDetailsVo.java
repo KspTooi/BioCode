@@ -25,4 +25,7 @@ public class GetCapDetailsVo {
     @Schema(description = "关联的微函数ID列表")
     private List<Long> funcIds;
 
+    @Schema(description = "关联的数据源ID列表")
+    private List<Long> datasourceIds;
+
 }

@@ -35,6 +35,9 @@ public class EditCapDto implements DtoCustomValidator {
     @Schema(description = "微函数ID列表")
     private List<Long> funcIds;
 
+    @Schema(description = "数据源ID列表")
+    private List<Long> datasourceIds;
+
     @Override
     public String validate() {
         if (funcIds.size() > 50) {
