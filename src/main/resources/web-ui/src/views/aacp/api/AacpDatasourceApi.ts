@@ -88,28 +88,54 @@ export default {
    * 获取AACP数据源详情
    */
   getAacpDatasourceDetails: async (dto: CommonIdDto): Promise<GetAacpDatasourceDetailsVo> => {
-    const ret = await Http.postEntity<Result<GetAacpDatasourceDetailsVo>>("/aacpDatasource/getAacpDatasourceDetails", dto);
-    return ret.data;
+    const result = await Http.postEntity<Result<GetAacpDatasourceDetailsVo>>("/aacpDatasource/getAacpDatasourceDetails", dto);
+    if (result.code === 0) {
+      return result.data;
+    }
+    throw new Error(result.message);
   },
 
   /**
    * 新增AACP数据源
    */
-  addAacpDatasource: async (dto: AddAacpDatasourceDto): Promise<Result<void>> => {
-    return await Http.postEntity<Result<void>>("/aacpDatasource/addAacpDatasource", dto);
+  addAacpDatasource: async (dto: AddAacpDatasourceDto): Promise<string> => {
+    const result = await Http.postEntity<Result<string>>("/aacpDatasource/addAacpDatasource", dto);
+    if (result.code === 0) {
+      return result.message;
+    }
+    throw new Error(result.message);
   },
 
   /**
    * 编辑AACP数据源
    */
-  editAacpDatasource: async (dto: EditAacpDatasourceDto): Promise<Result<void>> => {
-    return await Http.postEntity<Result<void>>("/aacpDatasource/editAacpDatasource", dto);
+  editAacpDatasource: async (dto: EditAacpDatasourceDto): Promise<string> => {
+    const result = await Http.postEntity<Result<string>>("/aacpDatasource/editAacpDatasource", dto);
+    if (result.code === 0) {
+      return result.message;
+    }
+    throw new Error(result.message);
   },
 
   /**
    * 删除AACP数据源
    */
-  removeAacpDatasource: async (dto: CommonIdDto): Promise<Result<void>> => {
-    return await Http.postEntity<Result<void>>("/aacpDatasource/removeAacpDatasource", dto);
+  removeAacpDatasource: async (dto: CommonIdDto): Promise<string> => {
+    const result = await Http.postEntity<Result<string>>("/aacpDatasource/removeAacpDatasource", dto);
+    if (result.code === 0) {
+      return result.message;
+    }
+    throw new Error(result.message);
+  },
+
+  /**
+   * 测试AACP数据源连接
+   */
+  testAacpDatasourceConnection: async (dto: CommonIdDto): Promise<string> => {
+    const result = await Http.postEntity<Result<string>>("/aacpDatasource/testAacpDatasourceConnection", dto);
+    if (result.code === 0) {
+      return result.data;
+    }
+    throw new Error(result.message);
   },
 };

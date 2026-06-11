@@ -28,16 +28,19 @@
         <el-table-column prop="code" label="数据源编码" min-width="120" show-overflow-tooltip />
         <el-table-column prop="kind" label="数据源类型" min-width="100" show-overflow-tooltip>
           <template #default="scope">
-            {{ scope.row.kind === 0 ? "MYSQL" : scope.row.kind }}
+            <span v-if="scope.row.kind === 0" class="text-green-500">MYSQL</span>
           </template>
         </el-table-column>
         <el-table-column prop="url" label="连接字符串" min-width="200" show-overflow-tooltip />
         <el-table-column prop="defaultDb" label="默认数据库" min-width="120" show-overflow-tooltip />
         <el-table-column prop="queryMaxRows" label="最大查询行数" min-width="120" show-overflow-tooltip />
-        <el-table-column label="操作" fixed="right" min-width="180">
+        <el-table-column label="操作" fixed="right" min-width="260">
           <template #default="scope">
             <el-button link type="primary" size="small" :icon="EditIcon" @click="openModal('edit', scope.row)">
               编辑
+            </el-button>
+            <el-button link type="success" size="small" :icon="ConnectionIcon" @click="testConnection(scope.row)">
+              测试数据源连接
             </el-button>
             <el-button link type="danger" size="small" :icon="DeleteIcon" @click="removeList(scope.row)">
               删除
@@ -52,7 +55,10 @@
       :title="modalMode === 'edit' ? '编辑AACP数据源' : '新增AACP数据源'"
       width="600px"
       :close-on-click-modal="false"
-      @close="resetModal"
+      @close="
+        resetModal();
+        loadList();
+      "
     >
       <el-form
         v-if="modalVisible"
@@ -69,7 +75,9 @@
           <el-input v-model="modalForm.code" placeholder="请输入数据源编码" clearable :maxlength="32" show-word-limit />
         </el-form-item>
         <el-form-item label="数据源类型" prop="kind">
-          <el-input-number v-model="modalForm.kind" placeholder="数据源类型" :min="0" :max="0" />
+          <el-select v-model="modalForm.kind" placeholder="请选择数据源类型" style="width: 100%">
+            <el-option :value="0" label="MYSQL" />
+          </el-select>
         </el-form-item>
         <el-form-item label="JDBC驱动" prop="drive">
           <el-input v-model="modalForm.drive" placeholder="请输入JDBC驱动" clearable :maxlength="200" show-word-limit />
@@ -78,10 +86,23 @@
           <el-input v-model="modalForm.url" placeholder="请输入连接字符串" clearable />
         </el-form-item>
         <el-form-item label="连接用户名" prop="username">
-          <el-input v-model="modalForm.username" placeholder="请输入连接用户名" clearable :maxlength="200" show-word-limit />
+          <el-input
+            v-model="modalForm.username"
+            :placeholder="modalMode === 'edit' ? '留空不修改' : '请输入连接用户名'"
+            clearable
+            :maxlength="200"
+            show-word-limit
+          />
         </el-form-item>
         <el-form-item label="连接密码" prop="password">
-          <el-input v-model="modalForm.password" placeholder="请输入连接密码" type="password" clearable :maxlength="2000" show-word-limit />
+          <el-input
+            v-model="modalForm.password"
+            :placeholder="modalMode === 'edit' ? '留空不修改' : '请输入连接密码'"
+            type="password"
+            clearable
+            :maxlength="2000"
+            show-word-limit
+          />
         </el-form-item>
         <el-form-item label="默认数据库" prop="defaultDb">
           <el-input v-model="modalForm.defaultDb" placeholder="请输入默认数据库" clearable :maxlength="200" show-word-limit />
@@ -97,10 +118,12 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="modalVisible = false">取消</el-button>
-        <el-button type="primary" :loading="modalLoading" @click="submitModal">
-          {{ modalMode === "add" ? "创建" : "保存" }}
-        </el-button>
+        <div class="dialog-footer">
+          <el-button @click="modalVisible = false">取消</el-button>
+          <el-button type="primary" :loading="modalLoading" @click="submitModal">
+            {{ modalMode === "add" ? "创建" : "保存" }}
+          </el-button>
+        </div>
       </template>
     </el-dialog>
   </StdListContainer>
@@ -108,7 +131,7 @@
 
 <script setup lang="ts">
 import { ref, markRaw } from "vue";
-import { Edit, Delete } from "@element-plus/icons-vue";
+import { Edit, Delete, Connection } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
 import AacpDatasourceService from "@/views/aacp/service/AacpDatasourceService.ts";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
@@ -118,8 +141,9 @@ import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
 
 const EditIcon = markRaw(Edit);
 const DeleteIcon = markRaw(Delete);
+const ConnectionIcon = markRaw(Connection);
 
-const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } = AacpDatasourceService.useAacpDatasourceList();
+const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList, testConnection } = AacpDatasourceService.useAacpDatasourceList();
 
 const modalFormRef = ref<FormInstance>();
 
