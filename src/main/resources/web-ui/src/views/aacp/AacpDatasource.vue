@@ -76,7 +76,7 @@
           <el-input v-model="modalForm.name" placeholder="请输入数据源名称" clearable :maxlength="40" show-word-limit />
         </el-form-item>
         <el-form-item label="数据源编码" prop="code">
-          <el-input v-model="modalForm.code" placeholder="请输入数据源编码" clearable :maxlength="32" show-word-limit />
+          <el-input v-model="modalForm.code" placeholder="请输入数据源编码" clearable :maxlength="32" show-word-limit @blur="onCodeBlur" />
         </el-form-item>
         <el-form-item label="数据源类型" prop="kind">
           <el-select v-model="modalForm.kind" placeholder="请选择数据源类型" style="width: 100%">
@@ -152,7 +152,7 @@ const { listForm, listData, listTotal, listLoading, loadList, resetList, removeL
 
 const modalFormRef = ref<FormInstance>();
 
-const { modalVisible, modalLoading, modalMode, modalForm, modalRules, openModal, resetModal, submitModal } =
+const { modalVisible, modalLoading, modalMode, modalForm, modalRules, openModal, resetModal, submitModal, onCodeBlur } =
   AacpDatasourceService.useAacpDatasourceModal(modalFormRef, loadList);
 </script>
 
