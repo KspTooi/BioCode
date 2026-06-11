@@ -21,14 +21,7 @@
     </StdListAreaAction>
 
     <StdListAreaTable v-model:list-form="listForm">
-      <el-table
-        v-loading="listLoading"
-        :data="listData"
-        border
-        stripe
-        height="100%"
-        @selection-change="onSelectionChange"
-      >
+      <el-table v-loading="listLoading" :data="listData" border stripe height="100%" @selection-change="onSelectionChange">
         <el-table-column type="selection" width="50" align="center" />
         <el-table-column type="index" label="序号" width="60" align="center" />
         <el-table-column label="会话ID" prop="sessionId" min-width="200" show-overflow-tooltip />
@@ -44,9 +37,7 @@
         <el-table-column label="请求次数" prop="inboundCount" width="100" align="center" />
         <el-table-column label="操作" fixed="right" width="120">
           <template #default="scope">
-            <el-button link type="danger" size="small" :icon="CloseIcon" @click="removeList(scope.row)">
-              关闭会话
-            </el-button>
+            <el-button link type="danger" size="small" :icon="CloseIcon" @click="removeList(scope.row)"> 关闭会话 </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -65,6 +56,16 @@ import AacpSessionService from "@/views/aacp/service/AacpSessionService.ts";
 
 const CloseIcon = markRaw(CloseBold);
 
-const { listForm, serverCode, listData, listLoading, selectionRows, loadList, resetList, removeList, onSelectionChange, batchClose } =
-  AacpSessionService.useOnlineSessionList();
+const {
+  listForm,
+  serverCode,
+  listData,
+  listLoading,
+  selectionRows,
+  loadList,
+  resetList,
+  removeList,
+  onSelectionChange,
+  batchClose,
+} = AacpSessionService.useOnlineSessionList();
 </script>
