@@ -39,6 +39,6 @@ Write-Host "[启动] 正在启动 MCP Inspector ..." -ForegroundColor Cyan
 Write-Host "  SSE 目标: http://127.0.0.1:27500/aacp/upstream/test" -ForegroundColor Gray
 Write-Host ""
 
-npx @modelcontextprotocol/inspector npx -y supergateway --sse http://127.0.0.1:27500/aacp/upstream/test
+npx @modelcontextprotocol/inspector --transport sse --url http://127.0.0.1:27500/aacp/upstream/test
 
 pause

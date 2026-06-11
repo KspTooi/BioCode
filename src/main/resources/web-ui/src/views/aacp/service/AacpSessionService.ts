@@ -9,13 +9,13 @@ export default {
    */
   useOnlineSessionList() {
     const listForm = reactive({
-      serverCode: null as string | null,
       pageNum: 1,
       pageSize: 20,
     });
 
+    const serverCode = ref<string | null>(null);
+
     const listData = ref<GetOnlineSessionListVo[]>([]);
-    const listTotal = ref(0);
     const listLoading = ref(false);
 
     const loadList = async (): Promise<void> => {
@@ -23,11 +23,10 @@ export default {
       try {
         const res = await AacpSessionApi.getOnlineSessionList();
         let data = res.data;
-        if (listForm.serverCode) {
-          data = data.filter((item) => item.serverCode.includes(listForm.serverCode!));
+        if (serverCode.value) {
+          data = data.filter((item) => item.serverCode.includes(serverCode.value ?? ""));
         }
         listData.value = data;
-        listTotal.value = data.length;
       } catch {
         ElMessage.error("加载在线会话列表失败");
       } finally {
@@ -36,9 +35,7 @@ export default {
     };
 
     const resetList = (): void => {
-      listForm.serverCode = null;
-      listForm.pageNum = 1;
-      listForm.pageSize = 20;
+      serverCode.value = null;
       loadList();
     };
 
@@ -68,8 +65,8 @@ export default {
 
     return {
       listForm,
+      serverCode,
       listData,
-      listTotal,
       listLoading,
       loadList,
       resetList,

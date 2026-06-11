@@ -1,10 +1,10 @@
 <template>
   <StdListContainer>
     <StdListAreaQuery>
-      <el-form :model="listForm" inline class="flex justify-between">
+      <el-form inline class="flex justify-between">
         <div>
           <el-form-item label="枢纽编码">
-            <el-input v-model="listForm.serverCode" placeholder="请输入枢纽编码" clearable />
+            <el-input v-model="serverCode" placeholder="请输入枢纽编码" clearable />
           </el-form-item>
         </div>
         <el-form-item>
@@ -14,7 +14,7 @@
       </el-form>
     </StdListAreaQuery>
 
-    <StdListAreaTable v-model:list-form="listForm" :list-total="listTotal" :load-list="loadList">
+    <StdListAreaTable v-model:list-form="listForm">
       <el-table v-loading="listLoading" :data="listData" border stripe height="100%">
         <el-table-column type="index" label="序号" width="60" align="center" />
         <el-table-column label="会话ID" prop="sessionId" min-width="200" show-overflow-tooltip />
@@ -50,7 +50,7 @@ import AacpSessionService from "@/views/aacp/service/AacpSessionService.ts";
 
 const CloseIcon = markRaw(CloseBold);
 
-const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } =
+const { listForm, serverCode, listData, listLoading, loadList, resetList, removeList } =
   AacpSessionService.useOnlineSessionList();
 </script>
 
