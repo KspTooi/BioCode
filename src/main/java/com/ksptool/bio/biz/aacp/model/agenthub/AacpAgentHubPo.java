@@ -1,4 +1,4 @@
-package com.ksptool.bio.biz.aacp.model.func;
+package com.ksptool.bio.biz.aacp.model.agenthub;
 
 import com.ksptool.assembly.entity.exception.AuthException;
 import com.ksptool.bio.biz.auth.service.SessionService;
@@ -19,11 +19,11 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Entity
-@Table(name = "accp_micro_func")
+@Table(name = "aacp_agent_hub")
 @EntityListeners(AuditingEntityListener.class)
-@SQLDelete(sql = "UPDATE accp_func SET delete_time = NOW() WHERE id = ?")
+@SQLDelete(sql = "UPDATE aacp_agent_hub SET delete_time = NOW() WHERE id = ?")
 @SQLRestriction("delete_time IS NULL")
-public class AacpFuncPo {
+public class AacpAgentHubPo {
 
     @Id
     @SnowflakeIdGenerated
@@ -33,23 +33,23 @@ public class AacpFuncPo {
     @Column(name = "root_id", nullable = false, comment = "租户ID")
     private Long rootId;
 
-    @Column(name = "name", nullable = false, length = 40, comment = "微函数名称")
+    @Column(name = "name", nullable = false, length = 40, comment = "服务器名称")
     private String name;
 
-    @Column(name = "code", nullable = false, length = 32, comment = "微函数标识")
+    @Column(name = "code", nullable = false, length = 16, comment = "唯一编码")
     private String code;
 
-    @Column(name = "description", nullable = false, length = 1000, comment = "意图词")
-    private String description;
+    @Column(name = "network_kind", nullable = false, columnDefinition = "tinyint", comment = "通信协议 0:HTTP+SSE 1:WS")
+    private Integer networkKind;
 
-    @Column(name = "`schema`", comment = "入参规范")
-    private String schema;
+    @Column(name = "auth_kind", nullable = false, columnDefinition = "tinyint", comment = "鉴权类型 0:无 1:PSK")
+    private Integer authKind;
 
-    @Column(name = "target", nullable = false, length = 1000, comment = "调用目标Bean")
-    private String target;
+    @Column(name = "auth_psk", length = 2000, comment = "预共享密钥")
+    private String authPsk;
 
-    @Column(name = "remark", length = 500, comment = "备注")
-    private String remark;
+    @Column(name = "status", nullable = false, columnDefinition = "tinyint", comment = "状态 0:离线 1:在线")
+    private Integer status;
 
     @CreatedDate
     @Column(name = "create_time", nullable = false, comment = "创建时间")
@@ -69,6 +69,7 @@ public class AacpFuncPo {
 
     @Column(name = "delete_time", comment = "删除时间")
     private LocalDateTime deleteTime;
+
 
     @PrePersist
     private void onCreate() throws AuthException {

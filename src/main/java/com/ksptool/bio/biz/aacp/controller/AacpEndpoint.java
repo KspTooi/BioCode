@@ -4,8 +4,8 @@ import com.google.gson.Gson;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.bio.biz.aacp.commons.McpClientSession;
 import com.ksptool.bio.biz.aacp.commons.McpParser;
-import com.ksptool.bio.biz.aacp.model.mcp.AacpMcpPo;
-import com.ksptool.bio.biz.aacp.repository.AacpMcpRepository;
+import com.ksptool.bio.biz.aacp.model.agenthub.AacpAgentHubPo;
+import com.ksptool.bio.biz.aacp.repository.AgentHubRepository;
 import com.ksptool.bio.biz.aacp.service.AacpEndpointService;
 import com.ksptool.bio.biz.auth.common.DynamicGlobalWhiteManager;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -39,7 +39,7 @@ public class AacpEndpoint {
     private AacpEndpointService aacpEndpointService;
 
     @Autowired
-    private AacpMcpRepository aacpMcpRepository;
+    private AgentHubRepository agentHubRepository;
 
     @Autowired
     private DynamicGlobalWhiteManager dgwm;
@@ -56,7 +56,7 @@ public class AacpEndpoint {
     @GetMapping(value = "/upstream/{code}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter upstream(@PathVariable("code") String code) throws BizException {
 
-        AacpMcpPo po = aacpMcpRepository.getByCode(code);
+        AacpAgentHubPo po = agentHubRepository.getByCode(code);
         if (po == null) {
             throw new BizException("MCP服务器不存在:" + code);
         }

@@ -12,10 +12,11 @@ import com.ksptool.bio.biz.aacp.commons.jrpc.vo.InitializeVo;
 import com.ksptool.bio.biz.aacp.commons.jrpc.vo.PingVo;
 import com.ksptool.bio.biz.aacp.commons.jrpc.vo.ToolsCallVo;
 import com.ksptool.bio.biz.aacp.commons.jrpc.vo.ToolsListVo;
-import com.ksptool.bio.biz.aacp.model.capability.AacpCapabilityPo;
-import com.ksptool.bio.biz.aacp.repository.AacpCapabilityFuncRepository;
-import com.ksptool.bio.biz.aacp.repository.AacpCapabilityRepository;
-import com.ksptool.bio.biz.aacp.repository.AacpFuncRepository;
+import com.ksptool.bio.biz.aacp.model.cap.AacpCapPo;
+import com.ksptool.bio.biz.aacp.repository.CapMicroFuncRepository;
+import com.ksptool.bio.biz.aacp.repository.CapRepository;
+import com.ksptool.bio.biz.aacp.repository.MicroFuncRepository;
+import com.ksptool.bio.biz.aacp.service.MicroFuncCallService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,23 +28,23 @@ import java.util.stream.Collectors;
  * MCP 协议业务逻辑：JSON-RPC 方法路由分发
  * <p>
  * 统一接入点，根据 InputMethods 枚举路由到对应处理分支。
- * 工具列表与调用委托给 MicroFuncService。
+ * 工具列表与调用委托给 MicroFuncCallService。
  */
 @Slf4j
 @Service
 public class AacpEndpointService {
 
     @Autowired
-    private MicroFuncService microFuncService;
+    private MicroFuncCallService microFuncCallService;
 
     @Autowired
-    private AacpCapabilityRepository aacpCapabilityRepository;
+    private CapRepository capRepository;
 
     @Autowired
-    private AacpCapabilityFuncRepository capabilityFuncRepository;
+    private CapMicroFuncRepository capMicroFuncRepository;
 
     @Autowired
-    private AacpFuncRepository aacpFuncRepository;
+    private MicroFuncRepository microFuncRepository;
 
     @Autowired
     private MicroFuncRegistry mfRegistry;
@@ -99,11 +100,11 @@ public class AacpEndpointService {
             var ret = new ToolsListVo();
 
             //获取微函数能力包
-            var funcCapPos = aacpCapabilityRepository.getByMcpId(session.getServerId(), 0);
-            var funcCapIds = funcCapPos.stream().map(AacpCapabilityPo::getId).collect(Collectors.toSet());
+            var funcCapPos = capRepository.getByMcpId(session.getServerId(), 0);
+            var funcCapIds = funcCapPos.stream().map(AacpCapPo::getId).collect(Collectors.toSet());
 
             //获取能力包中的微函数
-            var funcPos = aacpFuncRepository.getFuncListByCapabilityIds(funcCapIds);
+            var funcPos = microFuncRepository.getMicroFuncListByCapIds(funcCapIds);
 
             //直接组装为工具列表
             var tools = new ArrayList<ToolsListVo.Tool>();
@@ -136,7 +137,7 @@ public class AacpEndpointService {
                 return RpcOutput.error(input.getId(), -32602, "Invalid params");
             }
             log.info("[AACP] 客户端调用工具: name={} Inbound => {}", callDto.getName(), session.getSessionId());
-            ToolsCallVo vo = microFuncService.call(callDto.getName(), callDto.getArguments());
+            ToolsCallVo vo = microFuncCallService.call(callDto.getName(), callDto.getArguments());
             return RpcOutput.success(input.getId(), vo);
         }
 

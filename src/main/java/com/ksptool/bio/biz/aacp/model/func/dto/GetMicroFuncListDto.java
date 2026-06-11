@@ -1,15 +1,13 @@
-package com.ksptool.bio.biz.aacp.model.func.vo;
+package com.ksptool.bio.biz.aacp.model.func.dto;
 
+import com.ksptool.assembly.entity.web.PageQuery;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class GetMicroFuncListVo {
-
-    @Schema(description = "主键ID")
-    private Long id;
+public class GetMicroFuncListDto extends PageQuery {
 
     @Schema(description = "微函数名称")
     private String name;
