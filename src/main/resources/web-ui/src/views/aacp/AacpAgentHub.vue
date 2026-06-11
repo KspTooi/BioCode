@@ -3,8 +3,8 @@
     <StdListAreaQuery>
       <el-form :model="listForm" inline class="flex justify-between">
         <div>
-          <el-form-item label="服务器名称">
-            <el-input v-model="listForm.name" placeholder="请输入服务器名称" clearable />
+          <el-form-item label="枢纽名称">
+            <el-input v-model="listForm.name" placeholder="请输入枢纽名称" clearable />
           </el-form-item>
           <el-form-item label="唯一编码">
             <el-input v-model="listForm.code" placeholder="请输入唯一编码" clearable />
@@ -30,7 +30,7 @@
     <StdListAreaTable v-model:list-form="listForm" :list-total="listTotal" :load-list="loadList">
       <el-table v-loading="listLoading" :data="listData" border stripe height="100%">
         <el-table-column type="index" label="序号" width="60" align="center" />
-        <el-table-column label="服务器名称" prop="name" />
+        <el-table-column label="枢纽名称" prop="name" />
         <el-table-column label="唯一编码" prop="code" width="130" />
         <el-table-column label="通信协议" width="110" align="center">
           <template #default="scope">
@@ -43,7 +43,7 @@
             <span v-show="scope.row.authKind === 1">PSK</span>
           </template>
         </el-table-column>
-        <el-table-column label="能力包" prop="capabilityCount" width="80" align="center" />
+        <el-table-column label="能力包" prop="capCount" width="80" align="center" />
         <el-table-column label="微函数" prop="funcCount" width="80" align="center" />
         <el-table-column label="状态" width="80" align="center">
           <template #default="scope">
@@ -78,8 +78,8 @@
         label-width="110px"
         :validate-on-rule-change="false"
       >
-        <el-form-item label="服务器名称" prop="name">
-          <el-input v-model="modalForm.name" placeholder="请输入服务器名称" :maxlength="40" show-word-limit />
+        <el-form-item label="枢纽名称" prop="name">
+          <el-input v-model="modalForm.name" placeholder="请输入枢纽名称" :maxlength="40" show-word-limit />
         </el-form-item>
         <el-form-item label="唯一编码" prop="code">
           <el-input v-model="modalForm.code" placeholder="请输入唯一编码" :maxlength="16" show-word-limit />
@@ -87,7 +87,7 @@
         <el-form-item label="通信协议">
           <el-select v-model="modalForm.networkKind" placeholder="请选择通信协议">
             <el-option label="HTTP+SSE" :value="0" />
-            <el-option label="WS" :value="1" />
+            <el-option label="WS" :value="1" disabled />
           </el-select>
         </el-form-item>
         <el-form-item label="鉴权类型" prop="authKind">
@@ -112,15 +112,15 @@
             <el-option label="在线" :value="1" />
           </el-select>
         </el-form-item>
-        <el-form-item label="绑定能力包" prop="capabilityIds">
+        <el-form-item label="绑定能力包" prop="capIds">
           <el-select
-            v-model="modalForm.capabilityIds"
+            v-model="modalForm.capIds"
             multiple
             filterable
-            :loading="capabilityLoading"
+            :loading="capLoading"
             placeholder="请选择能力包"
           >
-            <el-option v-for="item in capabilityOptions" :key="item.id" :label="item.name" :value="item.id" />
+            <el-option v-for="item in capOptions" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
       </el-form>
@@ -159,8 +159,8 @@ const {
   modalMode,
   modalForm,
   modalRules,
-  capabilityOptions,
-  capabilityLoading,
+  capOptions,
+  capLoading,
   openModal,
   resetModal,
   submitModal,

@@ -6,22 +6,22 @@ export default class AacpRouteRegister extends GenricRouteRegister {
     return [
       RouteEntryPo.build({
         biz: "aacp",
-        path: "mcp-server",
-        name: "mcp-server",
+        path: "agent-hub",
+        name: "agent-hub",
         component: () => import("@/views/aacp/AacpAgentHub.vue"),
         meta: { breadcrumb: "智能体枢纽" },
       }),
       RouteEntryPo.build({
         biz: "aacp",
-        path: "capability",
-        name: "capability",
+        path: "cap",
+        name: "cap",
         component: () => import("@/views/aacp/AacpCap.vue"),
         meta: { breadcrumb: "能力包" },
       }),
       RouteEntryPo.build({
         biz: "aacp",
-        path: "func",
-        name: "func",
+        path: "micro-func",
+        name: "micro-func",
         component: () => import("@/views/aacp/AacpMicroFunc.vue"),
         meta: { breadcrumb: "微函数" },
       }),

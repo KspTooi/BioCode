@@ -97,17 +97,17 @@ export default {
       authKind: null,
       authPsk: null,
       status: null,
-      capabilityIds: [],
+      capIds: [],
     });
 
     // 能力包选择器
-    const capabilityOptions = ref<GetCapListVo[]>([]);
-    const capabilityLoading = ref(false);
+    const capOptions = ref<GetCapListVo[]>([]);
+    const capLoading = ref(false);
 
     const modalRules: FormRules = {
       name: [
-        { required: true, message: "请输入服务器名称", trigger: "blur" },
-        { max: 40, message: "服务器名称长度不能超过40", trigger: "blur" },
+        { required: true, message: "请输入枢纽名称", trigger: "blur" },
+        { max: 40, message: "枢纽名称长度不能超过40", trigger: "blur" },
       ],
       code: [
         { required: true, message: "请输入唯一编码", trigger: "blur" },
@@ -117,10 +117,10 @@ export default {
       authKind: [{ required: true, message: "请选择鉴权类型", trigger: "change" }],
       authPsk: [{ max: 2000, message: "预共享密钥长度不能超过2000", trigger: "blur" }],
       status: [{ required: true, message: "请选择状态", trigger: "change" }],
-      capabilityIds: [
+      capIds: [
         {
           validator: (_rule, _value, callback) => {
-            if (modalForm.capabilityIds.length > 50) {
+            if (modalForm.capIds.length > 50) {
               callback(new Error("一个智能体枢纽最多绑定50个能力包"));
               return;
             }
@@ -133,10 +133,10 @@ export default {
 
     /** 一次全量加载能力包选项（pageSize 写死 10000） */
     const loadCapabilityOptions = async (): Promise<void> => {
-      if (capabilityOptions.value.length > 0) {
+      if (capOptions.value.length > 0) {
         return;
       }
-      capabilityLoading.value = true;
+      capLoading.value = true;
       try {
         const res = await AacpCapApi.getCapList({
           name: null,
@@ -144,11 +144,11 @@ export default {
           pageNum: 1,
           pageSize: 10000,
         });
-        capabilityOptions.value = res.data;
+        capOptions.value = res.data;
       } catch {
         ElMessage.error("加载能力包列表失败");
       } finally {
-        capabilityLoading.value = false;
+        capLoading.value = false;
       }
     };
 
@@ -160,8 +160,8 @@ export default {
       modalForm.authKind = 0;
       modalForm.authPsk = null;
       modalForm.status = 1;
-      modalForm.capabilityIds = [];
-      capabilityOptions.value = [];
+      modalForm.capIds = [];
+      capOptions.value = [];
     };
 
     const openModal = async (mode: ModalMode, row: GetAgentHubListVo | null): Promise<void> => {
@@ -180,7 +180,7 @@ export default {
           modalForm.authKind = res.authKind;
           modalForm.authPsk = res.authPsk;
           modalForm.status = res.status;
-          modalForm.capabilityIds = res.capabilityIds;
+          modalForm.capIds = res.capIds;
         } catch (error: any) {
           ElMessage.error(error.message);
           return;
@@ -208,7 +208,7 @@ export default {
             authKind: modalForm.authKind,
             authPsk: modalForm.authPsk,
             status: modalForm.status,
-            capabilityIds: modalForm.capabilityIds,
+            capIds: modalForm.capIds,
           });
           ElMessage.success("新增智能体枢纽成功");
         }
@@ -222,7 +222,7 @@ export default {
             authKind: modalForm.authKind,
             authPsk: modalForm.authPsk,
             status: modalForm.status,
-            capabilityIds: modalForm.capabilityIds,
+            capIds: modalForm.capIds,
           });
           ElMessage.success("编辑智能体枢纽成功");
         }
@@ -242,8 +242,8 @@ export default {
       modalMode,
       modalForm,
       modalRules,
-      capabilityOptions,
-      capabilityLoading,
+      capOptions,
+      capLoading,
       openModal,
       resetModal,
       submitModal,
