@@ -1,5 +1,6 @@
 package com.ksptool.bio.biz.aacp.service;
 
+import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.bio.biz.aacp.commons.McpClientSession;
 import com.ksptool.bio.biz.aacp.commons.McpParser;
 import com.ksptool.bio.biz.aacp.commons.MicroFuncDefinition;
@@ -15,13 +16,12 @@ import com.ksptool.bio.biz.aacp.commons.jrpc.vo.ToolsListVo;
 import com.ksptool.bio.biz.aacp.model.agenthub.AacpAgentHubPo;
 import com.ksptool.bio.biz.aacp.model.cap.AacpCapPo;
 import com.ksptool.bio.biz.aacp.repository.AgentHubRepository;
-import com.ksptool.bio.biz.aacp.repository.CapMicroFuncRepository;
 import com.ksptool.bio.biz.aacp.repository.CapRepository;
 import com.ksptool.bio.biz.aacp.repository.MicroFuncRepository;
-import com.ksptool.assembly.entity.exception.BizException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -63,13 +65,22 @@ public class AacpAccessService {
      */
     public String createSession(String serverCode, SseEmitter emitter) throws BizException {
 
-        AacpAgentHubPo po = agentHubRepository.getByCode(serverCode);
+        //SSE 是异步长连接,且本项目强制开启 OSIV,若直接在请求线程查库,EntityManager 与其 JDBC 连接会被 OSIV 绑定到整个 SSE 生命周期(可达1小时)而无法归还 HikariCP
+        //把读库丢到无 OSIV 绑定的工作线程,该线程查询用完即关闭 EntityManager 并归还连接,SSE 请求线程全程不碰库
+        AacpAgentHubPo po;
+        try {
+            po = CompletableFuture.supplyAsync(() -> agentHubRepository.getByCode(serverCode)).join();
+        } catch (CompletionException e) {
+            throw new BizException("查询智能体枢纽失败:" + serverCode);
+        }
+
         if (po == null) {
             throw new BizException("智能体枢纽不存在:" + serverCode);
         }
         if (po.getStatus() != 1) {
             throw new BizException("智能体枢纽当前不接受连接请求:" + serverCode);
         }
+
 
         String sessionId = UUID.randomUUID().toString();
         McpClientSession session = new McpClientSession(sessionId, serverCode, po.getId(), po.getName(), emitter);
@@ -130,6 +141,7 @@ public class AacpAccessService {
      * @param input   原始 JSON-RPC 请求
      * @return JSON-RPC 响应，通知类方法返回 null
      */
+    @Transactional
     public RpcOutput<?> inbound(McpClientSession session, RpcInput<String> input) {
 
         session.setInboundCount(session.getInboundCount() + 1);

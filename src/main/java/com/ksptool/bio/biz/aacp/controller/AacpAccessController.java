@@ -44,6 +44,7 @@ public class AacpAccessController {
      */
     @GetMapping(value = "/upstream/{code}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter upstream(@PathVariable("code") String code) throws BizException {
+        //SSE 长连接不得持有 JDBC 连接,读库已下沉到 Service 的工作线程执行,请求线程全程不绑定 EntityManager/连接,规避 OSIV 占用 HikariCP
         SseEmitter emitter = new SseEmitter(3600000L);
         aacpAccessService.createSession(code, emitter);
         return emitter;
