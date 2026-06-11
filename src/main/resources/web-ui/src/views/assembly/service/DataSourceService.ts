@@ -236,7 +236,10 @@ export default {
       if (!modalForm.code) {
         return;
       }
-      modalForm.url = "jdbc:mysql://127.0.0.1:3306/" + modalForm.code + "?serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&allowMultiQueries=true&useUnicode=true&characterEncoding=utf-8";
+      modalForm.url =
+        "jdbc:mysql://127.0.0.1:3306/" +
+        modalForm.code +
+        "?serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&allowMultiQueries=true&useUnicode=true&characterEncoding=utf-8";
     };
 
     /**

@@ -76,7 +76,14 @@
           <el-input v-model="modalForm.name" placeholder="请输入数据源名称" clearable :maxlength="40" show-word-limit />
         </el-form-item>
         <el-form-item label="数据源编码" prop="code">
-          <el-input v-model="modalForm.code" placeholder="请输入数据源编码" clearable :maxlength="32" show-word-limit @blur="onCodeBlur" />
+          <el-input
+            v-model="modalForm.code"
+            placeholder="请输入数据源编码"
+            clearable
+            :maxlength="32"
+            show-word-limit
+            @blur="onCodeBlur"
+          />
         </el-form-item>
         <el-form-item label="数据源类型" prop="kind">
           <el-select v-model="modalForm.kind" placeholder="请选择数据源类型" style="width: 100%">
