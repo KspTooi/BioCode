@@ -12,6 +12,7 @@ import com.ksptool.bio.biz.aacp.model.datasource.vo.GetAacpDatasourceDetailsVo;
 import com.ksptool.bio.biz.aacp.model.datasource.vo.GetAacpDatasourceListVo;
 import com.ksptool.bio.biz.aacp.repository.AacpDatasourceRepository;
 import com.ksptool.bio.biz.aacp.repository.CapDatasourceRepository;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -81,7 +82,18 @@ public class AacpDatasourceService {
         AacpDatasourcePo updatePo = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("更新失败,数据不存在或无权限访问."));
 
+        String originalPassword = updatePo.getPassword();
+        String originalUsername = updatePo.getUsername();
         assign(dto, updatePo);
+
+        if (StringUtils.isBlank(dto.getPassword())) {
+            updatePo.setPassword(originalPassword);
+        }
+
+        if (StringUtils.isBlank(dto.getUsername())) {
+            updatePo.setUsername(originalUsername);
+        }
+
         repository.save(updatePo);
     }
 
