@@ -3,6 +3,7 @@ package com.ksptool.bio.biz.aacp.service;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
+import com.ksptool.assembly.entity.web.Result;
 import com.ksptool.bio.biz.aacp.model.datasource.AacpDatasourcePo;
 import com.ksptool.bio.biz.aacp.model.datasource.dto.AddAacpDatasourceDto;
 import com.ksptool.bio.biz.aacp.model.datasource.dto.EditAacpDatasourceDto;
@@ -15,6 +16,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.List;
 
 import static com.ksptool.entities.Entities.as;
@@ -99,9 +103,36 @@ public class AacpDatasourceService {
     @Transactional(rollbackFor = Exception.class)
     public void removeAacpDatasource(CommonIdDto dto) throws BizException {
         if (dto.isBatch()) {
-            repository.deleteAllById(dto.getIds());
-            return;
+            throw new BizException("数据源不支持批量删除");
         }
         repository.deleteById(dto.getId());
+    }
+
+    /**
+     * 测试AACP数据源连接
+     *
+     * @param dto 查询参数
+     * @return 测试结果
+     * @throws BizException 业务异常
+     */
+    public Result<String> testAacpDatasourceConnection(CommonIdDto dto) throws BizException {
+        AacpDatasourcePo po = repository.findById(dto.getId())
+                .orElseThrow(() -> new BizException("测试失败,数据不存在或无权限访问."));
+
+        long startTime = System.currentTimeMillis();
+        try {
+            Class.forName(po.getDrive());
+        } catch (ClassNotFoundException e) {
+            return Result.error("测试失败,JDBC驱动不存在.");
+        }
+
+        try {
+            Connection connection = DriverManager.getConnection(po.getUrl(), po.getUsername(), po.getPassword());
+            connection.close();
+        } catch (SQLException e) {
+            return Result.error("测试失败,连接失败: " + e.getMessage());
+        }
+
+        return Result.success("成功连接数据库 耗时: " + (System.currentTimeMillis() - startTime) + "ms");
     }
 }

@@ -39,13 +39,13 @@ public class AacpDatasourcePo {
     @Column(name = "code", nullable = false, length = 32, comment = "数据源编码")
     private String code;
 
-    @Column(name = "kind", nullable = false, comment = "数据源类型 0:MYSQL")
+    @Column(name = "kind", nullable = false, columnDefinition = "tinyint", comment = "数据源类型 0:MYSQL")
     private Integer kind;
 
     @Column(name = "drive", nullable = false, length = 200, comment = "JDBC驱动")
     private String drive;
 
-    @Column(name = "url", nullable = false, comment = "连接字符串")
+    @Column(name = "url", nullable = false, length = 2000, comment = "连接字符串")
     private String url;
 
     @Column(name = "username", length = 200, comment = "连接用户名")
@@ -60,7 +60,7 @@ public class AacpDatasourcePo {
     @Column(name = "query_max_rows", nullable = false, comment = "最大查询行数")
     private Integer queryMaxRows;
 
-    @Column(name = "execute_batch", nullable = false, comment = "是否支持批处理 0:不支持 1:支持")
+    @Column(name = "execute_batch", nullable = false, columnDefinition = "tinyint", comment = "是否支持批处理 0:不支持 1:支持")
     private Integer executeBatch;
 
     @CreatedDate

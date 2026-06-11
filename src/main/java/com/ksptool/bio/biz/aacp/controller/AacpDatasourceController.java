@@ -72,4 +72,11 @@ public class AacpDatasourceController {
         aacpDatasourceService.removeAacpDatasource(dto);
         return Result.success("操作成功");
     }
+
+    @PreAuthorize("@auth.hasCode('aacp:datasource:test')")
+    @PostMapping("/testAacpDatasourceConnection")
+    @Operation(summary = "测试AACP数据源连接")
+    public Result<String> testAacpDatasourceConnection(@RequestBody @Valid CommonIdDto dto) throws Exception {
+        return aacpDatasourceService.testAacpDatasourceConnection(dto);
+    }
 }
