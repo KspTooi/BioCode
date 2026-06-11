@@ -16,7 +16,6 @@ import com.ksptool.bio.biz.aacp.model.cap.AacpCapPo;
 import com.ksptool.bio.biz.aacp.repository.CapMicroFuncRepository;
 import com.ksptool.bio.biz.aacp.repository.CapRepository;
 import com.ksptool.bio.biz.aacp.repository.MicroFuncRepository;
-import com.ksptool.bio.biz.aacp.service.MicroFuncCallService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,15 +23,10 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
-/**
- * MCP 协议业务逻辑：JSON-RPC 方法路由分发
- * <p>
- * 统一接入点，根据 InputMethods 枚举路由到对应处理分支。
- * 工具列表与调用委托给 MicroFuncCallService。
- */
+
 @Slf4j
 @Service
-public class AacpEndpointService {
+public class AacpAccessService {
 
     @Autowired
     private MicroFuncCallService microFuncCallService;

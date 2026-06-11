@@ -6,7 +6,7 @@ import com.ksptool.bio.biz.aacp.commons.McpClientSession;
 import com.ksptool.bio.biz.aacp.commons.McpParser;
 import com.ksptool.bio.biz.aacp.model.agenthub.AacpAgentHubPo;
 import com.ksptool.bio.biz.aacp.repository.AgentHubRepository;
-import com.ksptool.bio.biz.aacp.service.AacpEndpointService;
+import com.ksptool.bio.biz.aacp.service.AacpAccessService;
 import com.ksptool.bio.biz.auth.common.DynamicGlobalWhiteManager;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -23,20 +23,18 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * MCP 协议端点：SSE 传输层 + JSON-RPC 收发包
- */
+
 @Slf4j
 @RestController
 @RequestMapping("/aacp")
-@Tag(name = "MCP协议端点", description = "MCP协议端点")
-public class AacpEndpoint {
+@Tag(name = "AACP访问端点", description = "该端点为AACP协议的访问端点，用于接收J-RPC协议的请求")
+public class AacpAccessController {
 
     private final Gson gson = new Gson();
     private final Map<String, McpClientSession> sessionMap = new ConcurrentHashMap<>();
 
     @Autowired
-    private AacpEndpointService aacpEndpointService;
+    private AacpAccessService aacpAccessService;
 
     @Autowired
     private AgentHubRepository agentHubRepository;
@@ -96,7 +94,7 @@ public class AacpEndpoint {
         }
 
         var p = McpParser.of(rawBody);
-        var result = aacpEndpointService.inbound(session, p.getInput());
+        var result = aacpAccessService.inbound(session, p.getInput());
 
         try {
             session.getEmitter().send(SseEmitter.event().data(gson.toJson(result)));

@@ -34,7 +34,7 @@
         <el-table-column label="唯一编码" prop="code" width="130" />
         <el-table-column label="通信协议" width="110" align="center">
           <template #default="scope">
-            <span v-show="scope.row.networkKind === 0">HTTP+SSE</span>
+            <span v-show="scope.row.networkKind === 0">JRPC2.0</span>
           </template>
         </el-table-column>
         <el-table-column label="鉴权类型" width="100" align="center">
@@ -86,8 +86,8 @@
         </el-form-item>
         <el-form-item label="通信协议" prop="networkKind">
           <el-select v-model="modalForm.networkKind" placeholder="请选择通信协议">
-            <el-option label="HTTP+SSE" :value="0" />
-            <el-option label="WS" :value="1" disabled />
+            <el-option label="JRPC2.0 + HTTP + SSE" :value="0" />
+            <el-option label="JRPC2.0 + WebSocket" :value="1" disabled />
           </el-select>
         </el-form-item>
         <el-form-item label="鉴权类型" prop="authKind">
@@ -107,10 +107,10 @@
           />
         </el-form-item>
         <el-form-item label="状态" prop="status">
-          <el-select v-model="modalForm.status" placeholder="请选择状态">
-            <el-option label="离线" :value="0" />
-            <el-option label="在线" :value="1" />
-          </el-select>
+          <el-radio-group v-model="modalForm.status">
+            <el-radio :value="1">在线</el-radio>
+            <el-radio :value="0">离线</el-radio>
+          </el-radio-group>
         </el-form-item>
         <el-form-item label="绑定能力包" prop="capIds">
           <el-select v-model="modalForm.capIds" multiple filterable :loading="capLoading" placeholder="请选择能力包">
