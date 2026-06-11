@@ -18,7 +18,7 @@ type ModalMode = "add" | "edit";
 
 export default {
   /**
-   * AACP数据源列表管理
+   * 数据源列表管理
    */
   useAacpDatasourceList() {
     const listForm = ref<GetAacpDatasourceListDto>({

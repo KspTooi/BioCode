@@ -5,7 +5,7 @@ import type Result from "@/commons/model/Result.ts";
 import type CommonIdDto from "@/commons/model/CommonIdDto.ts";
 
 /**
- * 查询AACP数据源列表Dto
+ * 查询数据源列表Dto
  */
 export interface GetAacpDatasourceListDto extends PageQuery {
   name: string | null; // 数据源名称
@@ -13,7 +13,7 @@ export interface GetAacpDatasourceListDto extends PageQuery {
 }
 
 /**
- * 查询AACP数据源列表Vo
+ * 查询数据源列表Vo
  */
 export interface GetAacpDatasourceListVo {
   id: string; // 主键ID
@@ -27,7 +27,7 @@ export interface GetAacpDatasourceListVo {
 }
 
 /**
- * 查询AACP数据源详情Vo
+ * 查询数据源详情Vo
  */
 export interface GetAacpDatasourceDetailsVo {
   id: string | null; // 主键ID
@@ -44,7 +44,7 @@ export interface GetAacpDatasourceDetailsVo {
 }
 
 /**
- * 新增AACP数据源Dto
+ * 新增数据源Dto
  */
 export interface AddAacpDatasourceDto {
   name: string; // 数据源名称
@@ -60,7 +60,7 @@ export interface AddAacpDatasourceDto {
 }
 
 /**
- * 编辑AACP数据源Dto
+ * 编辑数据源Dto
  */
 export interface EditAacpDatasourceDto {
   id: string; // 主键ID
@@ -78,14 +78,14 @@ export interface EditAacpDatasourceDto {
 
 export default {
   /**
-   * 获取AACP数据源列表
+   * 获取数据源列表
    */
   getAacpDatasourceList: async (dto: GetAacpDatasourceListDto): Promise<RestPageableView<GetAacpDatasourceListVo>> => {
     return await Http.postEntity<RestPageableView<GetAacpDatasourceListVo>>("/aacpDatasource/getAacpDatasourceList", dto);
   },
 
   /**
-   * 获取AACP数据源详情
+   * 获取数据源详情
    */
   getAacpDatasourceDetails: async (dto: CommonIdDto): Promise<GetAacpDatasourceDetailsVo> => {
     const result = await Http.postEntity<Result<GetAacpDatasourceDetailsVo>>("/aacpDatasource/getAacpDatasourceDetails", dto);
@@ -96,7 +96,7 @@ export default {
   },
 
   /**
-   * 新增AACP数据源
+   * 新增数据源
    */
   addAacpDatasource: async (dto: AddAacpDatasourceDto): Promise<string> => {
     const result = await Http.postEntity<Result<string>>("/aacpDatasource/addAacpDatasource", dto);
@@ -107,7 +107,7 @@ export default {
   },
 
   /**
-   * 编辑AACP数据源
+   * 编辑数据源
    */
   editAacpDatasource: async (dto: EditAacpDatasourceDto): Promise<string> => {
     const result = await Http.postEntity<Result<string>>("/aacpDatasource/editAacpDatasource", dto);
@@ -118,7 +118,7 @@ export default {
   },
 
   /**
-   * 删除AACP数据源
+   * 删除数据源
    */
   removeAacpDatasource: async (dto: CommonIdDto): Promise<string> => {
     const result = await Http.postEntity<Result<string>>("/aacpDatasource/removeAacpDatasource", dto);
@@ -129,7 +129,7 @@ export default {
   },
 
   /**
-   * 测试AACP数据源连接
+   * 测试数据源连接
    */
   testAacpDatasourceConnection: async (dto: CommonIdDto): Promise<string> => {
     const result = await Http.postEntity<Result<string>>("/aacpDatasource/testAacpDatasourceConnection", dto);

@@ -18,7 +18,7 @@
     </StdListAreaQuery>
 
     <StdListAreaAction>
-      <el-button type="success" @click="openModal('add', null)">新增AACP数据源</el-button>
+      <el-button type="success" @click="openModal('add', null)">新增数据源</el-button>
     </StdListAreaAction>
 
     <StdListAreaTable v-model:list-form="listForm" :list-total="listTotal" :load-list="loadList">
@@ -52,7 +52,7 @@
 
     <el-dialog
       v-model="modalVisible"
-      :title="modalMode === 'edit' ? '编辑AACP数据源' : '新增AACP数据源'"
+      :title="modalMode === 'edit' ? '编辑数据源' : '新增数据源'"
       width="600px"
       :close-on-click-modal="false"
       @close="
