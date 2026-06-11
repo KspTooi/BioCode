@@ -42,9 +42,7 @@
             <el-button link type="success" size="small" :icon="ConnectionIcon" @click="testConnection(scope.row)">
               测试数据源连接
             </el-button>
-            <el-button link type="danger" size="small" :icon="DeleteIcon" @click="removeList(scope.row)">
-              删除
-            </el-button>
+            <el-button link type="danger" size="small" :icon="DeleteIcon" @click="removeList(scope.row)"> 删除 </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -143,7 +141,8 @@ const EditIcon = markRaw(Edit);
 const DeleteIcon = markRaw(Delete);
 const ConnectionIcon = markRaw(Connection);
 
-const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList, testConnection } = AacpDatasourceService.useAacpDatasourceList();
+const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList, testConnection } =
+  AacpDatasourceService.useAacpDatasourceList();
 
 const modalFormRef = ref<FormInstance>();
 

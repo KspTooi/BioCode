@@ -138,9 +138,7 @@ export default {
         { required: true, message: "请输入JDBC驱动", trigger: "blur" },
         { max: 200, message: "长度不能超过200个字符", trigger: "blur" },
       ],
-      url: [
-        { required: true, message: "请输入连接字符串", trigger: "blur" },
-      ],
+      url: [{ required: true, message: "请输入连接字符串", trigger: "blur" }],
       username: [{ max: 200, message: "长度不能超过200个字符", trigger: "blur" }],
       password: [{ max: 2000, message: "长度不能超过2000个字符", trigger: "blur" }],
       defaultDb: [

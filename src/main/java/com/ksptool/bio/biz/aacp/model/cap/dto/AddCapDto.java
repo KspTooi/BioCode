@@ -31,6 +31,7 @@ public class AddCapDto implements DtoCustomValidator {
     @Schema(description = "微函数ID列表")
     private List<Long> funcIds;
 
+    @NotNull(message = "数据源ID列表不能为空")
     @Schema(description = "数据源ID列表")
     private List<Long> datasourceIds;
 
@@ -38,6 +39,9 @@ public class AddCapDto implements DtoCustomValidator {
     public String validate() {
         if (funcIds.size() > 50) {
             return "一个能力包最多绑定50个微函数";
+        }
+        if (datasourceIds.size() > 3) {
+            return "一个能力包最多绑定3个数据源";
         }
         return null;
     }
