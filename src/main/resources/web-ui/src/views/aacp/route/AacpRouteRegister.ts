@@ -32,6 +32,13 @@ export default class AacpRouteRegister extends GenricRouteRegister {
         component: () => import("@/views/aacp/AacpOnlineSession.vue"),
         meta: { breadcrumb: "在线会话" },
       }),
+      RouteEntryPo.build({
+        biz: "aacp",
+        path: "datasource",
+        name: "datasource",
+        component: () => import("@/views/aacp/AacpDatasource.vue"),
+        meta: { breadcrumb: "数据源" },
+      }),
     ];
   }
 }
