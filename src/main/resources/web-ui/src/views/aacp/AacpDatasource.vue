@@ -34,6 +34,12 @@
         <el-table-column prop="url" label="连接字符串" min-width="200" show-overflow-tooltip />
         <el-table-column prop="defaultDb" label="默认数据库" min-width="120" show-overflow-tooltip />
         <el-table-column prop="queryMaxRows" label="最大查询行数" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="executeBatch" label="批处理" min-width="120" show-overflow-tooltip align="center">
+          <template #default="scope">
+            <span v-if="scope.row.executeBatch === 1" class="text-green-500">支持</span>
+            <span v-else class="text-gray-400">不支持</span>
+          </template>
+        </el-table-column>
         <el-table-column label="操作" fixed="right" min-width="260">
           <template #default="scope">
             <el-button link type="primary" size="small" :icon="EditIcon" @click="openModal('edit', scope.row)">
@@ -108,7 +114,7 @@
         <el-form-item label="最大查询行数" prop="queryMaxRows">
           <el-input-number v-model="modalForm.queryMaxRows" placeholder="最大查询行数" :min="0" />
         </el-form-item>
-        <el-form-item label="支持批处理" prop="executeBatch">
+        <el-form-item label="批处理" prop="executeBatch">
           <el-radio-group v-model="modalForm.executeBatch">
             <el-radio :value="1">支持</el-radio>
             <el-radio :value="0">不支持</el-radio>
