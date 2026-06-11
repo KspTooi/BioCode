@@ -174,7 +174,7 @@ export default {
         modalForm.name = "";
         modalForm.code = "";
         modalForm.kind = 0;
-        modalForm.drive = "";
+        modalForm.drive = "com.mysql.cj.jdbc.Driver";
         modalForm.url = "";
         modalForm.username = "";
         modalForm.password = "";
@@ -224,6 +224,19 @@ export default {
       modalForm.username = "";
       modalForm.password = "";
       modalForm.dbSchema = "";
+    };
+
+    const onCodeBlur = (): void => {
+      if (modalMode.value !== "add") {
+        return;
+      }
+      if (modalForm.url) {
+        return;
+      }
+      if (!modalForm.code) {
+        return;
+      }
+      modalForm.url = "jdbc:mysql://127.0.0.1:3306/" + modalForm.code + "?serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&allowMultiQueries=true&useUnicode=true&characterEncoding=utf-8";
     };
 
     /**
@@ -306,6 +319,7 @@ export default {
       openModal,
       resetModal,
       submitModal,
+      onCodeBlur,
     };
   },
 };
