@@ -56,9 +56,9 @@ export interface GetAgentHubDetailsVo {
 
 export default {
   /**
-   * 获取MCP服务器列表
+   * 获取智能体枢纽列表
    * @param dto 查询条件
-   * @returns MCP服务器列表
+   * @returns 智能体枢纽列表
    */
   getAgentHubList: async (dto: GetAgentHubListDto): Promise<RestPageableView<GetAgentHubListVo>> => {
     const ret = await Http.postEntity<RestPageableView<GetAgentHubListVo>>("/agentHub/getAgentHubList", dto);
@@ -66,8 +66,8 @@ export default {
   },
 
   /**
-   * 添加MCP服务器
-   * @param dto MCP服务器信息
+   * 添加智能体枢纽
+   * @param dto 智能体枢纽信息
    * @returns 操作结果
    */
   addAgentHub: async (dto: AddAgentHubDto): Promise<Result<void>> => {
@@ -75,8 +75,8 @@ export default {
   },
 
   /**
-   * 编辑MCP服务器
-   * @param dto MCP服务器信息
+   * 编辑智能体枢纽
+   * @param dto 智能体枢纽信息
    * @returns 操作结果
    */
   editAgentHub: async (dto: EditAgentHubDto): Promise<Result<void>> => {
@@ -84,9 +84,9 @@ export default {
   },
 
   /**
-   * 获取MCP服务器详情
-   * @param id MCP服务器ID
-   * @returns MCP服务器详情
+   * 获取智能体枢纽详情
+   * @param id 智能体枢纽ID
+   * @returns 智能体枢纽详情
    */
   getAgentHubDetails: async (id: string): Promise<GetAgentHubDetailsVo> => {
     const ret = await Http.postEntity<Result<GetAgentHubDetailsVo>>("/agentHub/getAgentHubDetails", { id: id } as CommonIdDto);
@@ -94,8 +94,8 @@ export default {
   },
 
   /**
-   * 删除MCP服务器
-   * @param id MCP服务器ID
+   * 删除智能体枢纽
+   * @param id 智能体枢纽ID
    * @returns 操作结果
    */
   removeAgentHub: async (id: string): Promise<Result<void>> => {
