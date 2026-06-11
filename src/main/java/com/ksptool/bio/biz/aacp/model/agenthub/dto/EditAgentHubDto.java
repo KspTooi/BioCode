@@ -51,7 +51,7 @@ public class EditAgentHubDto implements DtoCustomValidator {
 
     @NotNull(message = "能力包ID列表不能为空")
     @Schema(description = "能力包ID列表")
-    private List<Long> capabilityIds;
+    private List<Long> capIds;
 
     /**
      * 校验PSK鉴权时预共享密钥必填
@@ -63,7 +63,7 @@ public class EditAgentHubDto implements DtoCustomValidator {
         if (authKind != null && authKind == 1 && Str.isBlank(authPsk)) {
             return "使用PSK鉴权时必须填写预共享密钥";
         }
-        if (capabilityIds.size() > 50) {
+        if (capIds.size() > 50) {
             return "一个智能体枢纽最多绑定50个能力包";
         }
         return null;

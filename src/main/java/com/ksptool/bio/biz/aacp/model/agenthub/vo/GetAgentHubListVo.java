@@ -30,7 +30,7 @@ public class GetAgentHubListVo {
     private Integer status;
 
     @Schema(description = "关联能力包数量")
-    private Long capabilityCount;
+    private Long capCount;
 
     @Schema(description = "关联微函数数量")
     private Long funcCount;

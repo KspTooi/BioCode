@@ -29,7 +29,7 @@ public interface AgentHubRepository extends JpaRepository<AacpAgentHubPo, Long> 
             SELECT u.id AS id, u.name AS name, u.code AS code,
                    u.networkKind AS networkKind, u.authKind AS authKind,
                    u.authPsk AS authPsk, u.status AS status,
-                   COALESCE((SELECT COUNT(mc.capId) FROM AacpAgentHubCapPo mc WHERE mc.hubId = u.id), 0) AS capabilityCount,
+                   COALESCE((SELECT COUNT(mc.capId) FROM AacpAgentHubCapPo mc WHERE mc.hubId = u.id), 0) AS capCount,
                    COALESCE((SELECT COUNT(cf.microFuncId) FROM AacpAgentHubCapPo mc
                              LEFT JOIN AacpCapMicroFuncPo cf ON mc.capId = cf.capId
                              WHERE mc.hubId = u.id), 0) AS funcCount

@@ -31,14 +31,14 @@ public class CapController {
     @Autowired
     private CapService capService;
 
-    @PreAuthorize("@auth.hasCode('aacp:capability:view')")
+    @PreAuthorize("@auth.hasCode('aacp:cap:view')")
     @PostMapping("/getCapList")
     @Operation(summary = "查询能力包列表")
     public PageResult<GetCapListVo> getCapList(@RequestBody @Valid GetCapListDto dto) throws Exception {
         return capService.getCapList(dto);
     }
 
-    @PreAuthorize("@auth.hasCode('aacp:capability:add')")
+    @PreAuthorize("@auth.hasCode('aacp:cap:add')")
     @PostMapping("/addCap")
     @Operation(summary = "新增能力包")
     public Result<String> addCap(@RequestBody @Valid AddCapDto dto) throws Exception {
@@ -46,7 +46,7 @@ public class CapController {
         return Result.success("新增成功");
     }
 
-    @PreAuthorize("@auth.hasCode('aacp:capability:edit')")
+    @PreAuthorize("@auth.hasCode('aacp:cap:edit')")
     @PostMapping("/editCap")
     @Operation(summary = "编辑能力包")
     public Result<String> editCap(@RequestBody @Valid EditCapDto dto) throws Exception {
@@ -65,7 +65,7 @@ public class CapController {
         return Result.success(details);
     }
 
-    @PreAuthorize("@auth.hasCode('aacp:capability:remove')")
+    @PreAuthorize("@auth.hasCode('aacp:cap:remove')")
     @PostMapping("/removeCap")
     @Operation(summary = "删除能力包")
     public Result<String> removeCap(@RequestBody @Valid CommonIdDto dto) throws Exception {

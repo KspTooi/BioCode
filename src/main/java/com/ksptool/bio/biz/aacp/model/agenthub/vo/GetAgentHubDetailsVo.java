@@ -32,6 +32,6 @@ public class GetAgentHubDetailsVo {
     private Integer status;
 
     @Schema(description = "关联的能力包ID列表")
-    private List<Long> capabilityIds;
+    private List<Long> capIds;
 
 }

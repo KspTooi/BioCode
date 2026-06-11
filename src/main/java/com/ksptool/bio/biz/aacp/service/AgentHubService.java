@@ -67,7 +67,7 @@ public class AgentHubService {
         AacpAgentHubPo insertPo = as(dto, AacpAgentHubPo.class);
         repository.save(insertPo);
 
-        var cids = dto.getCapabilityIds();
+        var cids = dto.getCapIds();
         if (cids != null && !cids.isEmpty()) {
             var pos = cids.stream()
                     .map(cid -> new AacpAgentHubCapPo(insertPo.getId(), cid)).toList();
@@ -93,7 +93,7 @@ public class AgentHubService {
         repository.save(updatePo);
 
         List<Long> existIds = agentHubCapRepository.getCapIdsByHubId(dto.getId());
-        var idsDiff = new IdsDiff(existIds, dto.getCapabilityIds());
+        var idsDiff = new IdsDiff(existIds, dto.getCapIds());
 
         if (idsDiff.hasAdd()) {
             var toAdd = idsDiff.getAddIds().stream()
@@ -117,7 +117,7 @@ public class AgentHubService {
         AacpAgentHubPo po = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("查询详情失败,数据不存在或无权限访问."));
         GetAgentHubDetailsVo vo = as(po, GetAgentHubDetailsVo.class);
-        vo.setCapabilityIds(agentHubCapRepository.getCapIdsByHubId(dto.getId()));
+        vo.setCapIds(agentHubCapRepository.getCapIdsByHubId(dto.getId()));
         return vo;
     }
 
