@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "accp_micro_func")
 @EntityListeners(AuditingEntityListener.class)
-@SQLDelete(sql = "UPDATE accp_func SET delete_time = NOW() WHERE id = ?")
+@SQLDelete(sql = "UPDATE accp_micro_func SET delete_time = NOW() WHERE id = ?")
 @SQLRestriction("delete_time IS NULL")
 public class AacpFuncPo {
 

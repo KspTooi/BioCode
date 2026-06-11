@@ -16,10 +16,10 @@ public class McpClientSession {
     // 会话ID
     private String sessionId;
 
-    // MCP服务器编码
+    // 智能体枢纽编码
     private String serverCode;
 
-    // MCP服务器ID
+    // 智能体枢纽ID
     private Long serverId;
 
     // 连接时间

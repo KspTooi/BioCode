@@ -3,7 +3,7 @@ package com.ksptool.bio.biz.aacp.service;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
-import com.ksptool.bio.biz.aacp.model.AacpMcpCapPo;
+import com.ksptool.bio.biz.aacp.model.AacpAgentHubCapPo;
 import com.ksptool.bio.biz.aacp.model.agenthub.AacpAgentHubPo;
 import com.ksptool.bio.biz.aacp.model.agenthub.dto.AddAgentHubDto;
 import com.ksptool.bio.biz.aacp.model.agenthub.dto.EditAgentHubDto;
@@ -11,7 +11,7 @@ import com.ksptool.bio.biz.aacp.model.agenthub.dto.GetAgentHubListDto;
 import com.ksptool.bio.biz.aacp.model.agenthub.vo.GetAgentHubDetailsVo;
 import com.ksptool.bio.biz.aacp.model.agenthub.vo.GetAgentHubListVo;
 import com.ksptool.bio.biz.aacp.repository.AgentHubRepository;
-import com.ksptool.bio.biz.aacp.repository.McpCapRepository;
+import com.ksptool.bio.biz.aacp.repository.AgentHubCapRepository;
 import com.ksptool.bio.biz.core.common.IdsDiff;
 import jakarta.persistence.Tuple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +33,7 @@ public class AgentHubService {
     private AgentHubRepository repository;
 
     @Autowired
-    private McpCapRepository mcpCapRepository;
+    private AgentHubCapRepository agentHubCapRepository;
 
     /**
      * 查询智能体枢纽列表
@@ -70,8 +70,8 @@ public class AgentHubService {
         var cids = dto.getCapabilityIds();
         if (cids != null && !cids.isEmpty()) {
             var pos = cids.stream()
-                    .map(cid -> new AacpMcpCapPo(insertPo.getId(), cid)).toList();
-            mcpCapRepository.saveAll(pos);
+                    .map(cid -> new AacpAgentHubCapPo(insertPo.getId(), cid)).toList();
+            agentHubCapRepository.saveAll(pos);
         }
     }
 
@@ -92,17 +92,17 @@ public class AgentHubService {
         assign(dto, updatePo);
         repository.save(updatePo);
 
-        List<Long> existIds = mcpCapRepository.getCapabilityIdsByMcpId(dto.getId());
+        List<Long> existIds = agentHubCapRepository.getCapIdsByHubId(dto.getId());
         var idsDiff = new IdsDiff(existIds, dto.getCapabilityIds());
 
         if (idsDiff.hasAdd()) {
             var toAdd = idsDiff.getAddIds().stream()
-                    .map(cid -> new AacpMcpCapPo(dto.getId(), cid)).toList();
-            mcpCapRepository.saveAll(toAdd);
+                    .map(cid -> new AacpAgentHubCapPo(dto.getId(), cid)).toList();
+            agentHubCapRepository.saveAll(toAdd);
         }
 
         if (idsDiff.hasRemove()) {
-            mcpCapRepository.removeByMcpIdAndCapabilityIds(dto.getId(), idsDiff.getRemoveIds());
+            agentHubCapRepository.removeByHubIdAndCapIds(dto.getId(), idsDiff.getRemoveIds());
         }
     }
 
@@ -117,7 +117,7 @@ public class AgentHubService {
         AacpAgentHubPo po = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("查询详情失败,数据不存在或无权限访问."));
         GetAgentHubDetailsVo vo = as(po, GetAgentHubDetailsVo.class);
-        vo.setCapabilityIds(mcpCapRepository.getCapabilityIdsByMcpId(dto.getId()));
+        vo.setCapabilityIds(agentHubCapRepository.getCapIdsByHubId(dto.getId()));
         return vo;
     }
 
@@ -133,7 +133,7 @@ public class AgentHubService {
             repository.deleteAllById(dto.getIds());
             return;
         }
-        mcpCapRepository.removeByMcpId(dto.getId());
+        agentHubCapRepository.removeByHubId(dto.getId());
         repository.deleteById(dto.getId());
     }
 

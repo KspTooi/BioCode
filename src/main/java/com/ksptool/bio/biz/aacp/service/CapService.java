@@ -12,7 +12,7 @@ import com.ksptool.bio.biz.aacp.model.cap.vo.GetCapDetailsVo;
 import com.ksptool.bio.biz.aacp.model.cap.vo.GetCapListVo;
 import com.ksptool.bio.biz.aacp.repository.CapMicroFuncRepository;
 import com.ksptool.bio.biz.aacp.repository.CapRepository;
-import com.ksptool.bio.biz.aacp.repository.McpCapRepository;
+import com.ksptool.bio.biz.aacp.repository.AgentHubCapRepository;
 import com.ksptool.bio.biz.core.common.IdsDiff;
 import jakarta.persistence.Tuple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +33,7 @@ public class CapService {
     private CapRepository repository;
 
     @Autowired
-    private McpCapRepository mcpCapRepository;
+    private AgentHubCapRepository agentHubCapRepository;
 
     @Autowired
     private CapMicroFuncRepository capMicroFuncRepository;
@@ -138,9 +138,9 @@ public class CapService {
         if (dto.isBatch()) {
             throw new BizException("能力包不支持批量删除");
         }
-        long refCount = mcpCapRepository.countByCapabilityId(dto.getId());
+        long refCount = agentHubCapRepository.countByCapId(dto.getId());
         if (refCount > 0) {
-            throw new BizException("该能力包已被" + refCount + "台MCP服务器使用，无法删除");
+            throw new BizException("该能力包已被" + refCount + "台智能体枢纽使用，无法删除");
         }
         capMicroFuncRepository.removeByCapId(dto.getId());
         repository.deleteById(dto.getId());

@@ -100,7 +100,7 @@ public class AacpEndpointService {
             var ret = new ToolsListVo();
 
             //获取微函数能力包
-            var funcCapPos = capRepository.getByMcpId(session.getServerId(), 0);
+            var funcCapPos = capRepository.getByHubId(session.getServerId(), 0);
             var funcCapIds = funcCapPos.stream().map(AacpCapPo::getId).collect(Collectors.toSet());
 
             //获取能力包中的微函数

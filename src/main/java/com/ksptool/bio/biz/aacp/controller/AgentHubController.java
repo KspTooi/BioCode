@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @PrintLog
 @RestController
 @RequestMapping("/agentHub")
-@Tag(name = "MCP服务器", description = "MCP服务器")
+@Tag(name = "智能体枢纽", description = "智能体枢纽")
 @Slf4j
 public class AgentHubController {
 

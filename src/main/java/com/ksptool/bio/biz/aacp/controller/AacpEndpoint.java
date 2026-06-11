@@ -29,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 @RestController
 @RequestMapping("/aacp")
-@Tag(name = "MCP服务器", description = "MCP服务器")
+@Tag(name = "MCP协议端点", description = "MCP协议端点")
 public class AacpEndpoint {
 
     private final Gson gson = new Gson();
@@ -58,10 +58,10 @@ public class AacpEndpoint {
 
         AacpAgentHubPo po = agentHubRepository.getByCode(code);
         if (po == null) {
-            throw new BizException("MCP服务器不存在:" + code);
+            throw new BizException("智能体枢纽不存在:" + code);
         }
         if (po.getStatus() != 1) {
-            throw new BizException("MCP服务器当前不接受连接请求:" + code);
+            throw new BizException("智能体枢纽当前不接受连接请求:" + code);
         }
 
         String sessionId = UUID.randomUUID().toString();

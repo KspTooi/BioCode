@@ -39,18 +39,18 @@ public interface CapRepository extends JpaRepository<AacpCapPo, Long> {
     int countByNameExcludeId(@Param("name") String name, @Param("id") Long id);
 
     /**
-     * 根据MCP服务器ID获取已绑定的能力包列表
+     * 根据智能体枢纽ID获取已绑定的能力包列表
      *
-     * @param mcpId MCP服务器ID
+     * @param hubId 智能体枢纽ID
      * @param kind  能力包类型 0:微函数
      * @return 能力包列表
      */
     @Query("""
             SELECT c FROM AacpCapPo c
             WHERE c.id IN (
-                SELECT m.capabilityId FROM AacpMcpCapPo m WHERE m.mcpId = :mcpId
+                SELECT m.capId FROM AacpAgentHubCapPo m WHERE m.hubId = :hubId
             ) AND (:#{#kind} IS NULL OR c.kind = :#{#kind} )
             ORDER BY c.createTime DESC
             """)
-    List<AacpCapPo> getByMcpId(@Param("mcpId") Long mcpId, Integer kind);
+    List<AacpCapPo> getByHubId(@Param("hubId") Long hubId, Integer kind);
 }

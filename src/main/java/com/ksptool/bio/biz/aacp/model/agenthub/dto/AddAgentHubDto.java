@@ -60,7 +60,7 @@ public class AddAgentHubDto implements DtoCustomValidator {
             return "使用PSK鉴权时必须填写预共享密钥";
         }
         if (capabilityIds.size() > 50) {
-            return "一台MCP服务器最多绑定50个能力包";
+            return "一个智能体枢纽最多绑定50个能力包";
         }
         return null;
     }
