@@ -1,19 +1,19 @@
 import { onMounted, reactive, ref, type Ref } from "vue";
 import type { FormInstance, FormRules } from "element-plus";
 import { ElMessage, ElMessageBox } from "element-plus";
-import AacpMcpApi from "@/views/aacp/api/AacpMcpApi.ts";
-import AacpCapabilityApi from "@/views/aacp/api/AacpCapabilityApi.ts";
-import type { GetAacpMcpListDto, GetAacpMcpListVo, GetAacpMcpDetailsVo } from "@/views/aacp/api/AacpMcpApi.ts";
-import type { GetAacpCapabilityListVo } from "@/views/aacp/api/AacpCapabilityApi.ts";
+import AacpAgentHubApi from "@/views/aacp/api/AacpAgentHubApi.ts";
+import AacpCapApi from "@/views/aacp/api/AacpCapApi.ts";
+import type { GetAgentHubListDto, GetAgentHubListVo, GetAgentHubDetailsVo } from "@/views/aacp/api/AacpAgentHubApi.ts";
+import type { GetCapListVo } from "@/views/aacp/api/AacpCapApi.ts";
 import QueryPersistService from "@/commons/service/QueryPersistService.ts";
 
-const PERSIST_KEY = "aacp-mcp-server";
+const PERSIST_KEY = "aacp-agent-hub";
 
 type ModalMode = "add" | "edit";
 
 export default {
-  useAacpMcpList() {
-    const listForm = reactive<GetAacpMcpListDto>({
+  useAgentHubList() {
+    const listForm = reactive<GetAgentHubListDto>({
       name: null,
       code: null,
       status: null,
@@ -21,14 +21,14 @@ export default {
       pageSize: 20,
     });
 
-    const listData = ref<GetAacpMcpListVo[]>([]);
+    const listData = ref<GetAgentHubListVo[]>([]);
     const listTotal = ref(0);
     const listLoading = ref(false);
 
     const loadList = async (): Promise<void> => {
       listLoading.value = true;
       try {
-        const res = await AacpMcpApi.getAacpMcpList(listForm);
+        const res = await AacpAgentHubApi.getAgentHubList(listForm);
         listData.value = res.data;
         listTotal.value = res.total;
         QueryPersistService.persistQuery(PERSIST_KEY, listForm);
@@ -49,7 +49,7 @@ export default {
       QueryPersistService.clearQuery(PERSIST_KEY);
     };
 
-    const removeList = async (row: GetAacpMcpListVo): Promise<void> => {
+    const removeList = async (row: GetAgentHubListVo): Promise<void> => {
       try {
         await ElMessageBox.confirm(`确定删除MCP服务器 [${row.name}] 吗？`, "提示", {
           confirmButtonText: "确定",
@@ -61,7 +61,7 @@ export default {
       }
 
       try {
-        await AacpMcpApi.removeAacpMcp(row.id.toString());
+        await AacpAgentHubApi.removeAgentHub(row.id.toString());
         ElMessage.success("删除MCP服务器成功");
         loadList();
       } catch (error: any) {
@@ -85,11 +85,11 @@ export default {
     };
   },
 
-  useAacpMcpModal(modalFormRef: Ref<FormInstance | undefined>, reloadCallback: () => void) {
+  useAgentHubModal(modalFormRef: Ref<FormInstance | undefined>, reloadCallback: () => void) {
     const modalVisible = ref(false);
     const modalLoading = ref(false);
     const modalMode = ref<ModalMode>("add");
-    const modalForm = reactive<GetAacpMcpDetailsVo>({
+    const modalForm = reactive<GetAgentHubDetailsVo>({
       id: null,
       name: null,
       code: null,
@@ -101,7 +101,7 @@ export default {
     });
 
     // 能力包选择器
-    const capabilityOptions = ref<GetAacpCapabilityListVo[]>([]);
+    const capabilityOptions = ref<GetCapListVo[]>([]);
     const capabilityLoading = ref(false);
 
     const modalRules: FormRules = {
@@ -138,7 +138,7 @@ export default {
       }
       capabilityLoading.value = true;
       try {
-        const res = await AacpCapabilityApi.getAacpCapabilityList({
+        const res = await AacpCapApi.getCapList({
           name: null,
           kind: null,
           pageNum: 1,
@@ -164,7 +164,7 @@ export default {
       capabilityOptions.value = [];
     };
 
-    const openModal = async (mode: ModalMode, row: GetAacpMcpListVo | null): Promise<void> => {
+    const openModal = async (mode: ModalMode, row: GetAgentHubListVo | null): Promise<void> => {
       modalMode.value = mode;
       resetModal();
 
@@ -172,7 +172,7 @@ export default {
 
       if (mode === "edit" && row) {
         try {
-          const res = await AacpMcpApi.getAacpMcpDetails(row.id.toString());
+          const res = await AacpAgentHubApi.getAgentHubDetails(row.id.toString());
           modalForm.id = res.id;
           modalForm.name = res.name;
           modalForm.code = res.code;
@@ -201,7 +201,7 @@ export default {
 
       try {
         if (modalMode.value === "add") {
-          await AacpMcpApi.addAacpMcp({
+          await AacpAgentHubApi.addAgentHub({
             name: modalForm.name,
             code: modalForm.code,
             networkKind: modalForm.networkKind,
@@ -214,7 +214,7 @@ export default {
         }
 
         if (modalMode.value === "edit") {
-          await AacpMcpApi.editAacpMcp({
+          await AacpAgentHubApi.editAgentHub({
             id: modalForm.id,
             name: modalForm.name,
             code: modalForm.code,

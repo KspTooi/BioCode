@@ -4,20 +4,20 @@ import type RestPageableView from "@/commons/model/RestPageableView.ts";
 import type Result from "@/commons/model/Result.ts";
 import type CommonIdDto from "@/commons/model/CommonIdDto.ts";
 
-export interface GetAacpFuncListDto extends PageQuery {
+export interface GetMicroFuncListDto extends PageQuery {
   name: string | null; //微函数名称
   code: string | null; //微函数标识
   description: string | null; //意图词
 }
 
-export interface GetAacpFuncListVo {
+export interface GetMicroFuncListVo {
   id: string; //主键ID
   name: string; //微函数名称
   code: string; //微函数标识
   description: string; //意图词
 }
 
-export interface AddAacpFuncDto {
+export interface AddMicroFuncDto {
   name: string | null; //微函数名称
   code: string | null; //微函数标识
   description: string | null; //意图词
@@ -26,7 +26,7 @@ export interface AddAacpFuncDto {
   remark: string | null; //备注
 }
 
-export interface EditAacpFuncDto {
+export interface EditMicroFuncDto {
   id: string | null; //主键ID
   name: string | null; //微函数名称
   code: string | null; //微函数标识
@@ -36,7 +36,7 @@ export interface EditAacpFuncDto {
   remark: string | null; //备注
 }
 
-export interface GetAacpFuncDetailsVo {
+export interface GetMicroFuncDetailsVo {
   id: string | null; //主键ID
   name: string | null; //微函数名称
   code: string | null; //微函数标识
@@ -49,7 +49,7 @@ export interface GetAacpFuncDetailsVo {
 /**
  * 已注册微函数列表VO
  */
-export interface GetMicroFuncListVo {
+export interface GetMicroFuncRegistryVo {
   target: string; //微函数标识
   name: string; //微函数名称
   description: string; //微函数描述
@@ -63,8 +63,8 @@ export default {
    * @param dto 查询条件
    * @returns 微函数列表
    */
-  getAacpFuncList: async (dto: GetAacpFuncListDto): Promise<RestPageableView<GetAacpFuncListVo>> => {
-    const ret = await Http.postEntity<RestPageableView<GetAacpFuncListVo>>("/aacpFunc/getAacpFuncList", dto);
+  getMicroFuncList: async (dto: GetMicroFuncListDto): Promise<RestPageableView<GetMicroFuncListVo>> => {
+    const ret = await Http.postEntity<RestPageableView<GetMicroFuncListVo>>("/microFunc/getMicroFuncList", dto);
     return ret;
   },
 
@@ -73,8 +73,8 @@ export default {
    * @param dto 微函数信息
    * @returns 操作结果
    */
-  addAacpFunc: async (dto: AddAacpFuncDto): Promise<Result<void>> => {
-    return await Http.postEntity<Result<void>>("/aacpFunc/addAacpFunc", dto);
+  addMicroFunc: async (dto: AddMicroFuncDto): Promise<Result<void>> => {
+    return await Http.postEntity<Result<void>>("/microFunc/addMicroFunc", dto);
   },
 
   /**
@@ -82,8 +82,8 @@ export default {
    * @param dto 微函数信息
    * @returns 操作结果
    */
-  editAacpFunc: async (dto: EditAacpFuncDto): Promise<Result<void>> => {
-    return await Http.postEntity<Result<void>>("/aacpFunc/editAacpFunc", dto);
+  editMicroFunc: async (dto: EditMicroFuncDto): Promise<Result<void>> => {
+    return await Http.postEntity<Result<void>>("/microFunc/editMicroFunc", dto);
   },
 
   /**
@@ -91,8 +91,8 @@ export default {
    * @param id 微函数ID
    * @returns 微函数详情
    */
-  getAacpFuncDetails: async (id: string): Promise<GetAacpFuncDetailsVo> => {
-    const ret = await Http.postEntity<Result<GetAacpFuncDetailsVo>>("/aacpFunc/getAacpFuncDetails", { id: id } as CommonIdDto);
+  getMicroFuncDetails: async (id: string): Promise<GetMicroFuncDetailsVo> => {
+    const ret = await Http.postEntity<Result<GetMicroFuncDetailsVo>>("/microFunc/getMicroFuncDetails", { id: id } as CommonIdDto);
     return ret.data;
   },
 
@@ -101,15 +101,15 @@ export default {
    * @param id 微函数ID
    * @returns 操作结果
    */
-  removeAacpFunc: async (id: string): Promise<Result<void>> => {
-    return await Http.postEntity<Result<void>>("/aacpFunc/removeAacpFunc", { id: id } as CommonIdDto);
+  removeMicroFunc: async (id: string): Promise<Result<void>> => {
+    return await Http.postEntity<Result<void>>("/microFunc/removeMicroFunc", { id: id } as CommonIdDto);
   },
 
   /**
    * 获取已注册微函数列表
    * @returns 已注册微函数列表
    */
-  getMicroFuncList: async (): Promise<Result<GetMicroFuncListVo[]>> => {
-    return await Http.postEntity<Result<GetMicroFuncListVo[]>>("/aacpFunc/getMicroFuncList", {});
+  getMicroFuncRegistryList: async (): Promise<Result<GetMicroFuncRegistryVo[]>> => {
+    return await Http.postEntity<Result<GetMicroFuncRegistryVo[]>>("/microFunc/getMicroFuncRegistryList", {});
   },
 };

@@ -1,18 +1,18 @@
 import { onMounted, reactive, ref, type Ref } from "vue";
 import type { FormInstance, FormRules } from "element-plus";
 import { ElMessage, ElMessageBox } from "element-plus";
-import AacpFuncApi from "@/views/aacp/api/AacpFuncApi.ts";
-import type { GetAacpFuncListDto, GetAacpFuncListVo, GetAacpFuncDetailsVo, GetMicroFuncListVo } from "@/views/aacp/api/AacpFuncApi.ts";
+import AacpMicroFuncApi from "@/views/aacp/api/AacpMicroFuncApi.ts";
+import type { GetMicroFuncListDto, GetMicroFuncListVo, GetMicroFuncDetailsVo, GetMicroFuncRegistryVo } from "@/views/aacp/api/AacpMicroFuncApi.ts";
 import { Result } from "@/commons/model/Result.ts";
 import QueryPersistService from "@/commons/service/QueryPersistService.ts";
 
-const PERSIST_KEY = "aacp-func";
+const PERSIST_KEY = "aacp-micro-func";
 
 type ModalMode = "add" | "edit";
 
 export default {
-  useAacpFuncList() {
-    const listForm = reactive<GetAacpFuncListDto>({
+  useMicroFuncList() {
+    const listForm = reactive<GetMicroFuncListDto>({
       name: null,
       code: null,
       description: null,
@@ -20,14 +20,14 @@ export default {
       pageSize: 20,
     });
 
-    const listData = ref<GetAacpFuncListVo[]>([]);
+    const listData = ref<GetMicroFuncListVo[]>([]);
     const listTotal = ref(0);
     const listLoading = ref(false);
 
     const loadList = async (): Promise<void> => {
       listLoading.value = true;
       try {
-        const res = await AacpFuncApi.getAacpFuncList(listForm);
+        const res = await AacpMicroFuncApi.getMicroFuncList(listForm);
         listData.value = res.data;
         listTotal.value = res.total;
         QueryPersistService.persistQuery(PERSIST_KEY, listForm);
@@ -48,7 +48,7 @@ export default {
       QueryPersistService.clearQuery(PERSIST_KEY);
     };
 
-    const removeList = async (row: GetAacpFuncListVo): Promise<void> => {
+    const removeList = async (row: GetMicroFuncListVo): Promise<void> => {
       try {
         await ElMessageBox.confirm(`确定删除微函数 [${row.name}] 吗？`, "提示", {
           confirmButtonText: "确定",
@@ -60,7 +60,7 @@ export default {
       }
 
       try {
-        await AacpFuncApi.removeAacpFunc(row.id.toString());
+        await AacpMicroFuncApi.removeMicroFunc(row.id.toString());
         ElMessage.success("删除微函数成功");
         loadList();
       } catch (error: any) {
@@ -84,11 +84,11 @@ export default {
     };
   },
 
-  useAacpFuncModal(modalFormRef: Ref<FormInstance | undefined>, reloadCallback: () => void) {
+  useMicroFuncModal(modalFormRef: Ref<FormInstance | undefined>, reloadCallback: () => void) {
     const modalVisible = ref(false);
     const modalLoading = ref(false);
     const modalMode = ref<ModalMode>("add");
-    const modalForm = reactive<GetAacpFuncDetailsVo>({
+    const modalForm = reactive<GetMicroFuncDetailsVo>({
       id: null,
       name: null,
       code: null,
@@ -98,7 +98,7 @@ export default {
       remark: null,
     });
 
-    const microFuncListData = ref<GetMicroFuncListVo[]>([]);
+    const microFuncListData = ref<GetMicroFuncRegistryVo[]>([]);
     const microFuncListLoading = ref(false);
 
     const modalRules: FormRules = {
@@ -127,7 +127,7 @@ export default {
     const loadMicroFuncList = async (): Promise<void> => {
       try {
         microFuncListLoading.value = true;
-        const result = await AacpFuncApi.getMicroFuncList();
+        const result = await AacpMicroFuncApi.getMicroFuncRegistryList();
         if (Result.isSuccess(result)) {
           microFuncListData.value = result.data;
         }
@@ -151,14 +151,14 @@ export default {
       modalForm.remark = null;
     };
 
-    const openModal = async (mode: ModalMode, row: GetAacpFuncListVo | null): Promise<void> => {
+    const openModal = async (mode: ModalMode, row: GetMicroFuncListVo | null): Promise<void> => {
       modalMode.value = mode;
       resetModal();
       loadMicroFuncList();
 
       if (mode === "edit" && row) {
         try {
-          const res = await AacpFuncApi.getAacpFuncDetails(row.id.toString());
+          const res = await AacpMicroFuncApi.getMicroFuncDetails(row.id.toString());
           modalForm.id = res.id;
           modalForm.name = res.name;
           modalForm.code = res.code;
@@ -186,7 +186,7 @@ export default {
 
       try {
         if (modalMode.value === "add") {
-          await AacpFuncApi.addAacpFunc({
+          await AacpMicroFuncApi.addMicroFunc({
             name: modalForm.name,
             code: modalForm.code,
             description: modalForm.description,
@@ -198,7 +198,7 @@ export default {
         }
 
         if (modalMode.value === "edit") {
-          await AacpFuncApi.editAacpFunc({
+          await AacpMicroFuncApi.editMicroFunc({
             id: modalForm.id,
             name: modalForm.name,
             code: modalForm.code,

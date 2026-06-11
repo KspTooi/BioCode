@@ -4,13 +4,13 @@ import type RestPageableView from "@/commons/model/RestPageableView.ts";
 import type Result from "@/commons/model/Result.ts";
 import type CommonIdDto from "@/commons/model/CommonIdDto.ts";
 
-export interface GetAacpMcpListDto extends PageQuery {
+export interface GetAgentHubListDto extends PageQuery {
   name: string | null; //服务器名称
   code: string | null; //唯一编码
   status: number | null; //状态 0:离线 1:在线
 }
 
-export interface GetAacpMcpListVo {
+export interface GetAgentHubListVo {
   id: string; //主键ID
   name: string; //服务器名称
   code: string; //唯一编码
@@ -22,7 +22,7 @@ export interface GetAacpMcpListVo {
   funcCount: number; //关联微函数数量
 }
 
-export interface AddAacpMcpDto {
+export interface AddAgentHubDto {
   name: string | null; //服务器名称
   code: string | null; //唯一编码
   networkKind: number | null; //通信协议 0:HTTP+SSE 1:WS
@@ -32,7 +32,7 @@ export interface AddAacpMcpDto {
   capabilityIds: string[]; //能力包ID列表
 }
 
-export interface EditAacpMcpDto {
+export interface EditAgentHubDto {
   id: string | null; //主键ID
   name: string | null; //服务器名称
   code: string | null; //唯一编码
@@ -43,7 +43,7 @@ export interface EditAacpMcpDto {
   capabilityIds: string[]; //能力包ID列表
 }
 
-export interface GetAacpMcpDetailsVo {
+export interface GetAgentHubDetailsVo {
   id: string | null; //主键ID
   name: string | null; //服务器名称
   code: string | null; //唯一编码
@@ -60,8 +60,8 @@ export default {
    * @param dto 查询条件
    * @returns MCP服务器列表
    */
-  getAacpMcpList: async (dto: GetAacpMcpListDto): Promise<RestPageableView<GetAacpMcpListVo>> => {
-    const ret = await Http.postEntity<RestPageableView<GetAacpMcpListVo>>("/aacpMcp/getAacpMcpList", dto);
+  getAgentHubList: async (dto: GetAgentHubListDto): Promise<RestPageableView<GetAgentHubListVo>> => {
+    const ret = await Http.postEntity<RestPageableView<GetAgentHubListVo>>("/agentHub/getAgentHubList", dto);
     return ret;
   },
 
@@ -70,8 +70,8 @@ export default {
    * @param dto MCP服务器信息
    * @returns 操作结果
    */
-  addAacpMcp: async (dto: AddAacpMcpDto): Promise<Result<void>> => {
-    return await Http.postEntity<Result<void>>("/aacpMcp/addAacpMcp", dto);
+  addAgentHub: async (dto: AddAgentHubDto): Promise<Result<void>> => {
+    return await Http.postEntity<Result<void>>("/agentHub/addAgentHub", dto);
   },
 
   /**
@@ -79,8 +79,8 @@ export default {
    * @param dto MCP服务器信息
    * @returns 操作结果
    */
-  editAacpMcp: async (dto: EditAacpMcpDto): Promise<Result<void>> => {
-    return await Http.postEntity<Result<void>>("/aacpMcp/editAacpMcp", dto);
+  editAgentHub: async (dto: EditAgentHubDto): Promise<Result<void>> => {
+    return await Http.postEntity<Result<void>>("/agentHub/editAgentHub", dto);
   },
 
   /**
@@ -88,8 +88,8 @@ export default {
    * @param id MCP服务器ID
    * @returns MCP服务器详情
    */
-  getAacpMcpDetails: async (id: string): Promise<GetAacpMcpDetailsVo> => {
-    const ret = await Http.postEntity<Result<GetAacpMcpDetailsVo>>("/aacpMcp/getAacpMcpDetails", { id: id } as CommonIdDto);
+  getAgentHubDetails: async (id: string): Promise<GetAgentHubDetailsVo> => {
+    const ret = await Http.postEntity<Result<GetAgentHubDetailsVo>>("/agentHub/getAgentHubDetails", { id: id } as CommonIdDto);
     return ret.data;
   },
 
@@ -98,7 +98,7 @@ export default {
    * @param id MCP服务器ID
    * @returns 操作结果
    */
-  removeAacpMcp: async (id: string): Promise<Result<void>> => {
-    return await Http.postEntity<Result<void>>("/aacpMcp/removeAacpMcp", { id: id } as CommonIdDto);
+  removeAgentHub: async (id: string): Promise<Result<void>> => {
+    return await Http.postEntity<Result<void>>("/agentHub/removeAgentHub", { id: id } as CommonIdDto);
   },
 };

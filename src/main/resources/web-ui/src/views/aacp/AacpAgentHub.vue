@@ -144,14 +144,14 @@ import StdListContainer from "@/soa/std-series/StdListContainer.vue";
 import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
 import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";
 import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
-import AacpMcpService from "@/views/aacp/service/AacpMcpService.ts";
+import AacpAgentHubService from "@/views/aacp/service/AacpAgentHubService.ts";
 
 const ViewIcon = markRaw(View);
 const DeleteIcon = markRaw(Delete);
 
 const modalFormRef = ref<FormInstance>();
 
-const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } = AacpMcpService.useAacpMcpList();
+const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } = AacpAgentHubService.useAgentHubList();
 
 const {
   modalVisible,
@@ -164,7 +164,7 @@ const {
   openModal,
   resetModal,
   submitModal,
-} = AacpMcpService.useAacpMcpModal(modalFormRef, loadList);
+} = AacpAgentHubService.useAgentHubModal(modalFormRef, loadList);
 </script>
 
 <style scoped></style>

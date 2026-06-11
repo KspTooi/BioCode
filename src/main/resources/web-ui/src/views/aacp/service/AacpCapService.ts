@@ -1,37 +1,33 @@
 import { onMounted, reactive, ref, type Ref } from "vue";
 import type { FormInstance, FormRules } from "element-plus";
 import { ElMessage, ElMessageBox } from "element-plus";
-import AacpCapabilityApi from "@/views/aacp/api/AacpCapabilityApi.ts";
-import AacpFuncApi from "@/views/aacp/api/AacpFuncApi.ts";
-import type {
-  GetAacpCapabilityListDto,
-  GetAacpCapabilityListVo,
-  GetAacpCapabilityDetailsVo,
-} from "@/views/aacp/api/AacpCapabilityApi.ts";
-import type { GetAacpFuncListVo } from "@/views/aacp/api/AacpFuncApi.ts";
+import AacpCapApi from "@/views/aacp/api/AacpCapApi.ts";
+import AacpMicroFuncApi from "@/views/aacp/api/AacpMicroFuncApi.ts";
+import type { GetCapListDto, GetCapListVo, GetCapDetailsVo } from "@/views/aacp/api/AacpCapApi.ts";
+import type { GetMicroFuncListVo } from "@/views/aacp/api/AacpMicroFuncApi.ts";
 import QueryPersistService from "@/commons/service/QueryPersistService.ts";
 
-const PERSIST_KEY = "aacp-capability";
+const PERSIST_KEY = "aacp-cap";
 
 type ModalMode = "add" | "edit";
 
 export default {
-  useAacpCapabilityList() {
-    const listForm = reactive<GetAacpCapabilityListDto>({
+  useCapList() {
+    const listForm = reactive<GetCapListDto>({
       name: null,
       kind: null,
       pageNum: 1,
       pageSize: 20,
     });
 
-    const listData = ref<GetAacpCapabilityListVo[]>([]);
+    const listData = ref<GetCapListVo[]>([]);
     const listTotal = ref(0);
     const listLoading = ref(false);
 
     const loadList = async (): Promise<void> => {
       listLoading.value = true;
       try {
-        const res = await AacpCapabilityApi.getAacpCapabilityList(listForm);
+        const res = await AacpCapApi.getCapList(listForm);
         listData.value = res.data;
         listTotal.value = res.total;
         QueryPersistService.persistQuery(PERSIST_KEY, listForm);
@@ -51,7 +47,7 @@ export default {
       QueryPersistService.clearQuery(PERSIST_KEY);
     };
 
-    const removeList = async (row: GetAacpCapabilityListVo): Promise<void> => {
+    const removeList = async (row: GetCapListVo): Promise<void> => {
       try {
         await ElMessageBox.confirm(`确定删除能力包 [${row.name}] 吗？`, "提示", {
           confirmButtonText: "确定",
@@ -63,7 +59,7 @@ export default {
       }
 
       try {
-        await AacpCapabilityApi.removeAacpCapability(row.id.toString());
+        await AacpCapApi.removeCap(row.id.toString());
         ElMessage.success("删除能力包成功");
         loadList();
       } catch (error: any) {
@@ -87,11 +83,11 @@ export default {
     };
   },
 
-  useAacpCapabilityModal(modalFormRef: Ref<FormInstance | undefined>, reloadCallback: () => void) {
+  useCapModal(modalFormRef: Ref<FormInstance | undefined>, reloadCallback: () => void) {
     const modalVisible = ref(false);
     const modalLoading = ref(false);
     const modalMode = ref<ModalMode>("add");
-    const modalForm = reactive<GetAacpCapabilityDetailsVo>({
+    const modalForm = reactive<GetCapDetailsVo>({
       id: null,
       name: null,
       kind: null,
@@ -100,7 +96,7 @@ export default {
     });
 
     // 微函数选择器
-    const funcOptions = ref<GetAacpFuncListVo[]>([]);
+    const funcOptions = ref<GetMicroFuncListVo[]>([]);
     const funcLoading = ref(false);
 
     const modalRules: FormRules = {
@@ -140,7 +136,7 @@ export default {
       }
       funcLoading.value = true;
       try {
-        const res = await AacpFuncApi.getAacpFuncList({
+        const res = await AacpMicroFuncApi.getMicroFuncList({
           name: null,
           code: null,
           description: null,
@@ -155,7 +151,7 @@ export default {
       }
     };
 
-    const openModal = async (mode: ModalMode, row: GetAacpCapabilityListVo | null): Promise<void> => {
+    const openModal = async (mode: ModalMode, row: GetCapListVo | null): Promise<void> => {
       modalMode.value = mode;
       resetModal();
 
@@ -163,7 +159,7 @@ export default {
 
       if (mode === "edit" && row) {
         try {
-          const res = await AacpCapabilityApi.getAacpCapabilityDetails(row.id.toString());
+          const res = await AacpCapApi.getCapDetails(row.id.toString());
           modalForm.id = res.id;
           modalForm.name = res.name;
           modalForm.kind = res.kind;
@@ -189,7 +185,7 @@ export default {
 
       try {
         if (modalMode.value === "add") {
-          await AacpCapabilityApi.addAacpCapability({
+          await AacpCapApi.addCap({
             name: modalForm.name,
             kind: modalForm.kind,
             remark: modalForm.remark,
@@ -199,7 +195,7 @@ export default {
         }
 
         if (modalMode.value === "edit") {
-          await AacpCapabilityApi.editAacpCapability({
+          await AacpCapApi.editCap({
             id: modalForm.id,
             name: modalForm.name,
             kind: modalForm.kind,

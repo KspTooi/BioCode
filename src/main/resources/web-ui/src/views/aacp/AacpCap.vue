@@ -3,14 +3,13 @@
     <StdListAreaQuery>
       <el-form :model="listForm" inline class="flex justify-between">
         <div>
-          <el-form-item label="微函数名称">
-            <el-input v-model="listForm.name" placeholder="请输入微函数名称" clearable />
+          <el-form-item label="能力包名称">
+            <el-input v-model="listForm.name" placeholder="请输入能力包名称" clearable />
           </el-form-item>
-          <el-form-item label="微函数标识">
-            <el-input v-model="listForm.code" placeholder="请输入微函数标识" clearable />
-          </el-form-item>
-          <el-form-item label="意图词">
-            <el-input v-model="listForm.description" placeholder="请输入意图词" clearable />
+          <el-form-item label="类型">
+            <el-select v-model="listForm.kind" placeholder="请选择" clearable>
+              <el-option label="微函数" :value="0" />
+            </el-select>
           </el-form-item>
         </div>
         <el-form-item>
@@ -21,15 +20,20 @@
     </StdListAreaQuery>
 
     <StdListAreaAction>
-      <el-button type="success" @click="openModal('add', null)">创建微函数</el-button>
+      <el-button type="success" @click="openModal('add', null)">创建能力包</el-button>
     </StdListAreaAction>
 
     <StdListAreaTable v-model:list-form="listForm" :list-total="listTotal" :load-list="loadList">
       <el-table v-loading="listLoading" :data="listData" border stripe height="100%">
         <el-table-column type="index" label="序号" width="60" align="center" />
-        <el-table-column label="微函数名称" prop="name" />
-        <el-table-column label="微函数标识" prop="code" width="160" />
-        <el-table-column label="意图词" prop="description" show-overflow-tooltip />
+        <el-table-column label="能力包名称" prop="name" />
+        <el-table-column label="类型" width="100" align="center">
+          <template #default="scope">
+            <span v-show="scope.row.kind === 0">微函数</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="微函数数量" prop="funcCount" width="120" align="center" />
+        <el-table-column label="备注" prop="remark" show-overflow-tooltip />
         <el-table-column label="操作" fixed="right" width="140">
           <template #default="scope">
             <el-button link type="primary" size="small" :icon="ViewIcon" @click="openModal('edit', scope.row)">编辑</el-button>
@@ -41,7 +45,7 @@
 
     <el-dialog
       v-model="modalVisible"
-      :title="modalMode === 'edit' ? '编辑微函数' : '创建微函数'"
+      :title="modalMode === 'edit' ? '编辑能力包' : '创建能力包'"
       width="600px"
       :close-on-click-modal="false"
       @close="
@@ -54,42 +58,20 @@
         ref="modalFormRef"
         :model="modalForm"
         :rules="modalRules"
-        label-width="130px"
+        label-width="110px"
         :validate-on-rule-change="false"
       >
-        <el-form-item label="微函数名称" prop="name">
-          <el-input v-model="modalForm.name" placeholder="请输入微函数名称" :maxlength="40" show-word-limit />
+        <el-form-item label="能力包名称" prop="name">
+          <el-input v-model="modalForm.name" placeholder="请输入能力包名称" :maxlength="40" show-word-limit />
         </el-form-item>
-        <el-form-item label="微函数标识" prop="code">
-          <el-input v-model="modalForm.code" placeholder="请输入微函数标识" :maxlength="32" show-word-limit />
+        <el-form-item label="类型" prop="kind">
+          <el-select v-model="modalForm.kind" placeholder="请选择类型">
+            <el-option label="微函数" :value="0" />
+          </el-select>
         </el-form-item>
-        <el-form-item label="意图词" prop="description">
-          <el-input
-            v-model="modalForm.description"
-            placeholder="请输入意图词"
-            type="textarea"
-            :rows="3"
-            :maxlength="1000"
-            show-word-limit
-          />
-        </el-form-item>
-        <el-form-item label="入参规范" prop="schema">
-          <el-input v-model="modalForm.schema" placeholder="请输入入参规范(JSON)" type="textarea" :rows="4" />
-        </el-form-item>
-        <el-form-item label="调用目标Bean" prop="target">
-          <el-select
-            v-model="modalForm.target"
-            v-loading="microFuncListLoading"
-            placeholder="请选择已注册微函数"
-            clearable
-            filterable
-            allow-create
-            style="width: 100%"
-          >
-            <el-option v-for="item in microFuncListData" :key="item.target" :label="item.target" :value="item.target">
-              <span>{{ item.target }}</span>
-              <span class="text-gray-400 text-sm ml-2">{{ item.name }}</span>
-            </el-option>
+        <el-form-item label="绑定微函数" prop="funcIds">
+          <el-select v-model="modalForm.funcIds" multiple filterable :loading="funcLoading" placeholder="请选择微函数">
+            <el-option v-for="item in funcOptions" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
         <el-form-item label="备注" prop="remark">
@@ -123,14 +105,15 @@ import StdListContainer from "@/soa/std-series/StdListContainer.vue";
 import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
 import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";
 import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
-import AacpFuncService from "@/views/aacp/service/AacpFuncService.ts";
+import AacpCapService from "@/views/aacp/service/AacpCapService.ts";
 
 const ViewIcon = markRaw(View);
 const DeleteIcon = markRaw(Delete);
 
 const modalFormRef = ref<FormInstance>();
 
-const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } = AacpFuncService.useAacpFuncList();
+const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } =
+  AacpCapService.useCapList();
 
 const {
   modalVisible,
@@ -138,12 +121,12 @@ const {
   modalMode,
   modalForm,
   modalRules,
-  microFuncListData,
-  microFuncListLoading,
+  funcOptions,
+  funcLoading,
   openModal,
   resetModal,
   submitModal,
-} = AacpFuncService.useAacpFuncModal(modalFormRef, loadList);
+} = AacpCapService.useCapModal(modalFormRef, loadList);
 </script>
 
 <style scoped></style>
