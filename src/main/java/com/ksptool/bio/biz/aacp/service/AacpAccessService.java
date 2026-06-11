@@ -12,21 +12,31 @@ import com.ksptool.bio.biz.aacp.commons.jrpc.vo.InitializeVo;
 import com.ksptool.bio.biz.aacp.commons.jrpc.vo.PingVo;
 import com.ksptool.bio.biz.aacp.commons.jrpc.vo.ToolsCallVo;
 import com.ksptool.bio.biz.aacp.commons.jrpc.vo.ToolsListVo;
+import com.ksptool.bio.biz.aacp.model.agenthub.AacpAgentHubPo;
 import com.ksptool.bio.biz.aacp.model.cap.AacpCapPo;
+import com.ksptool.bio.biz.aacp.repository.AgentHubRepository;
 import com.ksptool.bio.biz.aacp.repository.CapMicroFuncRepository;
 import com.ksptool.bio.biz.aacp.repository.CapRepository;
 import com.ksptool.bio.biz.aacp.repository.MicroFuncRepository;
+import com.ksptool.assembly.entity.exception.BizException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 
 @Slf4j
 @Service
 public class AacpAccessService {
+
+    private final Map<String, McpClientSession> sessionMap = new ConcurrentHashMap<>();
 
     @Autowired
     private MicroFuncCallService microFuncCallService;
@@ -35,13 +45,73 @@ public class AacpAccessService {
     private CapRepository capRepository;
 
     @Autowired
-    private CapMicroFuncRepository capMicroFuncRepository;
-
-    @Autowired
     private MicroFuncRepository microFuncRepository;
 
     @Autowired
     private MicroFuncRegistry mfRegistry;
+
+    @Autowired
+    private AgentHubRepository agentHubRepository;
+
+    /**
+     * 创建 SSE 会话
+     *
+     * @param serverCode 智能体枢纽编码
+     * @param emitter    SSE 发射器
+     * @throws BizException Hub 不存在或不可用
+     */
+    public String createSession(String serverCode, SseEmitter emitter) throws BizException {
+
+        AacpAgentHubPo po = agentHubRepository.getByCode(serverCode);
+        if (po == null) {
+            throw new BizException("智能体枢纽不存在:" + serverCode);
+        }
+        if (po.getStatus() != 1) {
+            throw new BizException("智能体枢纽当前不接受连接请求:" + serverCode);
+        }
+
+        String sessionId = UUID.randomUUID().toString();
+        McpClientSession session = new McpClientSession(sessionId, serverCode, po.getId(), po.getName(), emitter);
+        sessionMap.put(sessionId, session);
+        emitter.onCompletion(() -> closeSession(sessionId));
+        emitter.onTimeout(() -> closeSession(sessionId));
+
+        log.info("[AACP] 创建会话 Upstream => {} 服务器编码:{}", sessionId, serverCode);
+
+        try {
+            emitter.send(SseEmitter.event()
+                    .name("endpoint")
+                    .data("/aacp/inbound?sessionId=" + sessionId));
+        } catch (IOException e) {
+            closeSession(sessionId);
+            log.error("[AACP] 创建会话 Upstream => {} 服务器编码:{} 异常:{}", sessionId, serverCode, e.getMessage());
+        }
+
+        return sessionId;
+    }
+
+    /**
+     * 根据 sessionId 获取会话
+     *
+     * @param sessionId 会话ID
+     * @return 会话，不存在返回 null
+     */
+    public McpClientSession getSession(String sessionId) {
+        return sessionMap.get(sessionId);
+    }
+
+    /**
+     * 关闭会话并从内存中移除
+     *
+     * @param sessionId 会话ID
+     */
+    public void closeSession(String sessionId) {
+        McpClientSession session = sessionMap.remove(sessionId);
+        if (session == null) {
+            return;
+        }
+        session.getEmitter().complete();
+    }
 
     /**
      * 处理入向 JSON-RPC 请求，按方法名路由分发
@@ -51,6 +121,8 @@ public class AacpAccessService {
      * @return JSON-RPC 响应，通知类方法返回 null
      */
     public RpcOutput<?> inbound(McpClientSession session, RpcInput<String> input) {
+
+        session.setInboundCount(session.getInboundCount() + 1);
 
         var p = McpParser.of(input);
 
