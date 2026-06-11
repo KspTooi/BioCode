@@ -84,7 +84,7 @@
         <el-form-item label="唯一编码" prop="code">
           <el-input v-model="modalForm.code" placeholder="请输入唯一编码" :maxlength="16" show-word-limit />
         </el-form-item>
-        <el-form-item label="通信协议">
+        <el-form-item label="通信协议" prop="networkKind">
           <el-select v-model="modalForm.networkKind" placeholder="请选择通信协议">
             <el-option label="HTTP+SSE" :value="0" />
             <el-option label="WS" :value="1" disabled />
@@ -96,10 +96,10 @@
             <el-option label="PSK" :value="1" />
           </el-select>
         </el-form-item>
-        <el-form-item v-show="modalForm.authKind === 1" label="预共享密钥" prop="authPsk">
+        <el-form-item v-show="modalForm.authKind === 1" label="PSK" prop="authPsk" :required="modalForm.authKind === 1">
           <el-input
             v-model="modalForm.authPsk"
-            placeholder="请输入预共享密钥"
+            placeholder="请输入PSK"
             type="textarea"
             :rows="4"
             :maxlength="2000"
@@ -113,13 +113,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="绑定能力包" prop="capIds">
-          <el-select
-            v-model="modalForm.capIds"
-            multiple
-            filterable
-            :loading="capLoading"
-            placeholder="请选择能力包"
-          >
+          <el-select v-model="modalForm.capIds" multiple filterable :loading="capLoading" placeholder="请选择能力包">
             <el-option v-for="item in capOptions" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>

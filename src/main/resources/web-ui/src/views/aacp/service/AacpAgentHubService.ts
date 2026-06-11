@@ -115,7 +115,10 @@ export default {
       ],
       networkKind: [{ required: true, message: "请选择通信协议", trigger: "change" }],
       authKind: [{ required: true, message: "请选择鉴权类型", trigger: "change" }],
-      authPsk: [{ max: 2000, message: "预共享密钥长度不能超过2000", trigger: "blur" }],
+      authPsk: [
+        { max: 2000, message: "预共享密钥长度不能超过2000", trigger: "blur" },
+        { required: true, message: "请输入预共享密钥", trigger: "blur" },
+      ],
       status: [{ required: true, message: "请选择状态", trigger: "change" }],
       capIds: [
         {
@@ -132,7 +135,7 @@ export default {
     };
 
     /** 一次全量加载能力包选项（pageSize 写死 10000） */
-    const loadCapabilityOptions = async (): Promise<void> => {
+    const loadCapOptions = async (): Promise<void> => {
       if (capOptions.value.length > 0) {
         return;
       }
@@ -168,7 +171,7 @@ export default {
       modalMode.value = mode;
       resetModal();
 
-      await loadCapabilityOptions();
+      await loadCapOptions();
 
       if (mode === "edit" && row) {
         try {
