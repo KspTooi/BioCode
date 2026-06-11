@@ -31,7 +31,7 @@ public class EditAgentHubDto implements DtoCustomValidator {
     private String code;
 
     @NotNull(message = "通信协议不能为空")
-    @Range(min = 0, max = 1, message = "通信协议只能在0-1之间")
+    @Range(min = 0, max = 0, message = "当前仅支持 HTTP+SSE 通信协议")
     @Schema(description = "通信协议 0:HTTP+SSE 1:WS")
     private Integer networkKind;
 
@@ -54,12 +54,15 @@ public class EditAgentHubDto implements DtoCustomValidator {
     private List<Long> capIds;
 
     /**
-     * 校验PSK鉴权时预共享密钥必填
+     * 校验通信协议和PSK鉴权约束
      *
      * @return 错误信息 无错误返回null
      */
     @Override
     public String validate() {
+        if (networkKind != null && networkKind != 0) {
+            return "当前仅支持 HTTP+SSE 通信协议";
+        }
         if (authKind != null && authKind == 1 && Str.isBlank(authPsk)) {
             return "使用PSK鉴权时必须填写预共享密钥";
         }
