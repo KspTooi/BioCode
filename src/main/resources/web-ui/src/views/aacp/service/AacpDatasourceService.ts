@@ -216,16 +216,18 @@ export default {
       if (modalMode.value !== "add") {
         return;
       }
-      if (modalForm.url) {
-        return;
-      }
       if (!modalForm.code) {
         return;
       }
-      modalForm.url =
-        "jdbc:mysql://127.0.0.1:3306/" +
-        modalForm.code +
-        "?serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&allowMultiQueries=true&useUnicode=true&characterEncoding=utf-8";
+      if (!modalForm.url) {
+        modalForm.url =
+          "jdbc:mysql://127.0.0.1:3306/" +
+          modalForm.code +
+          "?serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&allowMultiQueries=true&useUnicode=true&characterEncoding=utf-8";
+      }
+      if (!modalForm.defaultDb) {
+        modalForm.defaultDb = modalForm.code;
+      }
     };
 
     const submitModal = async (): Promise<void> => {
