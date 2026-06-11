@@ -14,8 +14,22 @@
       </el-form>
     </StdListAreaQuery>
 
+    <StdListAreaAction>
+      <el-button type="danger" :disabled="selectionRows.length === 0" @click="batchClose">
+        批量关闭 ({{ selectionRows.length }})
+      </el-button>
+    </StdListAreaAction>
+
     <StdListAreaTable v-model:list-form="listForm">
-      <el-table v-loading="listLoading" :data="listData" border stripe height="100%">
+      <el-table
+        v-loading="listLoading"
+        :data="listData"
+        border
+        stripe
+        height="100%"
+        @selection-change="onSelectionChange"
+      >
+        <el-table-column type="selection" width="50" align="center" />
         <el-table-column type="index" label="序号" width="60" align="center" />
         <el-table-column label="会话ID" prop="sessionId" min-width="200" show-overflow-tooltip />
         <el-table-column label="枢纽名称" prop="serverName" width="140" />
@@ -45,13 +59,12 @@ import { markRaw } from "vue";
 import { CloseBold } from "@element-plus/icons-vue";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
 import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
+import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";
 import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
 import AacpSessionService from "@/views/aacp/service/AacpSessionService.ts";
 
 const CloseIcon = markRaw(CloseBold);
 
-const { listForm, serverCode, listData, listLoading, loadList, resetList, removeList } =
+const { listForm, serverCode, listData, listLoading, selectionRows, loadList, resetList, removeList, onSelectionChange, batchClose } =
   AacpSessionService.useOnlineSessionList();
 </script>
-
-<style scoped></style>

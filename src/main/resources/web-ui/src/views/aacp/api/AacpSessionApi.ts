@@ -25,11 +25,11 @@ export default {
 
   /**
    * 关闭在线会话
-   * @param sessionId 会话ID
+   * @param sessionIds 会话ID列表
    * @returns 操作结果
    */
-  closeSession: async (sessionId: string): Promise<string> => {
-    const result = await Http.postEntity<Result<string>>("/aacpSession/closeSession", { sessionId });
+  closeSession: async (sessionIds: string[]): Promise<string> => {
+    const result = await Http.postEntity<Result<string>>("/aacpSession/closeSession", { sessionIds });
     if (result.code === 0) {
       return result.message;
     }

@@ -48,7 +48,9 @@ public class AacpSessionController {
     @PostMapping("/closeSession")
     @Operation(summary = "关闭在线会话")
     public Result<String> closeSession(@RequestBody @Valid CloseSessionDto dto) {
-        aacpAccessService.closeSession(dto.getSessionId());
+        for (String sessionId : dto.getSessionIds()) {
+            aacpAccessService.closeSession(sessionId);
+        }
         return Result.success("关闭成功");
     }
 }

@@ -17,6 +17,7 @@ export default {
 
     const listData = ref<GetOnlineSessionListVo[]>([]);
     const listLoading = ref(false);
+    const selectionRows = ref<GetOnlineSessionListVo[]>([]);
 
     const loadList = async (): Promise<void> => {
       listLoading.value = true;
@@ -51,8 +52,38 @@ export default {
       }
 
       try {
-        await AacpSessionApi.closeSession(row.sessionId);
+        await AacpSessionApi.closeSession([row.sessionId]);
         ElMessage.success("关闭会话成功");
+        loadList();
+      } catch (error: any) {
+        ElMessage.error(error.message);
+      }
+    };
+
+    const onSelectionChange = (rows: GetOnlineSessionListVo[]): void => {
+      selectionRows.value = rows;
+    };
+
+    const batchClose = async (): Promise<void> => {
+      if (selectionRows.value.length === 0) {
+        ElMessage.warning("请先选择要关闭的会话");
+        return;
+      }
+
+      try {
+        await ElMessageBox.confirm(`确定要关闭选中的 ${selectionRows.value.length} 个在线会话吗？`, "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        });
+      } catch {
+        return;
+      }
+
+      try {
+        const sessionIds = selectionRows.value.map((row) => row.sessionId);
+        await AacpSessionApi.closeSession(sessionIds);
+        ElMessage.success(`已关闭 ${sessionIds.length} 个会话`);
         loadList();
       } catch (error: any) {
         ElMessage.error(error.message);
@@ -68,9 +99,12 @@ export default {
       serverCode,
       listData,
       listLoading,
+      selectionRows,
       loadList,
       resetList,
       removeList,
+      onSelectionChange,
+      batchClose,
     };
   },
 };
