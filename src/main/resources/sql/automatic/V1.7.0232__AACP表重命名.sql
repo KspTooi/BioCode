@@ -6,7 +6,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- ----------------------------
 DROP TABLE IF EXISTS aacp_mcp;
 DROP TABLE IF EXISTS aacp_capability;
-DROP TABLE IF EXISTS accp_func;
+DROP TABLE IF EXISTS aacp_func;
 DROP TABLE IF EXISTS aacp_mcp_capability;
 DROP TABLE IF EXISTS aacp_capability_func;
 
@@ -51,10 +51,10 @@ CREATE TABLE aacp_cap(
 )  COMMENT = '能力包表';
 
 -- ----------------------------
--- Table structure for accp_micro_func
+-- Table structure for aacp_micro_func
 -- ----------------------------
-DROP TABLE IF EXISTS accp_micro_func;
-CREATE TABLE accp_micro_func(
+DROP TABLE IF EXISTS aacp_micro_func;
+CREATE TABLE aacp_micro_func(
     `id` BIGINT NOT NULL  COMMENT '主键ID' ,
     `root_id` BIGINT NOT NULL  COMMENT '租户ID' ,
     `name` VARCHAR(40) NOT NULL  COMMENT '微函数名称' ,
@@ -82,10 +82,10 @@ CREATE TABLE aacp_cap_micro_func(
 )  COMMENT = 'CMF表';
 
 -- ----------------------------
--- Table structure for accp_agent_hub_cap
+-- Table structure for aacp_agent_hub_cap
 -- ----------------------------
-DROP TABLE IF EXISTS accp_agent_hub_cap;
-CREATE TABLE accp_agent_hub_cap(
+DROP TABLE IF EXISTS aacp_agent_hub_cap;
+CREATE TABLE aacp_agent_hub_cap(
     `hub_id` BIGINT NOT NULL  COMMENT '智能体枢纽ID' ,
     `cap_id` BIGINT NOT NULL  COMMENT '能力包ID' ,
     PRIMARY KEY (hub_id,cap_id)

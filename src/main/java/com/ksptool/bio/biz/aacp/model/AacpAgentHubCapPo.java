@@ -9,7 +9,7 @@ import java.io.Serializable;
 @Setter
 @IdClass(AacpAgentHubCapPo.Pk.class)
 @Entity
-@Table(name = "accp_agent_hub_cap", comment = "AHC表")
+@Table(name = "aacp_agent_hub_cap", comment = "AHC表")
 @AllArgsConstructor
 @NoArgsConstructor
 public class AacpAgentHubCapPo implements Serializable {

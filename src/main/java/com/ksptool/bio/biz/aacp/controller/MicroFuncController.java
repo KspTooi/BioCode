@@ -34,14 +34,14 @@ public class MicroFuncController {
     @Autowired
     private MicroFuncService microFuncService;
 
-    @PreAuthorize("@auth.hasCode('accp:func:view')")
+    @PreAuthorize("@auth.hasCode('aacp:func:view')")
     @PostMapping("/getMicroFuncList")
     @Operation(summary = "查询微函数列表")
     public PageResult<GetMicroFuncListVo> getMicroFuncList(@RequestBody @Valid GetMicroFuncListDto dto) throws Exception {
         return microFuncService.getMicroFuncList(dto);
     }
 
-    @PreAuthorize("@auth.hasCode('accp:func:add')")
+    @PreAuthorize("@auth.hasCode('aacp:func:add')")
     @Operation(summary = "新增微函数")
     @PostMapping("/addMicroFunc")
     public Result<String> addMicroFunc(@RequestBody @Valid AddMicroFuncDto dto) throws Exception {
@@ -49,7 +49,7 @@ public class MicroFuncController {
         return Result.success("新增成功");
     }
 
-    @PreAuthorize("@auth.hasCode('accp:func:edit')")
+    @PreAuthorize("@auth.hasCode('aacp:func:edit')")
     @Operation(summary = "编辑微函数")
     @PostMapping("/editMicroFunc")
     public Result<String> editMicroFunc(@RequestBody @Valid EditMicroFuncDto dto) throws Exception {
@@ -57,7 +57,7 @@ public class MicroFuncController {
         return Result.success("修改成功");
     }
 
-    @PreAuthorize("@auth.hasCode('accp:func:view')")
+    @PreAuthorize("@auth.hasCode('aacp:func:view')")
     @Operation(summary = "查询微函数详情")
     @PostMapping("/getMicroFuncDetails")
     public Result<GetMicroFuncDetailsVo> getMicroFuncDetails(@RequestBody @Valid CommonIdDto dto) throws Exception {
@@ -68,7 +68,7 @@ public class MicroFuncController {
         return Result.success(details);
     }
 
-    @PreAuthorize("@auth.hasCode('accp:func:remove')")
+    @PreAuthorize("@auth.hasCode('aacp:func:remove')")
     @Operation(summary = "删除微函数")
     @PostMapping("/removeMicroFunc")
     public Result<String> removeMicroFunc(@RequestBody @Valid CommonIdDto dto) throws Exception {
@@ -76,7 +76,7 @@ public class MicroFuncController {
         return Result.success("操作成功");
     }
 
-    @PreAuthorize("@auth.hasCode('accp:func:view')")
+    @PreAuthorize("@auth.hasCode('aacp:func:view')")
     @Operation(summary = "获取已注册微函数列表")
     @PostMapping("/getMicroFuncRegistryList")
     public Result<List<GetMicroFuncRegistryVo>> getMicroFuncRegistryList() throws Exception {
