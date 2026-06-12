@@ -1,8 +1,8 @@
 package com.ksptool.bio.biz.auth.common.aop;
 
 import com.ksptool.assembly.entity.exception.BizException;
-import com.ksptool.bio.biz.auth.model.basicpat.BasicPatPo;
 import com.ksptool.bio.biz.auth.model.auth.AuthUserSession;
+import com.ksptool.bio.biz.auth.model.basicpat.BasicPatPo;
 import com.ksptool.bio.biz.auth.service.AuthUserDetailsService;
 import com.ksptool.bio.biz.auth.service.BasicPatService;
 import com.ksptool.bio.biz.auth.service.SessionService;
@@ -18,6 +18,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Enumeration;
 
 /**
  * PAT 虚拟会话认证过滤器
@@ -86,6 +88,14 @@ public class PatSessionAuthFilter extends OncePerRequestFilter {
                     return "Bearer " + patToken;
                 }
                 return super.getHeader(name);
+            }
+
+            @Override
+            public Enumeration<String> getHeaders(String name) {
+                if ("Authorization".equalsIgnoreCase(name)) {
+                    return Collections.enumeration(Collections.singletonList("Bearer " + patToken));
+                }
+                return super.getHeaders(name);
             }
         };
 
