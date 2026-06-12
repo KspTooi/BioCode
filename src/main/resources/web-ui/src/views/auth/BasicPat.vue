@@ -38,10 +38,10 @@
             <span v-if="!scope.row.expire" class="text-green-500">永久</span>
           </template>
         </el-table-column>
-        <el-table-column label="状态" min-width="100">
+        <el-table-column label="状态" min-width="60" align="center">
           <template #default="scope">
             <el-tag :type="scope.row.status === 1 ? 'success' : 'danger'">
-              {{ scope.row.status === 1 ? "启用" : "禁用" }}
+              {{ scope.row.status === 1 ? "正常" : "封禁" }}
             </el-tag>
           </template>
         </el-table-column>
