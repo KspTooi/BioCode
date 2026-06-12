@@ -55,7 +55,7 @@ public class CircularDependencyFailureAnalyzer
 
         String description = """
                 【循环依赖检测】
-                以下 Bean 之间形成了依赖环，Spring 默认禁止循环引用:
+                以下 Bean 之间形成了依赖环，Spring 禁止循环依赖:
 
                 %s
                 """.formatted(buildDiagram(beans, cycleStart));
@@ -78,11 +78,11 @@ public class CircularDependencyFailureAnalyzer
         if (bce instanceof UnsatisfiedDependencyException ude) {
             InjectionPoint ip = ude.getInjectionPoint();
             if (ip != null && ip.getField() != null) {
-                return " (field " + ip.getField() + ")";
+                return " (字段 " + ip.getField() + ")";
             }
         }
         if (StringUtils.isNotBlank(bce.getResourceDescription())) {
-            return " defined in " + bce.getResourceDescription();
+            return " 定义在 " + bce.getResourceDescription();
         }
         return "";
     }
