@@ -1,5 +1,6 @@
 package com.ksptool.bio.biz.auth.service;
 
+import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.bio.biz.auth.common.PermissionBucket;
 import com.ksptool.bio.biz.auth.common.RsCalculator;
 import com.ksptool.bio.biz.auth.common.exception.AuthUnavailableException;
@@ -186,6 +187,14 @@ public class AuthUserDetailsService implements UserDetailsService {
                 throw e;
             }
             if(e instanceof AuthUnavailableException){
+                throw e;
+            }
+
+            if(e instanceof BizException){
+                throw e;
+            }
+
+            if(e instanceof UsernameNotFoundException){
                 throw e;
             }
 
