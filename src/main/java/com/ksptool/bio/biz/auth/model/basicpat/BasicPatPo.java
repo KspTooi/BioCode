@@ -42,6 +42,9 @@ public class BasicPatPo extends RowScopeRootOnlyPo {
     @Column(name = "name", nullable = false, length = 40, comment = "PAT名称")
     private String name;
 
+    @Column(name = "pat_hash", nullable = false, length = 64, comment = "令牌SHA256哈希")
+    private String patHash;
+
     @Column(name = "pat_pt", nullable = false, length = 200, comment = "部分明文")
     private String patPt;
 

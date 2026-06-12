@@ -10,13 +10,14 @@ import com.ksptool.bio.biz.auth.model.basicpat.dto.GetBasicPatListDto;
 import com.ksptool.bio.biz.auth.model.basicpat.vo.GetBasicPatDetailsVo;
 import com.ksptool.bio.biz.auth.model.basicpat.vo.GetBasicPatListVo;
 import com.ksptool.bio.biz.auth.repository.BasicPatRepository;
-import com.ksptool.bio.biz.auth.service.SessionService;
+import com.ksptool.bio.commons.utils.SHA256;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,6 +38,9 @@ public class BasicPatService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private SessionService sessionService;
 
     /**
      * 查询基本PAT列表
@@ -65,7 +69,7 @@ public class BasicPatService {
      * @return 完整令牌明文，创建后仅展示一次
      */
     @Transactional(rollbackFor = Exception.class)
-    public String addBasicPat(AddBasicPatDto dto) throws AuthException {
+    public String addBasicPat(AddBasicPatDto dto) throws AuthException, BizException {
         BasicPatPo insertPo = as(dto, BasicPatPo.class);
         insertPo.setUserId(SessionService.session().getUserId());
 
@@ -73,6 +77,7 @@ public class BasicPatService {
         String fullToken = "usk-" + uuid;
         insertPo.setPatPt(fullToken.substring(0, 9) + "***********************" + fullToken.substring(32));
         insertPo.setPatCt(passwordEncoder.encode(fullToken));
+        insertPo.setPatHash(SHA256.hex(fullToken));
 
         repository.save(insertPo);
         return fullToken;
@@ -107,6 +112,33 @@ public class BasicPatService {
         if (!po.getUserId().equals(SessionService.session().getUserId())) {
             throw new BizException("无权删除其他用户的PAT");
         }
+        sessionService.closeSessionByHashedSessionId(po.getPatHash());
         repository.deleteById(dto.getId());
+    }
+
+    /**
+     * 验证 PAT 令牌
+     *
+     * @param rawToken 完整 PAT 令牌 (usk-xxx)
+     * @return PAT 实体
+     * @throws BizException 令牌无效/已禁用/已过期
+     */
+    public BasicPatPo validatePat(String rawToken) throws BizException {
+        var patHash = SHA256.hex(rawToken);
+        var pat = repository.getPatByHash(patHash);
+
+        if (pat == null) {
+            throw new BizException("PAT令牌无效或已禁用");
+        }
+
+        if (pat.getExpire() != null && pat.getExpire().isBefore(LocalDateTime.now())) {
+            throw new BizException("PAT令牌已过期");
+        }
+
+        if (!passwordEncoder.matches(rawToken, pat.getPatCt())) {
+            throw new BizException("PAT令牌验证失败");
+        }
+        
+        return pat;
     }
 }

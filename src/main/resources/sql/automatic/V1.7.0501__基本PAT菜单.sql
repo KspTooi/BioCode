@@ -2,23 +2,26 @@ SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- =================================================================================
--- 1. auth_basic_pat 基本PAT表（幂等：CREATE TABLE IF NOT EXISTS）
+-- 1. auth_basic_pat 基本PAT表（DROP 后完整重建，含 pat_hash 索引列）
 -- =================================================================================
-CREATE TABLE IF NOT EXISTS `auth_basic_pat` (
-  `id` bigint NOT NULL COMMENT '主键ID',
-  `root_id` bigint NOT NULL COMMENT '租户ID',
-  `user_id` bigint NOT NULL COMMENT '所属用户ID',
-  `name` varchar(40) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'PAT名称',
-  `pat_pt` varchar(200) COLLATE utf8mb4_general_ci NOT NULL COMMENT '部分明文',
-  `pat_ct` varchar(2048) COLLATE utf8mb4_general_ci NOT NULL COMMENT '密文',
-  `expire` datetime DEFAULT NULL COMMENT '过期时间',
-  `status` tinyint NOT NULL COMMENT '状态: 0:禁用 1:启用',
-  `create_time` datetime NOT NULL COMMENT '创建时间',
-  `creator_id` bigint NOT NULL COMMENT '创建人ID',
-  `update_time` datetime NOT NULL COMMENT '更新时间',
-  `updater_id` bigint NOT NULL COMMENT '更新人ID',
-  `delete_time` datetime DEFAULT NULL COMMENT '删除时间',
-  PRIMARY KEY (`id`)
+DROP TABLE IF EXISTS `auth_basic_pat`;
+CREATE TABLE `auth_basic_pat` (
+  `id` BIGINT NOT NULL COMMENT '主键ID',
+  `root_id` BIGINT NOT NULL COMMENT '租户ID',
+  `user_id` BIGINT NOT NULL COMMENT '所属用户ID',
+  `name` VARCHAR(40) NOT NULL COMMENT 'PAT名称',
+  `pat_hash` VARCHAR(64) NOT NULL COMMENT 'SHA256',
+  `pat_pt` VARCHAR(200) NOT NULL COMMENT '部分明文',
+  `pat_ct` VARCHAR(2048) NOT NULL COMMENT '密文',
+  `expire` DATETIME NULL COMMENT '过期时间',
+  `status` TINYINT NOT NULL COMMENT '状态: 0:禁用 1:启用',
+  `create_time` DATETIME NOT NULL COMMENT '创建时间',
+  `creator_id` BIGINT NOT NULL COMMENT '创建人ID',
+  `update_time` DATETIME NOT NULL COMMENT '更新时间',
+  `updater_id` BIGINT NOT NULL COMMENT '更新人ID',
+  `delete_time` DATETIME NULL COMMENT '删除时间',
+  PRIMARY KEY (`id`),
+  INDEX `idx_pat_hash` (`pat_hash`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='基本PAT';
 
 -- =================================================================================
