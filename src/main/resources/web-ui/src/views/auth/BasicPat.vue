@@ -120,12 +120,17 @@
             style="width: 100%"
             :disabled="modalMode === 'view'"
           />
-          <div v-if="modalMode === 'add'" class="flex gap-1 mt-1">
-            <el-button size="small" @click="modalForm.expire = addExpire(7, 'day')">7天</el-button>
-            <el-button size="small" @click="modalForm.expire = addExpire(15, 'day')">15天</el-button>
-            <el-button size="small" @click="modalForm.expire = addExpire(1, 'month')">1个月</el-button>
-            <el-button size="small" @click="modalForm.expire = addExpire(3, 'month')">3个月</el-button>
-            <el-button size="small" @click="modalForm.expire = addExpire(1, 'year')">1年</el-button>
+          <div v-if="modalMode === 'add'">
+            <el-button-group>
+              <el-button size="small" @click="modalForm.expire = addExpire(1, 'day')">1天</el-button>
+              <el-button size="small" @click="modalForm.expire = addExpire(3, 'day')">3天</el-button>
+              <el-button size="small" @click="modalForm.expire = addExpire(7, 'day')">7天</el-button>
+              <el-button size="small" @click="modalForm.expire = addExpire(15, 'day')">15天</el-button>
+              <el-button size="small" @click="modalForm.expire = addExpire(1, 'month')">1个月</el-button>
+              <el-button size="small" @click="modalForm.expire = addExpire(3, 'month')">3个月</el-button>
+              <el-button size="small" @click="modalForm.expire = addExpire(1, 'year')">1年</el-button>
+              <el-button size="small" @click="modalForm.expire = addExpire(2, 'year')">2年</el-button>
+            </el-button-group>
           </div>
         </el-form-item>
       </el-form>
