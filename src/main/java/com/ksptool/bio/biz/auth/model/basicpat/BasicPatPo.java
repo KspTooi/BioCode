@@ -1,7 +1,9 @@
 package com.ksptool.bio.biz.auth.model.basicpat;
 
 import com.ksptool.assembly.entity.exception.AuthException;
-import com.ksptool.bio.biz.auth.service.SessionService;
+import com.ksptool.bio.biz.auth.common.aop.CreatedRootId;
+import com.ksptool.bio.biz.auth.common.aop.RowScopeRootOnlyPo;
+import com.ksptool.bio.biz.auth.common.aop.RsAuditingEntityListener;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -20,16 +22,17 @@ import java.time.LocalDateTime;
 @Setter
 @Entity
 @Table(name = "auth_basic_pat", comment = "基本PAT表")
-@EntityListeners(AuditingEntityListener.class)
+@EntityListeners({AuditingEntityListener.class, RsAuditingEntityListener.class})
 @SQLDelete(sql = "UPDATE auth_basic_pat SET delete_time = NOW() WHERE id = ?")
 @SQLRestriction("delete_time IS NULL")
-public class BasicPatPo {
+public class BasicPatPo extends RowScopeRootOnlyPo {
 
     @Id
     @SnowflakeIdGenerated
     @Column(name = "id", nullable = false, comment = "主键ID")
     private Long id;
 
+    @CreatedRootId
     @Column(name = "root_id", nullable = false, comment = "租户ID")
     private Long rootId;
 
@@ -72,9 +75,5 @@ public class BasicPatPo {
 
     @PrePersist
     private void onCreate() throws AuthException {
-        var session = SessionService.session();
-        if (this.rootId == null) {
-            this.rootId = session.getRootId();
-        }
     }
 }

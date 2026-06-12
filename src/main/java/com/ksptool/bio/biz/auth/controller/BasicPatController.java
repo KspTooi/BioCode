@@ -3,6 +3,7 @@ package com.ksptool.bio.biz.auth.controller;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.assembly.entity.web.Result;
+import com.ksptool.bio.biz.auth.common.aop.RowScope;
 import com.ksptool.bio.biz.auth.model.basicpat.dto.AddBasicPatDto;
 import com.ksptool.bio.biz.auth.model.basicpat.dto.EditBasicPatDto;
 import com.ksptool.bio.biz.auth.model.basicpat.dto.GetBasicPatListDto;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/basicPat")
 @Tag(name = "AUTH-基本PAT", description = "基本PAT")
 @Slf4j
+@RowScope(mode = RowScope.Mode.ROOT_ONLY)
 public class BasicPatController {
 
     @Autowired

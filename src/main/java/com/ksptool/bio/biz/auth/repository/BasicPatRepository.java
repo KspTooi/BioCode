@@ -16,6 +16,7 @@ public interface BasicPatRepository extends JpaRepository<BasicPatPo, Long> {
             WHERE
             (:#{#po.name} IS NULL OR u.name LIKE CONCAT('%', :#{#po.name}, '%'))
             AND (:#{#po.status} IS NULL OR u.status = :#{#po.status})
+            AND (:#{#po.userId} IS NULL OR u.userId = :#{#po.userId})
             ORDER BY u.createTime DESC
             """)
     Page<BasicPatPo> getBasicPatList(@Param("po") BasicPatPo po, Pageable pageable);
