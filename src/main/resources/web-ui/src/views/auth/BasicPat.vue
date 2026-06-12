@@ -31,7 +31,7 @@
       <el-table :data="listData" stripe v-loading="listLoading" border height="100%">
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
         <el-table-column prop="name" label="PAT名称" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="patPt" label="PAT预览" min-width="180" show-overflow-tooltip />
+        <el-table-column prop="patPt" label="PAT预览" min-width="200" show-overflow-tooltip />
         <el-table-column label="过期时间" min-width="120">
           <template #default="scope">
             <span v-if="scope.row.expire">{{ scope.row.expire }}</span>
@@ -46,7 +46,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" min-width="120" show-overflow-tooltip />
-        <el-table-column label="操作" fixed="right" min-width="180">
+        <el-table-column label="操作" fixed="right" min-width="90">
           <template #default="scope">
             <el-button link type="primary" size="small" @click="openModal('view', scope.row)" :icon="ViewIcon">
               查看
