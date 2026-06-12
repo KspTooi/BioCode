@@ -34,6 +34,10 @@
               </el-form-item>
             </div>
 
+            <el-form-item v-if="loginConfig?.enabledSavePasswordOnClient === 1">
+              <el-checkbox v-model="rememberPat">记住PAT</el-checkbox>
+            </el-form-item>
+
             <transition name="slide-up">
               <div v-if="errorMessage" class="error-notification">
                 <span class="err-tag">ERR_CODE_01:</span>
@@ -62,16 +66,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { Key } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
+import type { GetLoginConfigVo } from "@/views/auth/api/AuthApi";
 import UserAuthService from "@/views/auth/service/UserAuthService";
 import ComTabService from "@/soa/com-series/service/ComTabService";
 
 const router = useRouter();
-const { patLogin } = UserAuthService.useUserAuth();
+const { patLogin, getLoginConfig, savePat, clearPat, loadPat } = UserAuthService.useUserAuth();
 const { clearTabs } = ComTabService.useTabService();
 
 const formRef = ref<FormInstance | null>(null);
@@ -82,6 +87,8 @@ const loginForm = ref<{ patToken: string }>({
 
 const errorMessage = ref<string>("");
 const isLoading = ref<boolean>(false);
+const loginConfig = ref<GetLoginConfigVo | null>(null);
+const rememberPat = ref<boolean>(false);
 
 const onLogin = async (): Promise<void> => {
   errorMessage.value = "";
@@ -100,6 +107,14 @@ const onLogin = async (): Promise<void> => {
   try {
     await patLogin(loginForm.value.patToken.trim());
     ElMessage.success("PAT令牌验证通过");
+
+    if (rememberPat.value && loginConfig.value?.enabledSavePasswordOnClient === 1) {
+      savePat(loginForm.value.patToken.trim());
+    }
+    if (!rememberPat.value) {
+      clearPat();
+    }
+
     clearTabs();
     await router.push({ path: "/" });
   } catch (error) {
@@ -112,6 +127,25 @@ const onLogin = async (): Promise<void> => {
 const onUserLogin = (): void => {
   router.push({ name: "login" });
 };
+
+onMounted(async () => {
+  try {
+    loginConfig.value = await getLoginConfig();
+  } catch {
+    // 配置拉取失败不阻塞登录流程
+  }
+
+  if (loginConfig.value?.enabledSavePasswordOnClient !== 1) {
+    clearPat();
+    return;
+  }
+
+  const saved = loadPat();
+  if (saved) {
+    loginForm.value.patToken = saved;
+    rememberPat.value = true;
+  }
+});
 </script>
 
 <style scoped>
@@ -274,6 +308,24 @@ const onUserLogin = (): void => {
 
 :deep(.el-form-item) {
   margin-bottom: 0;
+}
+
+:deep(.el-checkbox__inner) {
+  border-color: var(--p-main) !important;
+}
+
+:deep(.el-checkbox__input.is-checked .el-checkbox__inner) {
+  background-color: var(--p-main) !important;
+  border-color: var(--p-main) !important;
+}
+
+:deep(.el-checkbox__label) {
+  color: var(--p-text-light);
+  font-size: 0.75rem;
+}
+
+:deep(.el-checkbox__input.is-checked + .el-checkbox__label) {
+  color: var(--p-main) !important;
 }
 
 .error-notification {

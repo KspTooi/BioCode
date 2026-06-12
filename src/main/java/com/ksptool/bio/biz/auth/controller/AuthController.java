@@ -48,6 +48,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.event.AuthenticationFailureServiceExceptionEvent;
+import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
@@ -297,6 +298,10 @@ public class AuthController {
 
         //创建PAT虚拟会话
         sessionService.createPatSession(aus, patPt);
+
+        //发布登录成功事件接入审计
+        var auth = new UsernamePasswordAuthenticationToken(aus, patPt, aus.getAuthorities());
+        aep.publishEvent(new AuthenticationSuccessEvent(auth));
 
         //组装Vo
         var vo = as(aus, UserLoginVo.class);

@@ -15,6 +15,7 @@ const PSK_BASE64 = "BJdWywEjfzLqfEUaYsPQClCI8bvOnsVwd48HM5jdfak=";
 
 const REMEMBERED_USERNAME = "rememberedUsername";
 const REMEMBERED_PASSWORD = "rememberedPassword";
+const REMEMBERED_PAT = "rememberedPat";
 
 /**
  * ChaCha20-Poly1305 加密，IV 拼入密文末尾（格式：密文Base64:IV-Base64）
@@ -155,6 +156,35 @@ export default {
       };
     };
 
+    /**
+     * 保存PAT令牌（明文，内部加密后存 localStorage）
+     *
+     * @param patToken PAT令牌明文
+     */
+    const savePat = (patToken: string): void => {
+      localStorage.setItem(REMEMBERED_PAT, encrypt(patToken));
+    };
+
+    /**
+     * 清除保存的PAT令牌
+     */
+    const clearPat = (): void => {
+      localStorage.removeItem(REMEMBERED_PAT);
+    };
+
+    /**
+     * 加载保存的PAT令牌（解密为明文）
+     *
+     * @returns PAT令牌明文 | null
+     */
+    const loadPat = (): string | null => {
+      const encPat = localStorage.getItem(REMEMBERED_PAT);
+      if (!encPat) {
+        return null;
+      }
+      return decrypt(encPat);
+    };
+
     const login = async (username: string, password: string): Promise<UserLoginVo> => {
       const dto = {
         username: encrypt(username),
@@ -196,6 +226,9 @@ export default {
       loadAccount,
       login,
       patLogin,
+      savePat,
+      clearPat,
+      loadPat,
     };
   },
 
