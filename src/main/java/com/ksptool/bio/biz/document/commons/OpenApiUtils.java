@@ -1,4 +1,4 @@
-package com.ksptool.bio.commons.utils;
+package com.ksptool.bio.biz.document.commons;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.core.util.Json;

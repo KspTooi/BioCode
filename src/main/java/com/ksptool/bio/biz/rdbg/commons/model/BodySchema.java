@@ -1,4 +1,4 @@
-package com.ksptool.bio.commons.model;
+package com.ksptool.bio.biz.rdbg.commons.model;
 
 import lombok.Getter;
 import lombok.Setter;

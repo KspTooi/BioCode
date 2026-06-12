@@ -1,4 +1,4 @@
-package com.ksptool.bio.commons.utils;
+package com.ksptool.bio.biz.core.common;
 
 import org.apache.commons.lang3.StringUtils;
 

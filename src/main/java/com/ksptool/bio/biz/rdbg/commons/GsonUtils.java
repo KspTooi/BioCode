@@ -1,4 +1,4 @@
-package com.ksptool.bio.commons.utils;
+package com.ksptool.bio.biz.rdbg.commons;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

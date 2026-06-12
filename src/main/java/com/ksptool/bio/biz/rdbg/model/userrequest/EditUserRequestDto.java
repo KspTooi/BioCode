@@ -1,6 +1,6 @@
 package com.ksptool.bio.biz.rdbg.model.userrequest;
 
-import com.ksptool.bio.commons.model.HttpHeaderVo;
+import com.ksptool.bio.biz.rdbg.commons.model.HttpHeaderVo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

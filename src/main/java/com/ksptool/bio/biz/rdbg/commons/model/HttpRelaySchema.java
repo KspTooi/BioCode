@@ -1,4 +1,4 @@
-package com.ksptool.bio.commons.model;
+package com.ksptool.bio.biz.rdbg.commons.model;
 
 import io.micrometer.common.util.StringUtils;
 import lombok.Getter;

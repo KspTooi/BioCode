@@ -1,4 +1,4 @@
-package com.ksptool.bio.commons.routeselector;
+package com.ksptool.bio.biz.relay.commons;
 
 import lombok.Getter;
 import lombok.Setter;

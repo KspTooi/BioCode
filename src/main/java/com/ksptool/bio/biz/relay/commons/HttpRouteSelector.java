@@ -1,4 +1,4 @@
-package com.ksptool.bio.commons.routeselector;
+package com.ksptool.bio.biz.relay.commons;
 
 /**
  * 路由选择器
