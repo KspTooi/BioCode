@@ -1,25 +1,25 @@
-package com.ksptool.bio.biz.basicpat.model;
+package com.ksptool.bio.biz.auth.model.basicpat;
 
 import com.ksptool.assembly.entity.exception.AuthException;
+import com.ksptool.bio.biz.auth.service.SessionService;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import java.time.LocalDateTime;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import com.ksptool.assembly.entity.exception.AuthException;
-import com.ksptool.bio.biz.auth.service.SessionService;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "auth_basic_pat")
+@Table(name = "auth_basic_pat", comment = "基本PAT表")
 @EntityListeners(AuditingEntityListener.class)
 @SQLDelete(sql = "UPDATE auth_basic_pat SET delete_time = NOW() WHERE id = ?")
 @SQLRestriction("delete_time IS NULL")
@@ -48,15 +48,15 @@ public class BasicPatPo {
     @Column(name = "expire", comment = "过期时间")
     private LocalDateTime expire;
 
-    @Column(name = "status", nullable = false, comment = "状态: 0:禁用 1:启用")
-    private Integer status;
+    @Column(name = "status", nullable = false, columnDefinition = "TINYINT", comment = "状态: 0:禁用 1:启用")
+    private Integer status = 1;
 
     @CreatedDate
-    @Column(name = "create_time", nullable = false, comment = "创建时间")
+    @Column(name = "create_time", nullable = false, updatable = false, comment = "创建时间")
     private LocalDateTime createTime;
 
     @CreatedBy
-    @Column(name = "creator_id", nullable = false, comment = "创建人ID")
+    @Column(name = "creator_id", nullable = false, updatable = false, comment = "创建人ID")
     private Long creatorId;
 
     @LastModifiedDate
@@ -70,17 +70,11 @@ public class BasicPatPo {
     @Column(name = "delete_time", comment = "删除时间")
     private LocalDateTime deleteTime;
 
-
     @PrePersist
     private void onCreate() throws AuthException {
         var session = SessionService.session();
         if (this.rootId == null) {
             this.rootId = session.getRootId();
         }
-    }
-
-    @PreUpdate
-    private void onUpdate() throws AuthException {
-
     }
 }
