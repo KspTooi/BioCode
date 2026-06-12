@@ -44,8 +44,8 @@ public class BasicPatController {
     @PostMapping("/addBasicPat")
     @Operation(summary = "新增基本PAT")
     public Result<String> addBasicPat(@RequestBody @Valid AddBasicPatDto dto) throws Exception {
-        basicPatService.addBasicPat(dto);
-        return Result.success("新增成功");
+        String token = basicPatService.addBasicPat(dto);
+        return Result.success(token);
     }
 
     @PreAuthorize("@auth.hasCode('auth:basic:pat:edit')")

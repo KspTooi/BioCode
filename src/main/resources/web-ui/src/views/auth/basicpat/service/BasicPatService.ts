@@ -181,8 +181,8 @@ export default {
           name: modalForm.name,
         };
         try {
-          await BasicPatApi.addBasicPat(addDto);
-          ElMessage.success("新增成功");
+          const token = await BasicPatApi.addBasicPat(addDto);
+          ElMessage.success({ message: `创建成功，令牌仅展示一次: ${token}`, duration: 12000, showClose: true });
           modalVisible.value = false;
           reloadCallback();
         } catch (error: any) {

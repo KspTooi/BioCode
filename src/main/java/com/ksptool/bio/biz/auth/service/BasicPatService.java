@@ -13,11 +13,13 @@ import com.ksptool.bio.biz.auth.model.basicpat.vo.GetBasicPatListVo;
 import com.ksptool.bio.biz.auth.repository.BasicPatRepository;
 import com.ksptool.bio.biz.auth.service.SessionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
@@ -33,6 +35,9 @@ public class BasicPatService {
 
     @Autowired
     private BasicPatRepository repository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     /**
      * 查询基本PAT列表
@@ -55,15 +60,23 @@ public class BasicPatService {
     }
 
     /**
-     * 新增基本PAT
+     * 新增基本PAT，自动生成usk-xxx格式令牌
      *
      * @param dto 新增条件
+     * @return 完整令牌明文，创建后仅展示一次
      */
     @Transactional(rollbackFor = Exception.class)
-    public void addBasicPat(AddBasicPatDto dto) throws AuthException {
+    public String addBasicPat(AddBasicPatDto dto) throws AuthException {
         BasicPatPo insertPo = as(dto, BasicPatPo.class);
         insertPo.setUserId(SessionService.session().getUserId());
+
+        String uuid = UUID.randomUUID().toString().replace("-", "");
+        String fullToken = "usk-" + uuid;
+        insertPo.setPatPt(fullToken.substring(0, 9) + "***********************" + fullToken.substring(32));
+        insertPo.setPatCt(passwordEncoder.encode(fullToken));
+
         repository.save(insertPo);
+        return fullToken;
     }
 
     /**
@@ -88,9 +101,12 @@ public class BasicPatService {
      * @return 查询结果
      * @throws BizException 业务异常
      */
-    public GetBasicPatDetailsVo getBasicPatDetails(CommonIdDto dto) throws BizException {
+    public GetBasicPatDetailsVo getBasicPatDetails(CommonIdDto dto) throws Exception {
         BasicPatPo po = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("查询详情失败,数据不存在或无权限访问."));
+        if (!po.getUserId().equals(SessionService.session().getUserId())) {
+            throw new BizException("无权查看其他用户的PAT详情");
+        }
         return as(po, GetBasicPatDetailsVo.class);
     }
 
@@ -101,10 +117,11 @@ public class BasicPatService {
      * @throws BizException 业务异常
      */
     @Transactional(rollbackFor = Exception.class)
-    public void removeBasicPat(CommonIdDto dto) throws BizException {
-        if (dto.isBatch()) {
-            repository.deleteAllById(dto.getIds());
-            return;
+    public void removeBasicPat(CommonIdDto dto) throws Exception {
+        BasicPatPo po = repository.findById(dto.getId())
+                .orElseThrow(() -> new BizException("删除失败,数据不存在或无权限访问."));
+        if (!po.getUserId().equals(SessionService.session().getUserId())) {
+            throw new BizException("无权删除其他用户的PAT");
         }
         repository.deleteById(dto.getId());
     }
