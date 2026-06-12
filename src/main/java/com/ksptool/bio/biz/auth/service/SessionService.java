@@ -416,6 +416,7 @@ public class SessionService {
      * @param patToken PAT 令牌明文
      * @throws BizException 业务异常
      */
+    @Transactional(rollbackFor = Exception.class)
     public void createPatSession(AuthUserSession aus, String patToken) throws BizException {
         var hashedSessionId = SHA256.hex(patToken);
 
