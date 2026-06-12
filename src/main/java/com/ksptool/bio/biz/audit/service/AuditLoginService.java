@@ -86,7 +86,7 @@ public class AuditLoginService {
      *
      * @param userId   用户ID
      * @param username 用户名
-     * @param loginKind 登录方式 0:用户名密码 1:PAT登录
+     * @param loginKind 登录方式 0:用户名密码 1:PAT登录(静默) 2:PAT登录(显式)
      * @param status   状态 0:成功 1:失败
      * @param message  消息
      * @param ipAddr   IP地址

@@ -69,7 +69,7 @@ public class AuthAuditListener {
 
         var userId = aud.getUserId();
         var username = aud.getUsername();
-        var loginKind = aud.getLoginType(); // 0:用户名密码 1:PAT登录
+        var loginKind = aud.getLoginType(); // 0:用户名密码 1:PAT登录(静默) 2:PAT登录(显式)
         var message = "登录成功";
 
         //记录登录审计日志

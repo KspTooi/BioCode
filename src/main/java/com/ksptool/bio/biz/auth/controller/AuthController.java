@@ -294,7 +294,7 @@ public class AuthController {
 
         //加载用户完整详情(权限、RS数据等)
         var aus = (AuthUserSession) authUserDetailsService.loadUserByUsername(userPo.getUsername());
-        aus.setLoginType(1);
+        aus.setLoginType(2); // 2:PAT登录(显式)
 
         //创建PAT虚拟会话
         sessionService.createPatSession(aus, patPt);

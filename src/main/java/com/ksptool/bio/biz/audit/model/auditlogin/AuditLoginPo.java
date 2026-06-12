@@ -27,7 +27,7 @@ public class AuditLoginPo {
     @Column(name = "username", nullable = false, length = 32, comment = "用户账号")
     private String username;
 
-    @Column(name = "login_kind", nullable = false, columnDefinition = "tinyint", comment = "登录方式 0:用户名密码 1:PAT登录")
+    @Column(name = "login_kind", nullable = false, columnDefinition = "tinyint", comment = "登录方式 0:用户名密码 1:PAT登录(静默) 2:PAT登录(显式)")
     private Integer loginKind;
 
     @Column(name = "ip_addr", nullable = false, length = 32, comment = "登录 IP")
