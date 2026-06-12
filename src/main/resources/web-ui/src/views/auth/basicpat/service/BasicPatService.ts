@@ -182,19 +182,25 @@ export default {
       try {
         const token = await BasicPatApi.addBasicPat(addDto);
         modalVisible.value = false;
-        await ElMessageBox.confirm(token, "令牌已生成，仅显示一次", {
-          confirmButtonText: "已复制，关闭",
-          cancelButtonText: "",
-          type: "success",
-          showCancelButton: false,
-          distinguishCancelAndClose: false,
-          closeOnClickModal: true,
-        });
-        reloadCallback();
+
+        try {
+          await ElMessageBox.confirm(token, "令牌已生成，仅显示一次", {
+            confirmButtonText: "已复制，关闭",
+            cancelButtonText: "",
+            type: "success",
+            showCancelButton: false,
+            distinguishCancelAndClose: false,
+            closeOnClickModal: true,
+          });
+        } catch {
+          return;
+        }
       } catch (error: any) {
         ElMessage.error(error.message);
+      } finally {
+        modalLoading.value = false;
+        reloadCallback();
       }
-      modalLoading.value = false;
     };
 
     return {
