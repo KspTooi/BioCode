@@ -92,6 +92,7 @@ import ComTabService from "@/soa/com-series/service/ComTabService.ts";
 
 const router = useRouter();
 const { getLoginConfig, saveAccount, clearAccount, loadAccount, login } = UserAuthService.useUserAuth();
+const { clearTabs } = ComTabService.useTabService();
 
 const formRef = ref<FormInstance | null>(null);
 
@@ -123,7 +124,7 @@ const doLogin = async (): Promise<void> => {
     ElMessage.success("用户验证通过");
 
     //重新登录后清空标签页
-    ComTabService.useTabService().clearTabs();
+    clearTabs();
 
     if (rememberPassword.value && loginConfig.value?.enabledSavePasswordOnClient === 1) {
       saveAccount(loginForm.value.username, loginForm.value.password);
