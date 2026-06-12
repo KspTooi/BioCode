@@ -37,6 +37,7 @@
             <el-tag v-if="scope.row.rsMax === 40">仅本部门</el-tag>
             <el-tag v-if="scope.row.rsMax === 50">仅本人</el-tag>
             <el-tag v-if="scope.row.rsMax === 60" type="warning">指定组织</el-tag>
+            <el-tag v-if="scope.row.rsMax === 100" type="error">无权限</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="登入时间" min-width="180" />
