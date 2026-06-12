@@ -1,4 +1,4 @@
-package com.ksptool.bio.commons.utils;
+package com.ksptool.bio.support.failureanalysis;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
@@ -56,7 +56,7 @@ public class CircularDependencyFailureAnalyzer
         String description = """
                 【循环依赖检测】
                 以下 Bean 之间形成了依赖环，Spring 禁止循环依赖:
-
+                
                 %s
                 """.formatted(buildDiagram(beans, cycleStart));
 

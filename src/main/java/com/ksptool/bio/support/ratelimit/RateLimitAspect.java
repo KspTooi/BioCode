@@ -1,4 +1,4 @@
-package com.ksptool.bio.commons.ratelimit;
+package com.ksptool.bio.support.ratelimit;
 
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.bio.commons.WebUtils;

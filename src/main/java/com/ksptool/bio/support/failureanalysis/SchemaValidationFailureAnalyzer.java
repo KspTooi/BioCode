@@ -1,4 +1,4 @@
-package com.ksptool.bio.commons.utils;
+package com.ksptool.bio.support.failureanalysis;
 
 
 import org.hibernate.tool.schema.spi.SchemaManagementException;
