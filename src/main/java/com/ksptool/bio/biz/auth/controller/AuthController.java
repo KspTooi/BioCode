@@ -13,13 +13,18 @@ import com.ksptool.bio.biz.auth.common.ChaCha20Poly1305;
 import com.ksptool.bio.biz.auth.common.exception.AuthUnavailableException;
 import com.ksptool.bio.biz.auth.common.exception.RootUnavailableException;
 import com.ksptool.bio.biz.auth.model.auth.AuthUserSession;
+import com.ksptool.bio.biz.auth.model.auth.dto.PatLoginDto;
 import com.ksptool.bio.biz.auth.model.auth.dto.UserLoginDto;
 import com.ksptool.bio.biz.auth.model.auth.vo.UserLoginVo;
+import com.ksptool.bio.biz.auth.model.basicpat.BasicPatPo;
 import com.ksptool.bio.biz.auth.model.session.UserSessionPo;
 import com.ksptool.bio.biz.auth.model.session.vo.UserSessionVo;
+import com.ksptool.bio.biz.auth.service.AuthUserDetailsService;
+import com.ksptool.bio.biz.auth.service.BasicPatService;
 import com.ksptool.bio.biz.auth.service.SessionService;
 import com.ksptool.bio.biz.core.common.AppRegistry;
 import com.ksptool.bio.biz.core.model.user.dto.RegisterDto;
+import com.ksptool.bio.biz.core.repository.UserRepository;
 import com.ksptool.bio.biz.core.service.MenuService;
 import com.ksptool.bio.biz.core.service.RegistrySdk;
 import com.ksptool.bio.biz.core.service.UserService;
@@ -85,6 +90,15 @@ public class AuthController {
 
     @Autowired
     private MenuService mService;
+
+    @Autowired
+    private BasicPatService basicPatService;
+
+    @Autowired
+    private AuthUserDetailsService authUserDetailsService;
+
+    @Autowired
+    private UserRepository userRepository;
 
 
     @Value("${auth.login.key}")
@@ -214,6 +228,78 @@ public class AuthController {
 
         //清除旧的用户菜单缓存
         mService.clearUserMenuTreeCacheByUserId(aud.getUserId());
+
+        return Result.success(vo);
+    }
+
+    /**
+     * PAT令牌登录：前端用ChaCha20-Poly1305加密令牌后传输，后端解密验证
+     */
+    @Operation(summary = "PAT令牌登录")
+    @PostMapping(value = "/patLogin")
+    public Result<UserLoginVo> patLogin(@RequestBody PatLoginDto dto) throws BizException, GeneralSecurityException {
+
+        //解析密文与IV
+        var ctWithIv = dto.getPatToken();
+        var ctMix = Str.safeSplit(ctWithIv, ":");
+
+        if (ctMix.size() != 2) {
+            return Result.error("解析PAT令牌时发生错误！请检查数据格式。");
+        }
+
+        var ct = ctMix.get(0);
+        var iv = ctMix.get(1);
+
+        if (StringUtils.isBlank(ct) || StringUtils.isBlank(iv)) {
+            return Result.error("获取PAT令牌密文或初始化向量失败！");
+        }
+
+        //解密PAT令牌明文
+        var patPt = "";
+        try {
+            var ivBytes = Base64.getDecoder().decode(iv);
+            var ctBytes = Base64.getDecoder().decode(ct);
+            var psk = ChaCha20Poly1305.getSecretKey(Base64.getDecoder().decode(authLoginKey));
+            var decrypted = ChaCha20Poly1305.decrypt(ctBytes, psk, ivBytes, null);
+            patPt = new String(decrypted, StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            log.error("解密PAT令牌时发生错误！", e);
+            return Result.error("无法解析PAT令牌！");
+        }
+
+        if (StringUtils.isBlank(patPt)) {
+            return Result.error("无法解析PAT令牌！");
+        }
+
+        //验证PAT令牌
+        BasicPatPo patPo;
+        try {
+            patPo = basicPatService.validatePat(patPt);
+        } catch (BizException e) {
+            return Result.error(e.getMessage());
+        }
+
+        //根据PAT创建者查询用户名
+        var userPo = userRepository.findById(patPo.getCreatorId())
+                .orElse(null);
+        if (userPo == null) {
+            return Result.error("PAT令牌对应的用户不存在！");
+        }
+
+        //加载用户完整详情(权限、RS数据等)
+        var aus = (AuthUserSession) authUserDetailsService.loadUserByUsername(userPo.getUsername());
+        aus.setLoginType(1);
+
+        //创建PAT虚拟会话
+        sessionService.createPatSession(aus, patPt);
+
+        //组装Vo
+        var vo = as(aus, UserLoginVo.class);
+        vo.setSessionId(patPt);
+
+        var version = BioRunner.getVersion();
+        vo.setAppVersion(version.toString());
+        vo.setAppVersionNumeric(version.toNumericVersion());
 
         return Result.success(vo);
     }
