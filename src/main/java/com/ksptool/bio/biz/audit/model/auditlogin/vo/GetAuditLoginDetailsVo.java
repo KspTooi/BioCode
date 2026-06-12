@@ -19,7 +19,7 @@ public class GetAuditLoginDetailsVo {
     @Schema(description = "用户账号")
     private String username;
 
-    @Schema(description = "登录方式 0:用户名密码")
+    @Schema(description = "登录方式 0:用户名密码 1:PAT登录")
     private Integer loginKind;
 
     @Schema(description = "登录 IP")

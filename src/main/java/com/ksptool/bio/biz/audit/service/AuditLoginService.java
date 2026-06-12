@@ -86,6 +86,7 @@ public class AuditLoginService {
      *
      * @param userId   用户ID
      * @param username 用户名
+     * @param loginKind 登录方式 0:用户名密码 1:PAT登录
      * @param status   状态 0:成功 1:失败
      * @param message  消息
      * @param ipAddr   IP地址
@@ -93,13 +94,13 @@ public class AuditLoginService {
      */
     @Async
     @Transactional(rollbackFor = Exception.class)
-    public void recordLoginAudit(Long userId, String username, Integer status, String message, String ipAddr, String uaString) {
+    public void recordLoginAudit(Long userId, String username, Integer loginKind, Integer status, String message, String ipAddr, String uaString) {
         try {
 
             var po = new AuditLoginPo();
             po.setUserId(userId);
             po.setUsername(username);
-            po.setLoginKind(0); // 0:用户名密码
+            po.setLoginKind(loginKind);
             po.setIpAddr("Unknown");
             po.setLocation("不支持");
             po.setBrowser("Unknown");

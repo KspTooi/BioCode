@@ -69,11 +69,11 @@ public class AuthAuditListener {
 
         var userId = aud.getUserId();
         var username = aud.getUsername();
-        var loginKind = 0; // 0:用户名密码
+        var loginKind = aud.getLoginType(); // 0:用户名密码 1:PAT登录
         var message = "登录成功";
 
         //记录登录审计日志
-        auditLoginService.recordLoginAudit(userId, username, 0, message, ip, uaStr);
+        auditLoginService.recordLoginAudit(userId, username, loginKind, 0, message, ip, uaStr);
     }
 
 
@@ -98,7 +98,7 @@ public class AuthAuditListener {
         }
         var userId = 0L;
         var username = String.valueOf(auth.getPrincipal()); // 通常是用户名字符串
-        var loginKind = 0; // 0:用户名密码
+        var loginKind = 0;
         var message = "用户密码错误";
 
         //查找一次用户
@@ -117,6 +117,6 @@ public class AuthAuditListener {
         }
 
         //记录登录审计日志
-        auditLoginService.recordLoginAudit(userId, username, 1, message, ip, uaStr);
+        auditLoginService.recordLoginAudit(userId, username, 0, 1, message, ip, uaStr);
     }
 }

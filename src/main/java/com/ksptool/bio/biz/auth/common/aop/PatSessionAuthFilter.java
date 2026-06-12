@@ -14,6 +14,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -42,6 +45,9 @@ public class PatSessionAuthFilter extends OncePerRequestFilter {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private ApplicationEventPublisher aep;
 
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse ret, FilterChain chain)
@@ -73,7 +79,13 @@ public class PatSessionAuthFilter extends OncePerRequestFilter {
                 var userPo = userRepository.findById(pat.getUserId())
                         .orElseThrow(() -> new BizException("用户不存在"));
                 var aus = (AuthUserSession) authUserDetailsService.loadUserByUsername(userPo.getUsername());
+                aus.setLoginType(1);
                 sessionService.createPatSession(aus, patToken);
+
+                //发布登录成功事件接入审计
+                var auth = new UsernamePasswordAuthenticationToken(aus, patToken, aus.getAuthorities());
+                aep.publishEvent(new AuthenticationSuccessEvent(auth));
+                
             } catch (Exception ex) {
                 chain.doFilter(req, ret);
                 return;

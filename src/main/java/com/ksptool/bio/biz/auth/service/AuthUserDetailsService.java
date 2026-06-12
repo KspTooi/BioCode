@@ -130,6 +130,7 @@ public class AuthUserDetailsService implements UserDetailsService {
             assign(user, aus);
             aus.setUserId(user.getId());
             aus.setRootName(root.getName());
+            aus.setLoginType(0); // 0:用户名密码 1:PAT登录
 
             //如果用户有直属企业和部门 则需要查询对应的名称
             if (user.getOrgId() != null) {

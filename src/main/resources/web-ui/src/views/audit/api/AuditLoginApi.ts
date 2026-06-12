@@ -13,7 +13,7 @@ export interface GetAuditLoginListVo {
   id: string; // 日志ID
   userId: number; // 用户ID
   username: string; // 用户账号
-  loginKind: number; // 登录方式 0:用户名密码
+  loginKind: number; // 登录方式 0:用户名密码 1:PAT登录
   ipAddr: string; // 登录 IP
   location: string; // IP 归属地
   browser: string; // 浏览器/客户端指纹
@@ -27,7 +27,7 @@ export interface GetAuditLoginDetailsVo {
   id: string; // 日志ID
   userId: number; // 用户ID
   username: string; // 用户账号
-  loginKind: number; // 登录方式 0:用户名密码
+  loginKind: number; // 登录方式 0:用户名密码 1:PAT登录
   ipAddr: string; // 登录 IP
   location: string; // IP 归属地
   browser: string; // 浏览器/客户端指纹
