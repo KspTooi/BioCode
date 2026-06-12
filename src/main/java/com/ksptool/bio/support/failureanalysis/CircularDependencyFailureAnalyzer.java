@@ -19,7 +19,7 @@ import java.util.List;
  * 遍历异常链提取所有涉及的 Bean 名称与依赖描述，绘制依赖环并给出中文解决方案
  *
  * @author KspTool
- * @since 1.7.5(E).1
+ * @since 1.7.5(E).45
  */
 public class CircularDependencyFailureAnalyzer
         extends AbstractFailureAnalyzer<BeanCurrentlyInCreationException> implements Ordered {

@@ -14,7 +14,15 @@ import java.util.regex.Matcher;
 
 import java.util.regex.Pattern;
 
-
+/**
+ * Hibernate 数据库结构校验失败中文翻译
+ * <p>
+ * 当 Hibernate 在启动时检测到数据库结构与实体类不匹配时触发，
+ * 翻译英文报告并提供中文解决方案
+ *
+ * @author KspTool
+ * @since 1.7.5(E).45
+ */
 public class SchemaValidationFailureAnalyzer extends AbstractFailureAnalyzer<SchemaManagementException> {
 
 

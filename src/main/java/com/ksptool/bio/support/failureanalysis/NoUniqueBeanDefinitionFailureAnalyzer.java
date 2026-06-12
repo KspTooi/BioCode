@@ -15,7 +15,7 @@ import org.springframework.core.Ordered;
  * 翻译英文报告并提供中文解决方案
  *
  * @author KspTool
- * @since 1.7.5(E).1
+ * @since 1.7.5(E).45
  */
 public class NoUniqueBeanDefinitionFailureAnalyzer
         extends AbstractFailureAnalyzer<NoUniqueBeanDefinitionException> implements Ordered {
