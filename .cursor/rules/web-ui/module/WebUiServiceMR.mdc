@@ -163,26 +163,32 @@ useXxxModal(modalFormRef: Ref<FormInstance | undefined>, reloadCallback: () => v
     title: [{ required: true, message: "请输入标题", trigger: "blur" }],
   });
 
-  const openModal = (mode: ModalMode, row?: GetXxxListVo): void => {
-    resetModal();
+  /**
+   * 打开模态框，add 模式直接打开，edit 模式先加载详情
+   */
+  const openModal = async (mode: ModalMode, row: GetXxxListVo | null): Promise<void> => {
     modalMode.value = mode;
+
     if (mode === "add") {
+      modalForm.id = "";
+      modalForm.title = "";
       modalVisible.value = true;
       return;
     }
-    modalLoading.value = true;
-    XxxApi.getXxxDetails({ id: String(row!.id) })
-      .then((details) => {
-        modalForm.id = details.id;
-        modalForm.title = details.title;
-        modalVisible.value = true;
-      })
-      .catch((error: any) => {
-        ElMessage.error(error.message);
-      })
-      .finally(() => {
-        modalLoading.value = false;
-      });
+
+    if (!row) {
+      ElMessage.error("未选择要编辑的数据");
+      return;
+    }
+
+    try {
+      const details = await XxxApi.getXxxDetails({ id: String(row.id) });
+      modalForm.id = details.id;
+      modalForm.title = details.title;
+      modalVisible.value = true;
+    } catch (error: any) {
+      ElMessage.error(error.message);
+    }
   };
 
   const resetModal = (): void => {
@@ -194,7 +200,7 @@ useXxxModal(modalFormRef: Ref<FormInstance | undefined>, reloadCallback: () => v
 
   const submitModal = async (): Promise<void> => {
     try {
-      await modalFormRef.value!.validate();
+      await modalFormRef?.value?.validate();
     } catch {
       return;
     }
@@ -243,6 +249,27 @@ useXxxModal(modalFormRef: Ref<FormInstance | undefined>, reloadCallback: () => v
 },
 ```
 
+### 带二次校验的 submitModal 模板（如 unique-validation）
+
+```ts
+const submitModal = async (): Promise<void> => {
+  try {
+    await modalFormRef?.value?.validate();
+  } catch {
+    return;
+  }
+
+  const result = await XxxApi.validateUniqueCode(form.code);
+  if (result.code !== 0) {
+    ElMessage.error(result.message);
+    return;
+  }
+
+  modalLoading.value = true;
+  // ... 构造 Dto → 调 Api → ElMessage.success → close + reload
+};
+```
+
 ### 双重 try/catch（删除确认 + API 调用）
 
 ```ts
@@ -266,29 +293,35 @@ const removeList = async (row: GetXxxListVo): Promise<void> => {
 };
 ```
 
-### 带 finally 的打开模态框
+### 前置数据加载的 openModal（如需要先加载下拉选项）
 
 ```ts
-const openModal = (mode: ModalMode, row?: GetXxxListVo): void => {
-  resetModal();
+const openModal = async (mode: ModalMode, row: GetXxxListVo | null): Promise<void> => {
   modalMode.value = mode;
+  resetModal();
+
+  await loadCapabilityOptions(); // 加载模态框内的下拉选项数据
+
   if (mode === "add") {
+    modalForm.id = "";
+    modalForm.name = "";
     modalVisible.value = true;
     return;
   }
-  modalLoading.value = true;
-  XxxApi.getXxxDetails({ id: String(row!.id) })
-    .then((details) => {
-      modalForm.id = details.id;
-      modalForm.title = details.title;
-      modalVisible.value = true;
-    })
-    .catch((error: any) => {
-      ElMessage.error(error.message);
-    })
-    .finally(() => {
-      modalLoading.value = false;
-    });
+
+  if (!row) {
+    ElMessage.error("未选择要编辑的数据");
+    return;
+  }
+
+  try {
+    const details = await XxxApi.getXxxDetails({ id: String(row.id) });
+    modalForm.id = details.id;
+    modalForm.name = details.name;
+    modalVisible.value = true;
+  } catch (error: any) {
+    ElMessage.error(error.message);
+  }
 };
 ```
 
