@@ -88,6 +88,7 @@ import type { FormInstance, FormRules } from "element-plus";
 import UserAuthService from "@/views/auth/service/UserAuthService.ts";
 import type { UserLoginDto, GetLoginConfigVo } from "@/views/auth/api/AuthApi.ts";
 import ComTacCaptchaDialog from "@/soa/com-series/components/ComTacCaptchaDialog.vue";
+import ComTabService from "@/soa/com-series/service/ComTabService.ts";
 
 const router = useRouter();
 const { getLoginConfig, saveAccount, clearAccount, loadAccount, login } = UserAuthService.useUserAuth();
@@ -120,6 +121,9 @@ const doLogin = async (): Promise<void> => {
   try {
     await login(loginForm.value.username, loginForm.value.password);
     ElMessage.success("用户验证通过");
+
+    //重新登录后清空标签页
+    ComTabService.useTabService().clearTabs();
 
     if (rememberPassword.value && loginConfig.value?.enabledSavePasswordOnClient === 1) {
       saveAccount(loginForm.value.username, loginForm.value.password);

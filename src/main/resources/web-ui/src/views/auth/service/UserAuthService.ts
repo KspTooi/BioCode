@@ -2,7 +2,6 @@ import { defineStore } from "pinia";
 import type { Directive, DirectiveBinding } from "vue";
 import type { UserLoginDto, UserLoginVo, GetLoginConfigVo } from "@/views/auth/api/AuthApi";
 import AuthApi from "@/views/auth/api/AuthApi";
-import ComTabService from "@/soa/com-series/service/ComTabService.ts";
 import { chacha20poly1305 } from "@noble/ciphers/chacha.js";
 
 //超级操作权限码
@@ -168,8 +167,6 @@ export default {
         AuthStore().setUserInfo(result.data);
         AuthStore().setSessionId(result.data.sessionId);
 
-        //清除用户多标签缓存
-        ComTabService.useTabService().clearTabs();
         return result.data;
       }
 
