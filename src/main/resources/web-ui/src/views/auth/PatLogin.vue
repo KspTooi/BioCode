@@ -132,7 +132,8 @@ onMounted(async () => {
   try {
     loginConfig.value = await getLoginConfig();
   } catch {
-    // 配置拉取失败不阻塞登录流程
+    // 配置拉取失败不阻塞登录流程，不清除已保存的PAT
+    return;
   }
 
   if (loginConfig.value?.enabledSavePasswordOnClient !== 1) {
