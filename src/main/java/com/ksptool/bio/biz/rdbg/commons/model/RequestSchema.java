@@ -1,4 +1,4 @@
-package com.ksptool.bio.commons.model;
+package com.ksptool.bio.biz.rdbg.commons.model;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
