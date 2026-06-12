@@ -24,6 +24,8 @@
                   v-model="loginForm.patToken"
                   type="textarea"
                   :rows="4"
+                  maxlength="200"
+                  show-word-limit
                   placeholder="粘贴您的 PAT 令牌"
                   :prefix-icon="Key"
                   clearable

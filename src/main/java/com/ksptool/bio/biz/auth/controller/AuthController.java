@@ -237,7 +237,7 @@ public class AuthController {
      */
     @Operation(summary = "PAT令牌登录")
     @PostMapping(value = "/patLogin")
-    public Result<UserLoginVo> patLogin(@RequestBody PatLoginDto dto) throws BizException, GeneralSecurityException {
+    public Result<UserLoginVo> patLogin(@RequestBody @Valid PatLoginDto dto) throws BizException, GeneralSecurityException {
 
         //检查是否允许显式PAT登录(关闭后仅PSAF静默登录可用)
         if (regSdk.getInt(AppRegistry.FA_ALLOW_PAT_LOGIN.getFullKey(), 1) != 1) {
