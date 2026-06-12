@@ -18,41 +18,51 @@
         </header>
 
         <main class="panel-body">
-          <div class="form-item">
-            <div class="item-header">ACCOUNT ID</div>
-            <el-input
-              v-model="loginForm.username"
-              placeholder="输入您的账户 ID"
-              :prefix-icon="User"
-              clearable
-              @keyup.enter="onLogin"
-            />
-          </div>
-
-          <div class="form-item">
-            <div class="item-header">密钥</div>
-            <el-input
-              v-model="loginForm.password"
-              type="password"
-              placeholder="输入您的安全密钥"
-              :prefix-icon="Lock"
-              show-password
-              @keyup.enter="onLogin"
-            />
-          </div>
-
-          <transition name="slide-up">
-            <div v-if="errorMessage" class="error-notification">
-              <span class="err-tag">ERR_CODE_01:</span>
-              {{ errorMessage }}
+          <el-form ref="formRef" :model="loginForm" :rules="formRules" size="large">
+            <div class="form-item">
+              <div class="item-header">ACCOUNT ID</div>
+              <el-form-item prop="username">
+                <el-input
+                  v-model="loginForm.username"
+                  placeholder="输入您的账户 ID"
+                  :prefix-icon="User"
+                  clearable
+                  @keyup.enter="onLogin"
+                />
+              </el-form-item>
             </div>
-          </transition>
 
-          <div class="button-container">
-            <el-button type="primary" class="auth-button" :loading="isLoading" @click="onLogin">
-              {{ isLoading ? "正在处理" : "登录" }}
-            </el-button>
-          </div>
+            <div class="form-item">
+              <div class="item-header">密钥</div>
+              <el-form-item prop="password">
+                <el-input
+                  v-model="loginForm.password"
+                  type="password"
+                  placeholder="输入您的安全密钥"
+                  :prefix-icon="Lock"
+                  show-password
+                  @keyup.enter="onLogin"
+                />
+              </el-form-item>
+            </div>
+
+            <el-form-item v-if="loginConfig?.enabledSavePasswordOnClient === 1">
+              <el-checkbox v-model="rememberPassword">记住密码</el-checkbox>
+            </el-form-item>
+
+            <transition name="slide-up">
+              <div v-if="errorMessage" class="error-notification">
+                <span class="err-tag">ERR_CODE_01:</span>
+                {{ errorMessage }}
+              </div>
+            </transition>
+
+            <div class="button-container">
+              <el-button type="primary" class="auth-button" :loading="isLoading" @click="onLogin">
+                {{ isLoading ? "正在处理" : "登录" }}
+              </el-button>
+            </div>
+          </el-form>
         </main>
 
         <footer class="panel-footer">
@@ -70,34 +80,36 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { User, Lock } from "@element-plus/icons-vue";
-import UserAuthService from "@/views/auth/service/UserAuthService";
-import type { UserLoginDto } from "@/views/auth/api/AuthApi.ts";
+import type { FormInstance, FormRules } from "element-plus";
+import UserAuthService from "@/views/auth/service/UserAuthService.ts";
+import type { UserLoginDto, GetLoginConfigVo } from "@/views/auth/api/AuthApi.ts";
 import ComTacCaptchaDialog from "@/soa/com-series/components/ComTacCaptchaDialog.vue";
 
 const router = useRouter();
-const { login } = UserAuthService.useUserAuth();
+const { getLoginConfig, saveAccount, clearAccount, loadAccount, login } = UserAuthService.useUserAuth();
 
-// 表单数据
+const formRef = ref<FormInstance | null>(null);
+
 const loginForm = ref<UserLoginDto>({
   username: "",
   password: "",
 });
 
-// 错误信息
+const formRules: FormRules = {
+  username: { required: true, message: "请输入登录账号", trigger: "blur" },
+  password: { required: true, message: "请输入密码", trigger: "blur" },
+};
+
 const errorMessage = ref<string>("");
-
-// 加载状态
 const isLoading = ref<boolean>(false);
+const loginConfig = ref<GetLoginConfigVo | null>(null);
+const rememberPassword = ref<boolean>(false);
+const captchaDialogRef = ref<{ openModal: () => void } | null>(null);
 
-const captchaDialogRef = ref<any>(null);
-
-/**
- * 执行登录
- */
 const doLogin = async (): Promise<void> => {
   if (isLoading.value) {
     return;
@@ -108,6 +120,14 @@ const doLogin = async (): Promise<void> => {
   try {
     await login(loginForm.value.username, loginForm.value.password);
     ElMessage.success("用户验证通过");
+
+    if (rememberPassword.value && loginConfig.value?.enabledSavePasswordOnClient === 1) {
+      saveAccount(loginForm.value.username, loginForm.value.password);
+    }
+    if (!rememberPassword.value) {
+      clearAccount();
+    }
+
     await router.push({ path: "/" });
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : "网络同步异常，同步失败";
@@ -138,31 +158,46 @@ const onCaptchaError = (message: string): void => {
   errorMessage.value = message;
 };
 
-/**
- * 处理登录逻辑
- */
-const onLogin = async (): Promise<void> => {
+const onLogin = (): void => {
   errorMessage.value = "";
 
-  if (!loginForm.value.username) {
-    errorMessage.value = "请提供账户标识";
-    return;
-  }
+  formRef.value?.validate((valid) => {
+    if (!valid) {
+      return;
+    }
 
-  if (!loginForm.value.password) {
-    errorMessage.value = "请提供安全密钥";
-    return;
-  }
+    if (loginConfig.value?.captchaEnabledLogin !== 1) {
+      doLogin();
+      return;
+    }
 
-  openCaptcha();
+    openCaptcha();
+  });
 };
 
-/**
- * 跳转注册
- */
 const onRegister = (): void => {
   router.push({ name: "register" });
 };
+
+onMounted(async () => {
+  try {
+    loginConfig.value = await getLoginConfig();
+  } catch {
+    // 配置拉取失败不阻塞登录流程，默认走无验证码
+  }
+
+  if (loginConfig.value?.enabledSavePasswordOnClient !== 1) {
+    clearAccount();
+    return;
+  }
+
+  const saved = loadAccount();
+  if (saved) {
+    loginForm.value.username = saved.username;
+    loginForm.value.password = saved.password;
+    rememberPassword.value = true;
+  }
+});
 </script>
 
 <style scoped>
@@ -364,9 +399,23 @@ const onRegister = (): void => {
   font-weight: 500;
 }
 
-/* 错误通知栏 */
+/* 表单校验与布局适配 */
+:deep(.el-form-item) {
+  margin-bottom: 0;
+}
+
+:deep(.el-form-item.is-error .el-input__wrapper) {
+  border-color: #ef4444 !important;
+}
+
+:deep(.el-checkbox__label) {
+  color: var(--p-text-light);
+  font-size: 0.75rem;
+}
+
 .error-notification {
-  margin-bottom: 20px;
+  margin-top: 8px;
+  margin-bottom: 16px;
   font-size: 0.75rem;
   color: #ef4444;
   background: #fef2f2;
