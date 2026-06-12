@@ -21,7 +21,7 @@ import java.io.IOException;
 
 /**
  * PAT 虚拟会话认证过滤器
- * 拦截 Authorization: PAT usk-xxx 请求，验证后改写为 Bearer usk-xxx 移交给 USAF 处理
+ * 拦截 Authorization: PAT请求，验证后改写为 Bearer usk-xxx 移交给 USAF 处理
  *
  * @author KspTool
  * @since 1.7.5(E).1
@@ -42,22 +42,30 @@ public class PatSessionAuthFilter extends OncePerRequestFilter {
     private UserRepository userRepository;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-            HttpServletResponse response, FilterChain chain)
+    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse ret, FilterChain chain)
             throws ServletException, IOException {
 
-        var patToken = WebUtils.getAuthenticationPatToken(request);
+        //获取PAT令牌
+        var patToken = WebUtils.getAuthenticationPatToken(req);
+
+        //如果PAT令牌为空 直接移交给下一步的USAF处理
         if (patToken == null) {
-            chain.doFilter(request, response);
+            chain.doFilter(req, ret);
             return;
         }
 
         try {
-            var sessionPo = sessionService.getSessionBySessionId(patToken);
-            if (sessionPo.isExpired()) {
+
+            //查询PAT虚拟会话
+            var patVtSession = sessionService.getSessionBySessionId(patToken);
+
+            if (patVtSession.isExpired()) {
                 throw new BizException("PAT虚拟会话已过期，准备重连。");
             }
+
         } catch (BizException e) {
+
+            //重连PAT虚拟会话
             try {
                 BasicPatPo pat = basicPatService.validatePat(patToken);
                 var userPo = userRepository.findById(pat.getUserId())
@@ -65,12 +73,13 @@ public class PatSessionAuthFilter extends OncePerRequestFilter {
                 var aus = (AuthUserSession) authUserDetailsService.loadUserByUsername(userPo.getUsername());
                 sessionService.createPatSession(aus, patToken);
             } catch (Exception ex) {
-                chain.doFilter(request, response);
+                chain.doFilter(req, ret);
                 return;
             }
         }
 
-        var wrapped = new HttpServletRequestWrapper(request) {
+        //将PAT置换为Bearer Token格式 这样USAF会自动识别并处理 同时完美兼容"秒级动态权限刷新机制"(权限被热更后下一次PAT请求进入时会自动刷新权限)
+        var reqWrapper = new HttpServletRequestWrapper(req) {
             @Override
             public String getHeader(String name) {
                 if ("Authorization".equalsIgnoreCase(name)) {
@@ -79,6 +88,8 @@ public class PatSessionAuthFilter extends OncePerRequestFilter {
                 return super.getHeader(name);
             }
         };
-        chain.doFilter(wrapped, response);
+
+        //移交给USAF处理 走标准认证流程
+        chain.doFilter(reqWrapper, ret);
     }
 }

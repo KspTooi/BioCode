@@ -8,8 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
-
 /**
  * @author KspTool
  * @since 1.7.5(E).1
@@ -17,12 +15,25 @@ import java.util.Optional;
 @Repository
 public interface BasicPatRepository extends JpaRepository<BasicPatPo, Long> {
 
+    /**
+     * 根据PAT哈希查询PAT
+     *
+     * @param patHash PAT哈希
+     * @return PAT 不存在或已禁用则返回null
+     */
     @Query("""
             SELECT u FROM BasicPatPo u
             WHERE u.patHash = :patHash AND u.status = 1
             """)
     BasicPatPo getPatByHash(@Param("patHash") String patHash);
 
+    /**
+     * 查询PAT列表
+     *
+     * @param po 查询条件
+     * @param pageable 分页条件
+     * @return PAT列表
+     */
     @Query("""
             SELECT u FROM BasicPatPo u
             WHERE
