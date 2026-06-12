@@ -5,12 +5,11 @@ import type {
   GetBasicPatListVo,
   GetBasicPatDetailsVo,
   AddBasicPatDto,
-  EditBasicPatDto,
 } from "@/views/auth/basicpat/api/BasicPatApi.ts";
 import BasicPatApi from "@/views/auth/basicpat/api/BasicPatApi.ts";
 import { Result } from "@/commons/model/Result";
 
-type ModalMode = "add" | "edit";
+type ModalMode = "add" | "view";
 
 export default {
   /**
@@ -92,7 +91,7 @@ export default {
   },
 
   /**
-   * 模态框管理（统一处理新增和编辑）
+   * 模态框管理（统一处理新增和查看）
    */
   useBasicPatModal(modalFormRef: Ref<FormInstance | undefined>, reloadCallback: () => void) {
     const modalVisible = ref(false);
@@ -130,7 +129,7 @@ export default {
     };
 
     /**
-     * 打开模态框，add 模式直接打开，edit 模式先加载详情
+     * 打开模态框，add 模式直接打开，view 模式先加载详情
      */
     const openModal = async (mode: ModalMode, row: GetBasicPatListVo | null): Promise<void> => {
       modalMode.value = mode;
@@ -147,7 +146,7 @@ export default {
       }
 
       if (!row) {
-        ElMessage.error("未选择要编辑的数据");
+        ElMessage.error("未选择要查看的数据");
         return;
       }
 
@@ -166,7 +165,7 @@ export default {
     };
 
     /**
-     * 校验表单并提交新增或编辑
+     * 校验表单并提交新增
      */
     const submitModal = async (): Promise<void> => {
       try {
@@ -176,38 +175,21 @@ export default {
       }
 
       modalLoading.value = true;
-      if (modalMode.value === "add") {
-        const addDto: AddBasicPatDto = {
-          name: modalForm.name,
-          expire: modalForm.expire || undefined,
-        };
-        try {
-          const token = await BasicPatApi.addBasicPat(addDto);
-          modalVisible.value = false;
-          await ElMessageBox.confirm(token, "令牌已生成，仅显示一次", {
-            confirmButtonText: "已复制，关闭",
-            cancelButtonText: "",
-            type: "success",
-            showCancelButton: false,
-            distinguishCancelAndClose: false,
-            closeOnClickModal: true,
-          });
-          reloadCallback();
-        } catch (error: any) {
-          ElMessage.error(error.message);
-        }
-        modalLoading.value = false;
-        return;
-      }
-      const editDto: EditBasicPatDto = {
-        id: modalForm.id,
+      const addDto: AddBasicPatDto = {
         name: modalForm.name,
-        status: modalForm.status,
+        expire: modalForm.expire || undefined,
       };
       try {
-        await BasicPatApi.editBasicPat(editDto);
-        ElMessage.success("编辑成功");
+        const token = await BasicPatApi.addBasicPat(addDto);
         modalVisible.value = false;
+        await ElMessageBox.confirm(token, "令牌已生成，仅显示一次", {
+          confirmButtonText: "已复制，关闭",
+          cancelButtonText: "",
+          type: "success",
+          showCancelButton: false,
+          distinguishCancelAndClose: false,
+          closeOnClickModal: true,
+        });
         reloadCallback();
       } catch (error: any) {
         ElMessage.error(error.message);

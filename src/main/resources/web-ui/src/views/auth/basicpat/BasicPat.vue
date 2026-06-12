@@ -48,8 +48,8 @@
         <el-table-column prop="createTime" label="创建时间" min-width="120" show-overflow-tooltip />
         <el-table-column label="操作" fixed="right" min-width="180">
           <template #default="scope">
-            <el-button link type="primary" size="small" @click="openModal('edit', scope.row)" :icon="EditIcon">
-              编辑
+            <el-button link type="primary" size="small" @click="openModal('view', scope.row)" :icon="ViewIcon">
+              查看
             </el-button>
             <el-button link type="danger" size="small" @click="removeList(scope.row)" :icon="DeleteIcon"> 删除 </el-button>
           </template>
@@ -80,10 +80,10 @@
       </template>
     </StdListAreaTable>
 
-    <!-- 新增/编辑模态框 -->
+    <!-- 新增/查看模态框 -->
     <el-dialog
       v-model="modalVisible"
-      :title="modalMode === 'edit' ? '编辑基本PAT' : '新增基本PAT'"
+      :title="modalMode === 'view' ? '查看基本PAT' : '新增基本PAT'"
       width="600px"
       :close-on-click-modal="false"
       @close="
@@ -100,7 +100,7 @@
         :validate-on-rule-change="false"
       >
         <el-form-item label="PAT名称" prop="name">
-          <el-input v-model="modalForm.name" placeholder="请输入PAT名称" clearable :maxlength="40" show-word-limit />
+          <el-input v-model="modalForm.name" placeholder="请输入PAT名称" clearable :maxlength="40" show-word-limit :disabled="modalMode === 'view'" />
         </el-form-item>
         <el-form-item label="过期时间" prop="expire">
           <el-date-picker
@@ -111,8 +111,9 @@
             format="YYYY-MM-DD HH:mm:ss"
             value-format="YYYY-MM-DD HH:mm:ss"
             style="width: 100%"
+            :disabled="modalMode === 'view'"
           />
-          <div class="flex gap-1 mt-1">
+          <div v-if="modalMode === 'add'" class="flex gap-1 mt-1">
             <el-button size="small" @click="modalForm.expire = addExpire(7, 'day')">7天</el-button>
             <el-button size="small" @click="modalForm.expire = addExpire(15, 'day')">15天</el-button>
             <el-button size="small" @click="modalForm.expire = addExpire(1, 'month')">1个月</el-button>
@@ -123,10 +124,8 @@
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="modalVisible = false">取消</el-button>
-          <el-button type="primary" @click="submitModal" :loading="modalLoading">
-            {{ modalMode === "add" ? "创建" : "保存" }}
-          </el-button>
+          <el-button @click="modalVisible = false">关闭</el-button>
+          <el-button v-if="modalMode === 'add'" type="primary" @click="submitModal" :loading="modalLoading">创建</el-button>
         </div>
       </template>
     </el-dialog>
@@ -135,7 +134,7 @@
 
 <script setup lang="ts">
 import { ref, markRaw } from "vue";
-import { Edit, Delete } from "@element-plus/icons-vue";
+import { View, Delete } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
 import BasicPatService from "@/views/auth/basicpat/service/BasicPatService.ts";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
@@ -143,7 +142,7 @@ import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
 import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";
 import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
 
-const EditIcon = markRaw(Edit);
+const ViewIcon = markRaw(View);
 const DeleteIcon = markRaw(Delete);
 
 const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } = BasicPatService.useBasicPatList();

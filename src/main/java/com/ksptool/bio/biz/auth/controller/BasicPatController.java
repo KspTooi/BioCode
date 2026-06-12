@@ -5,7 +5,6 @@ import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.assembly.entity.web.Result;
 import com.ksptool.bio.biz.auth.common.aop.RowScope;
 import com.ksptool.bio.biz.auth.model.basicpat.dto.AddBasicPatDto;
-import com.ksptool.bio.biz.auth.model.basicpat.dto.EditBasicPatDto;
 import com.ksptool.bio.biz.auth.model.basicpat.dto.GetBasicPatListDto;
 import com.ksptool.bio.biz.auth.model.basicpat.vo.GetBasicPatDetailsVo;
 import com.ksptool.bio.biz.auth.model.basicpat.vo.GetBasicPatListVo;
@@ -46,14 +45,6 @@ public class BasicPatController {
     public Result<String> addBasicPat(@RequestBody @Valid AddBasicPatDto dto) throws Exception {
         String token = basicPatService.addBasicPat(dto);
         return Result.success(token);
-    }
-
-    @PreAuthorize("@auth.hasCode('auth:basic:pat:edit')")
-    @PostMapping("/editBasicPat")
-    @Operation(summary = "编辑基本PAT")
-    public Result<String> editBasicPat(@RequestBody @Valid EditBasicPatDto dto) throws Exception {
-        basicPatService.editBasicPat(dto);
-        return Result.success("修改成功");
     }
 
     @PreAuthorize("@auth.hasCode('auth:basic:pat:view')")

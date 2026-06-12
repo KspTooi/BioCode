@@ -44,15 +44,6 @@ export interface AddBasicPatDto {
   expire?: string; // 过期时间 yyyy-MM-dd HH:mm:ss
 }
 
-/**
- * 编辑基本PATDto
- */
-export interface EditBasicPatDto {
-  id: string; // 主键ID
-  name: string; // PAT名称
-  status: number; // 状态: 0:禁用 1:启用
-}
-
 export default {
   /**
    * 获取基本PAT列表
@@ -79,17 +70,6 @@ export default {
     const result = await Http.postEntity<Result<string>>("/basicPat/addBasicPat", dto);
     if (result.code === 0) {
       return result.data;
-    }
-    throw new Error(result.message);
-  },
-
-  /**
-   * 编辑基本PAT
-   */
-  editBasicPat: async (dto: EditBasicPatDto): Promise<string> => {
-    const result = await Http.postEntity<Result<string>>("/basicPat/editBasicPat", dto);
-    if (result.code === 0) {
-      return result.message;
     }
     throw new Error(result.message);
   },

@@ -6,7 +6,6 @@ import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.bio.biz.auth.model.basicpat.BasicPatPo;
 import com.ksptool.bio.biz.auth.model.basicpat.dto.AddBasicPatDto;
-import com.ksptool.bio.biz.auth.model.basicpat.dto.EditBasicPatDto;
 import com.ksptool.bio.biz.auth.model.basicpat.dto.GetBasicPatListDto;
 import com.ksptool.bio.biz.auth.model.basicpat.vo.GetBasicPatDetailsVo;
 import com.ksptool.bio.biz.auth.model.basicpat.vo.GetBasicPatListVo;
@@ -77,21 +76,6 @@ public class BasicPatService {
 
         repository.save(insertPo);
         return fullToken;
-    }
-
-    /**
-     * 编辑基本PAT
-     *
-     * @param dto 编辑条件
-     * @throws BizException 业务异常
-     */
-    @Transactional(rollbackFor = Exception.class)
-    public void editBasicPat(EditBasicPatDto dto) throws BizException {
-        BasicPatPo updatePo = repository.findById(dto.getId())
-                .orElseThrow(() -> new BizException("更新失败,数据不存在或无权限访问."));
-
-        assign(dto, updatePo);
-        repository.save(updatePo);
     }
 
     /**
