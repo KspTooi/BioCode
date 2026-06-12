@@ -100,7 +100,14 @@
         :validate-on-rule-change="false"
       >
         <el-form-item label="PAT名称" prop="name">
-          <el-input v-model="modalForm.name" placeholder="请输入PAT名称" clearable :maxlength="40" show-word-limit :disabled="modalMode === 'view'" />
+          <el-input
+            v-model="modalForm.name"
+            placeholder="请输入PAT名称"
+            clearable
+            :maxlength="40"
+            show-word-limit
+            :disabled="modalMode === 'view'"
+          />
         </el-form-item>
         <el-form-item label="过期时间" prop="expire">
           <el-date-picker
@@ -149,12 +156,18 @@ const { listForm, listData, listTotal, listLoading, loadList, resetList, removeL
 
 const modalFormRef = ref<FormInstance>();
 
-const pad = (n: number) => String(n).padStart(2, "0");
-const addExpire = (amount: number, unit: "day" | "month" | "year") => {
+const pad = (n: number): string => String(n).padStart(2, "0");
+const addExpire = (amount: number, unit: "day" | "month" | "year"): string => {
   const d = new Date();
-  if (unit === "day") d.setDate(d.getDate() + amount);
-  if (unit === "month") d.setMonth(d.getMonth() + amount);
-  if (unit === "year") d.setFullYear(d.getFullYear() + amount);
+  if (unit === "day") {
+    d.setDate(d.getDate() + amount);
+  }
+  if (unit === "month") {
+    d.setMonth(d.getMonth() + amount);
+  }
+  if (unit === "year") {
+    d.setFullYear(d.getFullYear() + amount);
+  }
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 };
 
