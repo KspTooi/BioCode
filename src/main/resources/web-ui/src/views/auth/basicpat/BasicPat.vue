@@ -7,8 +7,11 @@
           <el-form-item label="PAT名称">
             <el-input v-model="listForm.name" placeholder="输入PAT名称" clearable />
           </el-form-item>
-          <el-form-item label="状态: 0:禁用 1:启用">
-            <el-input v-model.number="listForm.status" placeholder="输入状态: 0:禁用 1:启用" clearable />
+          <el-form-item label="状态">
+            <el-select v-model="listForm.status" placeholder="请选择状态" clearable>
+              <el-option :value="1" label="启用" />
+              <el-option :value="0" label="禁用" />
+            </el-select>
           </el-form-item>
         </div>
         <el-form-item>
@@ -31,7 +34,13 @@
         <el-table-column prop="name" label="PAT名称" min-width="120" show-overflow-tooltip />
         <el-table-column prop="patPt" label="部分明文" min-width="120" show-overflow-tooltip />
         <el-table-column prop="expire" label="过期时间" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="status" label="状态: 0:禁用 1:启用" min-width="120" show-overflow-tooltip />
+        <el-table-column label="状态" min-width="100">
+          <template #default="scope">
+            <el-tag :type="scope.row.status === 1 ? 'success' : 'danger'">
+              {{ scope.row.status === 1 ? "启用" : "禁用" }}
+            </el-tag>
+          </template>
+        </el-table-column>
         <el-table-column prop="createTime" label="创建时间" min-width="120" show-overflow-tooltip />
         <el-table-column label="操作" fixed="right" min-width="180">
           <template #default="scope">
@@ -106,23 +115,19 @@
 import { ref, markRaw } from "vue";
 import { Edit, Delete } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
-import BasicPatService from "@/views/basicPat/service/BasicPatService.ts";
+import BasicPatService from "@/views/auth/basicpat/service/BasicPatService.ts";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
 import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
 import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";
 import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
 
-// 使用markRaw包装图标组件，防止被Vue响应式系统处理
 const EditIcon = markRaw(Edit);
 const DeleteIcon = markRaw(Delete);
 
-// 列表管理打包
 const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } = BasicPatService.useBasicPatList();
 
-// 模态框表单引用
 const modalFormRef = ref<FormInstance>();
 
-// 模态框打包
 const { modalVisible, modalLoading, modalMode, modalForm, modalRules, openModal, resetModal, submitModal } =
   BasicPatService.useBasicPatModal(modalFormRef, loadList);
 </script>

@@ -32,6 +32,7 @@ export interface GetBasicPatDetailsVo {
   name: string; // PAT名称
   patPt: string; // 部分明文
   expire: string; // 过期时间
+  status: number; // 状态: 0:禁用 1:启用
   createTime: string; // 创建时间
 }
 
