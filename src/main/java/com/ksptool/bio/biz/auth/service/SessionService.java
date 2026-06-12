@@ -418,22 +418,28 @@ public class SessionService {
      */
     @Transactional(rollbackFor = Exception.class)
     public void createPatSession(AuthUserSession aus, String patToken) throws BizException {
+        
+        //获取PAT虚拟会话的哈希值
         var hashedSessionId = SHA256.hex(patToken);
 
         var sessionPo = userSessionRepository.getSessionBySessionId(hashedSessionId);
+
+        //如果PAT虚拟会话不存在，则创建PAT虚拟会话
         if (sessionPo == null) {
             sessionPo = new UserSessionPo();
             sessionPo.setCreatorId(aus.getUserId());
         }
 
-        //合并同类项😄
+        //合并同类项😄😄
         assign(aus, sessionPo);
 
+        //搜集权限码
         var permCodes = new HashSet<String>();
         for (var authority : aus.getAuthorities()) {
             permCodes.add(authority.getAuthority());
         }
 
+        //更新PAT虚拟会话
         sessionPo.setUsername(aus.getUsername());
         sessionPo.setUserId(aus.getUserId());
         sessionPo.setSessionId(hashedSessionId);
@@ -442,10 +448,11 @@ public class SessionService {
         sessionPo.setDataVersion(aus.getDataVersion());
         userSessionRepository.save(sessionPo);
 
-        var userPo = userRepository.findById(aus.getUserId()).orElseThrow(() -> new BizException("用户不存在"));
-        userPo.setLoginCount(userPo.getLoginCount() + 1);
-        userPo.setLastLoginTime(LocalDateTime.now());
-        userRepository.save(userPo);
+        //不更新用户 PAT登录通常由自动化工具调用，不能算作是"用户登录"
+        //var userPo = userRepository.findById(aus.getUserId()).orElseThrow(() -> new BizException("用户不存在"));
+        //userPo.setLoginCount(userPo.getLoginCount() + 1);
+        //userPo.setLastLoginTime(LocalDateTime.now());
+        //userRepository.save(userPo);
     }
 
     /**
