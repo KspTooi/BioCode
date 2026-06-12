@@ -239,6 +239,11 @@ public class AuthController {
     @PostMapping(value = "/patLogin")
     public Result<UserLoginVo> patLogin(@RequestBody PatLoginDto dto) throws BizException, GeneralSecurityException {
 
+        //检查是否允许显式PAT登录(关闭后仅PSAF静默登录可用)
+        if (regSdk.getInt(AppRegistry.FA_ALLOW_PAT_LOGIN.getFullKey(), 1) != 1) {
+            return Result.error("管理员已禁用PAT显式登录");
+        }
+
         //解析密文与IV
         var ctWithIv = dto.getPatToken();
         var ctMix = Str.safeSplit(ctWithIv, ":");
@@ -351,6 +356,7 @@ public class AuthController {
         vo.setAspRequireSpecial(regSdk.getInt(AppRegistry.FA_ASP_REQUIRE_SPECIAL.getFullKey(), 0));
         vo.setAspMinLength(regSdk.getInt(AppRegistry.FA_ASP_MIN_LENGTH.getFullKey(), 8));
         vo.setEnabledSavePasswordOnClient(regSdk.getInt(AppRegistry.FA_ENABLED_SAVE_PASSWORD_ON_CLIENT.getFullKey(), 0));
+        vo.setAllowPatLogin(regSdk.getInt(AppRegistry.FA_ALLOW_PAT_LOGIN.getFullKey(), 1));
         return Result.success(vo);
     }
 

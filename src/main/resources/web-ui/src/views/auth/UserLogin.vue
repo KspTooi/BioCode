@@ -68,7 +68,7 @@
         <footer class="panel-footer">
           <span class="version-tag">CORE 1.7.F1</span>
           <div class="footer-links">
-            <a class="nav-link" @click="onPatLogin">PAT令牌登录</a>
+            <a v-if="loginConfig?.allowPatLogin === 1" class="nav-link" @click="onPatLogin">PAT令牌登录</a>
             <!-- <a class="nav-link" @click="onRegister">申请系统访问权限</a> -->
           </div>
         </footer>

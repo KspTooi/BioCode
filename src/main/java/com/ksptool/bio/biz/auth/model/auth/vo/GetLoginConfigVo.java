@@ -26,4 +26,7 @@ public class GetLoginConfigVo {
     @Schema(description = "是否允许记住密码 0:不允许 1:允许")
     private Integer enabledSavePasswordOnClient;
 
+    @Schema(description = "是否允许PAT显式登录 0:不允许 1:允许")
+    private Integer allowPatLogin;
+
 }

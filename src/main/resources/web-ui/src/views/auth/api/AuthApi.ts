@@ -36,6 +36,7 @@ export interface UserLoginVo {
 export interface GetLoginConfigVo {
   captchaEnabledLogin: number; // 登录验证码启用 0:关闭 1:开启
   enabledSavePasswordOnClient: number; // 是否允许客户端记住密码 0:不允许 1:允许
+  allowPatLogin: number; // 是否允许PAT显式登录 0:不允许 1:允许
   aspAllowWeakPassword: number; // 是否允许弱密码 0:不允许 1:允许
   aspAllowUsernameInPassword: number; // 是否允许密码包含用户名 0:不允许 1:允许
   aspRequireSpecial: number; // 是否要求特殊字符 0:不要求 1:要求
