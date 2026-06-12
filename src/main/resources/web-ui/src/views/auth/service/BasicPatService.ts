@@ -1,12 +1,7 @@
 import { ref, reactive, onMounted, type Ref } from "vue";
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from "element-plus";
-import type {
-  GetBasicPatListDto,
-  GetBasicPatListVo,
-  GetBasicPatDetailsVo,
-  AddBasicPatDto,
-} from "@/views/auth/basicpat/api/BasicPatApi.ts";
-import BasicPatApi from "@/views/auth/basicpat/api/BasicPatApi.ts";
+import type { GetBasicPatListDto, GetBasicPatListVo, GetBasicPatDetailsVo, AddBasicPatDto } from "@/views/auth/api/BasicPatApi";
+import BasicPatApi from "@/views/auth/api/BasicPatApi";
 import { Result } from "@/commons/model/Result";
 
 type ModalMode = "add" | "view";

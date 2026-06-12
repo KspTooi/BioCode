@@ -42,7 +42,7 @@ export default class AuthRouteRegister extends GenricRouteRegister {
         biz: "auth",
         path: "basic-pat",
         name: "basic-pat",
-        component: () => import("@/views/auth/basicpat/BasicPat.vue"),
+        component: () => import("@/views/auth/BasicPat.vue"),
         meta: { breadcrumb: "基本PAT" },
       }),
     ];

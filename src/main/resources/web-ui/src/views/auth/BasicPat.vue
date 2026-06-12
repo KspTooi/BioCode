@@ -31,7 +31,7 @@
       <el-table :data="listData" stripe v-loading="listLoading" border height="100%">
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
         <el-table-column prop="name" label="PAT名称" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="patPt" label="部分明文" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="patPt" label="PAT预览" min-width="180" show-overflow-tooltip />
         <el-table-column label="过期时间" min-width="120">
           <template #default="scope">
             <span v-if="scope.row.expire">{{ scope.row.expire }}</span>
@@ -143,7 +143,7 @@
 import { ref, markRaw } from "vue";
 import { View, Delete } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
-import BasicPatService from "@/views/auth/basicpat/service/BasicPatService.ts";
+import BasicPatService from "@/views/auth/service/BasicPatService";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
 import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
 import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";
