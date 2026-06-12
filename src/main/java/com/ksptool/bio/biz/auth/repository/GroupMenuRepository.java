@@ -41,7 +41,7 @@ public interface GroupMenuRepository extends JpaRepository<GroupMenuPo, GroupMen
      * @return 菜单列表
      */
     @Query("""
-            SELECT m FROM GroupMenuPo gm
+            SELECT DISTINCT m FROM GroupMenuPo gm
             INNER JOIN MenuPo m ON gm.menuId = m.id
             WHERE gm.groupId IN :gids
             """)
