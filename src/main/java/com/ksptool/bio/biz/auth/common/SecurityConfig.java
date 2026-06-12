@@ -96,7 +96,7 @@ public class SecurityConfig {
 
         //PAT虚拟会话过滤器 在USAF之前拦截PAT请求并把PAT转换为标准的Bearer Token格式
         hs.addFilterBefore(patSessionAuthFilter, UsernamePasswordAuthenticationFilter.class);
-        
+
         //USAF过滤器会解析并验证用户会话（依赖 sessionId -> core_user_session 重建认证上下文），确保每次请求都能获取到有效的用户会话
         hs.addFilterBefore(usaf, UsernamePasswordAuthenticationFilter.class);
 
