@@ -31,6 +31,7 @@ import ComLayoutProviderService from "@/soa/com-series/service/ComLayoutProvider
 import AacpRouteRegister from "@/views/aacp/route/AacpRouteRegister";
 import ComAuthProviderService from "@/soa/com-series/service/ComAuthProvider.ts";
 import UserLogin from "@/views/auth/UserLogin.vue";
+import PatLogin from "@/views/auth/PatLogin.vue";
 /**
  * 固定路由 这些路由不会被GenricRouteService动态注册 请注意不要随意修改这些路由，因为它们游离于业务域之外，会引发严重的路由冲突问题。
  */
@@ -92,6 +93,7 @@ ComLayoutProviderService.setDefaultLayout("default");
 
 //注册多认证组件
 ComAuthProviderService.registerAuth("default", UserLogin);
+ComAuthProviderService.registerAuth("pat", PatLogin);
 
 //设置默认认证组件
 ComAuthProviderService.setDefaultAuth("default");

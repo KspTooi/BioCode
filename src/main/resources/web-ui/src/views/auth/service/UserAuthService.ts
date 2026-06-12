@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import type { Directive, DirectiveBinding } from "vue";
-import type { UserLoginDto, UserLoginVo, GetLoginConfigVo } from "@/views/auth/api/AuthApi";
+import type { UserLoginDto, UserLoginVo, GetLoginConfigVo, PatLoginDto } from "@/views/auth/api/AuthApi";
 import AuthApi from "@/views/auth/api/AuthApi";
 import { chacha20poly1305 } from "@noble/ciphers/chacha.js";
 
@@ -173,12 +173,29 @@ export default {
       throw new Error(result.message);
     };
 
+    const patLogin = async (patTokenPlain: string): Promise<void> => {
+      const dto: PatLoginDto = {
+        patToken: encrypt(patTokenPlain),
+      };
+
+      const result = await AuthApi.patLogin(dto);
+
+      if (result.code === 0 && result.data) {
+        AuthStore().setUserInfo(result.data);
+        AuthStore().setSessionId(result.data.sessionId);
+        return;
+      }
+
+      throw new Error(result.message);
+    };
+
     return {
       getLoginConfig,
       saveAccount,
       clearAccount,
       loadAccount,
       login,
+      patLogin,
     };
   },
 

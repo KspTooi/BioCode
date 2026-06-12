@@ -42,6 +42,13 @@ export interface GetLoginConfigVo {
   aspMinLength: number; // 密码最小长度
 }
 
+/**
+ * PAT登录DTO
+ */
+export interface PatLoginDto {
+  patToken: string; // PAT令牌密文(ChaCha20-Poly1305格式:密文Base64:IV-Base64)
+}
+
 export default {
   /**
    * 用户登录
@@ -59,5 +66,12 @@ export default {
       return result.data;
     }
     throw new Error(result.message);
+  },
+
+  /**
+   * PAT令牌登录
+   */
+  patLogin: async (dto: PatLoginDto): Promise<Result<UserLoginVo>> => {
+    return await Http.postEntity<Result<UserLoginVo>>("/auth/patLogin", dto);
   },
 };

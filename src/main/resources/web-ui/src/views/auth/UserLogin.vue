@@ -67,7 +67,10 @@
 
         <footer class="panel-footer">
           <span class="version-tag">CORE 1.7.F1</span>
-          <a class="nav-link" @click="onRegister">申请系统访问权限</a>
+          <div class="footer-links">
+            <a class="nav-link" @click="onPatLogin">PAT令牌登录</a>
+            <!-- <a class="nav-link" @click="onRegister">申请系统访问权限</a> -->
+          </div>
         </footer>
       </div>
     </div>
@@ -182,6 +185,10 @@ const onLogin = (): void => {
 
 const onRegister = (): void => {
   router.push({ name: "register" });
+};
+
+const onPatLogin = (): void => {
+  router.push({ name: "pat-login" });
 };
 
 onMounted(async () => {
@@ -465,6 +472,11 @@ onMounted(async () => {
   justify-content: space-between;
   align-items: center;
   font-size: 0.65rem;
+}
+
+.footer-links {
+  display: flex;
+  gap: 16px;
 }
 
 .version-tag {
