@@ -1,7 +1,10 @@
 package com.ksptool.bio.biz.auth.service;
 
+import com.ksptool.bio.biz.core.common.AppRegistry;
+import com.ksptool.bio.biz.core.service.RegistrySdk;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +22,9 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service("auth")
 public class AuthService {
+
+    @Autowired
+    private RegistrySdk regSdk;
 
 
     /**
@@ -92,6 +98,12 @@ public class AuthService {
      * @return 如果用户拥有该权限码返回true，否则返回false
      */
     public boolean hasCode(String permissionCode) {
+
+        //如果注册表中关闭了操作权限校验，则直接放行
+        if (regSdk.getInt(AppRegistry.FA_ENABLED_OPERATION_PERMISSION.getFullKey(), 1) == 0) {
+            return true;
+        }
+
         return hasPermission(permissionCode);
     }
 

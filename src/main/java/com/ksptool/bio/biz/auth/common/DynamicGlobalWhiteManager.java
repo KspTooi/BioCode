@@ -58,6 +58,7 @@ public class DynamicGlobalWhiteManager implements AuthorizationManager<RequestAu
 
         //构建基础白名单
         basic.add("/auth/userLogin"); //用户登录
+        basic.add("/auth/getLoginConfig"); //获取登录配置
         basic.add("/auth/genCaptcha"); //验证码端点
         basic.add("/auth/check"); //验证码端点
         basic.add("/v3/api-docs"); //OpenApi 端点
@@ -67,6 +68,7 @@ public class DynamicGlobalWhiteManager implements AuthorizationManager<RequestAu
         //构建集成部署白名单
         if (isIntegratedDeploy()) {
             integratedDeploy.add("/api/auth/userLogin"); //用户登录
+            integratedDeploy.add("/auth/getLoginConfig"); //获取登录配置
             integratedDeploy.add("/api/auth/genCaptcha"); //验证码端点
             integratedDeploy.add("/api/auth/check"); //验证码端点
             integratedDeploy.add("/api/v3/api-docs"); //OpenApi 端点

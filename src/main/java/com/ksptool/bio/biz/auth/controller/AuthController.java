@@ -9,6 +9,7 @@ import com.ksptool.assembly.entity.exception.AuthException;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.Result;
 import com.ksptool.bio.BioRunner;
+import com.ksptool.bio.biz.auth.common.ChaCha20Poly1305;
 import com.ksptool.bio.biz.auth.common.exception.AuthUnavailableException;
 import com.ksptool.bio.biz.auth.common.exception.RootUnavailableException;
 import com.ksptool.bio.biz.auth.model.auth.AuthUserSession;
@@ -24,13 +25,19 @@ import com.ksptool.bio.biz.core.service.RegistrySdk;
 import com.ksptool.bio.biz.core.service.UserService;
 import com.ksptool.bio.commons.WebUtils;
 import com.ksptool.bio.commons.annotation.PrintLog;
+import com.ksptool.bio.commons.dataprocess.Str;
+
+import ch.qos.logback.core.util.StringUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.DisabledException;
@@ -40,15 +47,22 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
+import com.ksptool.bio.biz.auth.model.auth.vo.GetLoginConfigVo;
+
+import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Set;
 
 import static com.ksptool.entities.Entities.as;
+import lombok.extern.slf4j.Slf4j;
 
 @PrintLog
 @RestController
 @Tag(name = "AUTH-认证管理", description = "认证管理")
 @RequestMapping("/auth")
+@Slf4j
 public class AuthController {
 
     @Autowired
@@ -72,16 +86,77 @@ public class AuthController {
     @Autowired
     private MenuService mService;
 
+
+    @Value("${auth.login.key}")
+    private String authLoginKey;
+
     @Operation(summary = "登录(新)")
     @PrintLog(sensitiveFields = "password")
     @PostMapping(value = "/userLogin")
-    public Result<UserLoginVo> userLogin(@RequestBody UserLoginDto dto, HttpServletResponse hsrp) throws BizException {
+    public Result<UserLoginVo> userLogin(@RequestBody UserLoginDto dto, HttpServletResponse hsrp) throws BizException, GeneralSecurityException {
 
         Authentication auth = null;
 
+        //预处理密文
+        //CT 密文CipherText
+        var unCtWithIv = dto.getUsername();
+        var pwCtWithIv = dto.getPassword();
+
+        //解析IV
+        var unCtMix = Str.safeSplit(unCtWithIv, ":");
+        var pwCtMix = Str.safeSplit(pwCtWithIv, ":");
+
+        if(unCtMix.size() != 2 || pwCtMix.size() != 2){
+            return Result.error("解析用户名或密码时发生错误！请检查数据格式。");
+        }
+
+        var unCt = unCtMix.get(0);
+        var pwCt = pwCtMix.get(0);
+        var unIv = unCtMix.get(1);
+        var pwIv = pwCtMix.get(1);
+
+        if(StringUtils.isBlank(unIv) || StringUtils.isBlank(pwIv)){
+            return Result.error("获取初始化向量失败！");
+        }
+
+        if(unIv.equals(pwIv)){
+            return Result.error("初始化向量相同！无法进行解密。");
+        }
+
+        if (StringUtils.isBlank(unCt) || StringUtils.isBlank(pwCt)) {
+            return Result.error("获取原始账号密码失败！");
+        }
+
+        //已集齐要素、可以安全解密         
+        //PT 明文PlainText
+        var unPt = "";
+        var pwPt = "";
+
         try {
+
+            var unIvBytes = Base64.getDecoder().decode(unIv);
+            var pwIvBytes = Base64.getDecoder().decode(pwIv);
+            var pwCtBytes = Base64.getDecoder().decode(pwCt);
+            var unCtBytes = Base64.getDecoder().decode(unCt);
+
+            var psk = ChaCha20Poly1305.getSecretKey(Base64.getDecoder().decode(authLoginKey));
+            var decryptedPw = ChaCha20Poly1305.decrypt(pwCtBytes, psk, pwIvBytes, null);
+            var decryptedUn = ChaCha20Poly1305.decrypt(unCtBytes, psk, unIvBytes, null);
+            pwPt = new String(decryptedPw, StandardCharsets.UTF_8);
+            unPt = new String(decryptedUn, StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            log.error("解密用户名或密码时发生错误！", e);
+            return Result.error("无法解析用户名或密码！");
+        }
+
+        if(StringUtils.isBlank(unPt) || StringUtils.isBlank(pwPt)){
+            return Result.error("无法解析用户名或密码！");
+        }
+
+        try {
+
             // 使用Spring Security进行用户名密码认证
-            auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(dto.getUsername(), dto.getPassword()));
+            auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(unPt, pwPt));
 
         } catch (AuthenticationException e) {
 
@@ -177,6 +252,20 @@ public class AuthController {
         }
         sessionService.closeSessionByPrimaryKey(userSessionPo.getId());
         return Result.success("注销成功");
+    }
+
+    @Operation(summary = "获取登录配置")
+    @PostMapping("/getLoginConfig")
+    @ResponseBody
+    public Result<GetLoginConfigVo> getLoginConfig() {
+        var vo = new GetLoginConfigVo();
+        vo.setCaptchaEnabledLogin(regSdk.getInt(AppRegistry.FA_CAPTCHA_ENABLED_LOGIN.getFullKey(), 0));
+        vo.setAspAllowWeakPassword(regSdk.getInt(AppRegistry.FA_ASP_ALLOW_WEAK_PASSWORD.getFullKey(), 1));
+        vo.setAspAllowUsernameInPassword(regSdk.getInt(AppRegistry.FA_ASP_ALLOW_USERNAME_IN_PASSWORD.getFullKey(), 1));
+        vo.setAspRequireSpecial(regSdk.getInt(AppRegistry.FA_ASP_REQUIRE_SPECIAL.getFullKey(), 0));
+        vo.setAspMinLength(regSdk.getInt(AppRegistry.FA_ASP_MIN_LENGTH.getFullKey(), 8));
+        vo.setEnabledSavePasswordOnClient(regSdk.getInt(AppRegistry.FA_ENABLED_SAVE_PASSWORD_ON_CLIENT.getFullKey(), 0));
+        return Result.success(vo);
     }
 
     @Operation(summary = "获取权限")

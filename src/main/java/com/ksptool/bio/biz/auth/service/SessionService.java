@@ -408,4 +408,72 @@ public class SessionService {
         }
     }
 
+    /**
+     * 为 PAT 创建虚拟会话
+     * PAT 明文直接作为虚拟 Session 的明文凭证，哈希后落库
+     *
+     * @param aus      认证用户详情
+     * @param patToken PAT 令牌明文
+     * @throws BizException 业务异常
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void createPatSession(AuthUserSession aus, String patToken) throws BizException {
+        
+        //获取PAT虚拟会话的哈希值
+        var hashedSessionId = SHA256.hex(patToken);
+
+        var sessionPo = userSessionRepository.getSessionBySessionId(hashedSessionId);
+
+        //如果PAT虚拟会话不存在，则创建PAT虚拟会话
+        if (sessionPo == null) {
+            sessionPo = new UserSessionPo();
+            sessionPo.setCreatorId(aus.getUserId());
+        }
+
+        //合并同类项😄😄
+        assign(aus, sessionPo);
+
+        //搜集权限码
+        var permCodes = new HashSet<String>();
+        for (var authority : aus.getAuthorities()) {
+            permCodes.add(authority.getAuthority());
+        }
+
+        //更新PAT虚拟会话
+        sessionPo.setUsername(aus.getUsername());
+        sessionPo.setUserId(aus.getUserId());
+        sessionPo.setSessionId(hashedSessionId);
+        sessionPo.setPermissionCodes(permCodes);
+        sessionPo.setExpiresAt(LocalDateTime.now().plusSeconds(expiresInSeconds));
+        sessionPo.setDataVersion(aus.getDataVersion());
+        userSessionRepository.save(sessionPo);
+
+        //不更新用户 PAT登录通常由自动化工具调用，不能算作是"用户登录"
+        //var userPo = userRepository.findById(aus.getUserId()).orElseThrow(() -> new BizException("用户不存在"));
+        //userPo.setLoginCount(userPo.getLoginCount() + 1);
+        //userPo.setLastLoginTime(LocalDateTime.now());
+        //userRepository.save(userPo);
+    }
+
+    /**
+     * 根据哈希过的 SessionId 精准删除会话
+     *
+     * @param hashedSessionId 哈希后的 SessionId
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void closeSessionByHashedSessionId(String hashedSessionId) {
+        var session = userSessionRepository.getSessionBySessionId(hashedSessionId);
+        if (session != null) {
+
+            //如果后端配置了缓存，则失效缓存
+            var cache = cacheManager.getCache("userSession");
+            if (cache != null) {
+                cache.evict(hashedSessionId);
+            }
+
+            //删除数据库中的会话
+            userSessionRepository.delete(session);
+        }
+    }
+
 }

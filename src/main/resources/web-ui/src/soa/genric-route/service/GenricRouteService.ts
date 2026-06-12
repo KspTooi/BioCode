@@ -195,14 +195,15 @@ export default {
         addRoutes(register.doRegister());
 
         //注册前置守卫
-        if (register.doBeforeEach()) {
-          vueRouter.beforeEach(register.doBeforeEach());
+        const beforeEachGuard = register.doBeforeEach();
+        if (beforeEachGuard) {
+          vueRouter.beforeEach(beforeEachGuard);
         }
 
         //注册后置守卫
-        if (register.doAfterEach()) {
-          console.log("注册后置守卫", register.doAfterEach());
-          vueRouter.afterEach(register.doAfterEach);
+        const afterEachGuard = register.doAfterEach();
+        if (afterEachGuard) {
+          vueRouter.afterEach(afterEachGuard);
         }
       });
 

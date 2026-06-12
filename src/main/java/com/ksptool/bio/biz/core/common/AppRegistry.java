@@ -43,6 +43,8 @@ public enum AppRegistry {
     FA_ASP_MIN_LENGTH("field.auth", "asp_min_length", "8", NvalueKind.INTEGER, "密码最小长度", "为-1时表示不限制"),
 
     FA_SESSION_EXPIRE("field.auth", "session_expire", "30", NvalueKind.INTEGER, "用户Session过期时间(分钟)", "为-1时表示不限制"),
+    FA_ENABLED_OPERATION_PERMISSION("field.auth", "enabled_operation_permission", "1", NvalueKind.INTEGER, "启用操作权限校验", "0:关闭 1:开启 默认1"),
+    FA_ENABLED_SAVE_PASSWORD_ON_CLIENT("field.auth", "enabled_save_password_on_client", "0", NvalueKind.INTEGER, "是否允许记住密码", "0:不允许 1:允许"),
 
 
     //==================== GEN域配置 ====================

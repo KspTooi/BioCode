@@ -43,7 +43,7 @@ Service 文件是本模块的**业务逻辑层**，封装响应式状态与 UI �
 3. 默认导出 `export default {}` 对象字面量，禁止 `export default class` 或 `export function`
 4. Composition 函数以 `use` 开头，camelCase；类型 `import type`，值 `import`，路径 `@/`
 5. `useXxxList` 暴露固定命名：`listForm / listData / listTotal / listLoading / loadList / resetList / removeList`
-6. `useXxxModal` 暴露固定命名：`modalVisible / modalLoading / modalMode / modalForm / modalRules / openModal / resetModal / submitModal`；`ModalMode` 标准值为 `"add" | "edit"`，业务需要时可在文件顶层追加（如 `"view" | "approve"`），但所有弹窗行为必须通过 `modalMode` 区分，禁止在模块外另设独立可见性变量替代 `modalMode`
+6. `useXxxModal` 暴露固定命名：`modalVisible / modalLoading / modalMode / modalForm / modalRules / openModal / resetModal / submitModal`；`ModalMode` 标准值为 `"add" \| "edit"`，业务需要时可在文件顶层追加（如 `"view" \| "approve"`），但所有弹窗行为必须通过 `modalMode` 区分，禁止在模块外另设独立可见性变量替代 `modalMode`；`openModal` 必须 `async`，第二参数 row 类型为 `GetXxxListVo \| null`（禁止 `row?` 可选参数），edit 模式通过 `if (!row)` 守卫后 `await Api.getXxxDetails`
 7. `modalForm` 类型使用 `GetXxxDetailsVo`，禁止 `Partial<XxxDto>` / `Pick / Omit` / `AddXxxDto & EditXxxDto` 拼合
 8. `resetList` 必须逐字段赋值，禁止 `listForm.value = { ... }` 整体替换
 9. `onMounted` 中调用 `loadList()` 加载首屏数据
@@ -163,26 +163,32 @@ useXxxModal(modalFormRef: Ref<FormInstance | undefined>, reloadCallback: () => v
     title: [{ required: true, message: "请输入标题", trigger: "blur" }],
   });
 
-  const openModal = (mode: ModalMode, row?: GetXxxListVo): void => {
-    resetModal();
+  /**
+   * 打开模态框，add 模式直接打开，edit 模式先加载详情
+   */
+  const openModal = async (mode: ModalMode, row: GetXxxListVo | null): Promise<void> => {
     modalMode.value = mode;
+
     if (mode === "add") {
+      modalForm.id = "";
+      modalForm.title = "";
       modalVisible.value = true;
       return;
     }
-    modalLoading.value = true;
-    XxxApi.getXxxDetails({ id: String(row!.id) })
-      .then((details) => {
-        modalForm.id = details.id;
-        modalForm.title = details.title;
-        modalVisible.value = true;
-      })
-      .catch((error: any) => {
-        ElMessage.error(error.message);
-      })
-      .finally(() => {
-        modalLoading.value = false;
-      });
+
+    if (!row) {
+      ElMessage.error("未选择要编辑的数据");
+      return;
+    }
+
+    try {
+      const details = await XxxApi.getXxxDetails({ id: String(row.id) });
+      modalForm.id = details.id;
+      modalForm.title = details.title;
+      modalVisible.value = true;
+    } catch (error: any) {
+      ElMessage.error(error.message);
+    }
   };
 
   const resetModal = (): void => {
@@ -194,7 +200,7 @@ useXxxModal(modalFormRef: Ref<FormInstance | undefined>, reloadCallback: () => v
 
   const submitModal = async (): Promise<void> => {
     try {
-      await modalFormRef.value!.validate();
+      await modalFormRef?.value?.validate();
     } catch {
       return;
     }
@@ -243,6 +249,27 @@ useXxxModal(modalFormRef: Ref<FormInstance | undefined>, reloadCallback: () => v
 },
 ```
 
+### 带二次校验的 submitModal 模板（如 unique-validation）
+
+```ts
+const submitModal = async (): Promise<void> => {
+  try {
+    await modalFormRef?.value?.validate();
+  } catch {
+    return;
+  }
+
+  const result = await XxxApi.validateUniqueCode(form.code);
+  if (result.code !== 0) {
+    ElMessage.error(result.message);
+    return;
+  }
+
+  modalLoading.value = true;
+  // ... 构造 Dto → 调 Api → ElMessage.success → close + reload
+};
+```
+
 ### 双重 try/catch（删除确认 + API 调用）
 
 ```ts
@@ -266,29 +293,35 @@ const removeList = async (row: GetXxxListVo): Promise<void> => {
 };
 ```
 
-### 带 finally 的打开模态框
+### 前置数据加载的 openModal（如需要先加载下拉选项）
 
 ```ts
-const openModal = (mode: ModalMode, row?: GetXxxListVo): void => {
-  resetModal();
+const openModal = async (mode: ModalMode, row: GetXxxListVo | null): Promise<void> => {
   modalMode.value = mode;
+  resetModal();
+
+  await loadCapabilityOptions(); // 加载模态框内的下拉选项数据
+
   if (mode === "add") {
+    modalForm.id = "";
+    modalForm.name = "";
     modalVisible.value = true;
     return;
   }
-  modalLoading.value = true;
-  XxxApi.getXxxDetails({ id: String(row!.id) })
-    .then((details) => {
-      modalForm.id = details.id;
-      modalForm.title = details.title;
-      modalVisible.value = true;
-    })
-    .catch((error: any) => {
-      ElMessage.error(error.message);
-    })
-    .finally(() => {
-      modalLoading.value = false;
-    });
+
+  if (!row) {
+    ElMessage.error("未选择要编辑的数据");
+    return;
+  }
+
+  try {
+    const details = await XxxApi.getXxxDetails({ id: String(row.id) });
+    modalForm.id = details.id;
+    modalForm.name = details.name;
+    modalVisible.value = true;
+  } catch (error: any) {
+    ElMessage.error(error.message);
+  }
 };
 ```
 
@@ -363,6 +396,13 @@ const onApprove = async (a) => { ... };
 // → 合并为单一 onApprove(kind)，内部局部映射，不暴露中间层
 ```
 
+```ts
+// ❌ 用 watch(modalVisible/modalMode) 设默认值
+watch(modalMode, (v) => { if (v === "add") modalForm.status = 1; });
+watch(modalVisible, () => { modalForm.kind = 0; });
+// → 直接在 openModal 内逐字段赋值，所有默认值集中一处，禁止 watch
+```
+
 ---
 
 ## 6. 速查（Cheat Sheet）
@@ -388,7 +428,7 @@ const onApprove = async (a) => { ... };
 | `modalMode`    | 状态 | 模式（标准 `"add" \| "edit"`，按业务可追加 `"view"` 等） |
 | `modalForm`    | 状态 | 表单数据（`reactive<GetXxxDetailsVo>`）                  |
 | `modalRules`   | 状态 | 表单校验规则                                             |
-| `openModal`    | 方法 | 打开模态框 `(mode, row?)`                                |
+| `openModal`    | 方法 | 打开模态框 `(mode: ModalMode, row: GetXxxListVo \| null)` |
 | `resetModal`   | 方法 | 重置表单状态                                             |
 | `submitModal`  | 方法 | 校验 + 提交                                              |
 

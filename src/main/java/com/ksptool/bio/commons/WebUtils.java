@@ -51,6 +51,27 @@ public class WebUtils {
         return sessionId;
     }
 
+    /**
+     * 获取Authentication PAT Token
+     *
+     * @param request 请求
+     * @return PAT Token，不存在或格式不正确则返回null
+     */
+    public static String getAuthenticationPatToken(HttpServletRequest request) {
+        var header = request.getHeader("Authorization");
+        if (StringUtils.isBlank(header)) {
+            return null;
+        }
+        if (!header.startsWith("PAT ")) {
+            return null;
+        }
+        var token = header.substring(4);
+        if (StringUtils.isBlank(token)) {
+            return null;
+        }
+        return token;
+    }
+
     /*
      * 获取IP地址
      * @param request 请求

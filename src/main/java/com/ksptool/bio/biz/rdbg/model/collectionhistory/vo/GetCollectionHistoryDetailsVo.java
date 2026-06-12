@@ -1,7 +1,7 @@
 package com.ksptool.bio.biz.rdbg.model.collectionhistory.vo;
 
-import com.ksptool.bio.commons.model.RelayBody;
-import com.ksptool.bio.commons.model.RelayHeader;
+import com.ksptool.bio.biz.rdbg.commons.model.RelayBody;
+import com.ksptool.bio.biz.rdbg.commons.model.RelayHeader;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;

@@ -1,1 +1,4 @@
-org.springframework.boot.diagnostics.FailureAnalyzer=\com.ksptool.bio.commons.utils.SchemaValidationFailureAnalyzer
+org.springframework.boot.diagnostics.FailureAnalyzer=\
+com.ksptool.bio.support.failureanalysis.SchemaValidationFailureAnalyzer,\
+com.ksptool.bio.support.failureanalysis.CircularDependencyFailureAnalyzer,\
+com.ksptool.bio.support.failureanalysis.NoUniqueBeanDefinitionFailureAnalyzer

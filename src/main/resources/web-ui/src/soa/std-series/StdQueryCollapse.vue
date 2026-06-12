@@ -1,7 +1,9 @@
 <template>
   <div class="std-query-collapse">
     <div class="flex flex-wrap flex-1 std-query-collapse-content">
-      <SlotNodes :nodes="visibleSlotNodes" />
+      <template v-for="(node, idx) in visibleSlotNodes" :key="idx">
+        <component :is="node" />
+      </template>
     </div>
     <div class="std-query-collapse-actions">
       <slot name="actions"></slot>
@@ -16,9 +18,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, Comment, defineComponent, Fragment, Text, useSlots, type PropType, type VNode } from "vue";
+import { computed, Comment, Fragment, Text, useSlots, type VNode } from "vue";
 import { ArrowDown, ArrowUp } from "@element-plus/icons-vue";
-import { useSearchExpand } from "@/soa/std-series/service/StdQueryCollapseService.ts";
+import { useSearchExpand } from "@/soa/std-series/service/StdQueryCollapseService";
 
 const props = withDefaults(
   defineProps<{
@@ -31,24 +33,6 @@ const props = withDefaults(
 
 const slots = useSlots();
 const { isExpand, toggleExpand } = useSearchExpand();
-
-/**
- * 插槽节点组件，用于渲染插槽节点
- * @param componentProps 组件属性
- * @returns 插槽节点
- */
-const SlotNodes = defineComponent({
-  name: "SlotNodes",
-  props: {
-    nodes: {
-      type: Array as PropType<VNode[]>,
-      default: () => [],
-    },
-  },
-  setup(componentProps) {
-    return () => componentProps.nodes;
-  },
-});
 
 /**
  * 规范化插槽节点，将插槽节点转换为数组
@@ -93,6 +77,7 @@ const defaultSlotNodes = computed(() => {
 });
 /**
  * 可见插槽节点，用于获取可见插槽节点，如果展开则返回所有插槽节点，否则返回前limit个插槽节点
+ *
  * @returns 可见插槽节点
  */
 const visibleSlotNodes = computed(() => {
