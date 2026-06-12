@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 public class AddBasicPatDto {
@@ -14,5 +16,8 @@ public class AddBasicPatDto {
     @Size(max = 40, message = "PAT名称长度不能超过40")
     @Schema(description = "PAT名称")
     private String name;
+
+    @Schema(description = "过期时间")
+    private LocalDateTime expire;
 
 }

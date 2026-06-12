@@ -41,6 +41,7 @@ export interface GetBasicPatDetailsVo {
  */
 export interface AddBasicPatDto {
   name: string; // PAT名称
+  expire?: string; // 过期时间 yyyy-MM-dd HH:mm:ss
 }
 
 /**
@@ -77,7 +78,7 @@ export default {
   addBasicPat: async (dto: AddBasicPatDto): Promise<string> => {
     const result = await Http.postEntity<Result<string>>("/basicPat/addBasicPat", dto);
     if (result.code === 0) {
-      return result.message;
+      return result.data;
     }
     throw new Error(result.message);
   },

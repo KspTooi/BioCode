@@ -30,10 +30,14 @@
     <StdListAreaTable>
       <el-table :data="listData" stripe v-loading="listLoading" border height="100%">
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
-        <el-table-column prop="id" label="主键ID" min-width="120" show-overflow-tooltip />
         <el-table-column prop="name" label="PAT名称" min-width="120" show-overflow-tooltip />
         <el-table-column prop="patPt" label="部分明文" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="expire" label="过期时间" min-width="120" show-overflow-tooltip />
+        <el-table-column label="过期时间" min-width="120">
+          <template #default="scope">
+            <span v-if="scope.row.expire">{{ scope.row.expire }}</span>
+            <span v-if="!scope.row.expire" class="text-green-500">永久</span>
+          </template>
+        </el-table-column>
         <el-table-column label="状态" min-width="100">
           <template #default="scope">
             <el-tag :type="scope.row.status === 1 ? 'success' : 'danger'">
@@ -98,6 +102,24 @@
         <el-form-item label="PAT名称" prop="name">
           <el-input v-model="modalForm.name" placeholder="请输入PAT名称" clearable :maxlength="40" show-word-limit />
         </el-form-item>
+        <el-form-item label="过期时间" prop="expire">
+          <el-date-picker
+            v-model="modalForm.expire"
+            type="datetime"
+            placeholder="不填则永不过期"
+            clearable
+            format="YYYY-MM-DD HH:mm:ss"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            style="width: 100%"
+          />
+          <div class="flex gap-1 mt-1">
+            <el-button size="small" @click="modalForm.expire = addExpire(7, 'day')">7天</el-button>
+            <el-button size="small" @click="modalForm.expire = addExpire(15, 'day')">15天</el-button>
+            <el-button size="small" @click="modalForm.expire = addExpire(1, 'month')">1个月</el-button>
+            <el-button size="small" @click="modalForm.expire = addExpire(3, 'month')">3个月</el-button>
+            <el-button size="small" @click="modalForm.expire = addExpire(1, 'year')">1年</el-button>
+          </div>
+        </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -127,6 +149,15 @@ const DeleteIcon = markRaw(Delete);
 const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } = BasicPatService.useBasicPatList();
 
 const modalFormRef = ref<FormInstance>();
+
+const pad = (n: number) => String(n).padStart(2, "0");
+const addExpire = (amount: number, unit: "day" | "month" | "year") => {
+  const d = new Date();
+  if (unit === "day") d.setDate(d.getDate() + amount);
+  if (unit === "month") d.setMonth(d.getMonth() + amount);
+  if (unit === "year") d.setFullYear(d.getFullYear() + amount);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+};
 
 const { modalVisible, modalLoading, modalMode, modalForm, modalRules, openModal, resetModal, submitModal } =
   BasicPatService.useBasicPatModal(modalFormRef, loadList);

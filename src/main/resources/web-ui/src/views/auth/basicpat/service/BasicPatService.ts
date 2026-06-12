@@ -179,11 +179,19 @@ export default {
       if (modalMode.value === "add") {
         const addDto: AddBasicPatDto = {
           name: modalForm.name,
+          expire: modalForm.expire || undefined,
         };
         try {
           const token = await BasicPatApi.addBasicPat(addDto);
-          ElMessage.success({ message: `创建成功，令牌仅展示一次: ${token}`, duration: 12000, showClose: true });
           modalVisible.value = false;
+          await ElMessageBox.confirm(token, "令牌已生成，仅显示一次", {
+            confirmButtonText: "已复制，关闭",
+            cancelButtonText: "",
+            type: "success",
+            showCancelButton: false,
+            distinguishCancelAndClose: false,
+            closeOnClickModal: true,
+          });
           reloadCallback();
         } catch (error: any) {
           ElMessage.error(error.message);
