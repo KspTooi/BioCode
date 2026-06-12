@@ -66,7 +66,7 @@
         </main>
 
         <footer class="panel-footer">
-          <span class="version-tag">CORE v2.5.0-LITE</span>
+          <span class="version-tag">CORE 1.7.F1</span>
           <a class="nav-link" @click="onRegister">申请系统访问权限</a>
         </footer>
       </div>
