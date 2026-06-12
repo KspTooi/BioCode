@@ -43,7 +43,7 @@ Service 文件是本模块的**业务逻辑层**，封装响应式状态与 UI �
 3. 默认导出 `export default {}` 对象字面量，禁止 `export default class` 或 `export function`
 4. Composition 函数以 `use` 开头，camelCase；类型 `import type`，值 `import`，路径 `@/`
 5. `useXxxList` 暴露固定命名：`listForm / listData / listTotal / listLoading / loadList / resetList / removeList`
-6. `useXxxModal` 暴露固定命名：`modalVisible / modalLoading / modalMode / modalForm / modalRules / openModal / resetModal / submitModal`；`ModalMode` 标准值为 `"add" | "edit"`，业务需要时可在文件顶层追加（如 `"view" | "approve"`），但所有弹窗行为必须通过 `modalMode` 区分，禁止在模块外另设独立可见性变量替代 `modalMode`
+6. `useXxxModal` 暴露固定命名：`modalVisible / modalLoading / modalMode / modalForm / modalRules / openModal / resetModal / submitModal`；`ModalMode` 标准值为 `"add" \| "edit"`，业务需要时可在文件顶层追加（如 `"view" \| "approve"`），但所有弹窗行为必须通过 `modalMode` 区分，禁止在模块外另设独立可见性变量替代 `modalMode`；`openModal` 必须 `async`，第二参数 row 类型为 `GetXxxListVo \| null`（禁止 `row?` 可选参数），edit 模式通过 `if (!row)` 守卫后 `await Api.getXxxDetails`
 7. `modalForm` 类型使用 `GetXxxDetailsVo`，禁止 `Partial<XxxDto>` / `Pick / Omit` / `AddXxxDto & EditXxxDto` 拼合
 8. `resetList` 必须逐字段赋值，禁止 `listForm.value = { ... }` 整体替换
 9. `onMounted` 中调用 `loadList()` 加载首屏数据
@@ -396,6 +396,13 @@ const onApprove = async (a) => { ... };
 // → 合并为单一 onApprove(kind)，内部局部映射，不暴露中间层
 ```
 
+```ts
+// ❌ 用 watch(modalVisible/modalMode) 设默认值
+watch(modalMode, (v) => { if (v === "add") modalForm.status = 1; });
+watch(modalVisible, () => { modalForm.kind = 0; });
+// → 直接在 openModal 内逐字段赋值，所有默认值集中一处，禁止 watch
+```
+
 ---
 
 ## 6. 速查（Cheat Sheet）
@@ -421,7 +428,7 @@ const onApprove = async (a) => { ... };
 | `modalMode`    | 状态 | 模式（标准 `"add" \| "edit"`，按业务可追加 `"view"` 等） |
 | `modalForm`    | 状态 | 表单数据（`reactive<GetXxxDetailsVo>`）                  |
 | `modalRules`   | 状态 | 表单校验规则                                             |
-| `openModal`    | 方法 | 打开模态框 `(mode, row?)`                                |
+| `openModal`    | 方法 | 打开模态框 `(mode: ModalMode, row: GetXxxListVo \| null)` |
 | `resetModal`   | 方法 | 重置表单状态                                             |
 | `submitModal`  | 方法 | 校验 + 提交                                              |
 
