@@ -22,7 +22,7 @@ export interface AddMicroFuncDto {
   code: string | null; //微函数标识
   description: string | null; //意图词
   schema: string | null; //入参规范
-  target: string | null; //调用目标Bean
+  target: string | null; //目标方法
   remark: string | null; //备注
 }
 
@@ -32,7 +32,7 @@ export interface EditMicroFuncDto {
   code: string | null; //微函数标识
   description: string | null; //意图词
   schema: string | null; //入参规范
-  target: string | null; //调用目标Bean
+  target: string | null; //目标方法
   remark: string | null; //备注
 }
 
@@ -42,7 +42,7 @@ export interface GetMicroFuncDetailsVo {
   code: string | null; //微函数标识
   description: string | null; //意图词
   schema: string | null; //入参规范
-  target: string | null; //调用目标Bean
+  target: string | null; //目标方法
   remark: string | null; //备注
 }
 

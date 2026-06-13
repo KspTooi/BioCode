@@ -115,8 +115,8 @@ export default {
         { max: 1000, message: "意图词长度不能超过1000", trigger: "blur" },
       ],
       target: [
-        { required: true, message: "请输入调用目标Bean", trigger: "blur" },
-        { max: 1000, message: "调用目标Bean长度不能超过1000", trigger: "blur" },
+        { required: true, message: "请输入目标方法", trigger: "blur" },
+        { max: 1000, message: "目标方法长度不能超过1000", trigger: "blur" },
       ],
       remark: [{ max: 500, message: "备注长度不能超过500", trigger: "blur" }],
     };

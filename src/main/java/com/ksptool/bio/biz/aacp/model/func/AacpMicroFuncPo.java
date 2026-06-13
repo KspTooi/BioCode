@@ -45,7 +45,7 @@ public class AacpMicroFuncPo {
     @Column(name = "`schema`", comment = "入参规范")
     private String schema;
 
-    @Column(name = "target", nullable = false, length = 1000, comment = "调用目标Bean")
+    @Column(name = "target", nullable = false, length = 1000, comment = "目标方法")
     private String target;
 
     @Column(name = "remark", length = 500, comment = "备注")

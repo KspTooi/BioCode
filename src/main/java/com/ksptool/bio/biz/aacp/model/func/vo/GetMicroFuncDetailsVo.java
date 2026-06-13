@@ -23,7 +23,7 @@ public class GetMicroFuncDetailsVo {
     @Schema(description = "入参规范")
     private String schema;
 
-    @Schema(description = "调用目标Bean")
+    @Schema(description = "目标方法")
     private String target;
 
     @Schema(description = "备注")

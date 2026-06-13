@@ -33,9 +33,9 @@ public class EditMicroFuncDto {
     @Schema(description = "入参规范")
     private String schema;
 
-    @NotBlank(message = "调用目标Bean不能为空")
-    @Length(max = 1000, message = "调用目标Bean长度不能超过1000")
-    @Schema(description = "调用目标Bean")
+    @NotBlank(message = "目标方法不能为空")
+    @Length(max = 1000, message = "目标方法长度不能超过1000")
+    @Schema(description = "目标方法")
     private String target;
 
     @Length(max = 500, message = "备注长度不能超过500")

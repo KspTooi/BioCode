@@ -76,7 +76,7 @@
         <el-form-item label="入参规范" prop="schema">
           <el-input v-model="modalForm.schema" placeholder="请输入入参规范(JSON)" type="textarea" :rows="4" />
         </el-form-item>
-        <el-form-item label="调用目标Bean" prop="target">
+        <el-form-item label="目标方法" prop="target">
           <el-select
             v-model="modalForm.target"
             v-loading="microFuncListLoading"
