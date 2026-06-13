@@ -1,10 +1,13 @@
 ---
+description: 
 alwaysApply: true
 ---
 
 不允许创建子代理用于探索项目
 
 # CodeGraph 优先（强制）
+
+你可以查看SKILL以了解CodeGraph的用法！
 
 项目已接入 CodeGraph 代码知识图谱。**任何代码探索、定位、理解、追踪任务，必须优先且默认使用 CodeGraph 工具**，而不是子代理、Grep、Glob 或 Read。
 
