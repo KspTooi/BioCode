@@ -36,7 +36,7 @@ public class AacpCapPo {
     @Column(name = "name", nullable = false, length = 40, comment = "能力包名称")
     private String name;
 
-    @Column(name = "kind", nullable = false, columnDefinition = "tinyint", comment = "类型 0:微函数")
+    @Column(name = "kind", nullable = false, columnDefinition = "tinyint", comment = "类型 0:标准")
     private Integer kind;
 
     @Column(name = "remark", length = 500, comment = "备注")

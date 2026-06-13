@@ -16,7 +16,7 @@ public class GetCapDetailsVo {
     @Schema(description = "能力包名称")
     private String name;
 
-    @Schema(description = "类型 0:微函数")
+    @Schema(description = "类型 0:标准")
     private Integer kind;
 
     @Schema(description = "备注")
