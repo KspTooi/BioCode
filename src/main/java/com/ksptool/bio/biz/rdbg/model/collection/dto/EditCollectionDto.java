@@ -1,8 +1,8 @@
 package com.ksptool.bio.biz.rdbg.model.collection.dto;
 
-import com.ksptool.bio.commons.model.RelayBody;
-import com.ksptool.bio.commons.model.RelayHeader;
-import com.ksptool.bio.commons.model.RelayParam;
+import com.ksptool.bio.biz.rdbg.commons.model.RelayBody;
+import com.ksptool.bio.biz.rdbg.commons.model.RelayHeader;
+import com.ksptool.bio.biz.rdbg.commons.model.RelayParam;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

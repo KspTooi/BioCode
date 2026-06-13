@@ -35,8 +35,6 @@ public class OrgService {
     @Autowired
     private OrgRepository repository;
 
-    @Autowired
-    private UserRepository userRepository;
 
     @Autowired
     private UserService userService;

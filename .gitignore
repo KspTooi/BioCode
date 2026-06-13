@@ -69,3 +69,6 @@ coverage
 
 ### spring-profiler分析结果 ###
 **/src/main/resources/support-static/spring-profiler/output/**
+
+### CodeGraph ###
+.codegraph/codegraph.db

@@ -1,5 +1,6 @@
 package com.ksptool.bio.biz.auth.common;
 
+import com.ksptool.bio.biz.auth.common.aop.PatSessionAuthFilter;
 import com.ksptool.bio.biz.auth.common.aop.UserSessionAuthFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +15,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.context.NullSecurityContextRepository;
@@ -30,12 +29,17 @@ import org.springframework.security.web.context.NullSecurityContextRepository;
 @Slf4j
 public class SecurityConfig {
 
-
     /**
      * USAF过滤器 这个过滤器会获取请求中的Token并重建安全上下文
      */
     @Autowired
     private UserSessionAuthFilter usaf;
+
+    /**
+     * PAT虚拟会话过滤器 在USAF之前拦截PAT请求并改写Header
+     */
+    @Autowired
+    private PatSessionAuthFilter patSessionAuthFilter;
 
     /**
      * 认证失败和权限不足的处理(统一返回JSON格式)
@@ -90,9 +94,13 @@ public class SecurityConfig {
                 .accessDeniedHandler(jaep) // 权限不足
         );
 
-        //添加自定义过滤器
+        //PAT虚拟会话过滤器 在USAF之前拦截PAT请求并把PAT转换为标准的Bearer Token格式
+        hs.addFilterBefore(patSessionAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
         //USAF过滤器会解析并验证用户会话（依赖 sessionId -> core_user_session 重建认证上下文），确保每次请求都能获取到有效的用户会话
         hs.addFilterBefore(usaf, UsernamePasswordAuthenticationFilter.class);
+
+        //注意 上面的过滤器注册顺序是固定的，只能这样写 不能调换顺序！ 因为多个过滤器都以同一个参照物加入，先加的会排在前面。
 
         return hs.build();
     }
@@ -100,11 +108,6 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 
     @Bean

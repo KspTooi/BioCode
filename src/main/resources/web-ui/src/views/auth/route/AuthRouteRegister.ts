@@ -38,6 +38,20 @@ export default class AuthRouteRegister extends GenricRouteRegister {
         component: () => import("@/views/auth/SessionManager.vue"),
         meta: { breadcrumb: "会话管理" },
       }),
+      RouteEntryPo.build({
+        biz: "auth",
+        path: "basic-pat",
+        name: "basic-pat",
+        component: () => import("@/views/auth/BasicPat.vue"),
+        meta: { breadcrumb: "基本PAT" },
+      }),
+      RouteEntryPo.build({
+        biz: "auth",
+        path: "pat-login",
+        name: "pat-login",
+        component: () => import("@/views/auth/PatLogin.vue"),
+        meta: { breadcrumb: "PAT令牌登录", layout: "blank" },
+      }),
     ];
   }
 
@@ -45,9 +59,8 @@ export default class AuthRouteRegister extends GenricRouteRegister {
     const authStore = UserAuthService.AuthStore();
 
     return (to, from) => {
-      //如果访问了login 且用户已登录 则跳转到首页
-      if (to.name === "login" && authStore.getSessionId) {
-        console.log(authStore.getSessionId);
+      //如果访问了login或pat-login 且用户已登录 则跳转到首页
+      if ((to.name === "login" || to.name === "pat-login") && authStore.getSessionId) {
         return "/";
       }
     };

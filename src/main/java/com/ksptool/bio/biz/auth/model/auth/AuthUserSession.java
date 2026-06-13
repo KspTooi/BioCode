@@ -99,6 +99,9 @@ public class AuthUserSession implements UserDetails {
     //系统内置用户 0:否 1:是
     private Integer isSystem;
 
+    //登录方式 0:用户名密码 1:PAT登录(静默) 2:PAT登录(显式)
+    private Integer loginType;
+
     //创建时间
     private LocalDateTime createTime;
 

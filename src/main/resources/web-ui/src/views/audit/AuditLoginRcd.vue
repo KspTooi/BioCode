@@ -45,8 +45,9 @@
         <el-table-column prop="username" label="登录账号" min-width="120" />
         <el-table-column label="登录方式" min-width="120">
           <template #default="scope">
-            <span v-if="scope.row.loginKind === 0">登录账号密码</span>
-            <span v-else>未知</span>
+            <span v-if="scope.row.loginKind === 0" class="text-blue-500">普通账号密码</span>
+            <span v-if="scope.row.loginKind === 1" class="text-emerald-500">PAT登录(静默)</span>
+            <span v-if="scope.row.loginKind === 2" class="text-purple-500">PAT登录(显式)</span>
           </template>
         </el-table-column>
         <el-table-column prop="ipAddr" label="IP地址" min-width="140" />
@@ -91,7 +92,10 @@
         <el-row>
           <el-col :span="12">
             <el-form-item label="登录方式">
-              <el-input :model-value="modalForm.loginKind === 0 ? '用户名密码' : '未知'" readonly />
+              <el-input
+                :model-value="modalForm.loginKind === 0 ? '用户名密码' : modalForm.loginKind === 1 ? 'PAT登录(静默)' : modalForm.loginKind === 2 ? 'PAT登录(显式)' : '未知'"
+                readonly
+              />
             </el-form-item>
           </el-col>
           <el-col :span="12">

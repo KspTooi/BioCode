@@ -1,6 +1,6 @@
 package com.ksptool.bio.biz.rdbg.model.userrequestlog;
 
-import com.ksptool.bio.commons.model.HttpHeaderVo;
+import com.ksptool.bio.biz.rdbg.commons.model.HttpHeaderVo;
 import lombok.Getter;
 import lombok.Setter;
 

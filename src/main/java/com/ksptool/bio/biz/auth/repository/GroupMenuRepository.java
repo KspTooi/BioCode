@@ -35,7 +35,7 @@ public interface GroupMenuRepository extends JpaRepository<GroupMenuPo, GroupMen
 
 
     /**
-     * 根据用户组ID获取拥有的全部菜单
+     * 根据用户组ID获取拥有的全部菜单 这里要INNER 因为菜单被删除以后关联关系还存在 
      *
      * @param gids 用户组IDS
      * @return 菜单列表

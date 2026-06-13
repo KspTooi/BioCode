@@ -8,8 +8,10 @@ import com.ksptool.bio.biz.document.model.epdocversion.EndpointDocVersionPo;
 import com.ksptool.bio.biz.document.repository.EndpointDocOperationRepository;
 import com.ksptool.bio.biz.document.repository.EndpointDocRepository;
 import com.ksptool.bio.biz.document.repository.EndpointDocVersionRepository;
+import com.ksptool.bio.biz.rdbg.commons.JsonRequestBodySchemaParser;
+import com.ksptool.bio.biz.rdbg.commons.JsonResponseBodySchemaParser;
+import com.ksptool.bio.biz.rdbg.commons.model.BodySchema;
 import com.ksptool.bio.biz.relay.model.relayserver.RelayServerPo;
-import com.ksptool.bio.commons.model.BodySchema;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -266,7 +268,7 @@ public class EpDocOperationService {
 
 
                 // 设置请求体 (Request Body)
-                BodySchema reqSchema = com.ksptool.bio.commons.utils.JsonRequestBodySchemaParser.parse(openApi, operation);
+                BodySchema reqSchema = JsonRequestBodySchemaParser.parse(openApi, operation);
                 if (reqSchema != null) {
                     po.setReqBodyJson(gson.toJson(reqSchema));
                 }
@@ -275,7 +277,7 @@ public class EpDocOperationService {
                 // resQueryJson` 字段可能意指存储所有响应，这里我们存入完整的Responses对象
                 po.setResQueryJson(gson.toJson(operation.getResponses()));
 
-                BodySchema resSchema = com.ksptool.bio.commons.utils.JsonResponseBodySchemaParser.parse(openApi, operation);
+                BodySchema resSchema = JsonResponseBodySchemaParser.parse(openApi, operation);
                 if (resSchema != null) {
                     po.setResBodyJson(gson.toJson(resSchema));
                 }
