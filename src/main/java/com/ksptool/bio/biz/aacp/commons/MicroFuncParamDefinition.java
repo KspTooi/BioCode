@@ -15,8 +15,11 @@ public class MicroFuncParamDefinition {
     //参数类型
     private final Class<?> type;
 
+    //参数索引
+    private final Integer index;
 
-    public MicroFuncParamDefinition(Parameter param) {
+
+    public MicroFuncParamDefinition(Parameter param,Integer index) {
 
         if(param == null){
             throw new IllegalArgumentException("参数不能为空");
@@ -25,19 +28,21 @@ public class MicroFuncParamDefinition {
         Param anno = param.getAnnotation(Param.class);
         this.name = anno != null ? anno.value() : param.getName();
         this.type = param.getType();
+        this.index = index;
     }
     
-    public MicroFuncParamDefinition(String name, Class<?> type) {
+    public MicroFuncParamDefinition(String name, Class<?> type,Integer index) {
         this.name = name;
         this.type = type;
+        this.index = index;
     }
 
-    public static MicroFuncParamDefinition of(Parameter param) {
-        return new MicroFuncParamDefinition(param);
+    public static MicroFuncParamDefinition of(Parameter param,Integer index) {
+        return new MicroFuncParamDefinition(param, index);
     }
     
-    public static MicroFuncParamDefinition of(String name, Class<?> type) {
-        return new MicroFuncParamDefinition(name, type);
+    public static MicroFuncParamDefinition of(String name, Class<?> type,Integer index) {
+        return new MicroFuncParamDefinition(name, type, index);
     }
 
     /**
@@ -56,5 +61,14 @@ public class MicroFuncParamDefinition {
      */
     public Class<?> getType() {
         return type;
+    }
+
+    /**
+     * 返回参数在方法签名中的索引位置。
+     *
+     * @return 索引（0-based）
+     */
+    public int getIndex() {
+        return index;
     }
 }
