@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
 @EntityListeners(AuditingEntityListener.class)
 @SQLDelete(sql = "UPDATE aacp_micro_func SET delete_time = NOW() WHERE id = ?")
 @SQLRestriction("delete_time IS NULL")
-public class AacpFuncPo {
+public class AacpMicroFuncPo {
 
     @Id
     @SnowflakeIdGenerated

@@ -5,7 +5,7 @@ import com.ksptool.bio.biz.aacp.commons.MicroFuncDefinition;
 import com.ksptool.bio.biz.aacp.commons.MicroFuncRegistry;
 import com.ksptool.bio.biz.aacp.commons.annotation.MicroFunc;
 import com.ksptool.bio.biz.aacp.commons.jrpc.vo.ToolsCallVo;
-import com.ksptool.bio.biz.aacp.model.func.AacpFuncPo;
+import com.ksptool.bio.biz.aacp.model.func.AacpMicroFuncPo;
 import com.ksptool.bio.biz.aacp.repository.MicroFuncRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,7 +80,7 @@ public class MicroFuncCallService {
     }
 
     public ToolsCallVo call(String name, Map<String, Object> arguments) {
-        AacpFuncPo funcPo = microFuncRepository.getByCode(name);
+        AacpMicroFuncPo funcPo = microFuncRepository.getByCode(name);
         if (funcPo == null) {
             ToolsCallVo errVo = new ToolsCallVo();
             errVo.setIsError(true);

@@ -6,7 +6,7 @@ import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.bio.biz.aacp.commons.MicroFuncDefinition;
 import com.ksptool.bio.biz.aacp.commons.MicroFuncRegistry;
 import com.ksptool.bio.biz.aacp.commons.annotation.MicroFunc;
-import com.ksptool.bio.biz.aacp.model.func.AacpFuncPo;
+import com.ksptool.bio.biz.aacp.model.func.AacpMicroFuncPo;
 import com.ksptool.bio.biz.aacp.model.func.dto.AddMicroFuncDto;
 import com.ksptool.bio.biz.aacp.model.func.dto.EditMicroFuncDto;
 import com.ksptool.bio.biz.aacp.model.func.dto.GetMicroFuncListDto;
@@ -53,10 +53,10 @@ public class MicroFuncService {
      * @return 查询结果
      */
     public PageResult<GetMicroFuncListVo> getMicroFuncList(GetMicroFuncListDto dto) {
-        AacpFuncPo query = new AacpFuncPo();
+        AacpMicroFuncPo query = new AacpMicroFuncPo();
         assign(dto, query);
 
-        Page<AacpFuncPo> page = repository.getMicroFuncList(query, dto.pageRequest());
+        Page<AacpMicroFuncPo> page = repository.getMicroFuncList(query, dto.pageRequest());
         if (page.isEmpty()) {
             return PageResult.successWithEmpty();
         }
@@ -76,7 +76,7 @@ public class MicroFuncService {
         if (repository.countByCodeExcludeId(dto.getCode(), null) > 0) {
             throw new BizException("微函数标识已存在,请更换后重试.");
         }
-        AacpFuncPo insertPo = as(dto, AacpFuncPo.class);
+        AacpMicroFuncPo insertPo = as(dto, AacpMicroFuncPo.class);
         repository.save(insertPo);
     }
 
@@ -91,7 +91,7 @@ public class MicroFuncService {
         if (repository.countByCodeExcludeId(dto.getCode(), dto.getId()) > 0) {
             throw new BizException("微函数标识已存在,请更换后重试.");
         }
-        AacpFuncPo updatePo = repository.findById(dto.getId())
+        AacpMicroFuncPo updatePo = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("更新失败,数据不存在或无权限访问."));
 
         assign(dto, updatePo);
@@ -106,7 +106,7 @@ public class MicroFuncService {
      * @throws BizException 业务异常
      */
     public GetMicroFuncDetailsVo getMicroFuncDetails(CommonIdDto dto) throws BizException {
-        AacpFuncPo po = repository.findById(dto.getId())
+        AacpMicroFuncPo po = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("查询详情失败,数据不存在或无权限访问."));
         return as(po, GetMicroFuncDetailsVo.class);
     }

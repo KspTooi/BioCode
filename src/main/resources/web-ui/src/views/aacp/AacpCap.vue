@@ -76,7 +76,13 @@
           </el-select>
         </el-form-item>
         <el-form-item label="绑定数据源" prop="datasourceIds">
-          <el-select v-model="modalForm.datasourceIds" multiple filterable :loading="datasourceLoading" placeholder="请选择数据源">
+          <el-select
+            v-model="modalForm.datasourceIds"
+            multiple
+            filterable
+            :loading="datasourceLoading"
+            placeholder="请选择数据源"
+          >
             <el-option v-for="item in datasourceOptions" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
@@ -118,8 +124,7 @@ const DeleteIcon = markRaw(Delete);
 
 const modalFormRef = ref<FormInstance>();
 
-const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } =
-  AacpCapService.useCapList();
+const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } = AacpCapService.useCapList();
 
 const {
   modalVisible,
