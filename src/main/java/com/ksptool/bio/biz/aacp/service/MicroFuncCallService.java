@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.ksptool.bio.biz.aacp.commons.MicroFuncDefinition;
 import com.ksptool.bio.biz.aacp.commons.MicroFuncRegistry;
 import com.ksptool.bio.biz.aacp.commons.annotation.MicroFunc;
+import com.ksptool.bio.biz.aacp.commons.annotation.Param;
 import com.ksptool.bio.biz.aacp.commons.jrpc.vo.ToolsCallVo;
 import com.ksptool.bio.biz.aacp.model.func.AacpMicroFuncPo;
 import com.ksptool.bio.biz.aacp.repository.MicroFuncRepository;
@@ -59,6 +60,7 @@ public class MicroFuncCallService {
                 continue;
             }
 
+            methodLoop:
             for (Method method : clazz.getDeclaredMethods()) {
                 MicroFunc anno = method.getAnnotation(MicroFunc.class);
                 if (anno == null) {
@@ -67,6 +69,16 @@ public class MicroFuncCallService {
                 if (!Modifier.isPublic(method.getModifiers())) {
                     log.warn("[MicroFunc] 忽略非 public 方法: {}.{}", clazz.getName(), method.getName());
                     continue;
+                }
+
+                //严格校验：每个参数必须标注 @Param
+                java.lang.reflect.Parameter[] params = method.getParameters();
+                for (int i = 0; i < params.length; i++) {
+                    if (params[i].getAnnotation(Param.class) == null) {
+                        log.error("[MicroFunc] 拒绝注册: {}.{} 的第 {} 个参数 (类型 {}) 缺少 @Param 注解",
+                                clazz.getName(), method.getName(), i + 1, params[i].getType().getName());
+                        continue methodLoop;
+                    }
                 }
 
                 MicroFuncDefinition def = new MicroFuncDefinition(
@@ -110,7 +122,7 @@ public class MicroFuncCallService {
             }
             if (paramCount == 1) {
                 Class<?> paramType = def.getParameterTypes()[0];
-                String paramName = def.getMethod().getParameters()[0].getName();
+                String paramName = def.getParameterNames()[0];
                 Object argValue = (arguments != null) ? arguments.get(paramName) : null;
                 if (argValue == null) {
                     result = def.invoke(gson.fromJson("{}", paramType));
@@ -123,9 +135,9 @@ public class MicroFuncCallService {
             if (paramCount > 1) {
                 Class<?>[] types = def.getParameterTypes();
                 Object[] args = new Object[types.length];
-                java.lang.reflect.Parameter[] params = def.getMethod().getParameters();
+                String[] paramNames = def.getParameterNames();
                 for (int i = 0; i < types.length; i++) {
-                    String paramName = params[i].getName();
+                    String paramName = paramNames[i];
                     Object argValue = (arguments != null) ? arguments.get(paramName) : null;
                     if (argValue == null) {
                         args[i] = gson.fromJson("{}", types[i]);

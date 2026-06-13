@@ -6,6 +6,7 @@ import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.bio.biz.aacp.commons.MicroFuncDefinition;
 import com.ksptool.bio.biz.aacp.commons.MicroFuncRegistry;
 import com.ksptool.bio.biz.aacp.commons.annotation.MicroFunc;
+import com.ksptool.bio.biz.aacp.commons.annotation.Param;
 import com.ksptool.bio.biz.aacp.model.func.AacpMicroFuncPo;
 import com.ksptool.bio.biz.aacp.model.func.dto.AddMicroFuncDto;
 import com.ksptool.bio.biz.aacp.model.func.dto.EditMicroFuncDto;
@@ -159,7 +160,7 @@ public class MicroFuncService {
     }
 
     @MicroFunc(target = "test.add", name = "加法计算", description = "对两个整数执行加法运算")
-    public int addNumbers(int a, int b) {
+    public int addNumbers(@Param("a") int a, @Param("b") int b) {
         return a + b;
     }
 
@@ -169,7 +170,7 @@ public class MicroFuncService {
     }
 
     @MicroFunc(target = "test.echo", name = "回声", description = "将输入的消息原样返回")
-    public String echo(String message) {
+    public String echo(@Param("message") String message) {
         return message;
     }
 
@@ -188,7 +189,7 @@ public class MicroFuncService {
      * @return 格式化的响应信息（状态码 + 响应体前2000字符）
      */
     @MicroFunc(target = "test.curl", name = "HTTP请求", description = "向指定URL发起GET请求并返回响应内容，支持代理访问网页或API")
-    public String httpGet(String url) throws Exception {
+    public String httpGet(@Param("url") String url) throws Exception {
         HttpClient client = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
                 .build();

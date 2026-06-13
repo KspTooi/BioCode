@@ -3,6 +3,8 @@ package com.ksptool.bio.biz.aacp.commons;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
+import com.ksptool.bio.biz.aacp.commons.annotation.Param;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -38,6 +40,9 @@ public class MicroFuncDefinition {
     @Schema(description = "方法参数类型数组")
     private final Class<?>[] parameterTypes;
 
+    @Schema(description = "方法参数名称数组（来自 @Param 注解）")
+    private final String[] parameterNames;
+
     public MicroFuncDefinition(String target, String name, String description, Object bean, Method method) {
         this.target = target;
         this.name = name;
@@ -45,6 +50,20 @@ public class MicroFuncDefinition {
         this.bean = bean;
         this.method = method;
         this.parameterTypes = method.getParameterTypes();
+        this.parameterNames = buildParameterNames(method);
+    }
+
+    /**
+     * 从方法参数中提取 @Param 注解定义的名字，找不到就返回参数名本身（但不应该发生，scan 阶段已校验）
+     */
+    private static String[] buildParameterNames(Method method) {
+        java.lang.reflect.Parameter[] params = method.getParameters();
+        String[] names = new String[params.length];
+        for (int i = 0; i < params.length; i++) {
+            Param anno = params[i].getAnnotation(Param.class);
+            names[i] = anno != null ? anno.value() : params[i].getName();
+        }
+        return names;
     }
 
     /**
@@ -71,8 +90,7 @@ public class MicroFuncDefinition {
 
         for (int i = 0; i < parameterTypes.length; i++) {
             Class<?> paramType = parameterTypes[i];
-            java.lang.reflect.Parameter param = method.getParameters()[i];
-            String paramName = param.getName();
+            String paramName = parameterNames[i];
 
             properties.put(paramName, resolveTypeToSchema(paramType));
             if (paramType.isPrimitive()
