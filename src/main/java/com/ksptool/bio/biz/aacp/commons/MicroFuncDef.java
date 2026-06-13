@@ -3,13 +3,8 @@ package com.ksptool.bio.biz.aacp.commons;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +14,7 @@ import java.util.Map;
  */
 @Getter
 @Schema(description = "微函数元信息")
-public class MicroFuncDefinition {
+public class MicroFuncDef {
 
     @Schema(description = "微函数名称")
     private final String name;
@@ -37,18 +32,18 @@ public class MicroFuncDefinition {
     private final Method method;
 
     @Schema(description = "方法参数定义列表（名称 + 类型，来自 @Param 注解）")
-    private final MicroFuncParamDefinition[] parameters;
+    private final MicroFuncParamDef[] parameters;
 
-    public MicroFuncDefinition(String target, String name, String description, Object bean, Method method) {
+    public MicroFuncDef(String target, String name, String description, Object bean, Method method) {
         this.target = target;
         this.name = name;
         this.description = description;
         this.bean = bean;
         this.method = method;
         java.lang.reflect.Parameter[] javaParams = method.getParameters();
-        MicroFuncParamDefinition[] defParams = new MicroFuncParamDefinition[javaParams.length];
+        MicroFuncParamDef[] defParams = new MicroFuncParamDef[javaParams.length];
         for (int i = 0; i < javaParams.length; i++) {
-            defParams[i] = MicroFuncParamDefinition.of(javaParams[i], i);
+            defParams[i] = MicroFuncParamDef.of(javaParams[i], i);
         }
         this.parameters = defParams;
     }
@@ -63,8 +58,8 @@ public class MicroFuncDefinition {
      * @param method      目标方法
      * @return 新实例
      */
-    public static MicroFuncDefinition of(String target, String name, String description, Object bean, Method method) {
-        return new MicroFuncDefinition(target, name, description, bean, method);
+    public static MicroFuncDef of(String target, String name, String description, Object bean, Method method) {
+        return new MicroFuncDef(target, name, description, bean, method);
     }
 
     /**

@@ -3,7 +3,7 @@ package com.ksptool.bio.biz.aacp.service;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
-import com.ksptool.bio.biz.aacp.commons.MicroFuncDefinition;
+import com.ksptool.bio.biz.aacp.commons.MicroFuncDef;
 import com.ksptool.bio.biz.aacp.commons.MicroFuncRegistry;
 import com.ksptool.bio.biz.aacp.commons.annotation.MicroFunc;
 import com.ksptool.bio.biz.aacp.commons.annotation.Param;
@@ -137,7 +137,7 @@ public class MicroFuncService {
      */
     public List<GetMicroFuncRegistryVo> getMicroFuncRegistryList() {
         List<GetMicroFuncRegistryVo> vos = new ArrayList<>();
-        for (MicroFuncDefinition def : microFuncRegistry.getAll()) {
+        for (MicroFuncDef def : microFuncRegistry.getAll()) {
             GetMicroFuncRegistryVo vo = new GetMicroFuncRegistryVo();
             vo.setTarget(def.getTarget());
             vo.setName(def.getName());

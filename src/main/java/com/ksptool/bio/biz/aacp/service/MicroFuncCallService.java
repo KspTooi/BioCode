@@ -1,7 +1,7 @@
 package com.ksptool.bio.biz.aacp.service;
 
 import com.google.gson.Gson;
-import com.ksptool.bio.biz.aacp.commons.MicroFuncDefinition;
+import com.ksptool.bio.biz.aacp.commons.MicroFuncDef;
 import com.ksptool.bio.biz.aacp.commons.MicroFuncParamResolver;
 import com.ksptool.bio.biz.aacp.commons.MicroFuncRegistry;
 import com.ksptool.bio.biz.aacp.commons.annotation.MicroFunc;
@@ -81,7 +81,7 @@ public class MicroFuncCallService {
                     }
                 }
 
-                MicroFuncDefinition def = MicroFuncDefinition.of(
+                MicroFuncDef def = MicroFuncDef.of(
                         anno.target(), anno.name(), anno.description(), bean, method);
                 registry.register(def);
                 count++;
@@ -102,7 +102,7 @@ public class MicroFuncCallService {
             errVo.setContent(Collections.singletonList(errContent));
             return errVo;
         }
-        MicroFuncDefinition def = registry.get(funcPo.getTarget());
+        MicroFuncDef def = registry.get(funcPo.getTarget());
         if (def == null) {
             ToolsCallVo errVo = new ToolsCallVo();
             errVo.setIsError(true);

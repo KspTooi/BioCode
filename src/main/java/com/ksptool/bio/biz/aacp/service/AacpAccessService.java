@@ -3,7 +3,7 @@ package com.ksptool.bio.biz.aacp.service;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.bio.biz.aacp.commons.McpClientSession;
 import com.ksptool.bio.biz.aacp.commons.McpParser;
-import com.ksptool.bio.biz.aacp.commons.MicroFuncDefinition;
+import com.ksptool.bio.biz.aacp.commons.MicroFuncDef;
 import com.ksptool.bio.biz.aacp.commons.MicroFuncRegistry;
 import com.ksptool.bio.biz.aacp.commons.jrpc.InputMethods;
 import com.ksptool.bio.biz.aacp.commons.jrpc.RpcInput;
@@ -201,7 +201,7 @@ public class AacpAccessService {
             for (var fPo : funcPos) {
 
                 //查找已注册的微函数
-                MicroFuncDefinition def = mfRegistry.get(fPo.getTarget());
+                MicroFuncDef def = mfRegistry.get(fPo.getTarget());
 
                 if (def == null) {
                     continue;

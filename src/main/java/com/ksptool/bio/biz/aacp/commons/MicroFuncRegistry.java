@@ -21,18 +21,18 @@ import java.util.concurrent.ConcurrentHashMap;
 public class MicroFuncRegistry {
 
     // target → MicroFuncDefinition 映射，线程安全
-    private final Map<String, MicroFuncDefinition> registry = new ConcurrentHashMap<>();
+    private final Map<String, MicroFuncDef> registry = new ConcurrentHashMap<>();
 
     /**
      * 注册单个微函数定义，同名覆盖时打 warn 日志
      *
      * @param def 微函数运行时定义
      */
-    public void register(MicroFuncDefinition def) {
+    public void register(MicroFuncDef def) {
         if (def == null) {
             return;
         }
-        MicroFuncDefinition existed = registry.put(def.getTarget(), def);
+        MicroFuncDef existed = registry.put(def.getTarget(), def);
         if (existed != null) {
             log.warn("[MicroFunc] 微函数 {} 被覆盖: {} -> {}", def.getTarget(), existed.getName(), def.getName());
             return;
@@ -45,11 +45,11 @@ public class MicroFuncRegistry {
      *
      * @param defs 微函数定义列表
      */
-    public void registerAll(List<MicroFuncDefinition> defs) {
+    public void registerAll(List<MicroFuncDef> defs) {
         if (defs == null || defs.isEmpty()) {
             return;
         }
-        for (MicroFuncDefinition def : defs) {
+        for (MicroFuncDef def : defs) {
             register(def);
         }
     }
@@ -60,7 +60,7 @@ public class MicroFuncRegistry {
      * @param target 微函数标识
      * @return 微函数定义，不存在返回 null
      */
-    public MicroFuncDefinition get(String target) {
+    public MicroFuncDef get(String target) {
         if (StringUtils.isBlank(target)) {
             return null;
         }
@@ -72,7 +72,7 @@ public class MicroFuncRegistry {
      *
      * @return 不可修改的集合
      */
-    public Collection<MicroFuncDefinition> getAll() {
+    public Collection<MicroFuncDef> getAll() {
         return Collections.unmodifiableCollection(registry.values());
     }
 
