@@ -142,11 +142,11 @@ public class MicroFuncService {
             vo.setTarget(def.getTarget());
             vo.setName(def.getName());
             vo.setDescription(def.getDescription());
-            vo.setParameterCount(def.getParameterTypes().length);
+            vo.setParameterCount(def.getParameters().length);
 
             List<String> typeNames = new ArrayList<>();
-            for (Class<?> type : def.getParameterTypes()) {
-                typeNames.add(type.getName());
+            for (var p : def.getParameters()) {
+                typeNames.add(p.getType().getName());
             }
             vo.setParameterTypes(typeNames);
             vos.add(vo);

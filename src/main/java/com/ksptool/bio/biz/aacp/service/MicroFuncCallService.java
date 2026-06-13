@@ -81,7 +81,7 @@ public class MicroFuncCallService {
                     }
                 }
 
-                MicroFuncDefinition def = new MicroFuncDefinition(
+                MicroFuncDefinition def = MicroFuncDefinition.of(
                         anno.target(), anno.name(), anno.description(), bean, method);
                 registry.register(def);
                 count++;
@@ -115,14 +115,15 @@ public class MicroFuncCallService {
 
         try {
             Object result = null;
-            int paramCount = def.getParameterTypes().length;
+            int paramCount = def.getParameters().length;
 
             if (paramCount == 0) {
                 result = def.invoke();
             }
             if (paramCount == 1) {
-                Class<?> paramType = def.getParameterTypes()[0];
-                String paramName = def.getParameterNames()[0];
+                var param = def.getParameters()[0];
+                Class<?> paramType = param.getType();
+                String paramName = param.getName();
                 Object argValue = (arguments != null) ? arguments.get(paramName) : null;
                 if (argValue == null) {
                     result = def.invoke(gson.fromJson("{}", paramType));
@@ -133,21 +134,21 @@ public class MicroFuncCallService {
                 }
             }
             if (paramCount > 1) {
-                Class<?>[] types = def.getParameterTypes();
-                Object[] args = new Object[types.length];
-                String[] paramNames = def.getParameterNames();
-                for (int i = 0; i < types.length; i++) {
-                    String paramName = paramNames[i];
+                var params = def.getParameters();
+                Object[] args = new Object[params.length];
+                for (int i = 0; i < params.length; i++) {
+                    Class<?> paramType = params[i].getType();
+                    String paramName = params[i].getName();
                     Object argValue = (arguments != null) ? arguments.get(paramName) : null;
                     if (argValue == null) {
-                        args[i] = gson.fromJson("{}", types[i]);
+                        args[i] = gson.fromJson("{}", paramType);
                         continue;
                     }
-                    if (types[i].isInstance(argValue)) {
+                    if (paramType.isInstance(argValue)) {
                         args[i] = argValue;
                         continue;
                     }
-                    args[i] = gson.fromJson(gson.toJson(argValue), types[i]);
+                    args[i] = gson.fromJson(gson.toJson(argValue), paramType);
                 }
                 result = def.invoke(args);
             }

@@ -3,14 +3,13 @@ package com.ksptool.bio.biz.aacp.commons;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
-import com.ksptool.bio.biz.aacp.commons.annotation.Param;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,11 +36,8 @@ public class MicroFuncDefinition {
     @Schema(description = "目标方法")
     private final Method method;
 
-    @Schema(description = "方法参数类型数组")
-    private final Class<?>[] parameterTypes;
-
-    @Schema(description = "方法参数名称数组（来自 @Param 注解）")
-    private final String[] parameterNames;
+    @Schema(description = "方法参数定义列表（名称 + 类型，来自 @Param 注解）")
+    private final MicroFuncParamDefinition[] parameters;
 
     public MicroFuncDefinition(String target, String name, String description, Object bean, Method method) {
         this.target = target;
@@ -49,21 +45,23 @@ public class MicroFuncDefinition {
         this.description = description;
         this.bean = bean;
         this.method = method;
-        this.parameterTypes = method.getParameterTypes();
-        this.parameterNames = buildParameterNames(method);
+        this.parameters = Arrays.stream(method.getParameters())
+                .map(MicroFuncParamDefinition::new)
+                .toArray(MicroFuncParamDefinition[]::new);
     }
 
     /**
-     * 从方法参数中提取 @Param 注解定义的名字，找不到就返回参数名本身（但不应该发生，scan 阶段已校验）
+     * 静态工厂方法，创建 MicroFuncDefinition 实例。
+     *
+     * @param target      微函数唯一标识
+     * @param name        微函数名称
+     * @param description 微函数描述
+     * @param bean        所属 Spring Bean 实例
+     * @param method      目标方法
+     * @return 新实例
      */
-    private static String[] buildParameterNames(Method method) {
-        java.lang.reflect.Parameter[] params = method.getParameters();
-        String[] names = new String[params.length];
-        for (int i = 0; i < params.length; i++) {
-            Param anno = params[i].getAnnotation(Param.class);
-            names[i] = anno != null ? anno.value() : params[i].getName();
-        }
-        return names;
+    public static MicroFuncDefinition of(String target, String name, String description, Object bean, Method method) {
+        return new MicroFuncDefinition(target, name, description, bean, method);
     }
 
     /**
@@ -88,9 +86,9 @@ public class MicroFuncDefinition {
         Map<String, Object> properties = new LinkedHashMap<>();
         List<String> required = new ArrayList<>();
 
-        for (int i = 0; i < parameterTypes.length; i++) {
-            Class<?> paramType = parameterTypes[i];
-            String paramName = parameterNames[i];
+        for (int i = 0; i < parameters.length; i++) {
+            Class<?> paramType = parameters[i].getType();
+            String paramName = parameters[i].getName();
 
             properties.put(paramName, resolveTypeToSchema(paramType));
             if (paramType.isPrimitive()
