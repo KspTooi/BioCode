@@ -21,11 +21,11 @@ import java.util.Map;
 @Schema(description = "微函数元信息")
 public class MicroFuncDefinition {
 
-    @Schema(description = "微函数唯一标识")
-    private final String target;
-
     @Schema(description = "微函数名称")
     private final String name;
+
+    @Schema(description = "微函数唯一标识")
+    private final String target;
 
     @Schema(description = "微函数描述")
     private final String description;

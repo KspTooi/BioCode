@@ -37,7 +37,7 @@ public class MicroFuncRegistry {
             log.warn("[MicroFunc] 微函数 {} 被覆盖: {} -> {}", def.getTarget(), existed.getName(), def.getName());
             return;
         }
-        log.info("[MicroFunc] 注册微函数: target={} name={} params={}", def.getTarget(), def.getName(), def.getParameterTypes().length);
+        log.info("[MicroFunc] 注册微函数: target={} name={} params={}", def.getTarget(), def.getName(), def.getParameters().length);
     }
 
     /**
