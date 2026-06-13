@@ -12,8 +12,7 @@ import java.lang.annotation.*;
 @Documented
 public @interface Param {
 
-    /**
-     * 参数名，如 "a"、"url"、"message"
-     */
+    //参数名，如 "a"、"url"、"message"
     String value();
+    
 }
