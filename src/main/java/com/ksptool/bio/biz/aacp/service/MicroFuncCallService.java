@@ -2,6 +2,7 @@ package com.ksptool.bio.biz.aacp.service;
 
 import com.google.gson.Gson;
 import com.ksptool.bio.biz.aacp.commons.MicroFuncDefinition;
+import com.ksptool.bio.biz.aacp.commons.MicroFuncParamResolver;
 import com.ksptool.bio.biz.aacp.commons.MicroFuncRegistry;
 import com.ksptool.bio.biz.aacp.commons.annotation.MicroFunc;
 import com.ksptool.bio.biz.aacp.commons.annotation.Param;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
@@ -29,8 +31,6 @@ import java.util.Map;
 @Slf4j
 @Service
 public class MicroFuncCallService {
-
-    private static final Gson gson = new Gson();
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -114,50 +114,14 @@ public class MicroFuncCallService {
         }
 
         try {
-            Object result = null;
-            int paramCount = def.getParameters().length;
-
-            if (paramCount == 0) {
-                result = def.invoke();
-            }
-            if (paramCount == 1) {
-                var param = def.getParameters()[0];
-                Class<?> paramType = param.getType();
-                String paramName = param.getName();
-                Object argValue = (arguments != null) ? arguments.get(paramName) : null;
-                if (argValue == null) {
-                    result = def.invoke(gson.fromJson("{}", paramType));
-                } else if (paramType.isInstance(argValue)) {
-                    result = def.invoke(argValue);
-                } else {
-                    result = def.invoke(gson.fromJson(gson.toJson(argValue), paramType));
-                }
-            }
-            if (paramCount > 1) {
-                var params = def.getParameters();
-                Object[] args = new Object[params.length];
-                for (int i = 0; i < params.length; i++) {
-                    Class<?> paramType = params[i].getType();
-                    String paramName = params[i].getName();
-                    Object argValue = (arguments != null) ? arguments.get(paramName) : null;
-                    if (argValue == null) {
-                        args[i] = gson.fromJson("{}", paramType);
-                        continue;
-                    }
-                    if (paramType.isInstance(argValue)) {
-                        args[i] = argValue;
-                        continue;
-                    }
-                    args[i] = gson.fromJson(gson.toJson(argValue), paramType);
-                }
-                result = def.invoke(args);
-            }
+            var resolver = MicroFuncParamResolver.of(arguments, Arrays.asList(def.getParameters()));
+            Object result = def.invoke(resolver.resolve());
 
             ToolsCallVo vo = new ToolsCallVo();
             vo.setIsError(false);
             ToolsCallVo.Content content = new ToolsCallVo.Content();
             content.setType("text");
-            content.setText(result != null ? gson.toJson(result) : "null");
+            content.setText(result != null ? new Gson().toJson(result) : "null");
             vo.setContent(Collections.singletonList(content));
             return vo;
         } catch (Exception e) {

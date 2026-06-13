@@ -45,9 +45,12 @@ public class MicroFuncDefinition {
         this.description = description;
         this.bean = bean;
         this.method = method;
-        this.parameters = Arrays.stream(method.getParameters())
-                .map(MicroFuncParamDefinition::new)
-                .toArray(MicroFuncParamDefinition[]::new);
+        java.lang.reflect.Parameter[] javaParams = method.getParameters();
+        MicroFuncParamDefinition[] defParams = new MicroFuncParamDefinition[javaParams.length];
+        for (int i = 0; i < javaParams.length; i++) {
+            defParams[i] = MicroFuncParamDefinition.of(javaParams[i], i);
+        }
+        this.parameters = defParams;
     }
 
     /**
