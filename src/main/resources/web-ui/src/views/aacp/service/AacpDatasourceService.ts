@@ -1,13 +1,13 @@
 import { onMounted, reactive, ref, type Ref } from "vue";
 import type { FormInstance, FormRules } from "element-plus";
 import type {
-  GetDataSourceListDto,
-  GetDataSourceListVo,
-  GetDataSourceDetailsVo,
-  AddDataSourceDto,
-  EditDataSourceDto,
-} from "@/views/assembly/api/DataSourceApi.ts";
-import DataSourceApi from "@/views/assembly/api/DataSourceApi.ts";
+  GetAacpDatasourceListDto,
+  GetAacpDatasourceListVo,
+  GetAacpDatasourceDetailsVo,
+  AddAacpDatasourceDto,
+  EditAacpDatasourceDto,
+} from "@/views/aacp/api/AacpDatasourceApi.ts";
+import AacpDatasourceApi from "@/views/aacp/api/AacpDatasourceApi.ts";
 import { Result } from "@/commons/model/Result.ts";
 import { ElMessage, ElMessageBox } from "element-plus";
 
@@ -18,26 +18,23 @@ type ModalMode = "add" | "edit";
 
 export default {
   /**
-   * 数据源表列表管理
+   * 数据源列表管理
    */
-  useDataSourceList() {
-    const listForm = ref<GetDataSourceListDto>({
+  useAacpDatasourceList() {
+    const listForm = ref<GetAacpDatasourceListDto>({
       pageNum: 1,
       pageSize: 20,
       name: "",
       code: "",
     });
 
-    const listData = ref<GetDataSourceListVo[]>([]);
+    const listData = ref<GetAacpDatasourceListVo[]>([]);
     const listTotal = ref(0);
     const listLoading = ref(false);
 
-    /**
-     * 加载列表
-     */
     const loadList = async (): Promise<void> => {
       listLoading.value = true;
-      const result = await DataSourceApi.getDataSourceList(listForm.value);
+      const result = await AacpDatasourceApi.getAacpDatasourceList(listForm.value);
 
       if (Result.isSuccess(result)) {
         listData.value = result.data;
@@ -51,9 +48,6 @@ export default {
       listLoading.value = false;
     };
 
-    /**
-     * 重置查询
-     */
     const resetList = (): void => {
       listForm.value.pageNum = 1;
       listForm.value.pageSize = 20;
@@ -62,22 +56,16 @@ export default {
       loadList();
     };
 
-    /**
-     * 测试连接
-     */
-    const testConnection = async (row: GetDataSourceListVo): Promise<void> => {
+    const testConnection = async (row: GetAacpDatasourceListVo): Promise<void> => {
       try {
-        const msg = await DataSourceApi.testDataSourceConnection({ id: row.id });
+        const msg = await AacpDatasourceApi.testAacpDatasourceConnection({ id: row.id });
         ElMessageBox.alert(msg || "连接成功", "测试结果", { type: "success", confirmButtonText: "确定" });
       } catch (error: any) {
         ElMessageBox.alert(error.message, "测试结果", { type: "error", confirmButtonText: "确定" });
       }
     };
 
-    /**
-     * 删除记录
-     */
-    const removeList = async (row: GetDataSourceListVo): Promise<void> => {
+    const removeList = async (row: GetAacpDatasourceListVo): Promise<void> => {
       try {
         await ElMessageBox.confirm("确定删除该条记录吗？", "提示", {
           confirmButtonText: "确定",
@@ -89,7 +77,7 @@ export default {
       }
 
       try {
-        await DataSourceApi.removeDataSource({ id: row.id });
+        await AacpDatasourceApi.removeAacpDatasource({ id: row.id });
         ElMessage.success("删除成功");
         await loadList();
       } catch (error: any) {
@@ -97,8 +85,8 @@ export default {
       }
     };
 
-    onMounted(async () => {
-      await loadList();
+    onMounted(() => {
+      loadList();
     });
 
     return {
@@ -115,12 +103,14 @@ export default {
 
   /**
    * 模态框管理（统一处理新增和编辑）
+   * @param modalFormRef 表单实例引用
+   * @param reloadCallback 提交成功后刷新列表的回调
    */
-  useDataSourceModal(modalFormRef: Ref<FormInstance | undefined>, reloadCallback: () => void) {
+  useAacpDatasourceModal(modalFormRef: Ref<FormInstance | undefined>, reloadCallback: () => void) {
     const modalVisible = ref(false);
     const modalLoading = ref(false);
     const modalMode = ref<ModalMode>("add");
-    const modalForm = reactive<GetDataSourceDetailsVo & { username?: string; password?: string }>({
+    const modalForm = reactive<GetAacpDatasourceDetailsVo & { username?: string; password?: string }>({
       id: "",
       name: "",
       code: "",
@@ -129,16 +119,15 @@ export default {
       url: "",
       username: "",
       password: "",
-      dbSchema: "",
+      defaultDb: "",
+      queryMaxRows: 0,
+      executeBatch: 0,
     });
 
-    /**
-     * 表单验证规则
-     */
     const modalRules: FormRules = {
       name: [
         { required: true, message: "请输入数据源名称", trigger: "blur" },
-        { max: 32, message: "长度不能超过32个字符", trigger: "blur" },
+        { max: 40, message: "长度不能超过40个字符", trigger: "blur" },
       ],
       code: [
         { required: true, message: "请输入数据源编码", trigger: "blur" },
@@ -147,26 +136,20 @@ export default {
       kind: [{ required: true, message: "请选择数据源类型", trigger: "blur" }],
       drive: [
         { required: true, message: "请输入JDBC驱动", trigger: "blur" },
-        { max: 80, message: "长度不能超过80个字符", trigger: "blur" },
+        { max: 200, message: "长度不能超过200个字符", trigger: "blur" },
       ],
-      url: [
-        { required: true, message: "请输入连接字符串", trigger: "blur" },
-        { max: 1000, message: "长度不能超过1000个字符", trigger: "blur" },
+      url: [{ required: true, message: "请输入连接字符串", trigger: "blur" }],
+      username: [{ max: 200, message: "长度不能超过200个字符", trigger: "blur" }],
+      password: [{ max: 2000, message: "长度不能超过2000个字符", trigger: "blur" }],
+      defaultDb: [
+        { required: true, message: "请输入默认数据库", trigger: "blur" },
+        { max: 200, message: "长度不能超过200个字符", trigger: "blur" },
       ],
-      username: [{ max: 320, message: "长度不能超过320个字符", trigger: "blur" }],
-      password: [{ max: 1280, message: "长度不能超过1280个字符", trigger: "blur" }],
-      dbSchema: [
-        { required: true, message: "请输入默认模式", trigger: "blur" },
-        { max: 80, message: "长度不能超过80个字符", trigger: "blur" },
-      ],
+      queryMaxRows: [{ required: true, message: "请输入最大查询行数", trigger: "blur" }],
+      executeBatch: [{ required: true, message: "请选择是否支持批处理", trigger: "blur" }],
     };
 
-    /**
-     * 打开模态框
-     * @param mode 模式: 'add' | 'edit'
-     * @param row 编辑时传入的行数据
-     */
-    const openModal = async (mode: ModalMode, row: GetDataSourceListVo | null): Promise<void> => {
+    const openModal = async (mode: ModalMode, row: GetAacpDatasourceListVo | null): Promise<void> => {
       modalMode.value = mode;
 
       if (mode === "add") {
@@ -178,7 +161,9 @@ export default {
         modalForm.url = "";
         modalForm.username = "";
         modalForm.password = "";
-        modalForm.dbSchema = "";
+        modalForm.defaultDb = "";
+        modalForm.queryMaxRows = 1000;
+        modalForm.executeBatch = 1;
         modalVisible.value = true;
         return;
       }
@@ -190,7 +175,7 @@ export default {
         }
 
         try {
-          const details = await DataSourceApi.getDataSourceDetails({ id: row.id });
+          const details = await AacpDatasourceApi.getAacpDatasourceDetails({ id: row.id });
           modalForm.id = details.id;
           modalForm.name = details.name;
           modalForm.code = details.code;
@@ -199,7 +184,9 @@ export default {
           modalForm.url = details.url;
           modalForm.username = "";
           modalForm.password = "";
-          modalForm.dbSchema = details.dbSchema;
+          modalForm.defaultDb = details.defaultDb;
+          modalForm.queryMaxRows = details.queryMaxRows;
+          modalForm.executeBatch = details.executeBatch;
           modalVisible.value = true;
         } catch (error: any) {
           ElMessage.error(error.message);
@@ -207,9 +194,6 @@ export default {
       }
     };
 
-    /**
-     * 重置模态框
-     */
     const resetModal = (): void => {
       if (!modalFormRef.value) {
         return;
@@ -223,7 +207,9 @@ export default {
       modalForm.url = "";
       modalForm.username = "";
       modalForm.password = "";
-      modalForm.dbSchema = "";
+      modalForm.defaultDb = "";
+      modalForm.queryMaxRows = 0;
+      modalForm.executeBatch = 1;
     };
 
     const onCodeBlur = (): void => {
@@ -239,14 +225,11 @@ export default {
           modalForm.code +
           "?serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&allowMultiQueries=true&useUnicode=true&characterEncoding=utf-8";
       }
-      if (!modalForm.dbSchema) {
-        modalForm.dbSchema = modalForm.code;
+      if (!modalForm.defaultDb) {
+        modalForm.defaultDb = modalForm.code;
       }
     };
 
-    /**
-     * 提交模态框
-     */
     const submitModal = async (): Promise<void> => {
       if (!modalFormRef.value) {
         return;
@@ -262,7 +245,7 @@ export default {
 
       if (modalMode.value === "add") {
         try {
-          const addDto: AddDataSourceDto = {
+          const addDto: AddAacpDatasourceDto = {
             name: modalForm.name,
             code: modalForm.code,
             kind: modalForm.kind,
@@ -270,9 +253,11 @@ export default {
             url: modalForm.url,
             username: modalForm.username,
             password: modalForm.password,
-            dbSchema: modalForm.dbSchema,
+            defaultDb: modalForm.defaultDb,
+            queryMaxRows: modalForm.queryMaxRows,
+            executeBatch: modalForm.executeBatch,
           };
-          await DataSourceApi.addDataSource(addDto);
+          await AacpDatasourceApi.addAacpDatasource(addDto);
           ElMessage.success("新增成功");
           modalVisible.value = false;
           resetModal();
@@ -292,7 +277,7 @@ export default {
         }
 
         try {
-          const editDto: EditDataSourceDto = {
+          const editDto: EditAacpDatasourceDto = {
             id: modalForm.id,
             name: modalForm.name,
             code: modalForm.code,
@@ -301,9 +286,11 @@ export default {
             url: modalForm.url,
             username: modalForm.username,
             password: modalForm.password,
-            dbSchema: modalForm.dbSchema,
+            defaultDb: modalForm.defaultDb,
+            queryMaxRows: modalForm.queryMaxRows,
+            executeBatch: modalForm.executeBatch,
           };
-          await DataSourceApi.editDataSource(editDto);
+          await AacpDatasourceApi.editAacpDatasource(editDto);
           ElMessage.success("编辑成功");
           modalVisible.value = false;
           resetModal();

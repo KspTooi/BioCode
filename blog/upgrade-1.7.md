@@ -1,6 +1,6 @@
 # BioCode v1.7 更新日志
 
-> 版本范围：1.7A1 → 1.7E45
+> 版本范围：1.7A1 → 1.7D54
 
 ---
 
@@ -131,6 +131,39 @@ QFE 做了一件事：把这些反复变动的审批控制点从代码里抽出�
 14. BPMN 模型双态校验：保存时语法校验，部署时语义校验（连线完整性、网关出口、办理人配置等），堵住非法模型流入引擎
 
 ---
+
+## 1.7D45-智能体数据源
+
+Version 1.7D CheckPoint 54 Preview
+
+后端改进
+
+1. AACP 全链路术语统一：MCP 服务器 → 智能体枢纽（AgentHub），能力包 → Cap，涉及 Controller、Service、Repository、Model、SQL 迁移共 50+ 文件，表名同步重命名，数据库新增 AgentHub-Cap、Cap-MicroFunc、Cap-Datasource 三张多对多关联表
+2. AACP 访问服务重构：原 AacpEndpoint 拆分为 AacpAccessController + AacpAccessService，SSE 连接管理、JSON-RPC 路由、微函数分发三者职责分离，权限注解与表名一致性修正
+3. 微函数调用链拆分：从 MicroFuncService 中独立出 MicroFuncCallService，专注运行时微函数查找与参数注入，与后台 CRUD 管理解耦
+4. 数据源管理模块：QBE 代码生成引擎批量生成完整 CRUD（Po + 3 Dto + 2 Vo + Repository + Service + Controller），随后整合到 aacp.model.datasource 子包，新增连接测试端点，编码输入时自动生成 JDBC URL，空用户名/密码容错处理
+5. 数据源与能力包深度集成：Cap 编辑时可挂载多个数据源（CapDatasource 关联表），删除数据源时校验是否被 Cap 引用，防止误删
+6. 在线会话管理：新增 AacpSessionController，SSE 会话注册/移除/查询/批量关闭，McpClientSession 扩展会话元数据（枢纽名称、连接时间），心跳机制避免 JDBC 连接空闲占用
+7. GroupMenuRepository 查询修复：允许返回重复菜单项以匹配原有路由注册机制
+8. AuthUserDetailsService 权限加载路径补全
+
+前端改进
+
+1. AACP 全术语同步重命名：AacpMcp → AacpAgentHub、AacpCapability → AacpCap、AacpFunc → AacpMicroFunc，Vue SFC、Api、Service、Route 四层全部对齐
+2. 数据源管理页新增连接测试按钮、批处理状态列、编码失焦自动填 URL 交互，删除前校验引用关系
+3. 在线会话管理页（AacpOnlineSession）：展示当前所有活跃 SSE 连接（枢纽名称、会话 ID、连接时间），支持单选/批量关闭，关闭后实时刷新列表
+4. Cap 编辑页新增数据源选择区：可从已配置数据源中多选关联，列表展示已关联数据源名称
+5. ComTabService 路由可用性检查：标签切换前校验路由有效性，防止导航到不存在页面导致白屏
+6. 数据源管理页整合到 AACP 模块：与智能体枢纽、Cap、微函数并列，路由注册更新，菜单归入 AACP 配置目录
+
+增量业务功能
+
+1. 数据源连接测试：在后台配置 JDBC 数据源后，可一键验证连接是否可达，避免配置错误到运行时才发现
+2. 在线会话管理：管理员可实时查看哪些 AI 客户端正在通过 MCP 连接系统，支持强制关闭异常或僵死会话
+3. MCP Inspector 调试脚本（MCPInspector.ps1）：一键检测 Node.js/npm 环境，自动安装 @modelcontextprotocol/inspector，启动 SSE 调试器连接本地 27500 端口
+4. MySQL MCP 操作技能文档：为 AI 工作台提供标准化的数据库查询操作指南，支持 SELECT 查询与结果格式化
+5. CodeGraph 全局规则强化：扩展为 51 行完整规范（原 15 行），新增禁止创建子代理条款，要求所有代码探索任务（定位符号、追踪调用链、影响分析）必须优先走 CodeGraph 亚毫秒级查询
+6. 数据库设计文档（BioCode.pdma.json）大幅更新：补齐 AgentHub、Cap、MicroFunc、Datasource 及三张关联表的完整字段定义与关系图
 
 ## 1.7E45-后期例行修补(PAT 与加密)
 

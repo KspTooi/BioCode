@@ -108,6 +108,11 @@ export default {
       //激活标签
       activeTabId.value = tabToActivate.id;
 
+      // router 不可用时（如异步回调中调用）跳过路由导航
+      if (!router) {
+        return;
+      }
+
       //如果标签是外链嵌入,
       if (tabToActivate.kind === "iframe") {
         router.push({
@@ -415,20 +420,22 @@ export default {
     const { tabs, activeTabId } = tabService;
 
     // 监听路由路径变化，自动将 activeTabId 同步到路径匹配的标签
-    watch(
-      () => router.currentRoute.value.path,
-      (newPath) => {
-        const matchingTab = tabs.value.find((t) => t.path === newPath);
-        if (!matchingTab) {
-          return;
-        }
-        if (activeTabId.value === matchingTab.id) {
-          return;
-        }
-        activeTabId.value = matchingTab.id;
-      },
-      { immediate: true }
-    );
+    if (router) {
+      watch(
+        () => router.currentRoute.value.path,
+        (newPath) => {
+          const matchingTab = tabs.value.find((t) => t.path === newPath);
+          if (!matchingTab) {
+            return;
+          }
+          if (activeTabId.value === matchingTab.id) {
+            return;
+          }
+          activeTabId.value = matchingTab.id;
+        },
+        { immediate: true }
+      );
+    }
 
     return tabService;
   },

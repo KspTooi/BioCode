@@ -6,24 +6,38 @@ export default class AacpRouteRegister extends GenricRouteRegister {
     return [
       RouteEntryPo.build({
         biz: "aacp",
-        path: "mcp-server",
-        name: "mcp-server",
-        component: () => import("@/views/aacp/AacpMcp.vue"),
-        meta: { breadcrumb: "MCP服务器" },
+        path: "agent-hub",
+        name: "agent-hub",
+        component: () => import("@/views/aacp/AacpAgentHub.vue"),
+        meta: { breadcrumb: "智能体枢纽" },
       }),
       RouteEntryPo.build({
         biz: "aacp",
-        path: "capability",
-        name: "capability",
-        component: () => import("@/views/aacp/AacpCapability.vue"),
+        path: "cap",
+        name: "cap",
+        component: () => import("@/views/aacp/AacpCap.vue"),
         meta: { breadcrumb: "能力包" },
       }),
       RouteEntryPo.build({
         biz: "aacp",
-        path: "func",
-        name: "func",
-        component: () => import("@/views/aacp/AacpFunc.vue"),
+        path: "micro-func",
+        name: "micro-func",
+        component: () => import("@/views/aacp/AacpMicroFunc.vue"),
         meta: { breadcrumb: "微函数" },
+      }),
+      RouteEntryPo.build({
+        biz: "aacp",
+        path: "online-session",
+        name: "online-session",
+        component: () => import("@/views/aacp/AacpOnlineSession.vue"),
+        meta: { breadcrumb: "在线会话" },
+      }),
+      RouteEntryPo.build({
+        biz: "aacp",
+        path: "datasource",
+        name: "datasource",
+        component: () => import("@/views/aacp/AacpDatasource.vue"),
+        meta: { breadcrumb: "数据源" },
       }),
     ];
   }

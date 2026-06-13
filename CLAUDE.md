@@ -13,6 +13,8 @@
 
 @.cursor/rules/Global.mdc
 
+@.cursor/rules/Global-CodeGraph.mdc
+
 1. 始终使用中文回复
 2. 代码中短路优先：`if-return` / `if-continue` / `if-throw`
 3. 禁止使用 `switch` 与 `else`
