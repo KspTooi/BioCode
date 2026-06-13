@@ -33,6 +33,7 @@
           </template>
         </el-table-column>
         <el-table-column label="微函数数量" prop="funcCount" width="120" align="center" />
+        <el-table-column label="数据源数量" prop="datasourceCount" width="120" align="center" />
         <el-table-column label="备注" prop="remark" show-overflow-tooltip />
         <el-table-column label="操作" fixed="right" width="140">
           <template #default="scope">

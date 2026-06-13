@@ -16,7 +16,8 @@ public interface CapRepository extends JpaRepository<AacpCapPo, Long> {
 
     @Query("""
             SELECT u.id AS id, u.name AS name, u.kind AS kind, u.remark AS remark,
-                   COALESCE((SELECT COUNT(cf.microFuncId) FROM AacpCapMicroFuncPo cf WHERE cf.capId = u.id), 0) AS funcCount
+                   COALESCE((SELECT COUNT(cf.microFuncId) FROM AacpCapMicroFuncPo cf WHERE cf.capId = u.id), 0) AS funcCount,
+                   COALESCE((SELECT COUNT(cd.datasourceId) FROM AacpCapDatasourcePo cd WHERE cd.capId = u.id), 0) AS datasourceCount
             FROM AacpCapPo u
             WHERE
             (:#{#po.name} IS NULL OR u.name LIKE CONCAT('%', :#{#po.name}, '%'))

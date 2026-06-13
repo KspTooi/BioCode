@@ -15,6 +15,7 @@ export interface GetCapListVo {
   kind: number; //类型 0:微函数
   remark: string; //备注
   funcCount: number; //关联微函数数量
+  datasourceCount: number; //关联数据源数量
 }
 
 export interface AddCapDto {

@@ -23,4 +23,7 @@ public class GetCapListVo {
     @Schema(description = "关联微函数数量")
     private Long funcCount;
 
+    @Schema(description = "关联数据源数量")
+    private Long datasourceCount;
+
 }
