@@ -8,18 +8,18 @@ import com.ksptool.bio.biz.aacp.commons.DatasourceConnectionManager;
 import com.ksptool.bio.biz.aacp.commons.MicroFuncContextHolder;
 import com.ksptool.bio.biz.aacp.commons.annotation.MicroFunc;
 import com.ksptool.bio.biz.aacp.commons.annotation.Param;
-import com.ksptool.bio.biz.aacp.model.AacpAgentHubCapPo;
 import com.ksptool.bio.biz.aacp.model.datasource.AacpDatasourcePo;
 import com.ksptool.bio.biz.aacp.model.datasource.dto.AddAacpDatasourceDto;
 import com.ksptool.bio.biz.aacp.model.datasource.dto.EditAacpDatasourceDto;
 import com.ksptool.bio.biz.aacp.model.datasource.dto.GetAacpDatasourceListDto;
+import com.ksptool.bio.biz.aacp.model.datasource.vo.DatasourceInfoVo;
+import com.ksptool.bio.biz.aacp.model.datasource.vo.ExecuteResultVo;
 import com.ksptool.bio.biz.aacp.model.datasource.vo.GetAacpDatasourceDetailsVo;
 import com.ksptool.bio.biz.aacp.model.datasource.vo.GetAacpDatasourceListVo;
 import com.ksptool.bio.biz.aacp.repository.AacpDatasourceRepository;
 import com.ksptool.bio.biz.aacp.repository.AgentHubCapRepository;
 import com.ksptool.bio.biz.aacp.repository.CapDatasourceRepository;
-import lombok.Getter;
-import lombok.Setter;
+import com.ksptool.bio.commons.dataprocess.Str;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -93,8 +93,6 @@ public class AacpDatasourceService {
             updatePo.setUsername(originalUsername);
         }
         repository.save(updatePo);
-
-        //连接池配置可能变更，移除旧连接池
         connectionManager.removeDataSource(dto.getId());
     }
 
@@ -127,19 +125,17 @@ public class AacpDatasourceService {
             return Result.error("测试失败,JDBC驱动不存在.");
         }
         try (Connection c = DriverManager.getConnection(po.getUrl(), po.getUsername(), po.getPassword())) {
-            // 连接成功即自动关闭
         } catch (SQLException e) {
             return Result.error("测试失败,连接失败: " + e.getMessage());
         }
         return Result.success("成功连接数据库 耗时: " + (System.currentTimeMillis() - start) + "ms");
     }
 
-
     /**
      * 列出当前智能体可访问的所有数据源
      */
     @MicroFunc(target = "datasource.list_databases", name = "列出数据源", description = "获取当前智能体可访问的数据源列表，包含ID、名称和数据库类型")
-    public List<DatasourceInfo> getMyDatabases() {
+    public List<DatasourceInfoVo> getMyDatabases() {
         Long hubId = MicroFuncContextHolder.get();
         if (hubId == null) {
             return List.of();
@@ -151,12 +147,12 @@ public class AacpDatasourceService {
         }
         List<AacpDatasourcePo> allDs = repository.findAllById(dsIds);
         return allDs.stream().map(ds -> {
-            DatasourceInfo info = new DatasourceInfo();
-            info.setId(ds.getId());
-            info.setName(ds.getName());
-            info.setKind(ds.getKind());
-            info.setDefaultDb(ds.getDefaultDb());
-            return info;
+            DatasourceInfoVo vo = new DatasourceInfoVo();
+            vo.setId(ds.getId());
+            vo.setName(ds.getName());
+            vo.setKind(ds.getKind());
+            vo.setDefaultDb(ds.getDefaultDb());
+            return vo;
         }).collect(Collectors.toList());
     }
 
@@ -164,175 +160,109 @@ public class AacpDatasourceService {
      * 在指定数据源上执行 SQL 查询或更新
      */
     @MicroFunc(target = "datasource.execute_query", name = "执行SQL", description = "在指定数据源上执行SQL语句。SELECT返回数据集，INSERT/UPDATE/DELETE返回受影响行数。禁止混合多条SELECT语句。")
-    public QueryResult executeQuery(@Param("dataSourceId") Long dataSourceId, @Param("sql") String sql) throws BizException {
-        //权限校验
-        checkDataSourceAccess(dataSourceId);
-
-        // 2. 获取数据源连接池
-        AacpDatasourcePo dsPo = repository.findById(dataSourceId)
-                .orElseThrow(() -> new BizException("数据源不存在: " + dataSourceId));
-        DataSource dataSource = connectionManager.getDataSource(dsPo);
-
-        // 3. SQL 安全：多语句拆分
-        List<String> statements = splitSql(sql);
-        if (statements.isEmpty()) {
-            QueryResult err = new QueryResult();
-            err.setError(true);
-            err.setMessage("未检测到任何SQL语句");
-            return err;
-        }
-
-        // 4. 分类：所有 SELECT 语句
-        List<String> selects = statements.stream().filter(s -> isSelect(s)).collect(Collectors.toList());
-        List<String> updates = statements.stream().filter(s -> !isSelect(s)).collect(Collectors.toList());
-
-        // 混合 SELECT 和非 SELECT → 拒绝
-        if (!selects.isEmpty() && !updates.isEmpty()) {
-            QueryResult err = new QueryResult();
-            err.setError(true);
-            err.setMessage("不允许同时执行查询与更新操作，请拆分后分别提交");
-            return err;
-        }
-
-        // 批量 SELECT → 只执行第一条
-        if (selects.size() > 1) {
-            statements = List.of(selects.get(0));
-        }
-
-        try {
-            if (!selects.isEmpty()) {
-                return executeSelect(dataSource, statements.get(0), dsPo.getQueryMaxRows());
-            }
-            return executeUpdate(dataSource, statements);
-        } catch (SQLException e) {
-            QueryResult err = new QueryResult();
-            err.setError(true);
-            err.setMessage("SQL执行失败: " + e.getMessage());
-            return err;
-        }
-    }
-
-    // ============ 权限校验 ============
-
-    private void checkDataSourceAccess(Long dataSourceId) throws BizException {
+    public ExecuteResultVo executeQuery(@Param("dataSourceId") Long dataSourceId, @Param("sql") String sql) throws BizException {
         Long hubId = MicroFuncContextHolder.get();
         if (hubId == null) {
             throw new BizException("无法获取当前会话上下文");
         }
         List<Long> capIds = agentHubCapRepository.getCapIdsByHubId(hubId);
+        boolean authorized = false;
         for (Long capId : capIds) {
             List<Long> dsIds = capDatasourceRepository.getDatasourceIdsByCapId(capId);
             if (dsIds.contains(dataSourceId)) {
-                return;
+                authorized = true;
+                break;
             }
         }
-        throw new BizException("无权限访问该数据源");
-    }
-
-    // ============ SQL 工具 ============
-
-    private List<String> splitSql(String sql) {
-        List<String> result = new ArrayList<>();
-        for (String stmt : sql.split(";")) {
-            String trimmed = stmt.trim();
-            if (!trimmed.isEmpty()) {
-                result.add(trimmed);
-            }
+        if (!authorized) {
+            throw new BizException("无权限访问该数据源");
         }
-        return result;
-    }
 
-    private boolean isSelect(String sql) {
-        return sql.trim().toUpperCase().startsWith("SELECT");
-    }
+        AacpDatasourcePo dsPo = repository.findById(dataSourceId)
+                .orElseThrow(() -> new BizException("数据源不存在: " + dataSourceId));
+        DataSource dataSource = connectionManager.getDataSource(dsPo);
 
-    // ============ SQL 执行 ============
-
-    private QueryResult executeSelect(DataSource dataSource, String sql, int maxRows) throws SQLException {
-        QueryResult result = new QueryResult();
-        result.setSql(sql);
-
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setMaxRows(maxRows + 1); // 多取一行用于判断是否被截断
-            try (ResultSet rs = ps.executeQuery()) {
-                ResultSetMetaData meta = rs.getMetaData();
-                int colCount = meta.getColumnCount();
-
-                List<String> columns = new ArrayList<>();
-                for (int i = 1; i <= colCount; i++) {
-                    columns.add(meta.getColumnLabel(i));
-                }
-                result.setColumns(columns);
-
-                List<Map<String, Object>> rows = new ArrayList<>();
-                int rowCount = 0;
-                while (rs.next()) {
-                    rowCount++;
-                    if (rowCount > maxRows) {
-                        result.setTruncated(true);
-                        break;
-                    }
-                    Map<String, Object> row = new LinkedHashMap<>();
-                    for (int i = 1; i <= colCount; i++) {
-                        row.put(meta.getColumnLabel(i), rs.getObject(i));
-                    }
-                    rows.add(row);
-                }
-                result.setRows(rows);
-                result.setRowCount(rows.size());
-            }
+        List<String> statements = Str.safeSplit(sql, ";");
+        if (statements.isEmpty()) {
+            ExecuteResultVo err = new ExecuteResultVo();
+            err.setError(true);
+            err.setMessage("未检测到任何SQL语句");
+            return err;
         }
-        result.setError(false);
-        return result;
-    }
 
-    private QueryResult executeUpdate(DataSource dataSource, List<String> statements) throws SQLException {
-        QueryResult result = new QueryResult();
-        int totalAffected = 0;
+        List<String> selects = statements.stream().filter(s -> s.trim().toUpperCase().startsWith("SELECT")).collect(Collectors.toList());
+        List<String> updates = statements.stream().filter(s -> !s.trim().toUpperCase().startsWith("SELECT")).collect(Collectors.toList());
 
-        try (Connection conn = dataSource.getConnection()) {
-            conn.setAutoCommit(false);
-            try {
-                for (String sql : statements) {
-                    try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                        totalAffected += ps.executeUpdate();
+        if (!selects.isEmpty() && !updates.isEmpty()) {
+            ExecuteResultVo err = new ExecuteResultVo();
+            err.setError(true);
+            err.setMessage("不允许同时执行查询与更新操作，请拆分后分别提交");
+            return err;
+        }
+
+        try {
+            if (!selects.isEmpty()) {
+                ExecuteResultVo result = new ExecuteResultVo();
+                result.setSql(selects.get(0));
+                int maxRows = dsPo.getQueryMaxRows();
+                try (Connection conn = dataSource.getConnection();
+                     PreparedStatement ps = conn.prepareStatement(selects.get(0))) {
+                    ps.setMaxRows(maxRows + 1);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        ResultSetMetaData meta = rs.getMetaData();
+                        int colCount = meta.getColumnCount();
+                        List<String> cols = new ArrayList<>();
+                        for (int i = 1; i <= colCount; i++) {
+                            cols.add(meta.getColumnLabel(i));
+                        }
+                        result.setColumns(cols);
+                        List<Map<String, Object>> rows = new ArrayList<>();
+                        int rowCount = 0;
+                        while (rs.next()) {
+                            rowCount++;
+                            if (rowCount > maxRows) {
+                                result.setTruncated(true);
+                                break;
+                            }
+                            Map<String, Object> row = new LinkedHashMap<>();
+                            for (int i = 1; i <= colCount; i++) {
+                                row.put(meta.getColumnLabel(i), rs.getObject(i));
+                            }
+                            rows.add(row);
+                        }
+                        result.setRows(rows);
+                        result.setRowCount(rows.size());
                     }
                 }
-                conn.commit();
-            } catch (SQLException e) {
-                conn.rollback();
-                throw e;
+                result.setError(false);
+                return result;
             }
+
+            ExecuteResultVo result = new ExecuteResultVo();
+            int totalAffected = 0;
+            try (Connection conn = dataSource.getConnection()) {
+                conn.setAutoCommit(false);
+                try {
+                    for (String stmt : updates) {
+                        try (PreparedStatement ps = conn.prepareStatement(stmt)) {
+                            totalAffected += ps.executeUpdate();
+                        }
+                    }
+                    conn.commit();
+                } catch (SQLException e) {
+                    conn.rollback();
+                    throw e;
+                }
+            }
+            result.setError(false);
+            result.setAffectedRows(totalAffected);
+            result.setMessage("影响 " + totalAffected + " 行");
+            return result;
+        } catch (SQLException e) {
+            ExecuteResultVo err = new ExecuteResultVo();
+            err.setError(true);
+            err.setMessage("SQL执行失败: " + e.getMessage());
+            return err;
         }
-
-        result.setError(false);
-        result.setAffectedRows(totalAffected);
-        result.setMessage("影响 " + totalAffected + " 行");
-        return result;
-    }
-
-    // ============ 响应值对象 ============
-
-    @Getter
-    @Setter
-    public static class DatasourceInfo {
-        private Long id;
-        private String name;
-        private Integer kind;
-        private String defaultDb;
-    }
-
-    @Getter
-    @Setter
-    public static class QueryResult {
-        private boolean error;
-        private String message;
-        private String sql;
-        private List<String> columns;
-        private List<Map<String, Object>> rows;
-        private int rowCount;
-        private boolean truncated;
-        private int affectedRows;
     }
 }
