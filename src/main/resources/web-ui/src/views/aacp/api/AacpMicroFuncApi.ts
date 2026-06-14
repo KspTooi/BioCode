@@ -112,4 +112,16 @@ export default {
   getMicroFuncRegistryList: async (): Promise<Result<GetMicroFuncRegistryVo[]>> => {
     return await Http.postEntity<Result<GetMicroFuncRegistryVo[]>>("/microFunc/getMicroFuncRegistryList", {});
   },
+
+  /**
+   * 同步微函数：从运行时注册容器自动补全缺失的数据库记录
+   * @returns 同步结果描述
+   */
+  syncMicroFuncs: async (): Promise<string> => {
+    const result = await Http.postEntity<Result<string>>("/microFunc/syncMicroFuncs", {});
+    if (result.code === 0) {
+      return result.message;
+    }
+    throw new Error(result.message);
+  },
 };

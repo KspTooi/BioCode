@@ -15,6 +15,7 @@ import com.ksptool.bio.biz.aacp.model.func.vo.GetMicroFuncListVo;
 import com.ksptool.bio.biz.aacp.model.func.vo.GetMicroFuncRegistryVo;
 import com.ksptool.bio.biz.aacp.repository.CapMicroFuncRepository;
 import com.ksptool.bio.biz.aacp.repository.MicroFuncRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -29,11 +30,13 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
 
+@Slf4j
 @Service
 public class MicroFuncService {
 
@@ -151,6 +154,34 @@ public class MicroFuncService {
             vos.add(vo);
         }
         return vos;
+    }
+
+    /**
+     * 同步微函数：从 MicroFuncRuntimeService 获取所有已注册定义，缺失的自动写入数据库。
+     *
+     * @return 同步结果描述
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public String syncMicroFuncs() {
+        Collection<MicroFuncDef> defs = runtimeService.getAll();
+        int added = 0;
+        int skipped = 0;
+        for (MicroFuncDef def : defs) {
+            AacpMicroFuncPo existing = repository.getByCode(def.getTarget());
+            if (existing != null) {
+                skipped++;
+                continue;
+            }
+            AacpMicroFuncPo po = new AacpMicroFuncPo();
+            po.setCode(def.getTarget());
+            po.setName(def.getName());
+            po.setDescription(def.getDescription());
+            po.setTarget(def.getTarget());
+            repository.save(po);
+            added++;
+        }
+        log.info("微函数同步完成: 新增{}条, 跳过{}条", added, skipped);
+        return "同步完成：新增" + added + "条，跳过" + skipped + "条";
     }
 
     @MicroFunc(target = "test.hello", name = "问候", description = "返回一句问候语")

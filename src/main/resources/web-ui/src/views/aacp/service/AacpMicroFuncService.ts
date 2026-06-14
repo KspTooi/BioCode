@@ -68,6 +68,22 @@ export default {
       }
     };
 
+    /**
+     * 同步微函数：调用后端同步所有 @MicroFunc 定义的记录到数据库
+     */
+    const syncMicroFuncs = async (): Promise<void> => {
+      try {
+        listLoading.value = true;
+        const msg = await AacpMicroFuncApi.syncMicroFuncs();
+        ElMessage.success(msg);
+        await loadList();
+      } catch (error: any) {
+        ElMessage.error(error.message);
+      } finally {
+        listLoading.value = false;
+      }
+    };
+
     onMounted(async () => {
       QueryPersistService.loadQuery(PERSIST_KEY, listForm);
       await loadList();
@@ -81,6 +97,7 @@ export default {
       loadList,
       resetList,
       removeList,
+      syncMicroFuncs,
     };
   },
 
