@@ -84,7 +84,7 @@ public class AacpAccessService {
         emitter.onCompletion(() -> closeSession(sessionId));
         emitter.onTimeout(() -> closeSession(sessionId));
 
-        log.info("[AACP] 创建会话 Upstream => {} 服务器编码:{}", sessionId, hubCode);
+        log.info("[AACP] 创建会话 Upstream => {} 枢纽编码:{}", sessionId, hubCode);
 
         try {
             emitter.send(SseEmitter.event()
@@ -92,7 +92,7 @@ public class AacpAccessService {
                     .data("/aacp/inbound?sessionId=" + sessionId));
         } catch (IOException e) {
             closeSession(sessionId);
-            log.error("[AACP] 创建会话 Upstream => {} 服务器编码:{} 异常:{}", sessionId, hubCode, e.getMessage());
+            log.error("[AACP] 创建会话 Upstream => {} 枢纽编码:{} 异常:{}", sessionId, hubCode, e.getMessage());
         }
 
         return sessionId;
