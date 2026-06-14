@@ -6,8 +6,8 @@
           <el-form-item label="枢纽名称">
             <el-input v-model="listForm.name" placeholder="请输入枢纽名称" clearable />
           </el-form-item>
-          <el-form-item label="唯一编码">
-            <el-input v-model="listForm.code" placeholder="请输入唯一编码" clearable />
+          <el-form-item label="枢纽编码">
+            <el-input v-model="listForm.code" placeholder="请输入枢纽编码" clearable />
           </el-form-item>
           <el-form-item label="状态">
             <el-select v-model="listForm.status" placeholder="请选择" clearable>
@@ -31,7 +31,7 @@
       <el-table v-loading="listLoading" :data="listData" border stripe height="100%">
         <el-table-column type="index" label="序号" width="60" align="center" />
         <el-table-column label="枢纽名称" prop="name" />
-        <el-table-column label="唯一编码" prop="code" width="130" />
+        <el-table-column label="枢纽编码" prop="code" width="130" />
         <el-table-column label="通信协议" width="110" align="center">
           <template #default="scope">
             <span v-show="scope.row.networkKind === 0">JRPC2.0</span>
@@ -81,8 +81,8 @@
         <el-form-item label="枢纽名称" prop="name">
           <el-input v-model="modalForm.name" placeholder="请输入枢纽名称" :maxlength="40" show-word-limit />
         </el-form-item>
-        <el-form-item label="唯一编码" prop="code">
-          <el-input v-model="modalForm.code" placeholder="请输入唯一编码" :maxlength="16" show-word-limit />
+        <el-form-item label="枢纽编码" prop="code">
+          <el-input v-model="modalForm.code" placeholder="请输入枢纽编码" :maxlength="16" show-word-limit />
         </el-form-item>
         <el-form-item label="通信协议" prop="networkKind">
           <el-select v-model="modalForm.networkKind" placeholder="请选择通信协议">

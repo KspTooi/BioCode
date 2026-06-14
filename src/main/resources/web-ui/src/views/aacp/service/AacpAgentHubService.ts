@@ -110,8 +110,8 @@ export default {
         { max: 40, message: "枢纽名称长度不能超过40", trigger: "blur" },
       ],
       code: [
-        { required: true, message: "请输入唯一编码", trigger: "blur" },
-        { max: 16, message: "唯一编码长度不能超过16", trigger: "blur" },
+        { required: true, message: "请输入枢纽编码", trigger: "blur" },
+        { max: 16, message: "枢纽编码长度不能超过16", trigger: "blur" },
       ],
       networkKind: [{ required: true, message: "请选择通信协议", trigger: "change" }],
       authKind: [{ required: true, message: "请选择鉴权类型", trigger: "change" }],
