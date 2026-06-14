@@ -75,7 +75,10 @@
           />
         </el-form-item>
         <el-form-item label="入参规范" prop="schema">
-          <el-input v-model="modalForm.schema" placeholder="请输入入参规范(JSON)" type="textarea" :rows="4" />
+          <pre v-if="modalForm.schema" class="schema-preview w-full">{{
+            JSON.stringify(JSON.parse(modalForm.schema), null, 2)
+          }}</pre>
+          <span v-if="!modalForm.schema" class="text-gray-400">暂无入参规范</span>
         </el-form-item>
         <el-form-item label="目标方法" prop="target">
           <el-select
@@ -148,4 +151,18 @@ const {
 } = AacpMicroFuncService.useMicroFuncModal(modalFormRef, loadList);
 </script>
 
-<style scoped></style>
+<style scoped>
+.schema-preview {
+  background: #f5f7fa;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  padding: 12px;
+  max-height: 300px;
+  overflow: auto;
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+</style>
