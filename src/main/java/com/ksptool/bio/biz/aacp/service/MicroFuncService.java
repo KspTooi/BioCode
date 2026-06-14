@@ -15,6 +15,7 @@ import com.ksptool.bio.biz.aacp.model.func.vo.GetMicroFuncListVo;
 import com.ksptool.bio.biz.aacp.model.func.vo.GetMicroFuncRegistryVo;
 import com.ksptool.bio.biz.aacp.repository.CapMicroFuncRepository;
 import com.ksptool.bio.biz.aacp.repository.MicroFuncRepository;
+import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -177,6 +178,7 @@ public class MicroFuncService {
             po.setName(def.getName());
             po.setDescription(def.getDescription());
             po.setTarget(def.getTarget());
+            po.setSchema(new Gson().toJson(def.getInputSchema()));
             repository.save(po);
             added++;
         }
