@@ -221,7 +221,12 @@ public class AacpAccessService {
                 return RpcOutput.error(input.getId(), -32602, "Invalid params");
             }
             log.info("[AACP] 客户端调用工具: name={} Inbound => {}", callDto.getName(), session.getSessionId());
-            ToolsCallVo vo = runtimeService.call(callDto.getName(), callDto.getArguments());
+
+            var funcPo = microFuncRepository.getByCode(callDto.getName());
+            if (funcPo == null) {
+                return RpcOutput.error(input.getId(), -32602, "微函数不存在: " + callDto.getName());
+            }
+            ToolsCallVo vo = runtimeService.call(funcPo.getTarget(), callDto.getArguments());
             return RpcOutput.success(input.getId(), vo);
         }
 

@@ -6,8 +6,6 @@ import com.ksptool.bio.biz.aacp.commons.MicroFuncParamResolver;
 import com.ksptool.bio.biz.aacp.commons.annotation.MicroFunc;
 import com.ksptool.bio.biz.aacp.commons.annotation.Param;
 import com.ksptool.bio.biz.aacp.commons.jrpc.vo.ToolsCallVo;
-import com.ksptool.bio.biz.aacp.model.func.AacpMicroFuncPo;
-import com.ksptool.bio.biz.aacp.repository.MicroFuncRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,11 +17,9 @@ import org.springframework.stereotype.Service;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -41,14 +37,11 @@ public class MicroFuncRuntimeService {
     @Autowired
     private ApplicationContext applicationContext;
 
-    @Autowired
-    private MicroFuncRepository microFuncRepository;
-
     /**
      * 启动时扫描所有 Bean 上的 @MicroFunc 方法并注册
      */
     @EventListener(ApplicationReadyEvent.class)
-    public void scanMicroFunctions() {
+    public void init() {
         String[] beanNames = applicationContext.getBeanDefinitionNames();
         int count = 0;
 
@@ -130,30 +123,20 @@ public class MicroFuncRuntimeService {
     }
 
     /**
-     * 调用微函数：根据 code 查库获取 target，再从注册表找到定义，解析参数并反射调用。
+     * 调用微函数：根据 target 从注册表查找定义，解析参数并反射调用。
      *
-     * @param name      微函数 code
+     * @param target    微函数 target
      * @param arguments 输入参数 Map
      * @return MCP tools/call 响应
      */
-    public ToolsCallVo call(String name, Map<String, Object> arguments) {
-        AacpMicroFuncPo funcPo = microFuncRepository.getByCode(name);
-        if (funcPo == null) {
-            ToolsCallVo errVo = new ToolsCallVo();
-            errVo.setIsError(true);
-            ToolsCallVo.Content errContent = new ToolsCallVo.Content();
-            errContent.setType("text");
-            errContent.setText("微函数不存在: " + name);
-            errVo.setContent(Collections.singletonList(errContent));
-            return errVo;
-        }
-        MicroFuncDef def = registry.get(funcPo.getTarget());
+    public ToolsCallVo call(String target, Map<String, Object> arguments) {
+        MicroFuncDef def = registry.get(target);
         if (def == null) {
             ToolsCallVo errVo = new ToolsCallVo();
             errVo.setIsError(true);
             ToolsCallVo.Content errContent = new ToolsCallVo.Content();
             errContent.setType("text");
-            errContent.setText("微函数未注册: " + funcPo.getTarget());
+            errContent.setText("微函数未注册: " + target);
             errVo.setContent(Collections.singletonList(errContent));
             return errVo;
         }
@@ -170,7 +153,7 @@ public class MicroFuncRuntimeService {
             vo.setContent(Collections.singletonList(content));
             return vo;
         } catch (Exception e) {
-            log.error("[MicroFunc] 调用微函数失败: code={} error={}", name, e.getMessage(), e);
+            log.error("[MicroFunc] 调用微函数失败: target={} error={}", target, e.getMessage(), e);
             ToolsCallVo errVo = new ToolsCallVo();
             errVo.setIsError(true);
             ToolsCallVo.Content errContent = new ToolsCallVo.Content();
