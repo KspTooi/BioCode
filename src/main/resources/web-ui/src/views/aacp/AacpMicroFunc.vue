@@ -22,7 +22,7 @@
 
     <StdListAreaAction>
       <el-button type="success" @click="openModal('add', null)">创建微函数</el-button>
-      <el-button :loading="listLoading" @click="syncMicroFuncs">同步微函数</el-button>
+      <el-button type="primary" :loading="listLoading" @click="syncMicroFuncs">同步微函数</el-button>
     </StdListAreaAction>
 
     <StdListAreaTable v-model:list-form="listForm" :list-total="listTotal" :load-list="loadList">
@@ -131,7 +131,8 @@ const DeleteIcon = markRaw(Delete);
 
 const modalFormRef = ref<FormInstance>();
 
-const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList, syncMicroFuncs } = AacpMicroFuncService.useMicroFuncList();
+const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList, syncMicroFuncs } =
+  AacpMicroFuncService.useMicroFuncList();
 
 const {
   modalVisible,

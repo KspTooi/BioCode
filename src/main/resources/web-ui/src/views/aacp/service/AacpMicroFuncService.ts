@@ -2,7 +2,12 @@ import { onMounted, reactive, ref, type Ref } from "vue";
 import type { FormInstance, FormRules } from "element-plus";
 import { ElMessage, ElMessageBox } from "element-plus";
 import AacpMicroFuncApi from "@/views/aacp/api/AacpMicroFuncApi.ts";
-import type { GetMicroFuncListDto, GetMicroFuncListVo, GetMicroFuncDetailsVo, GetMicroFuncRegistryVo } from "@/views/aacp/api/AacpMicroFuncApi.ts";
+import type {
+  GetMicroFuncListDto,
+  GetMicroFuncListVo,
+  GetMicroFuncDetailsVo,
+  GetMicroFuncRegistryVo,
+} from "@/views/aacp/api/AacpMicroFuncApi.ts";
 import { Result } from "@/commons/model/Result.ts";
 import QueryPersistService from "@/commons/service/QueryPersistService.ts";
 
@@ -73,9 +78,23 @@ export default {
      */
     const syncMicroFuncs = async (): Promise<void> => {
       try {
+        await ElMessageBox.confirm(
+          "此操作将自动扫描系统中所有 @MicroFunc 注解，并将尚未入库的微函数自动写入数据库。确认同步？",
+          "同步微函数",
+          {
+            confirmButtonText: "同步",
+            cancelButtonText: "取消",
+            type: "warning",
+          }
+        );
+      } catch {
+        return;
+      }
+
+      try {
         listLoading.value = true;
-        const msg = await AacpMicroFuncApi.syncMicroFuncs();
-        ElMessage.success(msg);
+        await AacpMicroFuncApi.syncMicroFuncs();
+        ElMessage.success("同步微函数成功");
         await loadList();
       } catch (error: any) {
         ElMessage.error(error.message);
