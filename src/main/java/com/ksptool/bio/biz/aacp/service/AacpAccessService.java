@@ -216,16 +216,33 @@ public class AacpAccessService {
 
         //---- 工具调用 ----
         if (p.getMethod() == InputMethods.TOOLS_CALL) {
+
+            //合并同类项😄 把输入参数转换为DTO
             ToolsCallDto callDto = p.as(ToolsCallDto.class);
+
             if (callDto == null) {
                 return RpcOutput.error(input.getId(), -32602, "Invalid params");
             }
+            
             log.info("[AACP] 客户端调用工具: name={} Inbound => {}", callDto.getName(), session.getSessionId());
 
             var funcPo = microFuncRepository.getByCode(callDto.getName());
             if (funcPo == null) {
                 return RpcOutput.error(input.getId(), -32602, "微函数不存在: " + callDto.getName());
             }
+
+            //权限校验：该枢纽是否被授权调用此微函数
+            var hubCaps = capRepository.getByHubId(session.getServerId(), 0);
+            var hubCapIds = hubCaps.stream().map(AacpCapPo::getId).collect(Collectors.toSet());
+            if (hubCapIds.isEmpty()) {
+                return RpcOutput.error(input.getId(), -32601, "该枢纽未绑定任何微函数能力包");
+            }
+            var authorizedFuncs = microFuncRepository.getMicroFuncListByCapIds(hubCapIds);
+            boolean authorized = authorizedFuncs.stream().anyMatch(f -> f.getId().equals(funcPo.getId()));
+            if (!authorized) {
+                return RpcOutput.error(input.getId(), -32601, "无权限调用该微函数: " + callDto.getName());
+            }
+
             ToolsCallVo vo = runtimeService.call(funcPo.getTarget(), callDto.getArguments());
             return RpcOutput.success(input.getId(), vo);
         }
