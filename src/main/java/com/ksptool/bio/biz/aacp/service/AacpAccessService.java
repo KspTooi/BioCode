@@ -4,7 +4,6 @@ import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.bio.biz.aacp.commons.McpClientSession;
 import com.ksptool.bio.biz.aacp.commons.McpParser;
 import com.ksptool.bio.biz.aacp.commons.MicroFuncDef;
-import com.ksptool.bio.biz.aacp.commons.MicroFuncRegistry;
 import com.ksptool.bio.biz.aacp.commons.jrpc.InputMethods;
 import com.ksptool.bio.biz.aacp.commons.jrpc.RpcInput;
 import com.ksptool.bio.biz.aacp.commons.jrpc.RpcOutput;
@@ -42,16 +41,13 @@ public class AacpAccessService {
     private final Map<String, McpClientSession> sessionMap = new ConcurrentHashMap<>();
 
     @Autowired
-    private MicroFuncCallService microFuncCallService;
+    private MicroFuncRuntimeService runtimeService;
 
     @Autowired
     private CapRepository capRepository;
 
     @Autowired
     private MicroFuncRepository microFuncRepository;
-
-    @Autowired
-    private MicroFuncRegistry mfRegistry;
 
     @Autowired
     private AgentHubRepository agentHubRepository;
@@ -201,7 +197,7 @@ public class AacpAccessService {
             for (var fPo : funcPos) {
 
                 //查找已注册的微函数
-                MicroFuncDef def = mfRegistry.get(fPo.getTarget());
+                MicroFuncDef def = runtimeService.get(fPo.getTarget());
 
                 if (def == null) {
                     continue;
@@ -225,7 +221,7 @@ public class AacpAccessService {
                 return RpcOutput.error(input.getId(), -32602, "Invalid params");
             }
             log.info("[AACP] 客户端调用工具: name={} Inbound => {}", callDto.getName(), session.getSessionId());
-            ToolsCallVo vo = microFuncCallService.call(callDto.getName(), callDto.getArguments());
+            ToolsCallVo vo = runtimeService.call(callDto.getName(), callDto.getArguments());
             return RpcOutput.success(input.getId(), vo);
         }
 

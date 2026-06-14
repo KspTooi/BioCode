@@ -4,7 +4,6 @@ import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.bio.biz.aacp.commons.MicroFuncDef;
-import com.ksptool.bio.biz.aacp.commons.MicroFuncRegistry;
 import com.ksptool.bio.biz.aacp.commons.annotation.MicroFunc;
 import com.ksptool.bio.biz.aacp.commons.annotation.Param;
 import com.ksptool.bio.biz.aacp.model.func.AacpMicroFuncPo;
@@ -45,7 +44,7 @@ public class MicroFuncService {
     private CapMicroFuncRepository capMicroFuncRepository;
 
     @Autowired
-    private MicroFuncRegistry microFuncRegistry;
+    private MicroFuncRuntimeService runtimeService;
 
     /**
      * 查询微函数列表
@@ -137,7 +136,7 @@ public class MicroFuncService {
      */
     public List<GetMicroFuncRegistryVo> getMicroFuncRegistryList() {
         List<GetMicroFuncRegistryVo> vos = new ArrayList<>();
-        for (MicroFuncDef def : microFuncRegistry.getAll()) {
+        for (MicroFuncDef def : runtimeService.getAll()) {
             GetMicroFuncRegistryVo vo = new GetMicroFuncRegistryVo();
             vo.setTarget(def.getTarget());
             vo.setName(def.getName());
@@ -176,7 +175,7 @@ public class MicroFuncService {
 
     @MicroFunc(target = "test.status", name = "状态列表", description = "返回系统状态项列表")
     public List<String> listStatus() {
-        return Arrays.asList("运行中", "正常", "微函数数量：" + microFuncRegistry.size());
+        return Arrays.asList("运行中", "正常", "微函数数量：" + runtimeService.size());
     }
 
     /**

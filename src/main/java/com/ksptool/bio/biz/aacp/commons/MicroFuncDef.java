@@ -40,7 +40,7 @@ public class MicroFuncDef {
         this.description = description;
         this.bean = bean;
         this.method = method;
-        java.lang.reflect.Parameter[] javaParams = method.getParameters();
+        Parameter[] javaParams = method.getParameters();
         MicroFuncParamDef[] defParams = new MicroFuncParamDef[javaParams.length];
         for (int i = 0; i < javaParams.length; i++) {
             defParams[i] = MicroFuncParamDef.of(javaParams[i], i);
