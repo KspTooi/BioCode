@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
@@ -166,24 +167,51 @@ public class MicroFuncService {
     public String syncMicroFuncs() {
         Collection<MicroFuncDef> defs = runtimeService.getAll();
         int added = 0;
+        int updated = 0;
         int skipped = 0;
         for (MicroFuncDef def : defs) {
+            String schema = new Gson().toJson(def.getInputSchema());
             AacpMicroFuncPo existing = repository.getByCode(def.getTarget());
-            if (existing != null) {
-                skipped++;
+
+            if (existing == null) {
+                AacpMicroFuncPo po = new AacpMicroFuncPo();
+                po.setCode(def.getTarget());
+                po.setName(def.getName());
+                po.setDescription(def.getDescription());
+                po.setTarget(def.getTarget());
+                po.setSchema(schema);
+                repository.save(po);
+                added++;
                 continue;
             }
-            AacpMicroFuncPo po = new AacpMicroFuncPo();
-            po.setCode(def.getTarget());
-            po.setName(def.getName());
-            po.setDescription(def.getDescription());
-            po.setTarget(def.getTarget());
-            po.setSchema(new Gson().toJson(def.getInputSchema()));
-            repository.save(po);
-            added++;
+
+            //已有记录：比较注解数据与库中是否一致，不一致则更新
+            boolean needUpdate = false;
+            if (!Objects.equals(existing.getName(), def.getName())) {
+                existing.setName(def.getName());
+                needUpdate = true;
+            }
+            if (!Objects.equals(existing.getDescription(), def.getDescription())) {
+                existing.setDescription(def.getDescription());
+                needUpdate = true;
+            }
+            if (!Objects.equals(existing.getTarget(), def.getTarget())) {
+                existing.setTarget(def.getTarget());
+                needUpdate = true;
+            }
+            if (!Objects.equals(existing.getSchema(), schema)) {
+                existing.setSchema(schema);
+                needUpdate = true;
+            }
+            if (needUpdate) {
+                repository.save(existing);
+                updated++;
+                continue;
+            }
+            skipped++;
         }
-        log.info("微函数同步完成: 新增{}条, 跳过{}条", added, skipped);
-        return "同步完成：新增" + added + "条，跳过" + skipped + "条";
+        log.info("微函数同步完成: 新增{}条, 更新{}条, 跳过{}条", added, updated, skipped);
+        return "同步完成：新增" + added + "条，更新" + updated + "条，跳过" + skipped + "条";
     }
 
     @MicroFunc(target = "test.hello", name = "问候", description = "返回一句问候语")
