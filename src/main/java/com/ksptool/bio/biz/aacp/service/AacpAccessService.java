@@ -3,6 +3,7 @@ package com.ksptool.bio.biz.aacp.service;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.bio.biz.aacp.commons.McpClientSession;
 import com.ksptool.bio.biz.aacp.commons.McpParser;
+import com.ksptool.bio.biz.aacp.commons.MicroFuncContextHolder;
 import com.ksptool.bio.biz.aacp.commons.MicroFuncDef;
 import com.ksptool.bio.biz.aacp.commons.jrpc.InputMethods;
 import com.ksptool.bio.biz.aacp.commons.jrpc.RpcInput;
@@ -243,8 +244,14 @@ public class AacpAccessService {
                 return RpcOutput.error(input.getId(), -32601, "无权限调用该微函数: " + callDto.getName());
             }
 
-            ToolsCallVo vo = runtimeService.call(funcPo.getTarget(), callDto.getArguments());
-            return RpcOutput.success(input.getId(), vo);
+            //注入当前 Hub 上下文，供数据源微函数等执行权限校验
+            MicroFuncContextHolder.set(session.getHubId());
+            try {
+                ToolsCallVo vo = runtimeService.call(funcPo.getTarget(), callDto.getArguments());
+                return RpcOutput.success(input.getId(), vo);
+            } finally {
+                MicroFuncContextHolder.clear();
+            }
         }
 
         return RpcOutput.error(input.getId(), -32601, "Method not found: " + input.getMethod());
