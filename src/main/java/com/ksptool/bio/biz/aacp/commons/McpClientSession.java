@@ -17,13 +17,13 @@ public class McpClientSession {
     private String sessionId;
 
     // 智能体枢纽编码
-    private String serverCode;
+    private String hubCode;
 
     // 智能体枢纽ID
-    private Long serverId;
+    private Long hubId;
 
     // 智能体枢纽名称
-    private String serverName;
+    private String hubName;
 
     // 连接时间
     private LocalDateTime connectTime;
@@ -37,11 +37,11 @@ public class McpClientSession {
     // SSE 连接
     private SseEmitter emitter;
 
-    public McpClientSession(String sessionId, String serverCode, Long serverId, String serverName, SseEmitter emitter) {
+    public McpClientSession(String sessionId, String hubCode, Long hubId, String hubName, SseEmitter emitter) {
         this.sessionId = sessionId;
-        this.serverCode = serverCode;
-        this.serverId = serverId;
-        this.serverName = serverName;
+        this.hubCode = hubCode;
+        this.hubId = hubId;
+        this.hubName = hubName;
         this.emitter = emitter;
         this.connectTime = LocalDateTime.now();
         this.status = 0;

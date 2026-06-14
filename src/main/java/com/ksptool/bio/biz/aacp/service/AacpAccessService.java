@@ -55,36 +55,36 @@ public class AacpAccessService {
     /**
      * 创建 SSE 会话
      *
-     * @param serverCode 智能体枢纽编码
+     * @param hubCode 智能体枢纽编码
      * @param emitter    SSE 发射器
      * @throws BizException Hub 不存在或不可用
      */
-    public String createSession(String serverCode, SseEmitter emitter) throws BizException {
+    public String createSession(String hubCode, SseEmitter emitter) throws BizException {
 
         //SSE 是异步长连接,且本项目强制开启 OSIV,若直接在请求线程查库,EntityManager 与其 JDBC 连接会被 OSIV 绑定到整个 SSE 生命周期(可达1小时)而无法归还 HikariCP
         //把读库丢到无 OSIV 绑定的工作线程,该线程查询用完即关闭 EntityManager 并归还连接,SSE 请求线程全程不碰库
         AacpAgentHubPo po;
         try {
-            po = CompletableFuture.supplyAsync(() -> agentHubRepository.getByCode(serverCode)).join();
+            po = CompletableFuture.supplyAsync(() -> agentHubRepository.getByCode(hubCode)).join();
         } catch (CompletionException e) {
-            throw new BizException("查询智能体枢纽失败:" + serverCode);
+            throw new BizException("查询智能体枢纽失败:" + hubCode);
         }
 
         if (po == null) {
-            throw new BizException("智能体枢纽不存在:" + serverCode);
+            throw new BizException("智能体枢纽不存在:" + hubCode);
         }
         if (po.getStatus() != 1) {
-            throw new BizException("智能体枢纽当前不接受连接请求:" + serverCode);
+            throw new BizException("智能体枢纽当前不接受连接请求:" + hubCode);
         }
 
 
         String sessionId = UUID.randomUUID().toString();
-        McpClientSession session = new McpClientSession(sessionId, serverCode, po.getId(), po.getName(), emitter);
+        McpClientSession session = new McpClientSession(sessionId, hubCode, po.getId(), po.getName(), emitter);
         sessionMap.put(sessionId, session);
         emitter.onCompletion(() -> closeSession(sessionId));
         emitter.onTimeout(() -> closeSession(sessionId));
 
-        log.info("[AACP] 创建会话 Upstream => {} 服务器编码:{}", sessionId, serverCode);
+        log.info("[AACP] 创建会话 Upstream => {} 服务器编码:{}", sessionId, hubCode);
 
         try {
             emitter.send(SseEmitter.event()
@@ -92,7 +92,7 @@ public class AacpAccessService {
                     .data("/aacp/inbound?sessionId=" + sessionId));
         } catch (IOException e) {
             closeSession(sessionId);
-            log.error("[AACP] 创建会话 Upstream => {} 服务器编码:{} 异常:{}", sessionId, serverCode, e.getMessage());
+            log.error("[AACP] 创建会话 Upstream => {} 服务器编码:{} 异常:{}", sessionId, hubCode, e.getMessage());
         }
 
         return sessionId;
@@ -184,7 +184,7 @@ public class AacpAccessService {
             var ret = new ToolsListVo();
 
             //获取微函数能力包
-            var funcCapPos = capRepository.getByHubId(session.getServerId(), 0);
+            var funcCapPos = capRepository.getByHubId(session.getHubId(), 0);
             var funcCapIds = funcCapPos.stream().map(AacpCapPo::getId).collect(Collectors.toSet());
 
             //获取能力包中的微函数
@@ -223,7 +223,7 @@ public class AacpAccessService {
             if (callDto == null) {
                 return RpcOutput.error(input.getId(), -32602, "Invalid params");
             }
-            
+
             log.info("[AACP] 客户端调用工具: name={} Inbound => {}", callDto.getName(), session.getSessionId());
 
             var funcPo = microFuncRepository.getByCode(callDto.getName());
@@ -232,7 +232,7 @@ public class AacpAccessService {
             }
 
             //权限校验：该枢纽是否被授权调用此微函数
-            var hubCaps = capRepository.getByHubId(session.getServerId(), 0);
+            var hubCaps = capRepository.getByHubId(session.getHubId(), 0);
             var hubCapIds = hubCaps.stream().map(AacpCapPo::getId).collect(Collectors.toSet());
             if (hubCapIds.isEmpty()) {
                 return RpcOutput.error(input.getId(), -32601, "该枢纽未绑定任何微函数能力包");
