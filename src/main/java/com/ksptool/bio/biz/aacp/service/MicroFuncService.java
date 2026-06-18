@@ -1,5 +1,6 @@
 package com.ksptool.bio.biz.aacp.service;
 
+import com.google.gson.Gson;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
@@ -15,7 +16,6 @@ import com.ksptool.bio.biz.aacp.model.func.vo.GetMicroFuncListVo;
 import com.ksptool.bio.biz.aacp.model.func.vo.GetMicroFuncRegistryVo;
 import com.ksptool.bio.biz.aacp.repository.CapMicroFuncRepository;
 import com.ksptool.bio.biz.aacp.repository.MicroFuncRepository;
-import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -29,11 +29,7 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
@@ -82,7 +78,7 @@ public class MicroFuncService {
             throw new BizException("微函数标识已存在,请更换后重试.");
         }
         AacpMicroFuncPo insertPo = as(dto, AacpMicroFuncPo.class);
-        insertPo.setIsBundle(0);
+        insertPo.setNsBundle(0);
         repository.save(insertPo);
     }
 
@@ -101,7 +97,7 @@ public class MicroFuncService {
                 .orElseThrow(() -> new BizException("更新失败,数据不存在或无权限访问."));
 
         assign(dto, updatePo);
-        updatePo.setIsBundle(0);
+        updatePo.setNsBundle(0);
         repository.save(updatePo);
     }
 
@@ -182,7 +178,7 @@ public class MicroFuncService {
                 po.setDescription(def.getDescription());
                 po.setTarget(def.getTarget());
                 po.setSchema(schema);
-                po.setIsBundle(0);
+                po.setNsBundle(0);
                 repository.save(po);
                 added++;
                 continue;
