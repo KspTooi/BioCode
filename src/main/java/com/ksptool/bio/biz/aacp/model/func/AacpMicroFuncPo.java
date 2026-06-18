@@ -47,14 +47,17 @@ public class AacpMicroFuncPo {
     @Column(name = "`schema`", comment = "入参规范")
     private String schema;
 
-    @Column(name = "target", nullable = false, length = 1000, comment = "目标方法")
+    @Column(name = "target", nullable = false, length = 1000, comment = "调用目标Bean")
     private String target;
 
     @Column(name = "remark", length = 500, comment = "备注")
     private String remark;
 
-    @Column(name = "is_bundle", nullable = false, comment = "是否绑定 0:否 1:是")
-    private Integer isBundle;
+    @Column(name = "namespace", length = 40, comment = "命名空间")
+    private String namespace;
+
+    @Column(name = "ns_bundle", nullable = false, comment = "命名空间绑定 0:否 1:是")
+    private Integer nsBundle;
 
     @CreatedDate
     @Column(name = "create_time", nullable = false, comment = "创建时间")
