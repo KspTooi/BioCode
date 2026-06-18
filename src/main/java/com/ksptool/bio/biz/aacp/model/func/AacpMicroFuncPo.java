@@ -75,13 +75,6 @@ public class AacpMicroFuncPo {
     @Column(name = "delete_time", comment = "删除时间")
     private LocalDateTime deleteTime;
 
-    @PrePersist
-    private void onCreate() throws AuthException {
-        this.isBundle = 0;
-    }
 
-    @PreUpdate
-    private void onUpdate() throws AuthException {
 
-    }
 }
