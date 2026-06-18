@@ -1,7 +1,7 @@
 package com.ksptool.bio.biz.aacp.model.agenthub;
 
-import com.ksptool.assembly.entity.exception.AuthException;
-import com.ksptool.bio.biz.auth.service.SessionService;
+import com.ksptool.bio.biz.auth.common.aop.CreatedRootId;
+import com.ksptool.bio.biz.auth.common.aop.RsAuditingEntityListener;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 @Setter
 @Entity
 @Table(name = "aacp_agent_hub")
-@EntityListeners(AuditingEntityListener.class)
+@EntityListeners({AuditingEntityListener.class, RsAuditingEntityListener.class})
 @SQLDelete(sql = "UPDATE aacp_agent_hub SET delete_time = NOW() WHERE id = ?")
 @SQLRestriction("delete_time IS NULL")
 public class AacpAgentHubPo {
@@ -30,6 +30,7 @@ public class AacpAgentHubPo {
     @Column(name = "id", nullable = false, comment = "主键ID")
     private Long id;
 
+    @CreatedRootId
     @Column(name = "root_id", nullable = false, comment = "租户ID")
     private Long rootId;
 
@@ -69,18 +70,4 @@ public class AacpAgentHubPo {
 
     @Column(name = "delete_time", comment = "删除时间")
     private LocalDateTime deleteTime;
-
-
-    @PrePersist
-    private void onCreate() throws AuthException {
-        var session = SessionService.session();
-        if (this.rootId == null) {
-            this.rootId = session.getRootId();
-        }
-    }
-
-    @PreUpdate
-    private void onUpdate() throws AuthException {
-
-    }
 }
