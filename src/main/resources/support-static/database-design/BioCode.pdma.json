@@ -4,7 +4,7 @@
   "avatar": "",
   "version": "4.9.4",
   "createdTime": "2025-5-31 18:54:43",
-  "updatedTime": "2026-6-14 03:48:56",
+  "updatedTime": "2026-6-18 14:36:08",
   "dbConns": [],
   "profile": {
     "default": {
@@ -33430,7 +33430,7 @@
           "refDict": "",
           "baseType": "D4F3414B-7780-49DE-979F-E697B65AE78D",
           "extProps": {},
-          "domain": "6AF16962-271B-4EAD-A807-705E81F24B8C",
+          "domain": "3F9E08C8-96C1-4FD0-9F00-BEF0DB7FB7B9",
           "id": "6AF7E4E1-E7B3-40B9-87F3-8100B9C5AF25"
         },
         {
@@ -33448,7 +33448,7 @@
           "refDict": "",
           "baseType": "D4F3414B-7780-49DE-979F-E697B65AE78D",
           "extProps": {},
-          "domain": "6AF16962-271B-4EAD-A807-705E81F24B8C",
+          "domain": "3F9E08C8-96C1-4FD0-9F00-BEF0DB7FB7B9",
           "id": "FCB50329-BDA4-462A-8313-1FA33488D767"
         },
         {
@@ -33592,7 +33592,7 @@
           "refDict": "",
           "baseType": "D4F3414B-7780-49DE-979F-E697B65AE78D",
           "extProps": {},
-          "domain": "6AF16962-271B-4EAD-A807-705E81F24B8C",
+          "domain": "3F9E08C8-96C1-4FD0-9F00-BEF0DB7FB7B9",
           "id": "68123D6A-49D7-4FA8-AB17-2E9ED0F4EE0E"
         },
         {
@@ -33628,7 +33628,7 @@
           "refDict": "",
           "baseType": "D4F3414B-7780-49DE-979F-E697B65AE78D",
           "extProps": {},
-          "domain": "6AF16962-271B-4EAD-A807-705E81F24B8C",
+          "domain": "3F9E08C8-96C1-4FD0-9F00-BEF0DB7FB7B9",
           "id": "96E3A5AB-8D92-420E-B8CA-23E3F6B3CE2B"
         },
         {
@@ -33819,7 +33819,7 @@
           "refDict": "",
           "baseType": "D4F3414B-7780-49DE-979F-E697B65AE78D",
           "extProps": {},
-          "domain": "6AF16962-271B-4EAD-A807-705E81F24B8C",
+          "domain": "3F9E08C8-96C1-4FD0-9F00-BEF0DB7FB7B9",
           "id": "D07CB095-3664-4BB8-83B9-D4D059654BC7"
         },
         {
@@ -33837,7 +33837,7 @@
           "refDict": "",
           "baseType": "D4F3414B-7780-49DE-979F-E697B65AE78D",
           "extProps": {},
-          "domain": "6AF16962-271B-4EAD-A807-705E81F24B8C",
+          "domain": "3F9E08C8-96C1-4FD0-9F00-BEF0DB7FB7B9",
           "id": "702FC263-6770-44CC-B763-83C76D2315E7"
         },
         {
@@ -33927,7 +33927,7 @@
           "refDict": "",
           "baseType": "D4F3414B-7780-49DE-979F-E697B65AE78D",
           "extProps": {},
-          "domain": "6AF16962-271B-4EAD-A807-705E81F24B8C",
+          "domain": "3F9E08C8-96C1-4FD0-9F00-BEF0DB7FB7B9",
           "id": "37A402C4-3871-4F58-91E2-DD6DB97BD37D"
         },
         {
@@ -33963,7 +33963,7 @@
           "refDict": "",
           "baseType": "D4F3414B-7780-49DE-979F-E697B65AE78D",
           "extProps": {},
-          "domain": "6AF16962-271B-4EAD-A807-705E81F24B8C",
+          "domain": "3F9E08C8-96C1-4FD0-9F00-BEF0DB7FB7B9",
           "id": "74C49121-6F26-418C-97BC-0F82E9E0AE99"
         },
         {
@@ -34345,7 +34345,7 @@
           "refDict": "",
           "baseType": "D4F3414B-7780-49DE-979F-E697B65AE78D",
           "extProps": {},
-          "domain": "6AF16962-271B-4EAD-A807-705E81F24B8C",
+          "domain": "3F9E08C8-96C1-4FD0-9F00-BEF0DB7FB7B9",
           "id": "C075C702-934F-495E-8153-73AE6110E02A"
         },
         {
@@ -34363,7 +34363,7 @@
           "refDict": "",
           "baseType": "D4F3414B-7780-49DE-979F-E697B65AE78D",
           "extProps": {},
-          "domain": "6AF16962-271B-4EAD-A807-705E81F24B8C",
+          "domain": "3F9E08C8-96C1-4FD0-9F00-BEF0DB7FB7B9",
           "id": "740EE0FE-0F43-4C12-8F58-51FD6B2E3644"
         },
         {
@@ -34475,6 +34475,42 @@
           "id": "6E41A6F5-107F-4CBB-AD57-8F242BAC7D21"
         },
         {
+          "defKey": "namespace",
+          "defName": "命名空间",
+          "comment": "",
+          "type": "",
+          "len": "",
+          "scale": "",
+          "primaryKey": false,
+          "notNull": false,
+          "autoIncrement": false,
+          "defaultValue": "",
+          "hideInGraph": false,
+          "refDict": "",
+          "baseType": "566FB128-DBDE-4D78-9260-24C96D09CFE0",
+          "extProps": {},
+          "domain": "7A89EED8-9148-4AB5-ADE2-62B78EDDA47F",
+          "id": "EF5A0BBF-C9EE-4C4E-A37F-580BA51B10A0"
+        },
+        {
+          "defKey": "ns_bundle",
+          "defName": "命名空间绑定 0:否 1:是",
+          "comment": "",
+          "type": "",
+          "len": "",
+          "scale": "",
+          "primaryKey": false,
+          "notNull": true,
+          "autoIncrement": false,
+          "defaultValue": "",
+          "hideInGraph": false,
+          "refDict": "",
+          "baseType": "03F05E70-3F80-47EE-AA1A-9348591BD47D",
+          "extProps": {},
+          "domain": "1B3F3434-1CE8-4D13-A4C3-CDAE3CDF0498",
+          "id": "6C88C689-CE3A-495C-A88B-4FA13FA84CAA"
+        },
+        {
           "defKey": "create_time",
           "defName": "创建时间",
           "comment": "",
@@ -34507,7 +34543,7 @@
           "refDict": "",
           "baseType": "D4F3414B-7780-49DE-979F-E697B65AE78D",
           "extProps": {},
-          "domain": "6AF16962-271B-4EAD-A807-705E81F24B8C",
+          "domain": "3F9E08C8-96C1-4FD0-9F00-BEF0DB7FB7B9",
           "id": "24FC8941-C9B5-4067-9408-740F9304931A"
         },
         {
@@ -34543,7 +34579,7 @@
           "refDict": "",
           "baseType": "D4F3414B-7780-49DE-979F-E697B65AE78D",
           "extProps": {},
-          "domain": "6AF16962-271B-4EAD-A807-705E81F24B8C",
+          "domain": "3F9E08C8-96C1-4FD0-9F00-BEF0DB7FB7B9",
           "id": "065D08F5-24F1-4DEA-A6B6-3D74559A6508"
         },
         {
@@ -34925,7 +34961,7 @@
           "refDict": "",
           "baseType": "D4F3414B-7780-49DE-979F-E697B65AE78D",
           "extProps": {},
-          "domain": "6AF16962-271B-4EAD-A807-705E81F24B8C",
+          "domain": "3F9E08C8-96C1-4FD0-9F00-BEF0DB7FB7B9",
           "id": "0EF154A3-1329-468B-AD7C-5D2097879314"
         },
         {
@@ -34943,7 +34979,7 @@
           "refDict": "",
           "baseType": "D4F3414B-7780-49DE-979F-E697B65AE78D",
           "extProps": {},
-          "domain": "6AF16962-271B-4EAD-A807-705E81F24B8C",
+          "domain": "3F9E08C8-96C1-4FD0-9F00-BEF0DB7FB7B9",
           "id": "41AC4E9B-E678-4ACB-8DD0-83F44FDD405A"
         },
         {
@@ -35239,7 +35275,7 @@
           "refDict": "",
           "baseType": "D4F3414B-7780-49DE-979F-E697B65AE78D",
           "extProps": {},
-          "domain": "6AF16962-271B-4EAD-A807-705E81F24B8C",
+          "domain": "3F9E08C8-96C1-4FD0-9F00-BEF0DB7FB7B9",
           "id": "4811824C-4682-4954-832F-1B26CFDD8E9F"
         },
         {
@@ -35275,7 +35311,7 @@
           "refDict": "",
           "baseType": "D4F3414B-7780-49DE-979F-E697B65AE78D",
           "extProps": {},
-          "domain": "6AF16962-271B-4EAD-A807-705E81F24B8C",
+          "domain": "3F9E08C8-96C1-4FD0-9F00-BEF0DB7FB7B9",
           "id": "5066A8A7-6346-4B0D-9B84-A3CFDD1DDC0E"
         },
         {
@@ -35657,7 +35693,7 @@
           "refDict": "",
           "baseType": "D4F3414B-7780-49DE-979F-E697B65AE78D",
           "extProps": {},
-          "domain": "6AF16962-271B-4EAD-A807-705E81F24B8C",
+          "domain": "3F9E08C8-96C1-4FD0-9F00-BEF0DB7FB7B9",
           "id": "69A46EEC-689D-42C9-AC86-730F9F1B0A92"
         },
         {
@@ -35675,7 +35711,7 @@
           "refDict": "",
           "baseType": "D4F3414B-7780-49DE-979F-E697B65AE78D",
           "extProps": {},
-          "domain": "6AF16962-271B-4EAD-A807-705E81F24B8C",
+          "domain": "3F9E08C8-96C1-4FD0-9F00-BEF0DB7FB7B9",
           "id": "614D3F59-305F-4162-8F6B-C58A6818747A"
         },
         {
@@ -35783,7 +35819,7 @@
           "refDict": "",
           "baseType": "D4F3414B-7780-49DE-979F-E697B65AE78D",
           "extProps": {},
-          "domain": "6AF16962-271B-4EAD-A807-705E81F24B8C",
+          "domain": "3F9E08C8-96C1-4FD0-9F00-BEF0DB7FB7B9",
           "id": "FDC9AEAA-8420-48A6-81B3-7F7F084B5C60"
         },
         {
@@ -35819,7 +35855,7 @@
           "refDict": "",
           "baseType": "D4F3414B-7780-49DE-979F-E697B65AE78D",
           "extProps": {},
-          "domain": "6AF16962-271B-4EAD-A807-705E81F24B8C",
+          "domain": "3F9E08C8-96C1-4FD0-9F00-BEF0DB7FB7B9",
           "id": "E3769B8E-76A7-4355-A80C-954172BEE4AD"
         },
         {
@@ -36010,7 +36046,7 @@
           "refDict": null,
           "baseType": "D4F3414B-7780-49DE-979F-E697B65AE78D",
           "extProps": {},
-          "domain": "6AF16962-271B-4EAD-A807-705E81F24B8C",
+          "domain": "3F9E08C8-96C1-4FD0-9F00-BEF0DB7FB7B9",
           "id": "F98BB2D9-63C1-4196-AFC7-C314A6C1E114",
           "uiHint": null
         },
@@ -36029,7 +36065,7 @@
           "refDict": null,
           "baseType": "D4F3414B-7780-49DE-979F-E697B65AE78D",
           "extProps": {},
-          "domain": "6AF16962-271B-4EAD-A807-705E81F24B8C",
+          "domain": "3F9E08C8-96C1-4FD0-9F00-BEF0DB7FB7B9",
           "id": "4EAF8C9E-04AD-40F5-9BF9-65B6AE0CA6B9",
           "uiHint": null
         },
@@ -36180,7 +36216,7 @@
           "refDict": null,
           "baseType": "D4F3414B-7780-49DE-979F-E697B65AE78D",
           "extProps": {},
-          "domain": "6AF16962-271B-4EAD-A807-705E81F24B8C",
+          "domain": "3F9E08C8-96C1-4FD0-9F00-BEF0DB7FB7B9",
           "id": "4109A785-AFBF-4D2E-800C-24C200E2E9FE",
           "uiHint": null
         },
@@ -36218,7 +36254,7 @@
           "refDict": null,
           "baseType": "D4F3414B-7780-49DE-979F-E697B65AE78D",
           "extProps": {},
-          "domain": "6AF16962-271B-4EAD-A807-705E81F24B8C",
+          "domain": "3F9E08C8-96C1-4FD0-9F00-BEF0DB7FB7B9",
           "id": "0BBB3689-18AA-4482-8FE6-FD49ABE08A7B",
           "uiHint": null
         },
