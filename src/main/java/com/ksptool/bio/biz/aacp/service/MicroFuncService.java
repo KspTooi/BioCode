@@ -182,6 +182,7 @@ public class MicroFuncService {
                 po.setDescription(def.getDescription());
                 po.setTarget(def.getTarget());
                 po.setSchema(schema);
+                po.setIsBundle(0);
                 repository.save(po);
                 added++;
                 continue;
