@@ -1,7 +1,8 @@
 package com.ksptool.bio.biz.aacp.model.func;
 
 import com.ksptool.assembly.entity.exception.AuthException;
-import com.ksptool.bio.biz.auth.service.SessionService;
+import com.ksptool.bio.biz.auth.common.aop.CreatedRootId;
+import com.ksptool.bio.biz.auth.common.aop.RsAuditingEntityListener;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -20,7 +21,7 @@ import java.time.LocalDateTime;
 @Setter
 @Entity
 @Table(name = "aacp_micro_func")
-@EntityListeners(AuditingEntityListener.class)
+@EntityListeners({AuditingEntityListener.class, RsAuditingEntityListener.class})
 @SQLDelete(sql = "UPDATE aacp_micro_func SET delete_time = NOW() WHERE id = ?")
 @SQLRestriction("delete_time IS NULL")
 public class AacpMicroFuncPo {
@@ -30,6 +31,7 @@ public class AacpMicroFuncPo {
     @Column(name = "id", nullable = false, comment = "主键ID")
     private Long id;
 
+    @CreatedRootId
     @Column(name = "root_id", nullable = false, comment = "租户ID")
     private Long rootId;
 
@@ -50,6 +52,9 @@ public class AacpMicroFuncPo {
 
     @Column(name = "remark", length = 500, comment = "备注")
     private String remark;
+
+    @Column(name = "is_bundle", nullable = false, comment = "是否绑定 0:否 1:是")
+    private Integer isBundle;
 
     @CreatedDate
     @Column(name = "create_time", nullable = false, comment = "创建时间")
@@ -72,10 +77,7 @@ public class AacpMicroFuncPo {
 
     @PrePersist
     private void onCreate() throws AuthException {
-        var session = SessionService.session();
-        if (this.rootId == null) {
-            this.rootId = session.getRootId();
-        }
+        this.isBundle = 0;
     }
 
     @PreUpdate

@@ -82,6 +82,7 @@ public class MicroFuncService {
             throw new BizException("微函数标识已存在,请更换后重试.");
         }
         AacpMicroFuncPo insertPo = as(dto, AacpMicroFuncPo.class);
+        insertPo.setIsBundle(0);
         repository.save(insertPo);
     }
 
@@ -100,6 +101,7 @@ public class MicroFuncService {
                 .orElseThrow(() -> new BizException("更新失败,数据不存在或无权限访问."));
 
         assign(dto, updatePo);
+        updatePo.setIsBundle(0);
         repository.save(updatePo);
     }
 
