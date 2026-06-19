@@ -103,9 +103,9 @@ const onWheel = (event: WheelEvent): void => {
 
 .neo-menu-t1__item.is-active {
   background-color: rgba(255, 255, 255, 0.02);
-  color: #5cdfcd;
+  color: #11cab2;
   font-weight: 500;
-  border-bottom-color: rgb(78, 231, 211);
+  border-bottom-color: rgb(23, 214, 189);
 }
 
 .neo-menu-t1__item.is-active:hover {
