@@ -245,7 +245,7 @@ onBeforeUnmount(() => {
   z-index: 2;
 }
 
-.tab-item.active::after {
+/* .tab-item.active::after {
   content: "";
   position: absolute;
   top: 0;
@@ -253,7 +253,7 @@ onBeforeUnmount(() => {
   width: 100%;
   height: 2px;
   background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-}
+} */
 
 .tab-title {
   margin-right: 8px;

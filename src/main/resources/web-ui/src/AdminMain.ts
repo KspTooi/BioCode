@@ -32,6 +32,7 @@ import AacpRouteRegister from "@/views/aacp/route/AacpRouteRegister";
 import ComAuthProviderService from "@/soa/com-series/service/ComAuthProvider.ts";
 import UserLogin from "@/views/auth/UserLogin.vue";
 import PatLogin from "@/views/auth/PatLogin.vue";
+import NeoLayout from "@/soa/layout-series-neo/NeoFramework.vue";
 /**
  * 固定路由 这些路由不会被GenricRouteService动态注册 请注意不要随意修改这些路由，因为它们游离于业务域之外，会引发严重的路由冲突问题。
  */
@@ -87,9 +88,10 @@ setupIconify();
 
 //注册多布局
 ComLayoutProviderService.registerLayout("default", DefaultLayout);
+ComLayoutProviderService.registerLayout("neo", NeoLayout);
 
 //设置默认布局（路由 meta.layout 为 default 或未指定时生效）
-ComLayoutProviderService.setDefaultLayout("default");
+ComLayoutProviderService.setDefaultLayout("neo");
 
 //注册多认证组件
 ComAuthProviderService.registerAuth("default", UserLogin);
