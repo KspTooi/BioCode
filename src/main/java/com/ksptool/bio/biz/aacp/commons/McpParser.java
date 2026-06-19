@@ -1,20 +1,23 @@
 package com.ksptool.bio.biz.aacp.commons;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import com.google.gson.ToNumberPolicy;
 import com.ksptool.bio.biz.aacp.commons.jrpc.InputMethods;
 import com.ksptool.bio.biz.aacp.commons.jrpc.RpcInput;
-
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
 @Getter
 public class McpParser {
 
-    private static final Gson g = new Gson();
+    private static final Gson g = new GsonBuilder()
+            .setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
+            .setNumberToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
+            .create();
 
     private final RpcInput<String> input;
 

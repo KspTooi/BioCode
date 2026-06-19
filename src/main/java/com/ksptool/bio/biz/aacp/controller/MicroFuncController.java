@@ -83,4 +83,11 @@ public class MicroFuncController {
         return Result.success(microFuncService.getMicroFuncRegistryList());
     }
 
+    @PreAuthorize("@auth.hasCode('aacp:func:add')")
+    @Operation(summary = "同步微函数")
+    @PostMapping("/syncMicroFuncs")
+    public Result<String> syncMicroFuncs() throws Exception {
+        return Result.success(microFuncService.syncMicroFuncs());
+    }
+
 }

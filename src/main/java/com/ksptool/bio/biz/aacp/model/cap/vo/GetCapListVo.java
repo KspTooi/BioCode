@@ -14,7 +14,7 @@ public class GetCapListVo {
     @Schema(description = "能力包名称")
     private String name;
 
-    @Schema(description = "类型 0:微函数")
+    @Schema(description = "类型 0:标准")
     private Integer kind;
 
     @Schema(description = "备注")
@@ -22,5 +22,8 @@ public class GetCapListVo {
 
     @Schema(description = "关联微函数数量")
     private Long funcCount;
+
+    @Schema(description = "关联数据源数量")
+    private Long datasourceCount;
 
 }

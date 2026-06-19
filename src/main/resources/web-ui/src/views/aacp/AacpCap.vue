@@ -8,7 +8,7 @@
           </el-form-item>
           <el-form-item label="类型">
             <el-select v-model="listForm.kind" placeholder="请选择" clearable>
-              <el-option label="微函数" :value="0" />
+              <el-option label="标准" :value="0" />
             </el-select>
           </el-form-item>
         </div>
@@ -29,10 +29,11 @@
         <el-table-column label="能力包名称" prop="name" />
         <el-table-column label="类型" width="100" align="center">
           <template #default="scope">
-            <span v-show="scope.row.kind === 0">微函数</span>
+            <span v-show="scope.row.kind === 0">标准</span>
           </template>
         </el-table-column>
         <el-table-column label="微函数数量" prop="funcCount" width="120" align="center" />
+        <el-table-column label="数据源数量" prop="datasourceCount" width="120" align="center" />
         <el-table-column label="备注" prop="remark" show-overflow-tooltip />
         <el-table-column label="操作" fixed="right" width="140">
           <template #default="scope">
@@ -66,7 +67,7 @@
         </el-form-item>
         <el-form-item label="类型" prop="kind">
           <el-select v-model="modalForm.kind" placeholder="请选择类型">
-            <el-option label="微函数" :value="0" />
+            <el-option label="标准" :value="0" />
           </el-select>
         </el-form-item>
         <el-form-item label="绑定微函数" prop="funcIds">
@@ -75,7 +76,13 @@
           </el-select>
         </el-form-item>
         <el-form-item label="绑定数据源" prop="datasourceIds">
-          <el-select v-model="modalForm.datasourceIds" multiple filterable :loading="datasourceLoading" placeholder="请选择数据源">
+          <el-select
+            v-model="modalForm.datasourceIds"
+            multiple
+            filterable
+            :loading="datasourceLoading"
+            placeholder="请选择数据源"
+          >
             <el-option v-for="item in datasourceOptions" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
@@ -117,8 +124,7 @@ const DeleteIcon = markRaw(Delete);
 
 const modalFormRef = ref<FormInstance>();
 
-const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } =
-  AacpCapService.useCapList();
+const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } = AacpCapService.useCapList();
 
 const {
   modalVisible,

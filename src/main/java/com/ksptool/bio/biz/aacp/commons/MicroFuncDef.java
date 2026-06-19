@@ -3,11 +3,7 @@ package com.ksptool.bio.biz.aacp.commons;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -18,13 +14,13 @@ import java.util.Map;
  */
 @Getter
 @Schema(description = "微函数元信息")
-public class MicroFuncDefinition {
-
-    @Schema(description = "微函数唯一标识")
-    private final String target;
+public class MicroFuncDef {
 
     @Schema(description = "微函数名称")
     private final String name;
+
+    @Schema(description = "微函数唯一标识")
+    private final String target;
 
     @Schema(description = "微函数描述")
     private final String description;
@@ -35,16 +31,35 @@ public class MicroFuncDefinition {
     @Schema(description = "目标方法")
     private final Method method;
 
-    @Schema(description = "方法参数类型数组")
-    private final Class<?>[] parameterTypes;
+    @Schema(description = "方法参数定义列表（名称 + 类型，来自 @Param 注解）")
+    private final MicroFuncParamDef[] parameters;
 
-    public MicroFuncDefinition(String target, String name, String description, Object bean, Method method) {
+    public MicroFuncDef(String target, String name, String description, Object bean, Method method) {
         this.target = target;
         this.name = name;
         this.description = description;
         this.bean = bean;
         this.method = method;
-        this.parameterTypes = method.getParameterTypes();
+        Parameter[] javaParams = method.getParameters();
+        MicroFuncParamDef[] defParams = new MicroFuncParamDef[javaParams.length];
+        for (int i = 0; i < javaParams.length; i++) {
+            defParams[i] = MicroFuncParamDef.of(javaParams[i], i);
+        }
+        this.parameters = defParams;
+    }
+
+    /**
+     * 静态工厂方法，创建 MicroFuncDefinition 实例。
+     *
+     * @param target      微函数唯一标识
+     * @param name        微函数名称
+     * @param description 微函数描述
+     * @param bean        所属 Spring Bean 实例
+     * @param method      目标方法
+     * @return 新实例
+     */
+    public static MicroFuncDef of(String target, String name, String description, Object bean, Method method) {
+        return new MicroFuncDef(target, name, description, bean, method);
     }
 
     /**
@@ -69,10 +84,9 @@ public class MicroFuncDefinition {
         Map<String, Object> properties = new LinkedHashMap<>();
         List<String> required = new ArrayList<>();
 
-        for (int i = 0; i < parameterTypes.length; i++) {
-            Class<?> paramType = parameterTypes[i];
-            java.lang.reflect.Parameter param = method.getParameters()[i];
-            String paramName = param.getName();
+        for (int i = 0; i < parameters.length; i++) {
+            Class<?> paramType = parameters[i].getType();
+            String paramName = parameters[i].getName();
 
             properties.put(paramName, resolveTypeToSchema(paramType));
             if (paramType.isPrimitive()

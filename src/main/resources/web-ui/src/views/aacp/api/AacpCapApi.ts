@@ -6,20 +6,21 @@ import type CommonIdDto from "@/commons/model/CommonIdDto.ts";
 
 export interface GetCapListDto extends PageQuery {
   name: string | null; //能力包名称
-  kind: number | null; //类型 0:微函数
+  kind: number | null; //类型 0:标准
 }
 
 export interface GetCapListVo {
   id: string; //主键ID
   name: string; //能力包名称
-  kind: number; //类型 0:微函数
+  kind: number; //类型 0:标准
   remark: string; //备注
   funcCount: number; //关联微函数数量
+  datasourceCount: number; //关联数据源数量
 }
 
 export interface AddCapDto {
   name: string | null; //能力包名称
-  kind: number | null; //类型 0:微函数
+  kind: number | null; //类型 0:标准
   remark: string | null; //备注
   funcIds: string[]; //微函数ID列表
   datasourceIds: string[]; //数据源ID列表
@@ -28,7 +29,7 @@ export interface AddCapDto {
 export interface EditCapDto {
   id: string | null; //主键ID
   name: string | null; //能力包名称
-  kind: number | null; //类型 0:微函数
+  kind: number | null; //类型 0:标准
   remark: string | null; //备注
   funcIds: string[]; //微函数ID列表
   datasourceIds: string[]; //数据源ID列表
@@ -37,7 +38,7 @@ export interface EditCapDto {
 export interface GetCapDetailsVo {
   id: string; //主键ID
   name: string | null; //能力包名称
-  kind: number | null; //类型 0:微函数
+  kind: number | null; //类型 0:标准
   remark: string | null; //备注
   funcIds: string[]; //关联的微函数ID列表
   datasourceIds: string[]; //关联的数据源ID列表

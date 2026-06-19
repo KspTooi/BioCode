@@ -1,7 +1,7 @@
 package com.ksptool.bio.biz.aacp.model.cap;
 
-import com.ksptool.assembly.entity.exception.AuthException;
-import com.ksptool.bio.biz.auth.service.SessionService;
+import com.ksptool.bio.biz.auth.common.aop.CreatedRootId;
+import com.ksptool.bio.biz.auth.common.aop.RsAuditingEntityListener;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 @Setter
 @Entity
 @Table(name = "aacp_cap")
-@EntityListeners(AuditingEntityListener.class)
+@EntityListeners({AuditingEntityListener.class, RsAuditingEntityListener.class})
 @SQLDelete(sql = "UPDATE aacp_cap SET delete_time = NOW() WHERE id = ?")
 @SQLRestriction("delete_time IS NULL")
 public class AacpCapPo {
@@ -30,13 +30,14 @@ public class AacpCapPo {
     @Column(name = "id", nullable = false, comment = "主键ID")
     private Long id;
 
+    @CreatedRootId
     @Column(name = "root_id", nullable = false, comment = "租户ID")
     private Long rootId;
 
     @Column(name = "name", nullable = false, length = 40, comment = "能力包名称")
     private String name;
 
-    @Column(name = "kind", nullable = false, columnDefinition = "tinyint", comment = "类型 0:微函数")
+    @Column(name = "kind", nullable = false, columnDefinition = "tinyint", comment = "类型 0:标准")
     private Integer kind;
 
     @Column(name = "remark", length = 500, comment = "备注")
@@ -60,17 +61,4 @@ public class AacpCapPo {
 
     @Column(name = "delete_time", comment = "删除时间")
     private LocalDateTime deleteTime;
-
-    @PrePersist
-    private void onCreate() throws AuthException {
-        var session = SessionService.session();
-        if (this.rootId == null) {
-            this.rootId = session.getRootId();
-        }
-    }
-
-    @PreUpdate
-    private void onUpdate() throws AuthException {
-
-    }
 }

@@ -147,15 +147,8 @@ public class CapService {
                 .orElseThrow(() -> new BizException("查询详情失败,数据不存在或无权限访问."));
         var vo = as(po, GetCapDetailsVo.class);
 
-        //微函数能力包
-        if (po.getKind() == 0) {
-            vo.setFuncIds(capMicroFuncRepository.getMicroFuncIdsByCapId(po.getId()));
-        }
-
-        //数据源能力包
-        if (po.getKind() == 1) {
-            vo.setDatasourceIds(capDatasourceRepository.getDatasourceIdsByCapId(po.getId()));
-        }
+        vo.setFuncIds(capMicroFuncRepository.getMicroFuncIdsByCapId(po.getId()));
+        vo.setDatasourceIds(capDatasourceRepository.getDatasourceIdsByCapId(po.getId()));
 
         return vo;
     }

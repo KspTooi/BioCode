@@ -14,10 +14,10 @@ public class GetOnlineSessionListVo {
     private String sessionId;
 
     @Schema(description = "枢纽名称")
-    private String serverName;
+    private String hubName;
 
     @Schema(description = "枢纽编码")
-    private String serverCode;
+    private String hubCode;
 
     @Schema(description = "连接时间")
     private LocalDateTime connectTime;

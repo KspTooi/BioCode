@@ -2,7 +2,12 @@ import { onMounted, reactive, ref, type Ref } from "vue";
 import type { FormInstance, FormRules } from "element-plus";
 import { ElMessage, ElMessageBox } from "element-plus";
 import AacpMicroFuncApi from "@/views/aacp/api/AacpMicroFuncApi.ts";
-import type { GetMicroFuncListDto, GetMicroFuncListVo, GetMicroFuncDetailsVo, GetMicroFuncRegistryVo } from "@/views/aacp/api/AacpMicroFuncApi.ts";
+import type {
+  GetMicroFuncListDto,
+  GetMicroFuncListVo,
+  GetMicroFuncDetailsVo,
+  GetMicroFuncRegistryVo,
+} from "@/views/aacp/api/AacpMicroFuncApi.ts";
 import { Result } from "@/commons/model/Result.ts";
 import QueryPersistService from "@/commons/service/QueryPersistService.ts";
 
@@ -68,6 +73,36 @@ export default {
       }
     };
 
+    /**
+     * 同步微函数：调用后端同步所有 @MicroFunc 定义的记录到数据库
+     */
+    const syncMicroFuncs = async (): Promise<void> => {
+      try {
+        await ElMessageBox.confirm(
+          "此操作将自动扫描系统中所有 @MicroFunc 注解，并将尚未入库的微函数自动写入数据库。确认同步？",
+          "同步微函数",
+          {
+            confirmButtonText: "同步",
+            cancelButtonText: "取消",
+            type: "warning",
+          }
+        );
+      } catch {
+        return;
+      }
+
+      try {
+        listLoading.value = true;
+        await AacpMicroFuncApi.syncMicroFuncs();
+        ElMessage.success("同步微函数成功");
+        await loadList();
+      } catch (error: any) {
+        ElMessage.error(error.message);
+      } finally {
+        listLoading.value = false;
+      }
+    };
+
     onMounted(async () => {
       QueryPersistService.loadQuery(PERSIST_KEY, listForm);
       await loadList();
@@ -81,6 +116,7 @@ export default {
       loadList,
       resetList,
       removeList,
+      syncMicroFuncs,
     };
   },
 
@@ -115,8 +151,8 @@ export default {
         { max: 1000, message: "意图词长度不能超过1000", trigger: "blur" },
       ],
       target: [
-        { required: true, message: "请输入调用目标Bean", trigger: "blur" },
-        { max: 1000, message: "调用目标Bean长度不能超过1000", trigger: "blur" },
+        { required: true, message: "请输入目标方法", trigger: "blur" },
+        { max: 1000, message: "目标方法长度不能超过1000", trigger: "blur" },
       ],
       remark: [{ max: 500, message: "备注长度不能超过500", trigger: "blur" }],
     };

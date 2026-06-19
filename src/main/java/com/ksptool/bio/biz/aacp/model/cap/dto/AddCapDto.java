@@ -20,7 +20,7 @@ public class AddCapDto implements DtoCustomValidator {
     private String name;
 
     @NotNull(message = "类型不能为空")
-    @Schema(description = "类型 0:微函数")
+    @Schema(description = "类型 0:标准")
     private Integer kind;
 
     @Length(max = 500, message = "备注长度不能超过500")

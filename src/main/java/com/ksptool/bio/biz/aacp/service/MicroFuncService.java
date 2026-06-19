@@ -1,12 +1,13 @@
 package com.ksptool.bio.biz.aacp.service;
 
+import com.google.gson.Gson;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
-import com.ksptool.bio.biz.aacp.commons.MicroFuncDefinition;
-import com.ksptool.bio.biz.aacp.commons.MicroFuncRegistry;
+import com.ksptool.bio.biz.aacp.commons.MicroFuncDef;
 import com.ksptool.bio.biz.aacp.commons.annotation.MicroFunc;
-import com.ksptool.bio.biz.aacp.model.func.AacpFuncPo;
+import com.ksptool.bio.biz.aacp.commons.annotation.Param;
+import com.ksptool.bio.biz.aacp.model.func.AacpMicroFuncPo;
 import com.ksptool.bio.biz.aacp.model.func.dto.AddMicroFuncDto;
 import com.ksptool.bio.biz.aacp.model.func.dto.EditMicroFuncDto;
 import com.ksptool.bio.biz.aacp.model.func.dto.GetMicroFuncListDto;
@@ -15,6 +16,7 @@ import com.ksptool.bio.biz.aacp.model.func.vo.GetMicroFuncListVo;
 import com.ksptool.bio.biz.aacp.model.func.vo.GetMicroFuncRegistryVo;
 import com.ksptool.bio.biz.aacp.repository.CapMicroFuncRepository;
 import com.ksptool.bio.biz.aacp.repository.MicroFuncRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -27,13 +29,12 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
 
+@Slf4j
 @Service
 public class MicroFuncService {
 
@@ -44,7 +45,7 @@ public class MicroFuncService {
     private CapMicroFuncRepository capMicroFuncRepository;
 
     @Autowired
-    private MicroFuncRegistry microFuncRegistry;
+    private MicroFuncRuntimeService runtimeService;
 
     /**
      * 查询微函数列表
@@ -53,10 +54,10 @@ public class MicroFuncService {
      * @return 查询结果
      */
     public PageResult<GetMicroFuncListVo> getMicroFuncList(GetMicroFuncListDto dto) {
-        AacpFuncPo query = new AacpFuncPo();
+        AacpMicroFuncPo query = new AacpMicroFuncPo();
         assign(dto, query);
 
-        Page<AacpFuncPo> page = repository.getMicroFuncList(query, dto.pageRequest());
+        Page<AacpMicroFuncPo> page = repository.getMicroFuncList(query, dto.pageRequest());
         if (page.isEmpty()) {
             return PageResult.successWithEmpty();
         }
@@ -76,7 +77,8 @@ public class MicroFuncService {
         if (repository.countByCodeExcludeId(dto.getCode(), null) > 0) {
             throw new BizException("微函数标识已存在,请更换后重试.");
         }
-        AacpFuncPo insertPo = as(dto, AacpFuncPo.class);
+        AacpMicroFuncPo insertPo = as(dto, AacpMicroFuncPo.class);
+        insertPo.setNsBundle(0);
         repository.save(insertPo);
     }
 
@@ -91,10 +93,11 @@ public class MicroFuncService {
         if (repository.countByCodeExcludeId(dto.getCode(), dto.getId()) > 0) {
             throw new BizException("微函数标识已存在,请更换后重试.");
         }
-        AacpFuncPo updatePo = repository.findById(dto.getId())
+        AacpMicroFuncPo updatePo = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("更新失败,数据不存在或无权限访问."));
 
         assign(dto, updatePo);
+        updatePo.setNsBundle(0);
         repository.save(updatePo);
     }
 
@@ -106,7 +109,7 @@ public class MicroFuncService {
      * @throws BizException 业务异常
      */
     public GetMicroFuncDetailsVo getMicroFuncDetails(CommonIdDto dto) throws BizException {
-        AacpFuncPo po = repository.findById(dto.getId())
+        AacpMicroFuncPo po = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("查询详情失败,数据不存在或无权限访问."));
         return as(po, GetMicroFuncDetailsVo.class);
     }
@@ -136,21 +139,78 @@ public class MicroFuncService {
      */
     public List<GetMicroFuncRegistryVo> getMicroFuncRegistryList() {
         List<GetMicroFuncRegistryVo> vos = new ArrayList<>();
-        for (MicroFuncDefinition def : microFuncRegistry.getAll()) {
+        for (MicroFuncDef def : runtimeService.getAll()) {
             GetMicroFuncRegistryVo vo = new GetMicroFuncRegistryVo();
             vo.setTarget(def.getTarget());
             vo.setName(def.getName());
             vo.setDescription(def.getDescription());
-            vo.setParameterCount(def.getParameterTypes().length);
+            vo.setParameterCount(def.getParameters().length);
 
             List<String> typeNames = new ArrayList<>();
-            for (Class<?> type : def.getParameterTypes()) {
-                typeNames.add(type.getName());
+            for (var p : def.getParameters()) {
+                typeNames.add(p.getType().getName());
             }
             vo.setParameterTypes(typeNames);
             vos.add(vo);
         }
         return vos;
+    }
+
+    /**
+     * 同步微函数：从 MicroFuncRuntimeService 获取所有已注册定义，缺失的自动写入数据库。
+     *
+     * @return 同步结果描述
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public String syncMicroFuncs() {
+        Collection<MicroFuncDef> defs = runtimeService.getAll();
+        int added = 0;
+        int updated = 0;
+        int skipped = 0;
+        for (MicroFuncDef def : defs) {
+            String schema = new Gson().toJson(def.getInputSchema());
+            AacpMicroFuncPo existing = repository.getByCode(def.getTarget());
+
+            if (existing == null) {
+                AacpMicroFuncPo po = new AacpMicroFuncPo();
+                po.setCode(def.getTarget());
+                po.setName(def.getName());
+                po.setDescription(def.getDescription());
+                po.setTarget(def.getTarget());
+                po.setSchema(schema);
+                po.setNsBundle(0);
+                repository.save(po);
+                added++;
+                continue;
+            }
+
+            //已有记录：比较注解数据与库中是否一致，不一致则更新
+            boolean needUpdate = false;
+            if (!Objects.equals(existing.getName(), def.getName())) {
+                existing.setName(def.getName());
+                needUpdate = true;
+            }
+            if (!Objects.equals(existing.getDescription(), def.getDescription())) {
+                existing.setDescription(def.getDescription());
+                needUpdate = true;
+            }
+            if (!Objects.equals(existing.getTarget(), def.getTarget())) {
+                existing.setTarget(def.getTarget());
+                needUpdate = true;
+            }
+            if (!Objects.equals(existing.getSchema(), schema)) {
+                existing.setSchema(schema);
+                needUpdate = true;
+            }
+            if (needUpdate) {
+                repository.save(existing);
+                updated++;
+                continue;
+            }
+            skipped++;
+        }
+        log.info("微函数同步完成: 新增{}条, 更新{}条, 跳过{}条", added, updated, skipped);
+        return "同步完成：新增" + added + "条，更新" + updated + "条，跳过" + skipped + "条";
     }
 
     @MicroFunc(target = "test.hello", name = "问候", description = "返回一句问候语")
@@ -159,7 +219,7 @@ public class MicroFuncService {
     }
 
     @MicroFunc(target = "test.add", name = "加法计算", description = "对两个整数执行加法运算")
-    public int addNumbers(int a, int b) {
+    public int addNumbers(@Param("a") int a, @Param("b") int b) {
         return a + b;
     }
 
@@ -169,13 +229,13 @@ public class MicroFuncService {
     }
 
     @MicroFunc(target = "test.echo", name = "回声", description = "将输入的消息原样返回")
-    public String echo(String message) {
+    public String echo(@Param("message") String message) {
         return message;
     }
 
     @MicroFunc(target = "test.status", name = "状态列表", description = "返回系统状态项列表")
     public List<String> listStatus() {
-        return Arrays.asList("运行中", "正常", "微函数数量：" + microFuncRegistry.size());
+        return Arrays.asList("运行中", "正常", "微函数数量：" + runtimeService.size());
     }
 
     /**
@@ -188,7 +248,7 @@ public class MicroFuncService {
      * @return 格式化的响应信息（状态码 + 响应体前2000字符）
      */
     @MicroFunc(target = "test.curl", name = "HTTP请求", description = "向指定URL发起GET请求并返回响应内容，支持代理访问网页或API")
-    public String httpGet(String url) throws Exception {
+    public String httpGet(@Param("url") String url) throws Exception {
         HttpClient client = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
                 .build();

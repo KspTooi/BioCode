@@ -72,3 +72,4 @@ coverage
 
 ### CodeGraph ###
 .codegraph/codegraph.db
+.codegraph/daemon.pid
