@@ -63,6 +63,13 @@ public class MicroFuncParamResolver {
                 continue;
             }
 
+            // 基本类型转换：String → 包装类型、Number → 包装类型
+            Object converted = convertBasicType(pFip, def.getType());
+            if (converted != null) {
+                params[idx] = converted;
+                continue;
+            }
+
             // 否则尝试 as 映射（适用于 DTO 等复杂类型）
             params[idx] = as(pFip, def.getType());
         }
@@ -77,6 +84,39 @@ public class MicroFuncParamResolver {
 
     public boolean hasParam(String name) {
         return inputParams.containsKey(name);
+    }
+
+    /** 将 String 或 Number 转换为指定的基本包装类型，不匹配时返回 null */
+    private static Object convertBasicType(Object value, Class<?> targetType) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof String s) {
+            if (targetType == Long.class || targetType == long.class) {
+                return Long.valueOf(s);
+            }
+            if (targetType == Integer.class || targetType == int.class) {
+                return Integer.valueOf(s);
+            }
+            if (targetType == Double.class || targetType == double.class) {
+                return Double.valueOf(s);
+            }
+            if (targetType == Boolean.class || targetType == boolean.class) {
+                return Boolean.valueOf(s);
+            }
+        }
+        if (value instanceof Number n) {
+            if (targetType == Long.class || targetType == long.class) {
+                return n.longValue();
+            }
+            if (targetType == Integer.class || targetType == int.class) {
+                return n.intValue();
+            }
+            if (targetType == Double.class || targetType == double.class) {
+                return n.doubleValue();
+            }
+        }
+        return null;
     }
 
 }

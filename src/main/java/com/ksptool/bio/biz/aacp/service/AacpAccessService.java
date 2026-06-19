@@ -249,7 +249,9 @@ public class AacpAccessService {
             try {
                 ToolsCallVo vo = runtimeService.call(funcPo.getTarget(), callDto.getArguments());
                 return RpcOutput.success(input.getId(), vo);
-            } finally {
+            }catch (Exception e) {
+                return RpcOutput.error(input.getId(), -32601, "服务器内部错误: " + e.getMessage());
+            }finally {
                 MicroFuncContextHolder.clear();
             }
         }
