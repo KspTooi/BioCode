@@ -3,7 +3,7 @@
     <header class="neo-header">
       <div class="neo-header__left">
         <img v-if="logoUrl" :src="logoUrl" alt="logo" class="neo-header__logo" />
-        <span class="neo-header__title">EAS CROWN管理台</span>
+        <span class="neo-header__title">EAS管理台</span>
       </div>
       <div class="neo-header__center">
         <neo-menu-t1 />

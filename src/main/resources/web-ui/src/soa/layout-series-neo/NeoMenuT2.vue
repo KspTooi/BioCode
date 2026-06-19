@@ -17,13 +17,27 @@
         </div>
       </template>
     </div>
+    <div class="qlc-menu-t2__footer">
+      <span class="version-tag">服务端版本:{{ appVersion }}</span>
+    </div>
   </aside>
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import NeoMenuService from "@/soa/layout-series-neo/service/NeoMenuService.ts";
+import UserAuthService from "@/views/auth/service/UserAuthService.ts";
 
 const { loading, activeMenuId, menuSections, menuT2Visible, onMenuItemClick } = NeoMenuService.useNeoMenuT2();
+
+//获取应用版本
+const appVersion = computed(() => {
+  const userInfo = UserAuthService.AuthStore().getUserInfo;
+  if (!userInfo) {
+    return "未知";
+  }
+  return userInfo.appVersion;
+});
 </script>
 
 <style scoped>
@@ -34,10 +48,12 @@ const { loading, activeMenuId, menuSections, menuT2Visible, onMenuItemClick } = 
   background-color: #f8fafc;
   border-right: 1px solid #e2e8f0;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
 .qlc-menu-t2__scroll {
-  height: 100%;
+  flex: 1;
   overflow-x: hidden;
   overflow-y: auto;
   padding: 16px 12px;
@@ -92,12 +108,27 @@ const { loading, activeMenuId, menuSections, menuT2Visible, onMenuItemClick } = 
 }
 
 .qlc-menu-t2__item.is-active {
-  background-color: #eff6ff;
+  background-color: #e6f5f3;
   font-weight: 600;
-  color: #2563eb;
+  color: var(--el-color-primary, #009688);
 }
 
 .qlc-menu-t2__item.is-active:hover {
-  background-color: #eff6ff;
+  background-color: #e6f5f3;
+}
+
+.qlc-menu-t2__footer {
+  padding: 8px 16px;
+  border-top: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.version-tag {
+  font-size: 12px;
+  color: #94a3b8;
+  user-select: none;
 }
 </style>
