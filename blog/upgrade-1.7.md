@@ -225,7 +225,7 @@ Version 1.7F CheckPoint 35
 
 ---
 
-## 1.7G-Neo 布局框架
+## 1.7G6-Neo 布局框架
 
 Version 1.7G CheckPoint 6
 
