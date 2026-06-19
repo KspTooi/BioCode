@@ -49,14 +49,13 @@ const onWheel = (event: WheelEvent): void => {
 <style scoped>
 .neo-menu-t1 {
   flex-shrink: 0;
-  height: 35px;
+  height: 50px;
   box-sizing: border-box;
-  background-color: var(--com-menu-bg, #4195e8);
-  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.12);
+  background-color: transparent;
 }
 
 .neo-menu-t1__scroll {
-  height: 35px;
+  height: 50px;
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none;
@@ -83,8 +82,9 @@ const onWheel = (event: WheelEvent): void => {
   height: 100%;
   padding: 0 16px;
   border: none;
+  border-bottom: 3px solid transparent;
   background: transparent;
-  color: var(--com-menu-text, #fff);
+  color: rgba(255, 255, 255, 0.7);
   font-size: 14px;
   line-height: 1;
   cursor: pointer;
@@ -92,21 +92,24 @@ const onWheel = (event: WheelEvent): void => {
   user-select: none;
   transition:
     background-color 0.2s,
-    color 0.2s;
+    color 0.2s,
+    border-color 0.2s;
 }
 
 .neo-menu-t1__item:hover {
-  background-color: var(--com-menu-hover-bg, rgba(255, 255, 255, 0.1));
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
 }
 
 .neo-menu-t1__item.is-active {
-  background-color: #fff;
-  color: var(--com-menu-bg, #4195e8);
+  background-color: rgba(255, 255, 255, 0.02);
+  color: #38bdf8;
   font-weight: 500;
+  border-bottom-color: #38bdf8;
 }
 
 .neo-menu-t1__item.is-active:hover {
-  background-color: #fff;
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .neo-menu-t1__icon {

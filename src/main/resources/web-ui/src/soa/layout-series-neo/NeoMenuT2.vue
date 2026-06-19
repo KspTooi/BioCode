@@ -31,7 +31,8 @@ const { loading, activeMenuId, menuSections, menuT2Visible, onMenuItemClick } = 
   flex-shrink: 0;
   width: 180px;
   height: 100%;
-  background-color: var(--com-menu-bg-t2, #297ecd);
+  background-color: #f8fafc;
+  border-right: 1px solid #e2e8f0;
   box-sizing: border-box;
 }
 
@@ -39,7 +40,7 @@ const { loading, activeMenuId, menuSections, menuT2Visible, onMenuItemClick } = 
   height: 100%;
   overflow-x: hidden;
   overflow-y: auto;
-  padding: 12px 10px 16px;
+  padding: 16px 12px;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -49,15 +50,17 @@ const { loading, activeMenuId, menuSections, menuT2Visible, onMenuItemClick } = 
 }
 
 .qlc-menu-t2__section + .qlc-menu-t2__section {
-  margin-top: 18px;
+  margin-top: 20px;
 }
 
 .qlc-menu-t2__title {
-  font-size: 13px;
-  font-weight: bold;
-  color: var(--com-menu-text, #fff);
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   line-height: 1.4;
-  padding: 0 10px 10px;
+  padding: 0 10px 8px;
   user-select: none;
 }
 
@@ -67,9 +70,9 @@ const { loading, activeMenuId, menuSections, menuT2Visible, onMenuItemClick } = 
   margin: 0 0 4px;
   padding: 8px 12px;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   background: transparent;
-  color: var(--com-menu-text-item, rgba(255, 255, 255, 0.85));
+  color: #475569;
   font-size: 14px;
   line-height: 1.4;
   text-align: left;
@@ -78,21 +81,23 @@ const { loading, activeMenuId, menuSections, menuT2Visible, onMenuItemClick } = 
   overflow: hidden;
   text-overflow: ellipsis;
   user-select: none;
-  transition: background-color 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 }
 
 .qlc-menu-t2__item:hover {
-  background-color: var(--com-menu-hover-bg, rgba(255, 255, 255, 0.1));
-  color: #ffffff;
+  background-color: #f1f5f9;
+  color: #0f172a;
 }
 
 .qlc-menu-t2__item.is-active {
-  background-color: var(--com-menu-active-bg, #2a7ac6);
-  font-weight: 500;
-  color: #ffffff;
+  background-color: #eff6ff;
+  font-weight: 600;
+  color: #2563eb;
 }
 
 .qlc-menu-t2__item.is-active:hover {
-  background-color: var(--com-menu-active-bg, #2a7ac6);
+  background-color: #eff6ff;
 }
 </style>
