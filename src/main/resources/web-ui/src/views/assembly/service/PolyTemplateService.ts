@@ -34,22 +34,18 @@ export default {
     const listLoading = ref(false);
 
     /**
-     * 加载列表
+     * 加载列表数据，首屏/查询/翻页均由此触发
      */
     const loadList = async (): Promise<void> => {
       listLoading.value = true;
       const result = await PolyTemplateApi.getPolyTemplateList(listForm.value);
-
+      listLoading.value = false;
       if (Result.isSuccess(result)) {
         listData.value = result.data;
         listTotal.value = result.total;
+        return;
       }
-
-      if (Result.isError(result)) {
-        ElMessage.error(result.message);
-      }
-
-      listLoading.value = false;
+      ElMessage.error(result.message || "加载列表失败");
     };
 
     /**
@@ -130,7 +126,7 @@ export default {
         { max: 16, message: "模板代码长度不能超过16个字符", trigger: "blur" },
       ],
       seq: [{ required: true, message: "请输入排序", trigger: "blur" }],
-      status: [{ required: true, message: "请输入状态 0:禁用 1:启用", trigger: "blur" }],
+      status: [{ required: true, message: "请选择状态", trigger: "change" }],
     };
 
     /**
@@ -211,7 +207,7 @@ export default {
             status: modalForm.status,
           };
           await PolyTemplateApi.addPolyTemplate(addDto);
-          ElMessage.success("新增成功");
+          ElMessage.success("创建成功");
           modalVisible.value = false;
           resetModal();
           reloadCallback();
