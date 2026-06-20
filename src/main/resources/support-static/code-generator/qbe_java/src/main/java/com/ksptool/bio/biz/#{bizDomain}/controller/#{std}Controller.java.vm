@@ -16,11 +16,11 @@ import com.ksptool.bio.commons.annotation.PrintLog;
 
 ## 引入专用包
 import com.ksptool.bio.biz.${model.bizDomain}.service.${model.std}Service;
-import com.ksptool.bio.biz.${model.bizDomain}.model.dto.Add${model.std}Dto;
-import com.ksptool.bio.biz.${model.bizDomain}.model.dto.Edit${model.std}Dto;
-import com.ksptool.bio.biz.${model.bizDomain}.model.dto.Get${model.std}ListDto;
-import com.ksptool.bio.biz.${model.bizDomain}.model.vo.Get${model.std}ListVo;
-import com.ksptool.bio.biz.${model.bizDomain}.model.vo.Get${model.std}DetailsVo;
+import com.ksptool.bio.biz.${model.bizDomain}.model.${model.lowerCase}.dto.Add${model.std}Dto;
+import com.ksptool.bio.biz.${model.bizDomain}.model.${model.lowerCase}.dto.Edit${model.std}Dto;
+import com.ksptool.bio.biz.${model.bizDomain}.model.${model.lowerCase}.dto.Get${model.std}ListDto;
+import com.ksptool.bio.biz.${model.bizDomain}.model.${model.lowerCase}.vo.Get${model.std}ListVo;
+import com.ksptool.bio.biz.${model.bizDomain}.model.${model.lowerCase}.vo.Get${model.std}DetailsVo;
 ## std; //标准化名称 ex: LocalUserAccount
 ## camelCase; //小驼峰名称 ex: localUserAccount
 ## pascalCase; //大驼峰名称 ex: LocalUserAccount

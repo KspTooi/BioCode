@@ -16,12 +16,12 @@ import org.springframework.data.domain.Page;
 import java.util.Optional;
 ## 引入专用包
 import com.ksptool.bio.biz.${model.bizDomain}.repository.${model.std}Repository;
-import com.ksptool.bio.biz.${model.bizDomain}.model.${model.std}Po;
-import com.ksptool.bio.biz.${model.bizDomain}.model.vo.Get${model.std}ListVo;
-import com.ksptool.bio.biz.${model.bizDomain}.model.dto.Get${model.std}ListDto;
-import com.ksptool.bio.biz.${model.bizDomain}.model.vo.Get${model.std}DetailsVo;
-import com.ksptool.bio.biz.${model.bizDomain}.model.dto.Edit${model.std}Dto;
-import com.ksptool.bio.biz.${model.bizDomain}.model.dto.Add${model.std}Dto;
+import com.ksptool.bio.biz.${model.bizDomain}.model.${model.lowerCase}.${model.std}Po;
+import com.ksptool.bio.biz.${model.bizDomain}.model.${model.lowerCase}.vo.Get${model.std}ListVo;
+import com.ksptool.bio.biz.${model.bizDomain}.model.${model.lowerCase}.dto.Get${model.std}ListDto;
+import com.ksptool.bio.biz.${model.bizDomain}.model.${model.lowerCase}.vo.Get${model.std}DetailsVo;
+import com.ksptool.bio.biz.${model.bizDomain}.model.${model.lowerCase}.dto.Edit${model.std}Dto;
+import com.ksptool.bio.biz.${model.bizDomain}.model.${model.lowerCase}.dto.Add${model.std}Dto;
 
 
 @Service

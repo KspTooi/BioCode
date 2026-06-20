@@ -1,19 +1,20 @@
-package com.ksptool.bio.biz.${model.bizDomain}.model.dto;
+package com.ksptool.bio.biz.${model.bizDomain}.model.${model.lowerCase}.dto;
 
 import java.time.LocalDateTime;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import com.ksptool.assembly.entity.web.PageQuery;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 @Getter
 @Setter
-public class Add${model.std}Dto {
+public class Get${model.std}ListDto extends PageQuery {
 
     #foreach ($field in $model.fields)
-    #if(!$field.primaryKey && $field.add)
+    #if($field.listQuery && !$field.primaryKey)
     @Schema(description="${field.comment}")
     private ${field.type} ${field.camelCase};
 

@@ -1,4 +1,4 @@
-package com.ksptool.bio.biz.${model.bizDomain}.model.vo;
+package com.ksptool.bio.biz.${model.bizDomain}.model.${model.lowerCase}.dto;
 
 import java.time.LocalDateTime;
 import java.math.BigDecimal;
@@ -10,10 +10,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @Getter
 @Setter
-public class Get${model.std}DetailsVo {
+public class Add${model.std}Dto {
 
     #foreach ($field in $model.fields)
-    #if($field.details)
+    #if(!$field.primaryKey && $field.add)
     @Schema(description="${field.comment}")
     private ${field.type} ${field.camelCase};
 

@@ -1,4 +1,4 @@
-package com.ksptool.bio.biz.${model.bizDomain}.model.vo;
+package com.ksptool.bio.biz.${model.bizDomain}.model.${model.lowerCase}.vo;
 
 import java.time.LocalDateTime;
 import java.math.BigDecimal;

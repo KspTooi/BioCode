@@ -1,4 +1,4 @@
-package com.ksptool.bio.biz.${model.bizDomain}.model;
+package com.ksptool.bio.biz.${model.bizDomain}.model.${model.lowerCase};
 
 import com.ksptool.assembly.entity.exception.AuthException;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;

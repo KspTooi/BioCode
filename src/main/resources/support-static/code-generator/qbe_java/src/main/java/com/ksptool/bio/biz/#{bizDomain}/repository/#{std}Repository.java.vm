@@ -32,7 +32,7 @@
 ## =========================================================
 package com.ksptool.bio.biz.${model.bizDomain}.repository;
 
-import com.ksptool.bio.biz.${model.bizDomain}.model.${model.std}Po;
+import com.ksptool.bio.biz.${model.bizDomain}.model.${model.lowerCase}.${model.std}Po;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.domain.Page;
