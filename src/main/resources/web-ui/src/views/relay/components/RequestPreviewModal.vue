@@ -172,7 +172,7 @@
 </template>
 
 <script setup lang="ts">
-import type { HttpHeaderVo } from "@/views/rdbg/api/UserRequestLogApi.ts";
+import type { HttpHeaderVo } from "@/views/relay/api/UserRequestLogApi";
 import { ref } from "vue";
 import VueJsonPretty from "vue-json-pretty";
 import "vue-json-pretty/lib/styles.css";
