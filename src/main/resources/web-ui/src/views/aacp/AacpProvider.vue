@@ -89,7 +89,7 @@
           <el-input v-model="modalForm.apiKey" placeholder="请输入接口密钥" clearable :maxlength="2000" show-word-limit />
         </el-form-item>
         <el-form-item label="接口类型" prop="apiKind">
-          <el-radio-group v-model="modalForm.apiKind">
+          <el-radio-group v-model="modalForm.apiKind" @change="onApiKindChange">
             <el-radio :value="0">OpenAi</el-radio>
             <el-radio :value="1">Anthropic</el-radio>
           </el-radio-group>
@@ -98,7 +98,21 @@
           <el-input v-model="modalForm.apiHost" placeholder="请输入接口地址" clearable :maxlength="512" show-word-limit />
         </el-form-item>
         <el-form-item label="接口端点" prop="apiUrl">
-          <el-input v-model="modalForm.apiUrl" placeholder="请输入接口端点" clearable :maxlength="512" show-word-limit />
+          <el-select
+            v-model="modalForm.apiUrl"
+            placeholder="请输入或选择接口端点"
+            allow-create
+            filterable
+            clearable
+            :maxlength="512"
+          >
+            <el-option
+              v-for="item in apiUrlOptions"
+              :key="item"
+              :label="item"
+              :value="item"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="代理类型" prop="proxyKind">
           <el-radio-group v-model="modalForm.proxyKind">
@@ -130,7 +144,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, markRaw } from "vue";
+import { ref, markRaw, computed } from "vue";
 import { Edit, Delete } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
 import ProviderService from "@/views/aacp/service/AacpProviderService";
@@ -152,6 +166,19 @@ const modalFormRef = ref<FormInstance>();
 // 模态框打包
 const { modalVisible, modalLoading, modalMode, modalForm, modalRules, openModal, resetModal, submitModal } =
   ProviderService.useProviderModal(modalFormRef, loadList);
+
+// 接口端点选项，根据接口类型动态切换
+const apiUrlOptions = computed(() => {
+  if (modalForm.apiKind === 0) {
+    return ["/v1/chat/completions", "/v1/responses"];
+  }
+  return ["/v1/messages"];
+});
+
+/** 切换接口类型时清空接口端点 */
+const onApiKindChange = (): void => {
+  modalForm.apiUrl = "";
+};
 </script>
 
 <style scoped></style>
