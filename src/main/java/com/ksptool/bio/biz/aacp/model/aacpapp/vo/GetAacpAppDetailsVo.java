@@ -12,25 +12,33 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @Setter
 public class GetAacpAppDetailsVo {
 
-    @Schema(description="应用名称")
+    @Schema(description = "主键ID")
+    private Long id;
+
+    @Schema(description = "应用名称")
     private String name;
 
-    @Schema(description="应用代码")
+    @Schema(description = "应用代码")
     private String code;
 
-    @Schema(description="访问密钥")
+    @Schema(description = "访问密钥")
     private String appKey;
 
-    @Schema(description="是否公开 0:不公开 1:公开")
+    @Schema(description = "是否公开 0:不公开 1:公开")
     private Integer isPublic;
 
-    @Schema(description="IP白名单列表")
+    @Schema(description = "IP白名单列表")
     private String ips;
 
-    @Schema(description="备注")
+    @Schema(description = "备注")
     private String remark;
 
-    @Schema(description="状态 0:禁用 1:启用")
+    @Schema(description = "状态 0:禁用 1:启用")
     private Integer status;
 
+    @Schema(description = "创建时间")
+    private LocalDateTime createTime;
+
+    @Schema(description = "更新时间")
+    private LocalDateTime updateTime;
 }

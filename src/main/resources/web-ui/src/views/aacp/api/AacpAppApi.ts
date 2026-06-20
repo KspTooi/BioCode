@@ -17,16 +17,19 @@ export interface GetAacpAppListDto extends PageQuery {
  * 查询AACP应用列表Vo
  */
 export interface GetAacpAppListVo {
+  id: string; // 主键ID
   name: string; // 应用名称
   code: string; // 应用代码
   isPublic: number; // 是否公开 0:不公开 1:公开
   status: number; // 状态 0:禁用 1:启用
+  createTime: string; // 创建时间
 }
 
 /**
  * 查询AACP应用详情Vo
  */
 export interface GetAacpAppDetailsVo {
+  id: string; // 主键ID
   name: string; // 应用名称
   code: string; // 应用代码
   appKey: string; // 访问密钥
@@ -34,6 +37,8 @@ export interface GetAacpAppDetailsVo {
   ips: string; // IP白名单列表
   remark: string; // 备注
   status: number; // 状态 0:禁用 1:启用
+  createTime: string; // 创建时间
+  updateTime: string; // 更新时间
 }
 
 /**
