@@ -1,4 +1,4 @@
-package com.ksptool.bio.biz.aacp.model.providermodel;
+package com.ksptool.bio.biz.aacp.model;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -7,14 +7,14 @@ import java.io.Serializable;
 
 @Getter
 @Setter
-@IdClass(ProviderModelPo.Pk.class)
+@IdClass(AacpAppModelPo.Pk.class)
 @Entity
-@Table(name = "aacp_provider_model", comment = "APM表")
-public class ProviderModelPo {
+@Table(name = "aacp_app_model", comment = "AAM表")
+public class AacpAppModelPo {
 
     @Id
-    @Column(name = "provider_id", nullable = false, comment = "PID")
-    private Long providerId;
+    @Column(name = "app_id", nullable = false, comment = "AID")
+    private Long appId;
 
     @Id
     @Column(name = "model_id", nullable = false, comment = "MID")
@@ -26,7 +26,7 @@ public class ProviderModelPo {
     @AllArgsConstructor
     @EqualsAndHashCode
     public static class Pk implements Serializable {
-        private Long providerId;
+        private Long appId;
         private Long modelId;
     }
 }
