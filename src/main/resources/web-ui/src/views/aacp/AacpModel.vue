@@ -54,13 +54,13 @@
         <el-table-column label="规格" min-width="130">
           <template #default="scope">
             <div class="flex items-center gap-3">
-              <el-tooltip content="最大上下文" placement="top">
+              <el-tooltip :content="`最大上下文: ${formatRaw(scope.row.maxContext)}`" placement="top">
                 <span class="flex items-center gap-1 text-slate-500">
                   <el-icon :size="14"><FullScreenIcon /></el-icon>
                   {{ formatNumber(scope.row.maxContext) }}
                 </span>
               </el-tooltip>
-              <el-tooltip content="最大输出词元" placement="top">
+              <el-tooltip :content="`最大输出词元: ${formatRaw(scope.row.maxOutputToken)}`" placement="top">
                 <span class="flex items-center gap-1 text-slate-500">
                   <el-icon :size="14"><PointerIcon /></el-icon>
                   {{ formatNumber(scope.row.maxOutputToken) }}
@@ -82,21 +82,21 @@
         <el-table-column label="单价" min-width="150">
           <template #default="scope">
             <div class="flex items-center gap-3">
-              <el-tooltip content="输入单价" placement="top">
+              <el-tooltip :content="`输入单价: ${formatRaw(scope.row.fincInput)}`" placement="top">
                 <span class="flex items-center gap-1 text-slate-500">
                   <el-icon :size="14"><CoinIcon /></el-icon>
                   <span v-if="scope.row.fincInput">{{ scope.row.fincInput }}</span>
                   <span v-if="!scope.row.fincInput" class="text-slate-300">-</span>
                 </span>
               </el-tooltip>
-              <el-tooltip content="输入单价(缓存)" placement="top">
+              <el-tooltip :content="`输入单价(缓存): ${formatRaw(scope.row.fincInputCached)}`" placement="top">
                 <span class="flex items-center gap-1 text-slate-500">
                   <el-icon :size="14"><TimerIcon /></el-icon>
                   <span v-if="scope.row.fincInputCached">{{ scope.row.fincInputCached }}</span>
                   <span v-if="!scope.row.fincInputCached" class="text-slate-300">-</span>
                 </span>
               </el-tooltip>
-              <el-tooltip content="输出单价" placement="top">
+              <el-tooltip :content="`输出单价: ${formatRaw(scope.row.fincOutput)}`" placement="top">
                 <span class="flex items-center gap-1 text-slate-500">
                   <el-icon :size="14"><SoldOutIcon /></el-icon>
                   <span v-if="scope.row.fincOutput">{{ scope.row.fincOutput }}</span>
@@ -108,10 +108,14 @@
         </el-table-column>
         <el-table-column label="测试情况" min-width="130" align="center">
           <template #default="scope">
+            <el-tooltip
+              v-if="scope.row.testRate || scope.row.testTtfb"
+              :content="`响应速率: ${scope.row.testRate || 0} T/S · 首字响应: ${scope.row.testTtfb || 0} MS`"
+              placement="top"
+            >
+              <span class="text-green-500"> {{ scope.row.testRate || 0 }}T/S+{{ scope.row.testTtfb || 0 }}MS </span>
+            </el-tooltip>
             <span v-if="!scope.row.testRate &amp;&amp; !scope.row.testTtfb" class="text-slate-400">未测试</span>
-            <span v-if="scope.row.testRate || scope.row.testTtfb" class="text-green-500">
-              {{ scope.row.testRate || 0 }}T/S+{{ scope.row.testTtfb || 0 }}MS
-            </span>
           </template>
         </el-table-column>
         <el-table-column prop="seq" label="排序" min-width="60" align="center" />
@@ -273,6 +277,14 @@ const formatNumber = (val: number | undefined | null): string => {
     return Math.round(val / 1_000) + "千";
   }
   return String(val);
+};
+
+/** 格式化原始数值为带千分位的字符串 */
+const formatRaw = (val: number | undefined | null): string => {
+  if (val === undefined || val === null) {
+    return "-";
+  }
+  return val.toLocaleString("zh-CN");
 };
 
 // 列表管理打包
