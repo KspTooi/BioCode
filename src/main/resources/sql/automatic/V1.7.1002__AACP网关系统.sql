@@ -1,22 +1,22 @@
 DROP TABLE IF EXISTS aacp_provider;
 CREATE TABLE aacp_provider(
-                              `id` BIGINT NOT NULL  COMMENT '主键ID' ,
-                              `root_id` BIGINT NOT NULL  COMMENT '租户ID' ,
-                              `name` VARCHAR(80) NOT NULL  COMMENT '供应商名称' ,
-                              `code` VARCHAR(32) NOT NULL  COMMENT '供应商代码' ,
-                              `api_kind` VARCHAR(255) NOT NULL  COMMENT '接口类型 0:OpenAi 1:Anthropic' ,
-                              `api_key` VARCHAR(2000)   COMMENT '接口密钥' ,
-                              `api_host` VARCHAR(512) NOT NULL  COMMENT '接口地址' ,
-                              `api_url` VARCHAR(512) NOT NULL  COMMENT '接口端点' ,
-                              `proxy_kind` TINYINT NOT NULL  COMMENT '代理类型 0:无 1:HTTP 2:SOCKS5' ,
-                              `proxy_url` VARCHAR(512)   COMMENT '代理地址' ,
-                              `status` TINYINT NOT NULL  COMMENT '状态 0:禁用 1:启用' ,
-                              `create_time` DATETIME NOT NULL  COMMENT '创建时间' ,
-                              `creator_id` BIGINT NOT NULL  COMMENT '创建人ID' ,
-                              `update_time` DATETIME NOT NULL  COMMENT '更新时间' ,
-                              `updater_id` BIGINT NOT NULL  COMMENT '更新人ID' ,
-                              `delete_time` DATETIME   COMMENT '删除时间' ,
-                              PRIMARY KEY (id)
+    `id` BIGINT NOT NULL  COMMENT '主键ID' ,
+    `root_id` BIGINT NOT NULL  COMMENT '租户ID' ,
+    `name` VARCHAR(80) NOT NULL  COMMENT '供应商名称' ,
+    `code` VARCHAR(32) NOT NULL  COMMENT '供应商代码' ,
+    `api_kind` TINYINT NOT NULL  COMMENT '接口类型 0:OpenAi 1:Anthropic' ,
+    `api_key` VARCHAR(2000)   COMMENT '接口密钥' ,
+    `api_host` VARCHAR(512) NOT NULL  COMMENT '接口地址' ,
+    `api_url` VARCHAR(512) NOT NULL  COMMENT '接口端点' ,
+    `proxy_kind` TINYINT NOT NULL  COMMENT '代理类型 0:无 1:HTTP 2:SOCKS5' ,
+    `proxy_url` VARCHAR(512)   COMMENT '代理地址' ,
+    `status` TINYINT NOT NULL  COMMENT '状态 0:禁用 1:启用' ,
+    `create_time` DATETIME NOT NULL  COMMENT '创建时间' ,
+    `creator_id` BIGINT NOT NULL  COMMENT '创建人ID' ,
+    `update_time` DATETIME NOT NULL  COMMENT '更新时间' ,
+    `updater_id` BIGINT NOT NULL  COMMENT '更新人ID' ,
+    `delete_time` DATETIME   COMMENT '删除时间' ,
+    PRIMARY KEY (id)
 )  COMMENT = '模型供应商';
 
 DROP TABLE IF EXISTS aacp_model;
