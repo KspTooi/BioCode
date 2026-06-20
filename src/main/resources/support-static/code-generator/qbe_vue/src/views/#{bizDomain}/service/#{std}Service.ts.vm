@@ -6,8 +6,8 @@ import type {
   Get${model.std}DetailsVo,
   Add${model.std}Dto,
   Edit${model.std}Dto,
-} from "@/views/${model.camelCase}/api/${model.std}Api.ts";
-import ${model.std}Api from "@/views/${model.camelCase}/api/${model.std}Api.ts";
+} from "@/views/${model.bizDomain}/api/${model.std}Api.ts";
+import ${model.std}Api from "@/views/${model.bizDomain}/api/${model.std}Api.ts";
 import { Result } from "@/commons/model/Result";
 import { ElMessage, ElMessageBox } from "element-plus";
 

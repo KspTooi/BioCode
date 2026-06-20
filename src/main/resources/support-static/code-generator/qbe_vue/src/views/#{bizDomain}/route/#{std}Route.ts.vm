@@ -10,7 +10,7 @@ export default class ${model.std}RouteRegister extends GenricRouteRegister {
         biz: "${model.bizDomain}",
         path: "${model.camelCase}",
         name: "${model.camelCase}",
-        component: () => import("@/views/${model.bizDomain}/${model.camelCase}/${model.std}.vue"),
+        component: () => import("@/views/${model.bizDomain}/${model.std}.vue"),
         meta: { breadcrumb: "${schema.modelRemark}" },
       }),
     ];
