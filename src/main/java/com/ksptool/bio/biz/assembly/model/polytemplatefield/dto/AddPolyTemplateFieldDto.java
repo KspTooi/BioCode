@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Range;
 
+import java.util.Set;
+
 @Getter
 @Setter
 public class AddPolyTemplateFieldDto {
@@ -21,10 +23,9 @@ public class AddPolyTemplateFieldDto {
     @Schema(description = "字段名")
     private String name;
 
-    @NotBlank(message = "可见性策略不能为空")
-    @Size(max = 65535, message = "可见性策略长度不能超过65535个字符")
+    @NotNull(message = "可见性策略不能为空")
     @Schema(description = "可见性策略 ADD、EDIT、LIST_QUERY、LIST_VIEW")
-    private String policyCrudJson;
+    private Set<String> policyCrudJson;
 
     @NotNull(message = "查询策略不能为空")
     @Schema(description = "查询策略 0:等于")

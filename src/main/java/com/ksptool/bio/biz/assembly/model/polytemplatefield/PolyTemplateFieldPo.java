@@ -1,6 +1,7 @@
 package com.ksptool.bio.biz.assembly.model.polytemplatefield;
 
 import com.ksptool.assembly.entity.exception.AuthException;
+import com.ksptool.bio.biz.core.common.jpa.SetStringConv;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -14,6 +15,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -35,8 +37,9 @@ public class PolyTemplateFieldPo {
     @Column(name = "name", nullable = false, length = 255, comment = "字段名")
     private String name;
 
-    @Column(name = "policy_crud_json", nullable = false, comment = "可见性策略 ADD、EDIT、LIST_QUERY、LIST_VIEW")
-    private String policyCrudJson;
+    @Column(name = "policy_crud_json", nullable = false, columnDefinition = "JSON", comment = "可见性策略 ADD、EDIT、DETAILS、LIST_QUERY、LIST_VIEW")
+    @Convert(converter = SetStringConv.class)
+    private Set<String> policyCrudJson;
 
     @Column(name = "policy_query", nullable = false, columnDefinition = "TINYINT", comment = "查询策略 0:等于")
     private Integer policyQuery;

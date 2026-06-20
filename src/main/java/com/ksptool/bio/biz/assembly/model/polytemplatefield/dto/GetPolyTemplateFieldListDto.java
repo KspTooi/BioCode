@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Set;
+
 @Getter
 @Setter
 public class GetPolyTemplateFieldListDto extends PageQuery {
@@ -16,7 +18,7 @@ public class GetPolyTemplateFieldListDto extends PageQuery {
     private String name;
 
     @Schema(description = "可见性策略 ADD、EDIT、LIST_QUERY、LIST_VIEW")
-    private String policyCrudJson;
+    private Set<String> policyCrudJson;
 
     @Schema(description = "查询策略 0:等于")
     private Integer policyQuery;
