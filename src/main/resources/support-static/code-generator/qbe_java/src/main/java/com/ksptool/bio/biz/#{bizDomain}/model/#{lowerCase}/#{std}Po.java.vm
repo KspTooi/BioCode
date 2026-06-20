@@ -1,0 +1,93 @@
+package com.ksptool.bio.biz.${model.bizDomain}.model.${model.lowerCase};
+
+import com.ksptool.assembly.entity.exception.AuthException;
+import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import java.time.LocalDateTime;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import com.ksptool.assembly.entity.exception.AuthException;
+import com.ksptool.bio.biz.auth.service.SessionService;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+
+#set($hasDeleteTime = false)
+#foreach($field in $model.fields)
+    #if($field.camelCase == "deleteTime")
+        #set($hasDeleteTime = true)
+    #end
+#end
+@Getter
+@Setter
+@Entity
+@Table(name = "${model.tableName}")
+@EntityListeners(AuditingEntityListener.class)
+#if($hasDeleteTime)
+@SQLDelete(sql = "UPDATE ${model.tableName} SET delete_time = NOW() WHERE id = ?")
+@SQLRestriction("delete_time IS NULL")
+#end
+public class ${model.std}Po {
+
+    #foreach ($field in $model.fields)
+    #if($field.primaryKey)
+    @Id
+    @SnowflakeIdGenerated
+    @Column(name = "${field.snakeCase}", nullable = false, comment = "${field.comment}")
+    private ${field.type} ${field.camelCase};
+
+    #end
+    #end
+    #foreach ($field in $model.fields)
+    #if(!$field.primaryKey)
+    #if($field.camelCase == "createTime")
+    @CreatedDate
+    #elseif($field.camelCase == "creatorId")
+    @CreatedBy
+    #elseif($field.camelCase == "updateTime")
+    @LastModifiedDate
+    #elseif($field.camelCase == "updaterId")
+    @LastModifiedBy
+    #end
+    @Column(name = "${field.snakeCase}"#if($field.required), nullable = false#end#if($field.length), length = ${field.length}#end#if($field.comment != ''), comment = "${field.comment}"#end)
+    private ${field.type} ${field.camelCase};
+
+    #end
+    #end
+
+    @PrePersist
+    private void onCreate() throws AuthException {
+        #set($hasRootId = false)
+        #set($hasDeptId = false)
+        #foreach($field in $model.fields)
+            #if($field.camelCase == "rootId")
+                #set($hasRootId = true)
+            #end
+            #if($field.camelCase == "deptId")
+                #set($hasDeptId = true)
+            #end
+        #end
+        #if($hasRootId || $hasDeptId)
+        var session = SessionService.session();
+        #if($hasRootId)
+        if (this.rootId == null) {
+            this.rootId = session.getRootId();
+        }
+        #end
+        #if($hasDeptId)
+        if (this.deptId == null) {
+            this.deptId = session.getDeptId();
+        }
+        #end
+        #end
+    }
+
+    @PreUpdate
+    private void onUpdate() throws AuthException {
+
+    }
+}

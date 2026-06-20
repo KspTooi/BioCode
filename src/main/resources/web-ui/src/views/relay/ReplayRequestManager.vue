@@ -172,9 +172,9 @@ import ReplayRequestApi from "@/views/relay/api/ReplayRequestApi.ts";
 import { ElMessage } from "element-plus";
 import { View } from "@element-plus/icons-vue";
 import RequestApi from "@/views/relay/api/RequestApi.ts";
-import RequestPreviewModal from "@/components/RequestPreviewModal.vue";
-import type { RequestPreviewVo } from "@/components/RequestPreviewModal.vue";
-import type { HttpHeaderVo } from "@/views/rdbg/api/UserRequestLogApi.ts";
+import RequestPreviewModal from "@/views/relay/components/RequestPreviewModal.vue";
+import type { RequestPreviewVo } from "@/views/relay/components/RequestPreviewModal.vue";
+import type { HttpHeaderVo } from "@/views/relay/api/UserRequestLogApi";
 import StdListLayout from "@/soa/std-series/StdListLayout.vue";
 
 const ViewIcon = markRaw(View);

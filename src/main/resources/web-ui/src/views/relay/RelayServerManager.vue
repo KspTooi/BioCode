@@ -282,7 +282,7 @@ import { ref, markRaw } from "vue";
 import { View, Delete, CaretTop, CaretBottom } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
 import StdListLayout from "@/soa/std-series/StdListLayout.vue";
-import RelayServerService from "@/views/relay/route/RelayServerService.ts";
+import RelayServerService from "@/views/relay/service/RelayServerService";
 
 const ViewIcon = markRaw(View);
 const DeleteIcon = markRaw(Delete);
@@ -297,8 +297,16 @@ const { listForm, listData, listTotal, listLoading, loadList, resetList, removeL
 const { modalVisible, modalLoading, modalMode, modalForm, modalRules, modalRouteRuleData, openModal, resetModal, submitModal } =
   RelayServerService.useRelayServerModal(modalFormRef, loadList);
 
-const { routeStateModalVisible, routeStateData, routeStateLoading, showRouteStateModal, refreshRouteState, resetBreaker, resetAllBreaker, breakHost } =
-  RelayServerService.useRouteStateModal();
+const {
+  routeStateModalVisible,
+  routeStateData,
+  routeStateLoading,
+  showRouteStateModal,
+  refreshRouteState,
+  resetBreaker,
+  resetAllBreaker,
+  breakHost,
+} = RelayServerService.useRouteStateModal();
 </script>
 
 <style scoped>
