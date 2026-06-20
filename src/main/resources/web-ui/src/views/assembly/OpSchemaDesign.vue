@@ -35,7 +35,13 @@
       </div>
       <div class="schema-info-divider" />
       <div v-show="listViewModel === 'poly'" class="schema-info-item">
-        <span class="schema-info-label">导入聚合模板</span>
+        <span class="schema-info-label">从原始模型导入</span>
+        <el-button type="primary" size="small" :icon="MagicStickIcon" @click="importFromRaw(importTemplateId || undefined)"
+          >导入</el-button
+        >
+      </div>
+      <div v-show="listViewModel === 'poly'" class="schema-info-item">
+        <span class="schema-info-label">选择一个聚合模板</span>
         <el-select
           v-model="importTemplateId"
           placeholder="选择模板（可选）"
@@ -46,14 +52,8 @@
           :loading="importTemplateLoading"
           @focus="loadImportTemplates"
         >
-          <el-option
-            v-for="tpl in importTemplateOptions"
-            :key="tpl.id"
-            :label="`${tpl.name}(${tpl.code})`"
-            :value="tpl.id"
-          />
+          <el-option v-for="tpl in importTemplateOptions" :key="tpl.id" :label="`${tpl.name}(${tpl.code})`" :value="tpl.id" />
         </el-select>
-        <el-button type="primary" size="small" :icon="MagicStickIcon" @click="importFromRaw(importTemplateId || undefined)">导入</el-button>
       </div>
       <div v-show="listViewModel === 'raw'" class="schema-info-item">
         <span class="schema-info-label">从数据源导入</span>
