@@ -153,13 +153,13 @@
           <el-input v-model="modalForm.apiAppendHeaders" placeholder="请输入附加请求头(JSON)" type="textarea" :rows="2" />
         </el-form-item>
         <el-form-item label="输入单价" prop="fincInput">
-          <el-input v-model="modalForm.fincInput" placeholder="请输入输入单价" clearable />
+          <el-input-number v-model="modalForm.fincInput" :min="0" :precision="6" placeholder="请输入输入单价" style="width: 100%" />
         </el-form-item>
         <el-form-item label="输入单价(缓存)" prop="fincInputCached">
-          <el-input v-model="modalForm.fincInputCached" placeholder="请输入输入单价(缓存)" clearable />
+          <el-input-number v-model="modalForm.fincInputCached" :min="0" :precision="6" placeholder="请输入输入单价(缓存)" style="width: 100%" />
         </el-form-item>
         <el-form-item label="输出单价" prop="fincOutput">
-          <el-input v-model="modalForm.fincOutput" placeholder="请输入输出单价" clearable />
+          <el-input-number v-model="modalForm.fincOutput" :min="0" :precision="6" placeholder="请输入输出单价" style="width: 100%" />
         </el-form-item>
         <el-form-item label="备注" prop="remark">
           <el-input

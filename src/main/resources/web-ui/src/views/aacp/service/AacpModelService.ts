@@ -122,9 +122,9 @@ export default {
       apiReasoningEffort: 0,
       apiAppendParam: "",
       apiAppendHeaders: "",
-      fincInput: "",
-      fincInputCached: "",
-      fincOutput: "",
+      fincInput: 0,
+      fincInputCached: 0,
+      fincOutput: 0,
       remark: "",
       seq: 0,
       status: 1,
@@ -176,9 +176,9 @@ export default {
         modalForm.apiReasoningEffort = 0;
         modalForm.apiAppendParam = "";
         modalForm.apiAppendHeaders = "";
-        modalForm.fincInput = "";
-        modalForm.fincInputCached = "";
-        modalForm.fincOutput = "";
+        modalForm.fincInput = 0;
+        modalForm.fincInputCached = 0;
+        modalForm.fincOutput = 0;
         modalForm.remark = "";
         modalForm.seq = 0;
         modalForm.status = 1;
@@ -235,9 +235,9 @@ export default {
       modalForm.apiReasoningEffort = 0;
       modalForm.apiAppendParam = "";
       modalForm.apiAppendHeaders = "";
-      modalForm.fincInput = "";
-      modalForm.fincInputCached = "";
-      modalForm.fincOutput = "";
+      modalForm.fincInput = 0;
+      modalForm.fincInputCached = 0;
+      modalForm.fincOutput = 0;
       modalForm.remark = "";
       modalForm.seq = 0;
       modalForm.status = 1;

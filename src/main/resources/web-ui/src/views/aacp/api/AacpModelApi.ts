@@ -26,9 +26,9 @@ export interface GetModelListVo {
   maxOutputToken: number; // 最大输出词元
   apiReasoning: number; // 推理 0:不支持 1:支持
   apiReasoningEffort: number; // 推理强度 0:关 1:低 2:中 3:高 4:极高
-  fincInput: string; // 输入单价
-  fincInputCached: string; // 输入单价(缓存)
-  fincOutput: string; // 输出单价
+  fincInput: number; // 输入单价
+  fincInputCached: number; // 输入单价(缓存)
+  fincOutput: number; // 输出单价
   testTtfb: number; // 测试首字响应时间 MS
   testRate: number; // 测试响应速率 T/S
   seq: number; // 排序
@@ -50,9 +50,9 @@ export interface GetModelDetailsVo {
   apiReasoningEffort: number; // 推理强度 0:关 1:低 2:中 3:高 4:极高
   apiAppendParam: string; // 附加参数
   apiAppendHeaders: string; // 附加请求头
-  fincInput: string; // 输入单价
-  fincInputCached: string; // 输入单价(缓存)
-  fincOutput: string; // 输出单价
+  fincInput: number; // 输入单价
+  fincInputCached: number; // 输入单价(缓存)
+  fincOutput: number; // 输出单价
   remark: string; // 备注
   seq: number; // 排序
   status: number; // 状态 0:禁用 1:启用
@@ -71,9 +71,9 @@ export interface AddModelDto {
   apiReasoningEffort: number; // 推理强度 0:关 1:低 2:中 3:高 4:极高
   apiAppendParam: string; // 附加参数
   apiAppendHeaders: string; // 附加请求头
-  fincInput: string; // 输入单价
-  fincInputCached: string; // 输入单价(缓存)
-  fincOutput: string; // 输出单价
+  fincInput: number; // 输入单价
+  fincInputCached: number; // 输入单价(缓存)
+  fincOutput: number; // 输出单价
   remark: string; // 备注
   seq: number; // 排序
   status: number; // 状态 0:禁用 1:启用
@@ -93,9 +93,9 @@ export interface EditModelDto {
   apiReasoningEffort: number; // 推理强度 0:关 1:低 2:中 3:高 4:极高
   apiAppendParam: string; // 附加参数
   apiAppendHeaders: string; // 附加请求头
-  fincInput: string; // 输入单价
-  fincInputCached: string; // 输入单价(缓存)
-  fincOutput: string; // 输出单价
+  fincInput: number; // 输入单价
+  fincInputCached: number; // 输入单价(缓存)
+  fincOutput: number; // 输出单价
   remark: string; // 备注
   seq: number; // 排序
   status: number; // 状态 0:禁用 1:启用
