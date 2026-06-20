@@ -5,6 +5,7 @@ import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.assembly.entity.web.Result;
 import com.ksptool.bio.biz.assembly.model.tymschema.dto.AddTymSchemaDto;
+import com.ksptool.bio.biz.assembly.model.tymschema.dto.CopyTymSchemaDto;
 import com.ksptool.bio.biz.assembly.model.tymschema.dto.EditTymSchemaDto;
 import com.ksptool.bio.biz.assembly.model.tymschema.dto.GetTymSchemaListDto;
 import com.ksptool.bio.biz.assembly.model.tymschema.vo.GetTymSchemaDetailsVo;
@@ -75,6 +76,14 @@ public class TymSchemaController {
         
         tymSchemaService.removeTymSchema(dto);
         return Result.success("操作成功");
+    }
+
+    @PreAuthorize("@auth.hasCode('assembly:tyschema:add')")
+    @Operation(summary = "复制类型映射方案")
+    @PostMapping("/copyTymSchema")
+    public Result<String> copyTymSchema(@RequestBody @Valid CopyTymSchemaDto dto) throws Exception {
+        tymSchemaService.copyTymSchema(dto);
+        return Result.success("复制成功");
     }
 
 }
