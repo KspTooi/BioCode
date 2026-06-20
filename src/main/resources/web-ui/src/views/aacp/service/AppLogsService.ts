@@ -128,6 +128,7 @@ export default {
     const modalLoading = ref(false);
     const modalMode = ref<ModalMode>("add");
     const modalForm = reactive<GetAppLogsDetailsVo>({
+      id: "",
       appId: "",
       providerId: "",
       modelId: "",
@@ -157,6 +158,7 @@ export default {
       modalMode.value = mode;
 
       if (mode === "add") {
+        modalForm.id = "";
         modalForm.appId = "";
         modalForm.providerId = "";
         modalForm.modelId = "";
@@ -181,6 +183,7 @@ export default {
 
         try {
           const details = await AppLogsApi.getAppLogsDetails({ id: row.id });
+          modalForm.id = details.id;
           modalForm.appId = details.appId;
           modalForm.providerId = details.providerId;
           modalForm.modelId = details.modelId;
@@ -208,6 +211,7 @@ export default {
         return;
       }
       modalFormRef.value.resetFields();
+      modalForm.id = "";
       modalForm.appId = "";
       modalForm.providerId = "";
       modalForm.modelId = "";

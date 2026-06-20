@@ -57,6 +57,7 @@
     <StdListAreaTable v-model:list-form="listForm" :list-total="listTotal" :load-list="loadList">
       <el-table :data="listData" stripe v-loading="listLoading" border height="100%">
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
+        <el-table-column prop="id" label="主键ID" min-width="120" show-overflow-tooltip />
         <el-table-column prop="appId" label="应用ID" min-width="120" show-overflow-tooltip />
         <el-table-column prop="providerId" label="供应商ID" min-width="120" show-overflow-tooltip />
         <el-table-column prop="modelId" label="模型变体ID" min-width="120" show-overflow-tooltip />
