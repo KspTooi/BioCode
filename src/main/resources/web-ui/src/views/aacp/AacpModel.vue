@@ -120,9 +120,9 @@
         <el-form-item label="类型" prop="kind">
           <el-radio-group v-model="modalForm.kind">
             <el-radio :value="0">文本</el-radio>
-            <el-radio :value="1">图形</el-radio>
-            <el-radio :value="2">音频</el-radio>
-            <el-radio :value="3">多模态</el-radio>
+            <el-radio :value="1" disabled>图形</el-radio>
+            <el-radio :value="2" disabled>音频</el-radio>
+            <el-radio :value="3" disabled>多模态</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="最大上下文" prop="maxContext">

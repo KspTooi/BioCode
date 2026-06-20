@@ -26,7 +26,7 @@ public class AddModelDto implements DtoCustomValidator {
     private String code;
 
     @NotNull(message = "类型不能为空")
-    @Range(min = 0, max = 3, message = "类型值无效，0:文本 1:图形 2:音频 3:多模态")
+    @Range(min = 0, max = 0, message = "类型值无效，仅支持文本")
     @Schema(description = "类型 0:文本 1:图形 2:音频 3:多模态")
     private Integer kind;
 
