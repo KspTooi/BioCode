@@ -1,39 +1,62 @@
 package com.ksptool.bio.biz.aacp.model.provider.dto;
 
-import java.time.LocalDateTime;
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
+import com.ksptool.bio.biz.core.common.aop.DtoCustomValidator;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
-import io.swagger.v3.oas.annotations.media.Schema;
+import org.apache.commons.lang3.StringUtils;
+import org.hibernate.validator.constraints.Range;
 
 @Getter
 @Setter
-public class AddProviderDto {
+public class AddProviderDto implements DtoCustomValidator {
 
-    @Schema(description="供应商名称")
+    @NotBlank(message = "供应商名称不能为空")
+    @Size(max = 80, message = "供应商名称不能超过80个字符")
+    @Schema(description = "供应商名称")
     private String name;
 
-    @Schema(description="供应商代码")
+    @NotBlank(message = "供应商代码不能为空")
+    @Size(max = 32, message = "供应商代码不能超过32个字符")
+    @Schema(description = "供应商代码")
     private String code;
 
-    @Schema(description="接口密钥")
+    @Size(max = 2000, message = "接口密钥不能超过2000个字符")
+    @Schema(description = "接口密钥")
     private String apiKey;
 
-    @Schema(description="接口地址")
+    @NotBlank(message = "接口地址不能为空")
+    @Size(max = 512, message = "接口地址不能超过512个字符")
+    @Schema(description = "接口地址")
     private String apiHost;
 
-    @Schema(description="接口端点")
+    @NotBlank(message = "接口端点不能为空")
+    @Size(max = 512, message = "接口端点不能超过512个字符")
+    @Schema(description = "接口端点")
     private String apiUrl;
 
-    @Schema(description="代理类型 0:无 1:HTTP 2:SOCKS5")
+    @NotNull(message = "代理类型不能为空")
+    @Range(min = 0, max = 2, message = "代理类型值无效，0:无 1:HTTP 2:SOCKS5")
+    @Schema(description = "代理类型 0:无 1:HTTP 2:SOCKS5")
     private Integer proxyKind;
 
-    @Schema(description="代理地址")
+    @Size(max = 512, message = "代理地址不能超过512个字符")
+    @Schema(description = "代理地址")
     private String proxyUrl;
 
-    @Schema(description="状态 0:禁用 1:启用")
+    @NotNull(message = "状态不能为空")
+    @Range(min = 0, max = 1, message = "状态值无效，0:禁用 1:启用")
+    @Schema(description = "状态 0:禁用 1:启用")
     private Integer status;
 
+    @Override
+    public String validate() {
+        if (proxyKind > 0 && StringUtils.isBlank(proxyUrl)) {
+            return "代理类型不为无时，代理地址不能为空";
+        }
+        return null;
+    }
 }

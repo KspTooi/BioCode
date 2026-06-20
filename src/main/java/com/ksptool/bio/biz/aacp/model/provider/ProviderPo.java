@@ -1,6 +1,6 @@
 package com.ksptool.bio.biz.aacp.model.provider;
 
-import com.ksptool.assembly.entity.exception.AuthException;
+import com.ksptool.bio.biz.auth.common.aop.RowScopeRootOnlyPo;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -11,8 +11,6 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import com.ksptool.assembly.entity.exception.AuthException;
-import com.ksptool.bio.biz.auth.service.SessionService;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -23,7 +21,7 @@ import org.hibernate.annotations.SQLRestriction;
 @EntityListeners(AuditingEntityListener.class)
 @SQLDelete(sql = "UPDATE aacp_provider SET delete_time = NOW() WHERE id = ?")
 @SQLRestriction("delete_time IS NULL")
-public class ProviderPo {
+public class ProviderPo extends RowScopeRootOnlyPo {
 
     @Id
     @SnowflakeIdGenerated
@@ -51,13 +49,13 @@ public class ProviderPo {
     @Column(name = "api_url", nullable = false, length = 512, comment = "接口端点")
     private String apiUrl;
 
-    @Column(name = "proxy_kind", nullable = false, comment = "代理类型 0:无 1:HTTP 2:SOCKS5")
+    @Column(name = "proxy_kind", nullable = false, columnDefinition = "TINYINT", comment = "代理类型 0:无 1:HTTP 2:SOCKS5")
     private Integer proxyKind;
 
     @Column(name = "proxy_url", length = 512, comment = "代理地址")
     private String proxyUrl;
 
-    @Column(name = "status", nullable = false, comment = "状态 0:禁用 1:启用")
+    @Column(name = "status", nullable = false, columnDefinition = "TINYINT", comment = "状态 0:禁用 1:启用")
     private Integer status;
 
     @CreatedDate
@@ -79,17 +77,4 @@ public class ProviderPo {
     @Column(name = "delete_time", comment = "删除时间")
     private LocalDateTime deleteTime;
 
-
-    @PrePersist
-    private void onCreate() throws AuthException {
-        var session = SessionService.session();
-        if (this.rootId == null) {
-            this.rootId = session.getRootId();
-        }
-    }
-
-    @PreUpdate
-    private void onUpdate() throws AuthException {
-
-    }
 }
