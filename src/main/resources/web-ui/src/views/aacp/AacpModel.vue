@@ -71,8 +71,6 @@
         <el-table-column prop="fincInput" label="输入单价" min-width="90" show-overflow-tooltip />
         <el-table-column prop="fincInputCached" label="输入单价(缓存)" min-width="110" show-overflow-tooltip />
         <el-table-column prop="fincOutput" label="输出单价" min-width="90" show-overflow-tooltip />
-        <el-table-column prop="testTtfb" label="首字响应(MS)" min-width="100" show-overflow-tooltip />
-        <el-table-column prop="testRate" label="响应速率(T/S)" min-width="100" show-overflow-tooltip />
         <el-table-column prop="seq" label="排序" min-width="60" align="center" />
         <el-table-column label="状态" min-width="70" align="center">
           <template #default="scope">
@@ -160,15 +158,6 @@
         </el-form-item>
         <el-form-item label="输出单价" prop="fincOutput">
           <el-input v-model="modalForm.fincOutput" placeholder="请输入输出单价" clearable />
-        </el-form-item>
-        <el-form-item label="首字响应(MS)" prop="testTtfb">
-          <el-input-number v-model="modalForm.testTtfb" :min="0" placeholder="测试首字响应时间" />
-        </el-form-item>
-        <el-form-item label="响应速率(T/S)" prop="testRate">
-          <el-input-number v-model="modalForm.testRate" :min="0" placeholder="测试响应速率" />
-        </el-form-item>
-        <el-form-item label="最后测试时间" prop="testTime">
-          <el-date-picker v-model="modalForm.testTime" type="datetime" placeholder="选择最后测试时间" value-format="YYYY-MM-DD HH:mm:ss" />
         </el-form-item>
         <el-form-item label="备注" prop="remark">
           <el-input v-model="modalForm.remark" placeholder="请输入备注" type="textarea" :rows="2" :maxlength="200" show-word-limit />

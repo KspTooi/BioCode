@@ -45,12 +45,6 @@ public class GetModelListVo {
     @Schema(description="输出单价")
     private String fincOutput;
 
-    @Schema(description="测试首字响应时间 MS")
-    private Integer testTtfb;
-
-    @Schema(description="测试响应速率 T/S")
-    private Integer testRate;
-
     @Schema(description="排序")
     private Integer seq;
 

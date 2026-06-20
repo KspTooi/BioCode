@@ -29,8 +29,6 @@ export interface GetModelListVo {
   fincInput: string; // 输入单价
   fincInputCached: string; // 输入单价(缓存)
   fincOutput: string; // 输出单价
-  testTtfb: number; // 测试首字响应时间 MS
-  testRate: number; // 测试响应速率 T/S
   seq: number; // 排序
   status: number; // 状态 0:禁用 1:启用
   createTime: string; // 创建时间
@@ -53,9 +51,6 @@ export interface GetModelDetailsVo {
   fincInput: string; // 输入单价
   fincInputCached: string; // 输入单价(缓存)
   fincOutput: string; // 输出单价
-  testTtfb: number; // 测试首字响应时间 MS
-  testRate: number; // 测试响应速率 T/S
-  testTime: string; // 最后测试时间
   remark: string; // 备注
   seq: number; // 排序
   status: number; // 状态 0:禁用 1:启用
@@ -77,9 +72,6 @@ export interface AddModelDto {
   fincInput: string; // 输入单价
   fincInputCached: string; // 输入单价(缓存)
   fincOutput: string; // 输出单价
-  testTtfb: number; // 测试首字响应时间 MS
-  testRate: number; // 测试响应速率 T/S
-  testTime: string; // 最后测试时间
   remark: string; // 备注
   seq: number; // 排序
   status: number; // 状态 0:禁用 1:启用
@@ -102,9 +94,6 @@ export interface EditModelDto {
   fincInput: string; // 输入单价
   fincInputCached: string; // 输入单价(缓存)
   fincOutput: string; // 输出单价
-  testTtfb: number; // 测试首字响应时间 MS
-  testRate: number; // 测试响应速率 T/S
-  testTime: string; // 最后测试时间
   remark: string; // 备注
   seq: number; // 排序
   status: number; // 状态 0:禁用 1:启用

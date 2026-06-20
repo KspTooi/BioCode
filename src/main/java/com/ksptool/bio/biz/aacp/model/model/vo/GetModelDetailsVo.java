@@ -48,15 +48,6 @@ public class GetModelDetailsVo {
     @Schema(description="输出单价")
     private String fincOutput;
 
-    @Schema(description="测试首字响应时间 MS")
-    private Integer testTtfb;
-
-    @Schema(description="测试响应速率 T/S")
-    private Integer testRate;
-
-    @Schema(description="最后测试时间")
-    private LocalDateTime testTime;
-
     @Schema(description="备注")
     private String remark;
 

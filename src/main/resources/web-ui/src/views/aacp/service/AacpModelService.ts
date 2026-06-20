@@ -125,12 +125,9 @@ export default {
       fincInput: "",
       fincInputCached: "",
       fincOutput: "",
-      testTtfb: 0,
-      testRate: 0,
-      testTime: "",
       remark: "",
       seq: 0,
-      status: 0,
+      status: 1,
     });
 
     /**
@@ -155,9 +152,6 @@ export default {
       fincInput: [{ required: true, message: "请输入输入单价", trigger: "blur" }],
       fincInputCached: [{ required: true, message: "请输入输入单价(缓存)", trigger: "blur" }],
       fincOutput: [{ required: true, message: "请输入输出单价", trigger: "blur" }],
-      testTtfb: [{ type: "number", message: "请输入有效数字", trigger: "blur" }],
-      testRate: [{ type: "number", message: "请输入有效数字", trigger: "blur" }],
-      testTime: [{ trigger: "change" }],
       remark: [{ max: 200, message: "备注长度不能超过200个字符", trigger: "blur" }],
       seq: [{ required: true, message: "请输入排序", trigger: "blur" }],
       status: [{ required: true, message: "请选择状态", trigger: "change" }],
@@ -185,12 +179,9 @@ export default {
         modalForm.fincInput = "";
         modalForm.fincInputCached = "";
         modalForm.fincOutput = "";
-        modalForm.testTtfb = 0;
-        modalForm.testRate = 0;
-        modalForm.testTime = "";
         modalForm.remark = "";
         modalForm.seq = 0;
-        modalForm.status = 0;
+        modalForm.status = 1;
         modalVisible.value = true;
         return;
       }
@@ -216,9 +207,6 @@ export default {
           modalForm.fincInput = details.fincInput;
           modalForm.fincInputCached = details.fincInputCached;
           modalForm.fincOutput = details.fincOutput;
-          modalForm.testTtfb = details.testTtfb;
-          modalForm.testRate = details.testRate;
-          modalForm.testTime = details.testTime;
           modalForm.remark = details.remark;
           modalForm.seq = details.seq;
           modalForm.status = details.status;
@@ -250,12 +238,9 @@ export default {
       modalForm.fincInput = "";
       modalForm.fincInputCached = "";
       modalForm.fincOutput = "";
-      modalForm.testTtfb = 0;
-      modalForm.testRate = 0;
-      modalForm.testTime = "";
       modalForm.remark = "";
       modalForm.seq = 0;
-      modalForm.status = 0;
+      modalForm.status = 1;
     };
 
     /**
@@ -289,9 +274,6 @@ export default {
             fincInput: modalForm.fincInput,
             fincInputCached: modalForm.fincInputCached,
             fincOutput: modalForm.fincOutput,
-            testTtfb: modalForm.testTtfb,
-            testRate: modalForm.testRate,
-            testTime: modalForm.testTime,
             remark: modalForm.remark,
             seq: modalForm.seq,
             status: modalForm.status,
@@ -330,9 +312,6 @@ export default {
             fincInput: modalForm.fincInput,
             fincInputCached: modalForm.fincInputCached,
             fincOutput: modalForm.fincOutput,
-            testTtfb: modalForm.testTtfb,
-            testRate: modalForm.testRate,
-            testTime: modalForm.testTime,
             remark: modalForm.remark,
             seq: modalForm.seq,
             status: modalForm.status,
