@@ -8,8 +8,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+/**
+ * @author KspTooi
+ * @since 1.7.10(J).1
+ */
 @Repository
-public interface OpRcdRepository extends JpaRepository<OpRcdPo, Long>{
+public interface OpRcdRepository extends JpaRepository<OpRcdPo, Long> {
 
     @Query("""
     SELECT u FROM OpRcdPo u

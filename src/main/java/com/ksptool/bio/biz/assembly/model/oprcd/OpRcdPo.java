@@ -1,6 +1,5 @@
 package com.ksptool.bio.biz.assembly.model.oprcd;
 
-import com.ksptool.assembly.entity.exception.AuthException;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -11,11 +10,13 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import com.ksptool.assembly.entity.exception.AuthException;
-import com.ksptool.bio.biz.auth.service.SessionService;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
+/**
+ * @author KspTooi
+ * @since 1.7.10(J).1
+ */
 @Getter
 @Setter
 @Entity
@@ -57,7 +58,7 @@ public class OpRcdPo {
     @Column(name = "biz_domain", nullable = false, length = 80, comment = "业务域")
     private String bizDomain;
 
-    @Column(name = "qbe_params", nullable = false, comment = "QBE参数")
+    @Column(name = "qbe_params", nullable = false, columnDefinition = "JSON", comment = "QBE参数")
     private String qbeParams;
 
     @Column(name = "start_time", nullable = false, comment = "开始时间")
@@ -92,12 +93,4 @@ public class OpRcdPo {
     private LocalDateTime deleteTime;
 
 
-    @PrePersist
-    private void onCreate() throws AuthException {
-    }
-
-    @PreUpdate
-    private void onUpdate() throws AuthException {
-
-    }
 }

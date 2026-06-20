@@ -8,6 +8,10 @@ import lombok.Getter;
 import lombok.Setter;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+/**
+ * @author KspTooi
+ * @since 1.7.10(J).1
+ */
 @Getter
 @Setter
 public class EditOpRcdDto {
