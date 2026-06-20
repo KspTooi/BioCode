@@ -26,6 +26,7 @@ export interface GetAppLogsListDto extends PageQuery {
  * 查询模型调用记录列表Vo
  */
 export interface GetAppLogsListVo {
+  id: string; // 主键ID
   appId: string; // 应用ID
   providerId: string; // 供应商ID
   modelId: string; // 模型变体ID
@@ -44,6 +45,7 @@ export interface GetAppLogsListVo {
  * 查询模型调用记录详情Vo
  */
 export interface GetAppLogsDetailsVo {
+  id: string; // 主键ID
   appId: string; // 应用ID
   providerId: string; // 供应商ID
   modelId: string; // 模型变体ID
