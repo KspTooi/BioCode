@@ -41,18 +41,18 @@
         <el-table-column prop="url" label="连接字符串" min-width="200" show-overflow-tooltip />
         <el-table-column prop="dbSchema" label="默认数据库" min-width="120" show-overflow-tooltip />
         <el-table-column prop="createTime" label="创建时间" min-width="160" show-overflow-tooltip />
-        <el-table-column label="操作" fixed="right" min-width="240">
+        <el-table-column label="操作" fixed="right" width="300">
           <template #default="scope">
             <el-button link type="primary" size="small" :icon="EditIcon" @click="openModal('edit', scope.row)">
               编辑
+            </el-button>
+            <el-button link type="primary" size="small" :icon="CopyIcon" @click="openModal('copy', scope.row)">
+              复制
             </el-button>
             <el-button link type="success" size="small" :icon="ConnectionIcon" @click="testConnection(scope.row)">
               测试数据源连接
             </el-button>
             <el-button link type="danger" size="small" :icon="DeleteIcon" @click="removeList(scope.row)"> 删除 </el-button>
-            <el-button link type="primary" size="small" :icon="CopyIcon" @click="openModal('copy', scope.row)">
-              复制
-            </el-button>
           </template>
         </el-table-column>
       </el-table>
