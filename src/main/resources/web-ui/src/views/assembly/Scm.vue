@@ -35,11 +35,12 @@
         <el-table-column prop="projectName" label="项目名称" min-width="120" show-overflow-tooltip />
         <el-table-column prop="scmUrl" label="SCM仓库地址" min-width="160" show-overflow-tooltip />
         <el-table-column prop="createTime" label="创建时间" min-width="100" show-overflow-tooltip />
-        <el-table-column label="操作" fixed="right" min-width="180">
+        <el-table-column label="操作" fixed="right" width="300">
           <template #default="scope">
             <el-button link type="primary" size="small" :icon="EditIcon" @click="openModal('edit', scope.row)">
               编辑
             </el-button>
+            <el-button link type="primary" size="small" :icon="CopyIcon" @click="openModal('copy', scope.row)"> 复制 </el-button>
             <el-button link type="success" size="small" :icon="TestIcon" @click="testScmConnection(scope.row)">
               测试SCM连接
             </el-button>
@@ -75,7 +76,7 @@
     <!-- 新增/编辑模态框 -->
     <el-dialog
       v-model="modalVisible"
-      :title="modalMode === 'edit' ? '编辑SCM' : '新增SCM'"
+      :title="modalMode === 'edit' ? '编辑SCM' : modalMode === 'copy' ? '复制SCM' : '新增SCM'"
       width="640px"
       :close-on-click-modal="false"
       @close="
@@ -94,18 +95,18 @@
         <el-form-item label="SCM名称" prop="name">
           <el-input v-model="modalForm.name" placeholder="请输入SCM名称" clearable maxlength="32" show-word-limit />
         </el-form-item>
-        <el-form-item label="项目名称" prop="projectName">
+        <el-form-item label="项目名称" prop="projectName" v-if="modalMode !== 'copy'">
           <el-input v-model="modalForm.projectName" placeholder="请输入项目名称" clearable maxlength="80" show-word-limit />
         </el-form-item>
-        <el-form-item label="SCM类型">
+        <el-form-item label="SCM类型" v-if="modalMode !== 'copy'">
           <el-select model-value="git" disabled style="width: 100%">
             <el-option label="Git" value="git" />
           </el-select>
         </el-form-item>
-        <el-form-item label="SCM仓库地址" prop="scmUrl">
+        <el-form-item label="SCM仓库地址" prop="scmUrl" v-if="modalMode !== 'copy'">
           <el-input v-model="modalForm.scmUrl" placeholder="请输入SCM仓库地址" clearable maxlength="1000" show-word-limit />
         </el-form-item>
-        <el-form-item label="SCM认证方式" prop="scmAuthKind">
+        <el-form-item label="SCM认证方式" prop="scmAuthKind" v-if="modalMode !== 'copy'">
           <el-select v-model="modalForm.scmAuthKind" placeholder="请选择SCM认证方式" style="width: 100%">
             <el-option label="公开" :value="0" />
             <el-option label="账号密码" :value="1" />
@@ -113,10 +114,10 @@
             <el-option label="PAT" :value="3" />
           </el-select>
         </el-form-item>
-        <el-form-item v-if="modalForm.scmAuthKind === 1 || modalForm.scmAuthKind === 3" label="SCM用户名" prop="scmUsername">
+        <el-form-item v-if="(modalForm.scmAuthKind === 1 || modalForm.scmAuthKind === 3) && modalMode !== 'copy'" label="SCM用户名" prop="scmUsername">
           <el-input v-model="modalForm.scmUsername" placeholder="请输入SCM用户名" clearable maxlength="10000" show-word-limit />
         </el-form-item>
-        <el-form-item v-if="modalForm.scmAuthKind === 1 || modalForm.scmAuthKind === 3" label="SCM密码" prop="scmPassword">
+        <el-form-item v-if="(modalForm.scmAuthKind === 1 || modalForm.scmAuthKind === 3) && modalMode !== 'copy'" label="SCM密码" prop="scmPassword">
           <el-input
             v-model="modalForm.scmPassword"
             :placeholder="modalForm.scmAuthKind === 3 ? '请输入PAT令牌' : '请输入SCM密码'"
@@ -126,7 +127,7 @@
             show-word-limit
           />
         </el-form-item>
-        <el-form-item v-if="modalForm.scmAuthKind === 2" label="SSH KEY" prop="scmPk">
+        <el-form-item v-if="modalForm.scmAuthKind === 2 && modalMode !== 'copy'" label="SSH KEY" prop="scmPk">
           <el-input
             v-model="modalForm.scmPk"
             placeholder="SSH私钥(-----BEGIN OPENSSH PRIVATE KEY-----开头)"
@@ -136,10 +137,10 @@
             show-word-limit
           />
         </el-form-item>
-        <el-form-item label="SCM分支" prop="scmBranch">
+        <el-form-item label="SCM分支" prop="scmBranch" v-if="modalMode !== 'copy'">
           <el-input v-model="modalForm.scmBranch" placeholder="请输入SCM分支" clearable maxlength="80" show-word-limit />
         </el-form-item>
-        <el-form-item label="SCM备注" prop="remark">
+        <el-form-item label="SCM备注" prop="remark" v-if="modalMode !== 'copy'">
           <el-input
             v-model="modalForm.remark"
             placeholder="请输入SCM备注"
@@ -154,7 +155,7 @@
         <div class="dialog-footer">
           <el-button @click="modalVisible = false">取消</el-button>
           <el-button type="primary" :loading="modalLoading" @click="submitModal">
-            {{ modalMode === "add" ? "创建" : "保存" }}
+            {{ modalMode === "add" || modalMode === "copy" ? "创建" : "保存" }}
           </el-button>
         </div>
       </template>
@@ -164,7 +165,7 @@
 
 <script setup lang="ts">
 import { ref, markRaw } from "vue";
-import { Edit, Delete, Connection } from "@element-plus/icons-vue";
+import { Edit, Delete, Connection, CopyDocument } from "@element-plus/icons-vue";
 import { type FormInstance } from "element-plus";
 import ScmService from "@/views/assembly/service/ScmService";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
@@ -175,6 +176,7 @@ import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
 const EditIcon = markRaw(Edit);
 const DeleteIcon = markRaw(Delete);
 const TestIcon = markRaw(Connection);
+const CopyIcon = markRaw(CopyDocument);
 
 //列表管理打包
 const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList, testScmConnection } =

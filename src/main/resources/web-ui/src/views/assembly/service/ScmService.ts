@@ -1,6 +1,6 @@
 import { computed, onMounted, reactive, ref, type Ref } from "vue";
 import type { FormInstance, FormRules } from "element-plus";
-import type { GetScmListDto, GetScmListVo, GetScmDetailsVo, AddScmDto, EditScmDto } from "@/views/assembly/api/ScmApi";
+import type { GetScmListDto, GetScmListVo, GetScmDetailsVo, AddScmDto, EditScmDto, CopyScmDto } from "@/views/assembly/api/ScmApi";
 import ScmApi from "@/views/assembly/api/ScmApi";
 import { Result } from "@/commons/model/Result.ts";
 import { ElMessage, ElMessageBox } from "element-plus";
@@ -8,7 +8,7 @@ import { ElMessage, ElMessageBox } from "element-plus";
 /**
  * 模态框模式类型
  */
-type ModalMode = "add" | "edit";
+type ModalMode = "add" | "edit" | "copy";
 
 export default {
   /**
@@ -182,6 +182,25 @@ export default {
         return;
       }
 
+      if (mode === "copy") {
+        if (!row) {
+          ElMessage.error("未选择要复制的数据");
+          return;
+        }
+        modalForm.id = row.id;
+        modalForm.name = row.name;
+        modalForm.projectName = "";
+        modalForm.scmUrl = "";
+        modalForm.scmAuthKind = 0;
+        modalForm.scmUsername = "";
+        modalForm.scmPassword = "";
+        modalForm.scmPk = "";
+        modalForm.scmBranch = "main";
+        modalForm.remark = "";
+        modalVisible.value = true;
+        return;
+      }
+
       if (mode === "edit") {
         if (!row) {
           ElMessage.error("未选择要编辑的数据");
@@ -258,6 +277,29 @@ export default {
           };
           await ScmApi.addScm(addDto);
           ElMessage.success("新增成功");
+          modalVisible.value = false;
+          resetModal();
+          reloadCallback();
+        } catch (error: any) {
+          ElMessage.error(error.message);
+        }
+        modalLoading.value = false;
+        return;
+      }
+
+      if (modalMode.value === "copy") {
+        if (!modalForm.name) {
+          ElMessage.error("SCM名称不能为空");
+          modalLoading.value = false;
+          return;
+        }
+        try {
+          const copyDto: CopyScmDto = {
+            id: modalForm.id,
+            name: modalForm.name,
+          };
+          await ScmApi.copyScm(copyDto);
+          ElMessage.success("复制成功");
           modalVisible.value = false;
           resetModal();
           reloadCallback();

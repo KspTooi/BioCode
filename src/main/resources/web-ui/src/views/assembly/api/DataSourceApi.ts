@@ -68,6 +68,15 @@ export interface EditDataSourceDto {
 }
 
 /**
+ * 复制数据源DTO
+ */
+export interface CopyDataSourceDto {
+  id: string; // 源数据源ID
+  name: string; // 数据源名称 max:32
+  code: string; // 数据源编码 max:32
+}
+
+/**
  * 表列表VO
  */
 export interface GetDataSourceTableListVo {
@@ -121,6 +130,17 @@ export default {
    */
   removeDataSource: async (dto: CommonIdDto): Promise<string> => {
     const result = await Http.postEntity<Result<string>>("/dataSource/removeDataSource", dto);
+    if (result.code === 0) {
+      return result.message;
+    }
+    throw new Error(result.message);
+  },
+
+  /**
+   * 复制数据源
+   */
+  copyDataSource: async (dto: CopyDataSourceDto): Promise<string> => {
+    const result = await Http.postEntity<Result<string>>("/dataSource/copyDataSource", dto);
     if (result.code === 0) {
       return result.message;
     }

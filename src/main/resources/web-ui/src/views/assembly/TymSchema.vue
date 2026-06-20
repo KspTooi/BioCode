@@ -48,7 +48,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" min-width="120" show-overflow-tooltip />
-        <el-table-column label="操作" fixed="right" min-width="220">
+        <el-table-column label="操作" fixed="right" width="300">
           <template #default="scope">
             <!-- 方案字段管理：CDRC 跳转至 tym-schema-field-manager，不再使用子组件模态框 -->
             <el-button
@@ -63,6 +63,7 @@
             <el-button link type="primary" size="small" :icon="EditIcon" @click="openModal('edit', scope.row)">
               编辑
             </el-button>
+            <el-button link type="primary" size="small" :icon="CopyIcon" @click="openModal('copy', scope.row)"> 复制 </el-button>
             <el-button link type="danger" size="small" :icon="DeleteIcon" @click="removeList(scope.row)"> 删除 </el-button>
           </template>
         </el-table-column>
@@ -95,7 +96,7 @@
     <!-- 新增/编辑模态框 -->
     <el-dialog
       v-model="modalVisible"
-      :title="modalMode === 'edit' ? '编辑类型映射方案表' : '新增类型映射方案表'"
+      :title="modalMode === 'edit' ? '编辑类型映射方案' : modalMode === 'copy' ? '复制类型映射方案' : '新增类型映射方案'"
       width="600px"
       :close-on-click-modal="false"
       @close="
@@ -117,13 +118,13 @@
         <el-form-item label="方案编码" prop="code">
           <el-input v-model="modalForm.code" placeholder="请输入方案编码" clearable maxlength="32" show-word-limit />
         </el-form-item>
-        <el-form-item label="默认类型" prop="defaultType">
+        <el-form-item label="默认类型" prop="defaultType" v-if="modalMode !== 'copy'">
           <el-input v-model="modalForm.defaultType" placeholder="请输入默认类型" clearable maxlength="80" show-word-limit />
         </el-form-item>
-        <el-form-item label="排序" prop="seq">
+        <el-form-item label="排序" prop="seq" v-if="modalMode !== 'copy'">
           <el-input v-model.number="modalForm.seq" placeholder="请输入排序" clearable />
         </el-form-item>
-        <el-form-item label="备注" prop="remark">
+        <el-form-item label="备注" prop="remark" v-if="modalMode !== 'copy'">
           <el-input v-model="modalForm.remark" placeholder="请输入备注" clearable type="textarea" />
         </el-form-item>
       </el-form>
@@ -131,7 +132,7 @@
         <div class="dialog-footer">
           <el-button @click="modalVisible = false">取消</el-button>
           <el-button type="primary" :loading="modalLoading" @click="submitModal">
-            {{ modalMode === "add" ? "创建" : "保存" }}
+            {{ modalMode === "add" || modalMode === "copy" ? "创建" : "保存" }}
           </el-button>
         </div>
       </template>
@@ -142,7 +143,7 @@
 <script setup lang="ts">
 import { ref, markRaw, watch } from "vue";
 import { useRoute } from "vue-router";
-import { Edit, Delete } from "@element-plus/icons-vue";
+import { Edit, Delete, CopyDocument } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
 import TymSchemaService from "@/views/assembly/service/TymSchemaService";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
@@ -156,6 +157,7 @@ import ComDirectRouteContext from "@/soa/com-series/service/ComDirectRouteContex
 // 使用markRaw包装图标组件，防止被Vue响应式系统处理
 const EditIcon = markRaw(Edit);
 const DeleteIcon = markRaw(Delete);
+const CopyIcon = markRaw(CopyDocument);
 
 const route = useRoute();
 // CDRC：跳转到类型映射方案字段管理页

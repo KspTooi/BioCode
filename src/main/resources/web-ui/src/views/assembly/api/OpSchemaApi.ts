@@ -118,6 +118,14 @@ export interface ExecuteOpSchemaDto {
   sha256Hexs: string[]; // 蓝图SHA256列表
 }
 
+/**
+ * 复制输出方案DTO
+ */
+export interface CopyOpSchemaDto {
+  id: string; // 源输出方案ID
+  name: string; // 输出方案名称
+}
+
 export default {
   /**
    * 获取输出方案列表
@@ -217,7 +225,7 @@ export default {
   /**
    * 复制输出方案
    */
-  copyOpSchema: async (dto: CommonIdDto): Promise<string> => {
+  copyOpSchema: async (dto: CopyOpSchemaDto): Promise<string> => {
     const result = await Http.postEntity<Result<string>>("/opSchema/copyOpSchema", dto);
     if (result.code === 0) {
       return result.message;

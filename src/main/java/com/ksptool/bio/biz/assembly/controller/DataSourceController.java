@@ -8,6 +8,7 @@ import com.ksptool.assembly.entity.web.Result;
 import java.util.List;
 
 import com.ksptool.bio.biz.assembly.model.datsource.dto.AddDataSourceDto;
+import com.ksptool.bio.biz.assembly.model.datsource.dto.CopyDataSourceDto;
 import com.ksptool.bio.biz.assembly.model.datsource.dto.EditDataSourceDto;
 import com.ksptool.bio.biz.assembly.model.datsource.dto.GetDataSourceListDto;
 import com.ksptool.bio.biz.assembly.model.datsource.vo.GetDataSourceDetailsVo;
@@ -79,6 +80,14 @@ public class DataSourceController {
 
         dataSourceService.removeDataSource(dto);
         return Result.success("操作成功");
+    }
+
+    @PreAuthorize("@auth.hasCode('assembly:datasource:add')")
+    @Operation(summary = "复制数据源")
+    @PostMapping("/copyDataSource")
+    public Result<String> copyDataSource(@RequestBody @Valid CopyDataSourceDto dto) throws Exception {
+        dataSourceService.copyDataSource(dto);
+        return Result.success("复制成功");
     }
 
     @PreAuthorize("@auth.hasCode('assembly:datasource:test')")

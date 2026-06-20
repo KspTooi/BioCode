@@ -6,6 +6,7 @@ import type {
   GetTymSchemaDetailsVo,
   AddTymSchemaDto,
   EditTymSchemaDto,
+  CopyTymSchemaDto,
 } from "@/views/assembly/api/TymSchemaApi";
 import TymSchemaApi from "@/views/assembly/api/TymSchemaApi";
 import { Result } from "@/commons/model/Result.ts";
@@ -14,7 +15,7 @@ import { ElMessage, ElMessageBox } from "element-plus";
 /**
  * 模态框模式类型
  */
-type ModalMode = "add" | "edit";
+type ModalMode = "add" | "edit" | "copy";
 
 export default {
   /**
@@ -160,6 +161,23 @@ export default {
         return;
       }
 
+      if (mode === "copy") {
+        if (!row) {
+          ElMessage.error("未选择要复制的数据");
+          return;
+        }
+        modalForm.id = row.id;
+        modalForm.name = row.name;
+        modalForm.code = row.code;
+        modalForm.typeCount = 0;
+        modalForm.defaultType = "";
+        modalForm.seq = 0;
+        modalForm.remark = "";
+        modalForm.createTime = "";
+        modalVisible.value = true;
+        return;
+      }
+
       if (mode === "edit") {
         if (!row) {
           ElMessage.error("未选择要编辑的数据");
@@ -228,6 +246,30 @@ export default {
           };
           await TymSchemaApi.addTymSchema(addDto);
           ElMessage.success("新增成功");
+          modalVisible.value = false;
+          resetModal();
+          reloadCallback();
+        } catch (error: any) {
+          ElMessage.error(error.message);
+        }
+        modalLoading.value = false;
+        return;
+      }
+
+      if (modalMode.value === "copy") {
+        if (!modalForm.name || !modalForm.code) {
+          ElMessage.error("方案名称和编码不能为空");
+          modalLoading.value = false;
+          return;
+        }
+        try {
+          const copyDto: CopyTymSchemaDto = {
+            id: modalForm.id,
+            name: modalForm.name,
+            code: modalForm.code,
+          };
+          await TymSchemaApi.copyTymSchema(copyDto);
+          ElMessage.success("复制成功");
           modalVisible.value = false;
           resetModal();
           reloadCallback();

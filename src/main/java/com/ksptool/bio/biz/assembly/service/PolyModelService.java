@@ -10,6 +10,7 @@ import com.ksptool.bio.biz.assembly.model.polymodel.PolyModelPo;
 import com.ksptool.bio.biz.assembly.model.polymodel.dto.AddPolyModelDto;
 import com.ksptool.bio.biz.assembly.model.polymodel.dto.EditPolyModelDto;
 import com.ksptool.bio.biz.assembly.model.polymodel.dto.GetPolyModelListDto;
+import com.ksptool.bio.biz.assembly.model.polymodel.dto.ImportPolyModelFromRawDto;
 import com.ksptool.bio.biz.assembly.model.polymodel.vo.GetPolyModelDetailsVo;
 import com.ksptool.bio.biz.assembly.model.polymodel.vo.GetPolyModelListVo;
 import com.ksptool.bio.biz.assembly.model.tymschemafield.TymSchemaFieldPo;
@@ -46,6 +47,12 @@ public class PolyModelService {
 
     @Autowired
     private OpSchemaRepository opSchemaRepository;
+
+    @Autowired
+    private PolyTemplateRepository aptRepository;
+
+    @Autowired
+    private PolyTemplateFieldRepository aptfRepository;
 
 
     /**
@@ -137,10 +144,10 @@ public class PolyModelService {
      * @throws BizException 业务异常
      */
     @Transactional(rollbackFor = Exception.class)
-    public void importFromRaw(CommonIdDto dto) throws BizException {
+    public void importFromRaw(ImportPolyModelFromRawDto dto) throws BizException {
 
         //先查询输出方案
-        OpSchemaPo opSchemaPo = opSchemaRepository.findById(dto.getId()).orElseThrow(() -> new BizException("输出方案不存在"));
+        OpSchemaPo opSchemaPo = opSchemaRepository.findById(dto.getOutputSchemaId()).orElseThrow(() -> new BizException("输出方案不存在"));
 
         //检查输出方案是否具有类型映射方案
         if (opSchemaPo.getTypeSchemaId() == null) {
@@ -204,6 +211,34 @@ public class PolyModelService {
             polyModelPo.setSeq(rawModelPo.getSeq());
             polyModelPos.add(polyModelPo);
         }
+
+        //后处理聚合模型(如果使用了聚合模板 则匹配聚合模板)
+        if (dto.getPolyTemplateId() != null) {
+
+            //查找聚合模板
+            if(aptRepository.countById(dto.getPolyTemplateId()) < 1){
+                throw new BizException("聚合模板不存在");
+            }
+
+            //查找APTF
+            var aptfPos = aptfRepository.getAptfByAptId(dto.getPolyTemplateId());
+
+            for(var aptf : aptfPos){
+
+                var name = aptf.getName();
+
+                for(var apm : polyModelPos){
+                    if(apm.getName().equals(name)){
+                        apm.setPolicyCrudJson(aptf.getPolicyCrudJson());
+                        apm.setPolicyQuery(aptf.getPolicyQuery());
+                        apm.setPolicyView(aptf.getPolicyView());
+                    }
+                }
+
+            }
+
+        }
+
 
         //批量保存聚合模型
         repository.saveAll(polyModelPos);

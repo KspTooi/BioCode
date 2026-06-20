@@ -86,6 +86,14 @@ export interface GetAnchorPointsVo {
   relativePath: string; // 相对路径
 }
 
+/**
+ * 复制SCM DTO
+ */
+export interface CopyScmDto {
+  id: string; // 源SCM ID
+  name: string; // SCM名称 max:32
+}
+
 export default {
   /**
    * 获取SCM列表
@@ -132,6 +140,17 @@ export default {
    */
   removeScm: async (dto: CommonIdDto): Promise<string> => {
     const result = await Http.postEntity<Result<string>>("/scm/removeScm", dto);
+    if (result.code === 0) {
+      return result.message;
+    }
+    throw new Error(result.message);
+  },
+
+  /**
+   * 复制SCM
+   */
+  copyScm: async (dto: CopyScmDto): Promise<string> => {
+    const result = await Http.postEntity<Result<string>>("/scm/copyScm", dto);
     if (result.code === 0) {
       return result.message;
     }

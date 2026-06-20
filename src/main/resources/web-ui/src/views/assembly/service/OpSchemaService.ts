@@ -6,6 +6,7 @@ import type {
   GetOpSchemaDetailsVo,
   AddOpSchemaDto,
   EditOpSchemaDto,
+  CopyOpSchemaDto,
 } from "@/views/assembly/api/OpSchemaApi";
 import OpSchemaApi from "@/views/assembly/api/OpSchemaApi";
 import { Result } from "@/commons/model/Result.ts";
@@ -20,7 +21,7 @@ import ScmApi from "@/views/assembly/api/ScmApi";
 /**
  * 模态框模式类型
  */
-type ModalMode = "add" | "edit";
+type ModalMode = "add" | "edit" | "copy";
 
 export default {
   /**
@@ -93,29 +94,6 @@ export default {
       }
     };
 
-    /**
-     * 复制记录
-     */
-    const copyList = async (row: GetOpSchemaListVo): Promise<void> => {
-      try {
-        await ElMessageBox.confirm(`确定复制输出方案「${row.name}」吗？`, "提示", {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "info",
-        });
-      } catch {
-        return;
-      }
-
-      try {
-        await OpSchemaApi.copyOpSchema({ id: row.id });
-        ElMessage.success("复制成功");
-        await loadList();
-      } catch (error: any) {
-        ElMessage.error(error.message);
-      }
-    };
-
     onMounted(async () => {
       await loadList();
     });
@@ -128,7 +106,6 @@ export default {
       loadList,
       resetList,
       removeList,
-      copyList,
     };
   },
 
@@ -161,6 +138,11 @@ export default {
     const modalDataSource = ref<GetDataSourceListVo[]>([]);
     const modalTypeSchema = ref<GetTymSchemaListVo[]>([]);
     const modalScm = ref<GetScmListVo[]>([]);
+
+    // 复制模态框专属状态
+    const copyModalVisible = ref(false);
+    const copyForm = reactive({ id: "", name: "" });
+    const copyModalRef = ref<FormInstance>();
 
     /**
      * 表单验证规则
@@ -303,9 +285,63 @@ export default {
     };
 
     /**
+     * 打开复制模态框
+     * @param row 源数据行
+     */
+    const openCopyModal = async (row: GetOpSchemaListVo): Promise<void> => {
+      copyForm.id = row.id;
+      copyForm.name = row.name;
+      modalMode.value = "copy";
+      copyModalVisible.value = true;
+    };
+
+    /**
+     * 重置复制模态框
+     */
+    const resetCopyModal = (): void => {
+      if (!copyModalRef.value) {
+        return;
+      }
+      copyModalRef.value.resetFields();
+      copyForm.id = "";
+      copyForm.name = "";
+    };
+
+    /**
      * 提交模态框
      */
     const submitModal = async (): Promise<void> => {
+      if (modalMode.value === "copy") {
+        if (!copyModalRef.value) {
+          return;
+        }
+
+        try {
+          await copyModalRef.value.validate();
+        } catch {
+          return;
+        }
+
+        modalLoading.value = true;
+
+        try {
+          const copyDto: CopyOpSchemaDto = {
+            id: copyForm.id,
+            name: copyForm.name,
+          };
+          await OpSchemaApi.copyOpSchema(copyDto);
+          ElMessage.success("复制成功");
+          copyModalVisible.value = false;
+          resetCopyModal();
+          reloadCallback();
+        } catch (error: any) {
+          ElMessage.error(error.message);
+        }
+
+        modalLoading.value = false;
+        return;
+      }
+
       if (!modalFormRef.value) {
         return;
       }
@@ -399,6 +435,11 @@ export default {
       openModal,
       resetModal,
       submitModal,
+      copyModalVisible,
+      copyForm,
+      copyModalRef,
+      openCopyModal,
+      resetCopyModal,
     };
   },
 };

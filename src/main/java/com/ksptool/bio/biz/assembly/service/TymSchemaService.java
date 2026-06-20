@@ -5,11 +5,14 @@ import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.bio.biz.assembly.model.tymschema.TymSchemaPo;
 import com.ksptool.bio.biz.assembly.model.tymschema.dto.AddTymSchemaDto;
+import com.ksptool.bio.biz.assembly.model.tymschema.dto.CopyTymSchemaDto;
 import com.ksptool.bio.biz.assembly.model.tymschema.dto.EditTymSchemaDto;
 import com.ksptool.bio.biz.assembly.model.tymschema.dto.GetTymSchemaListDto;
 import com.ksptool.bio.biz.assembly.model.tymschema.vo.GetTymSchemaDetailsVo;
 import com.ksptool.bio.biz.assembly.model.tymschema.vo.GetTymSchemaListVo;
+import com.ksptool.bio.biz.assembly.model.tymschemafield.TymSchemaFieldPo;
 import com.ksptool.bio.biz.assembly.repository.OpSchemaRepository;
+import com.ksptool.bio.biz.assembly.repository.TymSchemaFieldRepository;
 import com.ksptool.bio.biz.assembly.repository.TymSchemaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -33,6 +36,9 @@ public class TymSchemaService {
 
     @Autowired
     private OpSchemaRepository opSchemaRepository;
+
+    @Autowired
+    private TymSchemaFieldRepository tymSchemaFieldRepository;
 
     /**
      * 查询类型映射方案列表
@@ -119,6 +125,48 @@ public class TymSchemaService {
         }
 
         repository.deleteById(dto.getId());
+    }
+
+    /**
+     * 复制类型映射方案（同时复制全部子字段记录）
+     *
+     * @param dto 复制参数（源ID + 新名称 + 新编码）
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void copyTymSchema(CopyTymSchemaDto dto) throws BizException {
+        TymSchemaPo sourcePo = repository.findById(dto.getId())
+                .orElseThrow(() -> new BizException("复制失败,源类型映射方案不存在或无权限访问."));
+
+        if (repository.countByCode(dto.getCode()) > 0) {
+            throw new BizException("编码已存在:[" + dto.getCode() + "]");
+        }
+
+        TymSchemaPo newPo = as(sourcePo, TymSchemaPo.class);
+        newPo.setId(null);
+        newPo.setName(dto.getName());
+        newPo.setCode(dto.getCode());
+
+        List<TymSchemaFieldPo> sourceFields = tymSchemaFieldRepository.getTymSfByTymSid(sourcePo.getId());
+        if (sourceFields.isEmpty()) {
+            newPo.setTypeCount(0);
+            repository.save(newPo);
+            return;
+        }
+
+        repository.save(newPo);
+        Long newId = newPo.getId();
+
+        List<TymSchemaFieldPo> newFields = new java.util.ArrayList<>();
+        for (TymSchemaFieldPo field : sourceFields) {
+            TymSchemaFieldPo newField = as(field, TymSchemaFieldPo.class);
+            newField.setId(null);
+            newField.setTypeSchemaId(newId);
+            newFields.add(newField);
+        }
+        tymSchemaFieldRepository.saveAll(newFields);
+
+        newPo.setTypeCount(newFields.size());
+        repository.save(newPo);
     }
 
 }
