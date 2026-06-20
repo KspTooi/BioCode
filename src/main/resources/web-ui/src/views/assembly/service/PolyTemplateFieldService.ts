@@ -97,7 +97,11 @@ export default {
   /**
    * 字段模态框管理，polyTemplateId 由 CDRC 传入，新增时自动注入父模板ID
    */
-  usePolyTemplateFieldModal(modalFormRef: Ref<FormInstance | undefined>, polyTemplateId: Ref<string>, reloadCallback: () => void) {
+  usePolyTemplateFieldModal(
+    modalFormRef: Ref<FormInstance | undefined>,
+    polyTemplateId: Ref<string>,
+    reloadCallback: () => void
+  ) {
     const modalVisible = ref(false);
     const modalLoading = ref(false);
     const modalMode = ref<ModalMode>("add");
@@ -266,7 +270,7 @@ export default {
         const details = await PolyTemplateFieldApi.getPolyTemplateFieldDetails({ id: String(row.id) });
         const editDto: EditPolyTemplateFieldDto = { ...details, ...row };
         await PolyTemplateFieldApi.editPolyTemplateField(editDto);
-        ElMessage.success("更新成功");
+        //ElMessage.success("更新成功");
         return true;
       } catch (error: any) {
         ElMessage.error(error.message);
@@ -279,7 +283,7 @@ export default {
         const details = await PolyTemplateFieldApi.getPolyTemplateFieldDetails({ id: String(row.id) });
         const editDto: EditPolyTemplateFieldDto = { ...details, [field]: value };
         await PolyTemplateFieldApi.editPolyTemplateField(editDto);
-        ElMessage.success("更新成功");
+        //ElMessage.success("更新成功");
         return true;
       } catch (error: any) {
         ElMessage.error(error.message);
