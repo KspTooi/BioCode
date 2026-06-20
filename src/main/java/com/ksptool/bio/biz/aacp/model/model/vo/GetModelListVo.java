@@ -37,13 +37,13 @@ public class GetModelListVo {
     private Integer apiReasoningEffort;
 
     @Schema(description="输入单价")
-    private String fincInput;
+    private BigDecimal fincInput;
 
     @Schema(description="输入单价(缓存)")
-    private String fincInputCached;
+    private BigDecimal fincInputCached;
 
     @Schema(description = "输出单价")
-    private String fincOutput;
+    private BigDecimal fincOutput;
 
     @Schema(description = "测试首字响应时间 MS")
     private Integer testTtfb;

@@ -16,6 +16,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
 @Getter
 @Setter
@@ -62,14 +63,14 @@ public class AacpModelPo extends RowScopeRootOnlyPo {
     @Column(name = "api_append_headers", nullable = false, columnDefinition = "JSON", comment = "附加请求头")
     private String apiAppendHeaders;
 
-    @Column(name = "finc_input", nullable = false, comment = "输入单价")
-    private String fincInput;
+    @Column(name = "finc_input", nullable = false, precision = 16, scale = 6, comment = "输入单价")
+    private BigDecimal fincInput;
 
-    @Column(name = "finc_input_cached", nullable = false, comment = "输入单价(缓存)")
-    private String fincInputCached;
+    @Column(name = "finc_input_cached", nullable = false, precision = 16, scale = 6, comment = "输入单价(缓存)")
+    private BigDecimal fincInputCached;
 
-    @Column(name = "finc_output", nullable = false, comment = "输出单价")
-    private String fincOutput;
+    @Column(name = "finc_output", nullable = false, precision = 16, scale = 6, comment = "输出单价")
+    private BigDecimal fincOutput;
 
     @Column(name = "test_ttfb", comment = "测试首字响应时间 MS")
     private Integer testTtfb;

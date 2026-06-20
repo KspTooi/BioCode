@@ -39,14 +39,14 @@ public class GetModelDetailsVo {
     @Schema(description="附加请求头")
     private String apiAppendHeaders;
 
-    @Schema(description="输入单价")
-    private String fincInput;
+    @Schema(description = "输入单价")
+    private BigDecimal fincInput;
 
-    @Schema(description="输入单价(缓存)")
-    private String fincInputCached;
+    @Schema(description = "输入单价(缓存)")
+    private BigDecimal fincInputCached;
 
-    @Schema(description="输出单价")
-    private String fincOutput;
+    @Schema(description = "输出单价")
+    private BigDecimal fincOutput;
 
     @Schema(description="备注")
     private String remark;

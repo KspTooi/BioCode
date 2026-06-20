@@ -5,10 +5,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Digits;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Range;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -60,17 +62,20 @@ public class EditModelDto implements DtoCustomValidator {
     @Schema(description = "附加请求头")
     private String apiAppendHeaders;
 
-    @NotBlank(message = "输入单价不能为空")
+    @NotNull(message = "输入单价不能为空")
+    @Digits(integer = 10, fraction = 6, message = "输入单价最多保留6位小数")
     @Schema(description = "输入单价")
-    private String fincInput;
+    private BigDecimal fincInput;
 
-    @NotBlank(message = "输入单价(缓存)不能为空")
+    @NotNull(message = "输入单价(缓存)不能为空")
+    @Digits(integer = 10, fraction = 6, message = "输入单价(缓存)最多保留6位小数")
     @Schema(description = "输入单价(缓存)")
-    private String fincInputCached;
+    private BigDecimal fincInputCached;
 
-    @NotBlank(message = "输出单价不能为空")
+    @NotNull(message = "输出单价不能为空")
+    @Digits(integer = 10, fraction = 6, message = "输出单价最多保留6位小数")
     @Schema(description = "输出单价")
-    private String fincOutput;
+    private BigDecimal fincOutput;
 
     @Size(max = 200, message = "备注不能超过200个字符")
     @Schema(description = "备注")
