@@ -22,7 +22,7 @@ import static com.ksptool.entities.Entities.assign;
 
 
 @Service
-public class ModelService {
+public class AacpModelService {
 
     @Autowired
     private ModelRepository repository;

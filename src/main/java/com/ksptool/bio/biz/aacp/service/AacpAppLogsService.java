@@ -20,7 +20,7 @@ import static com.ksptool.entities.Entities.assign;
 
 
 @Service
-public class AppLogsService {
+public class AacpAppLogsService {
 
     @Autowired
     private AppLogsRepository repository;
