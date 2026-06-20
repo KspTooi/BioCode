@@ -365,6 +365,10 @@ public class OpSchemaService {
         OpSchemaPo source = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("复制失败,数据不存在或无权限访问."));
 
+        if (repository.countByNameExcludeId(dto.getName(), null) > 0) {
+            throw new BizException("复制失败,输出方案名称已存在.");
+        }
+
         var userId = session().getUserId();
 
         //检查两个SCM的可用性
