@@ -110,6 +110,7 @@ export default {
     const modalLoading = ref(false);
     const modalMode = ref<ModalMode>("add");
     const modalForm = reactive<GetAacpAppDetailsVo>({
+      id: "",
       name: "",
       code: "",
       appKey: "",

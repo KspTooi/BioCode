@@ -110,9 +110,11 @@ export default {
     const modalLoading = ref(false);
     const modalMode = ref<ModalMode>("add");
     const modalForm = reactive<GetProviderDetailsVo>({
+      id: "",
       name: "",
       code: "",
       apiKind: "",
+      apiKey: "",
       apiHost: "",
       apiUrl: "",
       proxyKind: 0,

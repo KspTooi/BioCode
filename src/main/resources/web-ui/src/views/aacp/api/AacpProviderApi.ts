@@ -34,6 +34,7 @@ export interface GetProviderDetailsVo {
   name: string; // 供应商名称
   code: string; // 供应商代码
   apiKind: string; // 接口类型 0:OpenAi 1:Anthropic
+  apiKey: string; // 接口密钥
   apiHost: string; // 接口地址
   apiUrl: string; // 接口端点
   proxyKind: number; // 代理类型 0:无 1:HTTP 2:SOCKS5

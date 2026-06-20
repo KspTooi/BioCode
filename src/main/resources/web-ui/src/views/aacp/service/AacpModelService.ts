@@ -112,6 +112,7 @@ export default {
     const modalLoading = ref(false);
     const modalMode = ref<ModalMode>("add");
     const modalForm = reactive<GetModelDetailsVo>({
+      id: "",
       name: "",
       code: "",
       kind: 0,
@@ -168,6 +169,7 @@ export default {
       modalMode.value = mode;
 
       if (mode === "add") {
+        modalForm.id = "";
         modalForm.name = "";
         modalForm.code = "";
         modalForm.kind = 0;
@@ -198,6 +200,7 @@ export default {
 
         try {
           const details = await ModelApi.getModelDetails({ id: row.id });
+          modalForm.id = row.id;
           modalForm.name = details.name;
           modalForm.code = details.code;
           modalForm.kind = details.kind;
@@ -231,6 +234,7 @@ export default {
         return;
       }
       modalFormRef.value.resetFields();
+      modalForm.id = "";
       modalForm.name = "";
       modalForm.code = "";
       modalForm.kind = 0;

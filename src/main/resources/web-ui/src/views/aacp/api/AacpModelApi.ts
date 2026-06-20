@@ -18,6 +18,7 @@ export interface GetModelListDto extends PageQuery {
  * 查询模型变体列表Vo
  */
 export interface GetModelListVo {
+  id: string; // 主键ID
   name: string; // 模型变体名称
   code: string; // 模型标识
   kind: number; // 类型 0:文本 1:图形 2:音频 3:多模态
@@ -38,6 +39,7 @@ export interface GetModelListVo {
  * 查询模型变体详情Vo
  */
 export interface GetModelDetailsVo {
+  id: string; // 主键ID
   name: string; // 模型变体名称
   code: string; // 模型标识
   kind: number; // 类型 0:文本 1:图形 2:音频 3:多模态
