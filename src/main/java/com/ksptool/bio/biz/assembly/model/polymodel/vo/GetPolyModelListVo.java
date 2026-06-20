@@ -6,6 +6,10 @@ import lombok.Setter;
 
 import java.util.Set;
 
+/**
+ * @author KspTooi
+ * @since 1.7.9(I).1
+ */
 @Getter
 @Setter
 public class GetPolyModelListVo {

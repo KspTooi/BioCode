@@ -8,6 +8,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+/**
+ * @author KspTooi
+ * @since 1.6.19(S).32
+ */
 @Repository
 public interface DataSourceRepository extends JpaRepository<DataSourcePo, Long> {
 

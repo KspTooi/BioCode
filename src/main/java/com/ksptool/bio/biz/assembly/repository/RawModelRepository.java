@@ -9,6 +9,10 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * @author KspTooi
+ * @since 1.6.19(S).32
+ */
 @Repository
 public interface RawModelRepository extends JpaRepository<RawModelPo, Long> {
 

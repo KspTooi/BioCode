@@ -4,6 +4,7 @@ import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.assembly.entity.web.Result;
 import com.ksptool.bio.biz.assembly.model.scm.dto.AddScmDto;
+import com.ksptool.bio.biz.assembly.model.scm.dto.CopyScmDto;
 import com.ksptool.bio.biz.assembly.model.scm.dto.EditScmDto;
 import com.ksptool.bio.biz.assembly.model.scm.dto.GetAnchorPointsDto;
 import com.ksptool.bio.biz.assembly.model.scm.dto.GetScmListDto;
@@ -88,6 +89,14 @@ public class ScmController {
     public Result<String> removeScm(@RequestBody @Valid CommonIdDto dto) throws Exception {
         scmService.removeScm(dto);
         return Result.success("操作成功");
+    }
+
+    @PreAuthorize("@auth.hasCode('assembly:scm:add')")
+    @Operation(summary = "复制SCM")
+    @PostMapping("/copyScm")
+    public Result<String> copyScm(@RequestBody @Valid CopyScmDto dto) throws Exception {
+        scmService.copyScm(dto);
+        return Result.success("复制成功");
     }
 
     @Operation(summary = "测试SCM连接")

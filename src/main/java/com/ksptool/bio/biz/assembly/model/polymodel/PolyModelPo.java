@@ -15,6 +15,10 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 import java.util.Set;
 
+/**
+ * @author KspTooi
+ * @since 1.6.19(S).32
+ */
 @Getter
 @Setter
 @Entity
@@ -77,13 +81,4 @@ public class PolyModelPo {
     @Column(name = "updater_id", nullable = false, comment = "更新人ID")
     private Long updaterId;
 
-
-    @PrePersist
-    private void onCreate() throws AuthException {
-
-    }
-
-    @PreUpdate
-    private void onUpdate() throws AuthException {
-    }
 }

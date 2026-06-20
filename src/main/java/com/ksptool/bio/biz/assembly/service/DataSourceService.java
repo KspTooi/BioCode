@@ -6,6 +6,7 @@ import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.assembly.entity.web.Result;
 import com.ksptool.bio.biz.assembly.model.datsource.DataSourcePo;
 import com.ksptool.bio.biz.assembly.model.datsource.dto.AddDataSourceDto;
+import com.ksptool.bio.biz.assembly.model.datsource.dto.CopyDataSourceDto;
 import com.ksptool.bio.biz.assembly.model.datsource.dto.EditDataSourceDto;
 import com.ksptool.bio.biz.assembly.model.datsource.dto.GetDataSourceListDto;
 import com.ksptool.bio.biz.assembly.model.datsource.vo.GetDataSourceDetailsVo;
@@ -139,6 +140,27 @@ public class DataSourceService {
         }
 
         repository.deleteById(dto.getId());
+    }
+
+    /**
+     * 复制数据源
+     *
+     * @param dto 复制参数（源ID + 新名称 + 新编码）
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void copyDataSource(CopyDataSourceDto dto) throws BizException {
+        DataSourcePo sourcePo = repository.findById(dto.getId())
+                .orElseThrow(() -> new BizException("复制失败,源数据源不存在或无权限访问."));
+
+        if (repository.countByCode(dto.getCode()) > 0) {
+            throw new BizException("编码已存在:[" + dto.getCode() + "]");
+        }
+
+        DataSourcePo newPo = as(sourcePo, DataSourcePo.class);
+        newPo.setId(null);
+        newPo.setName(dto.getName());
+        newPo.setCode(dto.getCode());
+        repository.save(newPo);
     }
 
     /**

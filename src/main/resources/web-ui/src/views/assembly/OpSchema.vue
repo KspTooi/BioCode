@@ -56,7 +56,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" min-width="160" show-overflow-tooltip />
-        <el-table-column label="操作" fixed="right" min-width="280">
+        <el-table-column label="操作" fixed="right" width="300">
           <template #default="scope">
             <el-button link type="primary" size="small" :icon="EditIcon" @click="openModal('edit', scope.row)">
               编辑
@@ -79,7 +79,7 @@
             >
               模拟
             </el-button>
-            <el-button link type="warning" size="small" :icon="CopyIcon" @click="copyList(scope.row)"> 复制 </el-button>
+            <el-button link type="warning" size="small" :icon="CopyIcon" @click="openCopyModal(scope.row)"> 复制 </el-button>
             <el-button link type="danger" size="small" :icon="DeleteIcon" @click="removeList(scope.row)"> 删除 </el-button>
           </template>
         </el-table-column>
@@ -367,6 +367,33 @@
         </div>
       </template>
     </el-dialog>
+
+    <!-- 复制输出方案模态框 -->
+    <el-dialog
+      v-model="copyModalVisible"
+      title="复制输出方案"
+      width="500px"
+      :close-on-click-modal="false"
+      @close="resetCopyModal(); loadList();"
+    >
+      <el-form
+        v-if="copyModalVisible"
+        ref="copyModalRef"
+        :model="copyForm"
+        label-width="100px"
+        :validate-on-rule-change="false"
+      >
+        <el-form-item label="方案名称" prop="name" :rules="[{ required: true, message: '请输入输出方案名称', trigger: 'blur' }, { max: 32, message: '输出方案名称不能超过32个字符', trigger: 'blur' }]">
+          <el-input v-model="copyForm.name" placeholder="请输入输出方案名称" clearable maxlength="32" show-word-limit />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="copyModalVisible = false">关闭</el-button>
+          <el-button type="primary" :loading="modalLoading" @click="submitModal">创建</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </StdListContainer>
 </template>
 
@@ -396,7 +423,7 @@ const SimulationIcon = resolveIcon("monitor");
 const CopyIcon = resolveIcon("copy-document");
 
 //列表管理打包
-const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList, copyList } =
+const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } =
   OpSchemaService.useOpSchemaList();
 
 //使用CDRC打包上下文
@@ -417,6 +444,11 @@ const {
   openModal,
   resetModal,
   submitModal,
+  copyModalVisible,
+  copyForm,
+  copyModalRef,
+  openCopyModal,
+  resetCopyModal,
 } = OpSchemaService.useOpSchemaModal(modalFormRef, loadList);
 </script>
 

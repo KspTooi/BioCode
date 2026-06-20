@@ -5,6 +5,10 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * @author KspTooi
+ * @since 1.6.19(S).32
+ */
 @Getter
 @Setter
 public class GetPolyModelListDto {
