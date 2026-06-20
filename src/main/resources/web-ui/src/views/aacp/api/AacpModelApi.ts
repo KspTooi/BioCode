@@ -33,6 +33,7 @@ export interface GetModelListVo {
   testRate: number; // 测试响应速率 T/S
   seq: number; // 排序
   status: number; // 状态 0:禁用 1:启用
+  createTime: string; // 创建时间
 }
 
 /**

@@ -117,30 +117,40 @@
         <el-form-item label="模型标识" prop="code">
           <el-input v-model="modalForm.code" placeholder="请输入模型标识" clearable :maxlength="64" show-word-limit />
         </el-form-item>
-        <el-form-item label="类型 0:文本 1:图形 2:音频 3:多模态" prop="kind">
-          <el-input v-model.number="modalForm.kind" placeholder="请输入类型 0:文本 1:图形 2:音频 3:多模态" clearable />
+        <el-form-item label="类型" prop="kind">
+          <el-radio-group v-model="modalForm.kind">
+            <el-radio :value="0">文本</el-radio>
+            <el-radio :value="1">图形</el-radio>
+            <el-radio :value="2">音频</el-radio>
+            <el-radio :value="3">多模态</el-radio>
+          </el-radio-group>
         </el-form-item>
-        <el-form-item label="最大上下文长度" prop="maxContext">
-          <el-input v-model.number="modalForm.maxContext" placeholder="请输入最大上下文长度" clearable />
+        <el-form-item label="最大上下文" prop="maxContext">
+          <el-input-number v-model="modalForm.maxContext" :min="1" placeholder="请输入最大上下文长度" />
         </el-form-item>
         <el-form-item label="最大输出词元" prop="maxOutputToken">
-          <el-input v-model.number="modalForm.maxOutputToken" placeholder="请输入最大输出词元" clearable />
+          <el-input-number v-model="modalForm.maxOutputToken" :min="1" placeholder="请输入最大输出词元" />
         </el-form-item>
-        <el-form-item label="推理 0:不支持 1:支持" prop="apiReasoning">
-          <el-input v-model.number="modalForm.apiReasoning" placeholder="请输入推理 0:不支持 1:支持" clearable />
+        <el-form-item label="推理" prop="apiReasoning">
+          <el-radio-group v-model="modalForm.apiReasoning">
+            <el-radio :value="0">不支持</el-radio>
+            <el-radio :value="1">支持</el-radio>
+          </el-radio-group>
         </el-form-item>
-        <el-form-item label="推理强度 0:关 1:低 2:中 3:高 4:极高" prop="apiReasoningEffort">
-          <el-input
-            v-model.number="modalForm.apiReasoningEffort"
-            placeholder="请输入推理强度 0:关 1:低 2:中 3:高 4:极高"
-            clearable
-          />
+        <el-form-item label="推理强度" prop="apiReasoningEffort">
+          <el-radio-group v-model="modalForm.apiReasoningEffort">
+            <el-radio :value="0">关</el-radio>
+            <el-radio :value="1">低</el-radio>
+            <el-radio :value="2">中</el-radio>
+            <el-radio :value="3">高</el-radio>
+            <el-radio :value="4">极高</el-radio>
+          </el-radio-group>
         </el-form-item>
         <el-form-item label="附加参数" prop="apiAppendParam">
-          <el-input v-model="modalForm.apiAppendParam" placeholder="请输入附加参数" clearable />
+          <el-input v-model="modalForm.apiAppendParam" placeholder="请输入附加参数(JSON)" type="textarea" :rows="2" />
         </el-form-item>
         <el-form-item label="附加请求头" prop="apiAppendHeaders">
-          <el-input v-model="modalForm.apiAppendHeaders" placeholder="请输入附加请求头" clearable />
+          <el-input v-model="modalForm.apiAppendHeaders" placeholder="请输入附加请求头(JSON)" type="textarea" :rows="2" />
         </el-form-item>
         <el-form-item label="输入单价" prop="fincInput">
           <el-input v-model="modalForm.fincInput" placeholder="请输入输入单价" clearable />
@@ -151,23 +161,26 @@
         <el-form-item label="输出单价" prop="fincOutput">
           <el-input v-model="modalForm.fincOutput" placeholder="请输入输出单价" clearable />
         </el-form-item>
-        <el-form-item label="测试首字响应时间 MS" prop="testTtfb">
-          <el-input v-model.number="modalForm.testTtfb" placeholder="请输入测试首字响应时间 MS" clearable />
+        <el-form-item label="首字响应(MS)" prop="testTtfb">
+          <el-input-number v-model="modalForm.testTtfb" :min="0" placeholder="测试首字响应时间" />
         </el-form-item>
-        <el-form-item label="测试响应速率 T/S" prop="testRate">
-          <el-input v-model.number="modalForm.testRate" placeholder="请输入测试响应速率 T/S" clearable />
+        <el-form-item label="响应速率(T/S)" prop="testRate">
+          <el-input-number v-model="modalForm.testRate" :min="0" placeholder="测试响应速率" />
         </el-form-item>
         <el-form-item label="最后测试时间" prop="testTime">
-          <el-input v-model="modalForm.testTime" placeholder="请输入最后测试时间" clearable />
+          <el-date-picker v-model="modalForm.testTime" type="datetime" placeholder="选择最后测试时间" value-format="YYYY-MM-DD HH:mm:ss" />
         </el-form-item>
         <el-form-item label="备注" prop="remark">
-          <el-input v-model="modalForm.remark" placeholder="请输入备注" clearable :maxlength="200" show-word-limit />
+          <el-input v-model="modalForm.remark" placeholder="请输入备注" type="textarea" :rows="2" :maxlength="200" show-word-limit />
         </el-form-item>
         <el-form-item label="排序" prop="seq">
-          <el-input v-model.number="modalForm.seq" placeholder="请输入排序" clearable />
+          <el-input-number v-model="modalForm.seq" :min="0" :max="255" placeholder="排序" />
         </el-form-item>
-        <el-form-item label="状态 0:禁用 1:启用" prop="status">
-          <el-input v-model.number="modalForm.status" placeholder="请输入状态 0:禁用 1:启用" clearable />
+        <el-form-item label="状态" prop="status">
+          <el-radio-group v-model="modalForm.status">
+            <el-radio :value="1">启用</el-radio>
+            <el-radio :value="0">禁用</el-radio>
+          </el-radio-group>
         </el-form-item>
       </el-form>
       <template #footer>
