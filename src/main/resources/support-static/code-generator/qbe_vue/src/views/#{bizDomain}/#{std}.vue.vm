@@ -25,11 +25,11 @@
 
     <!-- 操作按钮区域 -->
     <StdListAreaAction class="flex gap-2">
-      <el-button type="success" @click="openModal('add', null)">新增${schema.modelRemark}</el-button>
+      <el-button type="primary" @click="openModal('add', null)">创建${schema.modelRemark}</el-button>
     </StdListAreaAction>
 
     <!-- 列表表格区域 -->
-    <StdListAreaTable>
+    <StdListAreaTable v-model:list-form="listForm" :list-total="listTotal" :load-list="loadList">
       <el-table :data="listData" stripe v-loading="listLoading" border height="100%">
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
 #foreach($field in $model.fields)
@@ -37,7 +37,7 @@
         <el-table-column prop="${field.camelCase}" label="${field.comment}" min-width="120" show-overflow-tooltip />
 #end
 #end
-        <el-table-column label="操作" fixed="right" min-width="180">
+        <el-table-column label="操作" fixed="right" width="200">
           <template #default="scope">
             <el-button link type="primary" size="small" @click="openModal('edit', scope.row)" :icon="EditIcon">
               编辑
@@ -46,35 +46,12 @@
           </template>
         </el-table-column>
       </el-table>
-
-      <template #pagination>
-        <el-pagination
-          v-model:current-page="listForm.pageNum"
-          v-model:page-size="listForm.pageSize"
-          :page-sizes="[10, 20, 50, 100]"
-          layout="total, sizes, prev, pager, next, jumper"
-          :total="listTotal"
-          @size-change="
-            (val: number) => {
-              listForm.pageSize = val;
-              loadList();
-            }
-          "
-          @current-change="
-            (val: number) => {
-              listForm.pageNum = val;
-              loadList();
-            }
-          "
-          background
-        />
-      </template>
     </StdListAreaTable>
 
-    <!-- 新增/编辑模态框 -->
+    <!-- 创建/编辑模态框 -->
     <el-dialog
       v-model="modalVisible"
-      :title="modalMode === 'edit' ? '编辑${schema.modelRemark}' : '新增${schema.modelRemark}'"
+      :title="modalMode === 'edit' ? '编辑${schema.modelRemark}' : '创建${schema.modelRemark}'"
       width="600px"
       :close-on-click-modal="false"
       @close="
@@ -106,7 +83,7 @@
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="modalVisible = false">取消</el-button>
+          <el-button @click="modalVisible = false">关闭</el-button>
           <el-button type="primary" @click="submitModal" :loading="modalLoading">
             {{ modalMode === "add" ? "创建" : "保存" }}
           </el-button>
