@@ -1,7 +1,9 @@
-import { onMounted, ref } from "vue";
+import { onMounted, reactive, ref, type Ref } from "vue";
+import type { FormInstance } from "element-plus";
 import type {
   GetOpRcdListDto,
   GetOpRcdListVo,
+  GetOpRcdDetailsVo,
 } from "@/views/assembly/api/OpRcdApi.ts";
 import OpRcdApi from "@/views/assembly/api/OpRcdApi.ts";
 import { Result } from "@/commons/model/Result";
@@ -96,6 +98,74 @@ export default {
       loadList,
       resetList,
       removeList,
+    };
+  },
+
+  /**
+   * 查看详情模态框管理（只读）
+   */
+  useOpRcdViewModal(modalFormRef: Ref<FormInstance | undefined>) {
+    const modalVisible = ref(false);
+    const modalForm = reactive<GetOpRcdDetailsVo>({
+      id: "",
+      opName: "",
+      dsName: "",
+      dsTableName: "",
+      dsUrl: "",
+      scmInputUrl: "",
+      scmOutputUrl: "",
+      modelName: "",
+      modelRemark: "",
+      bizDomain: "",
+      qbeParams: "",
+      startTime: "",
+      endTime: "",
+      durationMs: 0,
+      creatorUsername: "",
+    });
+
+    /**
+     * 打开查看详情模态框，加载详情数据
+     */
+    const openViewModal = async (row: GetOpRcdListVo): Promise<void> => {
+      try {
+        const details = await OpRcdApi.getOpRcdDetails({ id: row.id });
+        modalForm.id = details.id;
+        modalForm.opName = details.opName;
+        modalForm.dsName = details.dsName;
+        modalForm.dsTableName = details.dsTableName;
+        modalForm.dsUrl = details.dsUrl;
+        modalForm.scmInputUrl = details.scmInputUrl;
+        modalForm.scmOutputUrl = details.scmOutputUrl;
+        modalForm.modelName = details.modelName;
+        modalForm.modelRemark = details.modelRemark;
+        modalForm.bizDomain = details.bizDomain;
+        modalForm.qbeParams = details.qbeParams;
+        modalForm.startTime = details.startTime;
+        modalForm.endTime = details.endTime;
+        modalForm.durationMs = details.durationMs;
+        modalForm.creatorUsername = details.creatorUsername;
+        modalVisible.value = true;
+      } catch (error: any) {
+        ElMessage.error(error.message);
+      }
+    };
+
+    /**
+     * 重置模态框
+     */
+    const resetModal = (): void => {
+      if (!modalFormRef.value) {
+        return;
+      }
+      modalFormRef.value.resetFields();
+    };
+
+    return {
+      modalVisible,
+      modalForm,
+      openViewModal,
+      resetModal,
     };
   },
 };
