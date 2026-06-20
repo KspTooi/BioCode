@@ -35,10 +35,10 @@ public class PolyTemplatePo {
     @Column(name = "code", nullable = false, length = 16, comment = "模板代码")
     private String code;
 
-    @Column(name = "seq", nullable = false, comment = "排序")
+    @Column(name = "seq", nullable = false, columnDefinition = "TINYINT", comment = "排序")
     private Integer seq;
 
-    @Column(name = "status", nullable = false, comment = "状态 0:禁用 1:启用")
+    @Column(name = "status", nullable = false, columnDefinition = "TINYINT", comment = "状态 0:禁用 1:启用")
     private Integer status;
 
     @CreatedDate

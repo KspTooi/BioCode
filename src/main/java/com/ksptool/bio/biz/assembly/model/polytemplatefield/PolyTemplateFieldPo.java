@@ -38,13 +38,13 @@ public class PolyTemplateFieldPo {
     @Column(name = "policy_crud_json", nullable = false, comment = "可见性策略 ADD、EDIT、LIST_QUERY、LIST_VIEW")
     private String policyCrudJson;
 
-    @Column(name = "policy_query", nullable = false, comment = "查询策略 0:等于")
+    @Column(name = "policy_query", nullable = false, columnDefinition = "TINYINT", comment = "查询策略 0:等于")
     private Integer policyQuery;
 
-    @Column(name = "policy_view", nullable = false, comment = "显示策略 0:文本框 1:文本域 2:下拉 3:单 4:多 5:LD 6:LDT")
+    @Column(name = "policy_view", nullable = false, columnDefinition = "TINYINT", comment = "显示策略 0:文本框 1:文本域 2:下拉 3:单 4:多 5:LD 6:LDT")
     private Integer policyView;
 
-    @Column(name = "seq", nullable = false, comment = "排序")
+    @Column(name = "seq", nullable = false, columnDefinition = "TINYINT", comment = "排序")
     private Integer seq;
 
     @CreatedDate
