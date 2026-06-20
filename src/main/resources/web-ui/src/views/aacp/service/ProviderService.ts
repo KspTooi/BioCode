@@ -175,6 +175,7 @@ export default {
 
         try {
           const details = await ProviderApi.getProviderDetails({ id: row.id });
+          modalForm.id = row.id;
           modalForm.name = details.name;
           modalForm.code = details.code;
           modalForm.apiKind = details.apiKind;

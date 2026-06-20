@@ -17,18 +17,21 @@ export interface GetProviderListDto extends PageQuery {
  * 查询模型供应商列表Vo
  */
 export interface GetProviderListVo {
+  id: string; // 主键ID
   name: string; // 供应商名称
   code: string; // 供应商代码
   apiKind: string; // 接口类型 0:OpenAi 1:Anthropic
   apiHost: string; // 接口地址
   apiUrl: string; // 接口端点
   status: number; // 状态 0:禁用 1:启用
+  createTime: string; // 创建时间
 }
 
 /**
  * 查询模型供应商详情Vo
  */
 export interface GetProviderDetailsVo {
+  id: string; // 主键ID
   name: string; // 供应商名称
   code: string; // 供应商代码
   apiKind: string; // 接口类型 0:OpenAi 1:Anthropic
@@ -37,6 +40,8 @@ export interface GetProviderDetailsVo {
   proxyKind: number; // 代理类型 0:无 1:HTTP 2:SOCKS5
   proxyUrl: string; // 代理地址
   status: number; // 状态 0:禁用 1:启用
+  createTime: string; // 创建时间
+  updateTime: string; // 更新时间
 }
 
 /**
