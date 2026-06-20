@@ -10,8 +10,11 @@
           <el-form-item label="供应商代码">
             <el-input v-model="listForm.code" placeholder="输入供应商代码" clearable />
           </el-form-item>
-          <el-form-item label="状态 0:禁用 1:启用">
-            <el-input v-model.number="listForm.status" placeholder="输入状态 0:禁用 1:启用" clearable />
+          <el-form-item label="状态">
+            <el-select v-model="listForm.status" placeholder="请选择状态" clearable>
+              <el-option label="禁用" :value="0" />
+              <el-option label="启用" :value="1" />
+            </el-select>
           </el-form-item>
         </div>
         <el-form-item>
@@ -23,7 +26,7 @@
 
     <!-- 操作按钮区域 -->
     <StdListAreaAction class="flex gap-2">
-      <el-button type="primary" @click="openModal('add', null)">创建模型供应商</el-button>
+      <el-button type="primary" @click="openModal('add', null)">创建供应商</el-button>
     </StdListAreaAction>
 
     <!-- 列表表格区域 -->
@@ -32,10 +35,10 @@
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
         <el-table-column prop="name" label="供应商名称" min-width="120" show-overflow-tooltip />
         <el-table-column prop="code" label="供应商代码" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="apiKind" label="接口类型 0:OpenAi 1:Anthropic" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="apiKind" label="接口类型" min-width="120" show-overflow-tooltip />
         <el-table-column prop="apiHost" label="接口地址" min-width="120" show-overflow-tooltip />
         <el-table-column prop="apiUrl" label="接口端点" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="status" label="状态 0:禁用 1:启用" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="status" label="状态" min-width="80" show-overflow-tooltip />
         <el-table-column label="操作" fixed="right" width="200">
           <template #default="scope">
             <el-button link type="primary" size="small" @click="openModal('edit', scope.row)" :icon="EditIcon">
@@ -50,7 +53,7 @@
     <!-- 创建/编辑模态框 -->
     <el-dialog
       v-model="modalVisible"
-      :title="modalMode === 'edit' ? '编辑模型供应商' : '创建模型供应商'"
+      :title="modalMode === 'edit' ? '编辑供应商' : '创建供应商'"
       width="600px"
       :close-on-click-modal="false"
       @close="
@@ -88,13 +91,13 @@
             <el-radio :value="2">SOCKS5</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="代理地址" prop="proxyUrl">
+        <el-form-item label="代理地址" prop="proxyUrl" v-if="modalForm.proxyKind !== 0">
           <el-input v-model="modalForm.proxyUrl" placeholder="请输入代理地址" clearable :maxlength="512" show-word-limit />
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="modalForm.status">
-            <el-radio :value="0">禁用</el-radio>
             <el-radio :value="1">启用</el-radio>
+            <el-radio :value="0">禁用</el-radio>
           </el-radio-group>
         </el-form-item>
       </el-form>

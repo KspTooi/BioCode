@@ -119,7 +119,7 @@ export default {
       apiUrl: "",
       proxyKind: 0,
       proxyUrl: "",
-      status: 0,
+      status: 1,
     });
 
     /**
@@ -164,7 +164,7 @@ export default {
         modalForm.apiUrl = "";
         modalForm.proxyKind = 0;
         modalForm.proxyUrl = "";
-        modalForm.status = 0;
+        modalForm.status = 1;
         modalVisible.value = true;
         return;
       }
@@ -208,7 +208,7 @@ export default {
       modalForm.apiUrl = "";
       modalForm.proxyKind = 0;
       modalForm.proxyUrl = "";
-      modalForm.status = 0;
+      modalForm.status = 1;
     };
 
     /**
