@@ -20,7 +20,10 @@ import java.util.List;
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
 
-
+/**
+ * @author KspTooi
+ * @since 1.7.9(I).1
+ */
 @Service
 public class PolyTemplateService {
 

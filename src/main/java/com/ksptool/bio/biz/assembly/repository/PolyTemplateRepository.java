@@ -8,6 +8,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+/**
+ * @author KspTooi
+ * @since 1.7.9(I).1
+ */
 @Repository
 public interface PolyTemplateRepository extends JpaRepository<PolyTemplatePo, Long> {
 

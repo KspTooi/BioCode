@@ -21,6 +21,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * @author KspTooi
+ * @since 1.7.9(I).1
+ */
 @PrintLog
 @RestController
 @RequestMapping("/polyTemplate")

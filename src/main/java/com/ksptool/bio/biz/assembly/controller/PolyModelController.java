@@ -6,6 +6,7 @@ import com.ksptool.assembly.entity.web.Result;
 import com.ksptool.bio.biz.assembly.model.polymodel.dto.AddPolyModelDto;
 import com.ksptool.bio.biz.assembly.model.polymodel.dto.EditPolyModelDto;
 import com.ksptool.bio.biz.assembly.model.polymodel.dto.GetPolyModelListDto;
+import com.ksptool.bio.biz.assembly.model.polymodel.dto.ImportPolyModelFromRawDto;
 import com.ksptool.bio.biz.assembly.model.polymodel.vo.GetPolyModelDetailsVo;
 import com.ksptool.bio.biz.assembly.model.polymodel.vo.GetPolyModelListVo;
 import com.ksptool.bio.biz.assembly.service.PolyModelService;
@@ -74,7 +75,7 @@ PolyModelController {
 
     @Operation(summary = "从原始模型同步聚合模型(输出方案ID)")
     @PostMapping("/importFromRaw")
-    public Result<String> importFromRaw(@RequestBody @Valid CommonIdDto dto) throws Exception {
+    public Result<String> importFromRaw(@RequestBody @Valid ImportPolyModelFromRawDto dto) throws Exception {
         polyModelService.importFromRaw(dto);
         return Result.success("同步成功");
     }

@@ -10,6 +10,10 @@ import org.hibernate.validator.constraints.Range;
 
 import java.util.Set;
 
+/**
+ * @author KspTooi
+ * @since 1.6.19(S).32
+ */
 @Getter
 @Setter
 public class EditPolyModelDto {
