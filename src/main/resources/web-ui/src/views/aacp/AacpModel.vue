@@ -69,7 +69,7 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="推理情况" min-width="90" align="center">
+        <el-table-column label="推理" width="75" align="center">
           <template #default="scope">
             <span v-if="scope.row.apiReasoning === 0" class="text-slate-500">不支持</span>
             <span v-if="scope.row.apiReasoning === 1 && scope.row.apiReasoningEffort === 0">关</span>
