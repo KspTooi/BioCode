@@ -1,6 +1,6 @@
 package com.ksptool.bio.biz.aacp.model.aacpapp;
 
-import com.ksptool.assembly.entity.exception.AuthException;
+import com.ksptool.bio.biz.auth.common.aop.RowScopeRootOnlyPo;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -11,8 +11,6 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import com.ksptool.assembly.entity.exception.AuthException;
-import com.ksptool.bio.biz.auth.service.SessionService;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -23,7 +21,7 @@ import org.hibernate.annotations.SQLRestriction;
 @EntityListeners(AuditingEntityListener.class)
 @SQLDelete(sql = "UPDATE aacp_app SET delete_time = NOW() WHERE id = ?")
 @SQLRestriction("delete_time IS NULL")
-public class AacpAppPo {
+public class AacpAppPo extends RowScopeRootOnlyPo {
 
     @Id
     @SnowflakeIdGenerated
@@ -42,16 +40,16 @@ public class AacpAppPo {
     @Column(name = "app_key", nullable = false, length = 2048, comment = "访问密钥")
     private String appKey;
 
-    @Column(name = "is_public", nullable = false, comment = "是否公开 0:不公开 1:公开")
+    @Column(name = "is_public", nullable = false, columnDefinition = "TINYINT", comment = "是否公开 0:不公开 1:公开")
     private Integer isPublic;
 
-    @Column(name = "ips", nullable = false, comment = "IP白名单列表")
+    @Column(name = "ips", nullable = false, columnDefinition = "JSON", comment = "IP白名单列表")
     private String ips;
 
     @Column(name = "remark", length = 200, comment = "备注")
     private String remark;
 
-    @Column(name = "status", nullable = false, comment = "状态 0:禁用 1:启用")
+    @Column(name = "status", nullable = false, columnDefinition = "TINYINT", comment = "状态 0:禁用 1:启用")
     private Integer status;
 
     @CreatedDate
@@ -73,17 +71,4 @@ public class AacpAppPo {
     @Column(name = "delete_time", comment = "删除时间")
     private LocalDateTime deleteTime;
 
-
-    @PrePersist
-    private void onCreate() throws AuthException {
-        var session = SessionService.session();
-        if (this.rootId == null) {
-            this.rootId = session.getRootId();
-        }
-    }
-
-    @PreUpdate
-    private void onUpdate() throws AuthException {
-
-    }
 }
