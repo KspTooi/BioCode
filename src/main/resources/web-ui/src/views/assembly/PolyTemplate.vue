@@ -118,7 +118,7 @@
 import { ref, markRaw } from "vue";
 import { Edit, Delete } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
-import PolyTemplateService from "@/views/polyTemplate/service/PolyTemplateService.ts";
+import PolyTemplateService from "@/views/assembly/service/PolyTemplateService.ts";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
 import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
 import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";
@@ -129,7 +129,8 @@ const EditIcon = markRaw(Edit);
 const DeleteIcon = markRaw(Delete);
 
 // 列表管理打包
-const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } = PolyTemplateService.usePolyTemplateList();
+const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } =
+  PolyTemplateService.usePolyTemplateList();
 
 // 模态框表单引用
 const modalFormRef = ref<FormInstance>();

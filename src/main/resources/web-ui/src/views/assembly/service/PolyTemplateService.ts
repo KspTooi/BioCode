@@ -6,8 +6,8 @@ import type {
   GetPolyTemplateDetailsVo,
   AddPolyTemplateDto,
   EditPolyTemplateDto,
-} from "@/views/polyTemplate/api/PolyTemplateApi.ts";
-import PolyTemplateApi from "@/views/polyTemplate/api/PolyTemplateApi.ts";
+} from "@/views/assembly/api/PolyTemplateApi.ts";
+import PolyTemplateApi from "@/views/assembly/api/PolyTemplateApi.ts";
 import { Result } from "@/commons/model/Result";
 import { ElMessage, ElMessageBox } from "element-plus";
 

@@ -6,8 +6,8 @@ import type {
   GetPolyTemplateFieldDetailsVo,
   AddPolyTemplateFieldDto,
   EditPolyTemplateFieldDto,
-} from "@/views/polyTemplateField/api/PolyTemplateFieldApi.ts";
-import PolyTemplateFieldApi from "@/views/polyTemplateField/api/PolyTemplateFieldApi.ts";
+} from "@/views/assembly/api/PolyTemplateFieldApi.ts";
+import PolyTemplateFieldApi from "@/views/assembly/api/PolyTemplateFieldApi.ts";
 import { Result } from "@/commons/model/Result";
 import { ElMessage, ElMessageBox } from "element-plus";
 
@@ -136,7 +136,9 @@ export default {
       ],
       policyCrudJson: [{ required: true, message: "请输入可见性策略 ADD、EDIT、LIST_QUERY、LIST_VIEW", trigger: "blur" }],
       policyQuery: [{ required: true, message: "请输入查询策略 0:等于", trigger: "blur" }],
-      policyView: [{ required: true, message: "请输入显示策略 0:文本框 1:文本域 2:下拉 3:单 4:多 5:LD 6:LDT", trigger: "blur" }],
+      policyView: [
+        { required: true, message: "请输入显示策略 0:文本框 1:文本域 2:下拉 3:单 4:多 5:LD 6:LDT", trigger: "blur" },
+      ],
       seq: [{ required: true, message: "请输入排序", trigger: "blur" }],
     };
 
