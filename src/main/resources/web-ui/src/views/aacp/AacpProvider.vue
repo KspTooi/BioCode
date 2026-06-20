@@ -106,12 +106,7 @@
             clearable
             :maxlength="512"
           >
-            <el-option
-              v-for="item in apiUrlOptions"
-              :key="item"
-              :label="item"
-              :value="item"
-            />
+            <el-option v-for="item in apiUrlOptions" :key="item" :label="item" :value="item" />
           </el-select>
         </el-form-item>
         <el-form-item label="代理类型" prop="proxyKind">
@@ -184,9 +179,6 @@ const onApiKindChange = (): void => {
 const onProxyKindChange = (val: number): void => {
   if (val === 0) {
     modalForm.proxyUrl = "";
-    return;
-  }
-  if (modalForm.proxyUrl) {
     return;
   }
   if (val === 1) {
