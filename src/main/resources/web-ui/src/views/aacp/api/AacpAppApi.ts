@@ -34,7 +34,7 @@ export interface GetAacpAppDetailsVo {
   code: string; // 应用代码
   appKey: string; // 访问密钥
   isPublic: number; // 是否公开 0:不公开 1:公开
-  ips: string; // IP白名单列表
+  ips: string[]; // IP白名单列表
   remark: string; // 备注
   status: number; // 状态 0:禁用 1:启用
 }
@@ -46,7 +46,7 @@ export interface AddAacpAppDto {
   name: string; // 应用名称
   code: string; // 应用代码
   isPublic: number; // 是否公开 0:不公开 1:公开
-  ips: string; // IP白名单列表
+  ips: string[]; // IP白名单列表
   remark: string; // 备注
   status: number; // 状态 0:禁用 1:启用
 }
@@ -59,7 +59,7 @@ export interface EditAacpAppDto {
   name: string; // 应用名称
   code: string; // 应用代码
   isPublic: number; // 是否公开 0:不公开 1:公开
-  ips: string; // IP白名单列表
+  ips: string[]; // IP白名单列表
   remark: string; // 备注
   status: number; // 状态 0:禁用 1:启用
 }

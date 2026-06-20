@@ -94,7 +94,7 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="IP白名单" prop="ips">
-          <el-input v-model="modalForm.ips" placeholder="多个IP用逗号分隔" clearable :maxlength="500" show-word-limit />
+          <el-select v-model="modalForm.ips" multiple allow-create filterable clearable placeholder="输入IP后回车添加" style="width: 100%" />
         </el-form-item>
         <el-form-item label="备注" prop="remark">
           <el-input v-model="modalForm.remark" placeholder="请输入备注" clearable type="textarea" :rows="3" :maxlength="200" show-word-limit />
