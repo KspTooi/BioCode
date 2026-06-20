@@ -110,7 +110,7 @@ export default {
       name: "",
       code: "",
       seq: 0,
-      status: 0,
+      status: 1,
     });
 
     /**
@@ -142,7 +142,7 @@ export default {
         modalForm.name = "";
         modalForm.code = "";
         modalForm.seq = 0;
-        modalForm.status = 0;
+        modalForm.status = 1;
         modalVisible.value = true;
         return;
       }
@@ -159,7 +159,7 @@ export default {
           modalForm.name = details.name;
           modalForm.code = details.code;
           modalForm.seq = details.seq;
-          modalForm.status = details.status;
+          modalForm.status = details.status ?? 1;
           modalVisible.value = true;
         } catch (error: any) {
           ElMessage.error(error.message);
@@ -179,7 +179,7 @@ export default {
       modalForm.name = "";
       modalForm.code = "";
       modalForm.seq = 0;
-      modalForm.status = 0;
+      modalForm.status = 1;
     };
 
     /**

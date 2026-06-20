@@ -84,10 +84,10 @@
           <el-input v-model.number="modalForm.seq" placeholder="请输入排序" clearable />
         </el-form-item>
         <el-form-item label="状态" prop="status">
-          <el-select v-model="modalForm.status" placeholder="选择状态">
-            <el-option label="启用" :value="1" />
-            <el-option label="禁用" :value="0" />
-          </el-select>
+          <el-radio-group v-model="modalForm.status">
+            <el-radio :value="1">启用</el-radio>
+            <el-radio :value="0">禁用</el-radio>
+          </el-radio-group>
         </el-form-item>
       </el-form>
       <template #footer>
