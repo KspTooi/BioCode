@@ -117,7 +117,7 @@
 import { ref, markRaw } from "vue";
 import { Edit, Delete } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
-import AppLogsService from "@/views/aacp/service/AppLogsService.ts";
+import AppLogsService from "@/views/aacp/service/AacpAppLogsService";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
 import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
 import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";

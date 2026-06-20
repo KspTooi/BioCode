@@ -6,8 +6,8 @@ import type {
   GetProviderDetailsVo,
   AddProviderDto,
   EditProviderDto,
-} from "@/views/aacp/api/ProviderApi.ts";
-import ProviderApi from "@/views/aacp/api/ProviderApi.ts";
+} from "@/views/aacp/api/AacpProviderApi";
+import ProviderApi from "@/views/aacp/api/AacpProviderApi";
 import { Result } from "@/commons/model/Result";
 import { ElMessage, ElMessageBox } from "element-plus";
 

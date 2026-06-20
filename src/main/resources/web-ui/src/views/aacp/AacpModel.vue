@@ -39,7 +39,12 @@
         <el-table-column prop="maxContext" label="最大上下文长度" min-width="120" show-overflow-tooltip />
         <el-table-column prop="maxOutputToken" label="最大输出词元" min-width="120" show-overflow-tooltip />
         <el-table-column prop="apiReasoning" label="推理 0:不支持 1:支持" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="apiReasoningEffort" label="推理强度 0:关 1:低 2:中 3:高 4:极高" min-width="120" show-overflow-tooltip />
+        <el-table-column
+          prop="apiReasoningEffort"
+          label="推理强度 0:关 1:低 2:中 3:高 4:极高"
+          min-width="120"
+          show-overflow-tooltip
+        />
         <el-table-column prop="fincInput" label="输入单价" min-width="120" show-overflow-tooltip />
         <el-table-column prop="fincInputCached" label="输入单价(缓存)" min-width="120" show-overflow-tooltip />
         <el-table-column prop="fincOutput" label="输出单价" min-width="120" show-overflow-tooltip />
@@ -96,7 +101,11 @@
           <el-input v-model.number="modalForm.apiReasoning" placeholder="请输入推理 0:不支持 1:支持" clearable />
         </el-form-item>
         <el-form-item label="推理强度 0:关 1:低 2:中 3:高 4:极高" prop="apiReasoningEffort">
-          <el-input v-model.number="modalForm.apiReasoningEffort" placeholder="请输入推理强度 0:关 1:低 2:中 3:高 4:极高" clearable />
+          <el-input
+            v-model.number="modalForm.apiReasoningEffort"
+            placeholder="请输入推理强度 0:关 1:低 2:中 3:高 4:极高"
+            clearable
+          />
         </el-form-item>
         <el-form-item label="附加参数" prop="apiAppendParam">
           <el-input v-model="modalForm.apiAppendParam" placeholder="请输入附加参数" clearable />
@@ -148,7 +157,7 @@
 import { ref, markRaw } from "vue";
 import { Edit, Delete } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
-import ModelService from "@/views/aacp/service/ModelService.ts";
+import ModelService from "@/views/aacp/service/AacpModelService";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
 import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
 import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";

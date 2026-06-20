@@ -6,8 +6,8 @@ import type {
   GetModelDetailsVo,
   AddModelDto,
   EditModelDto,
-} from "@/views/aacp/api/ModelApi.ts";
-import ModelApi from "@/views/aacp/api/ModelApi.ts";
+} from "@/views/aacp/api/AacpModelApi";
+import ModelApi from "@/views/aacp/api/AacpModelApi";
 import { Result } from "@/commons/model/Result";
 import { ElMessage, ElMessageBox } from "element-plus";
 

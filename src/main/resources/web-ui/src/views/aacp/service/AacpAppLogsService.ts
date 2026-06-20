@@ -6,8 +6,8 @@ import type {
   GetAppLogsDetailsVo,
   AddAppLogsDto,
   EditAppLogsDto,
-} from "@/views/aacp/api/AppLogsApi.ts";
-import AppLogsApi from "@/views/aacp/api/AppLogsApi.ts";
+} from "@/views/aacp/api/AacpAppLogsApi";
+import AppLogsApi from "@/views/aacp/api/AacpAppLogsApi";
 import { Result } from "@/commons/model/Result";
 import { ElMessage, ElMessageBox } from "element-plus";
 
@@ -146,8 +146,7 @@ export default {
     /**
      * 表单验证规则
      */
-    const modalRules: FormRules = {
-    };
+    const modalRules: FormRules = {};
 
     /**
      * 打开模态框
@@ -244,8 +243,7 @@ export default {
 
       if (modalMode.value === "add") {
         try {
-          const addDto: AddAppLogsDto = {
-          };
+          const addDto: AddAppLogsDto = {};
           await AppLogsApi.addAppLogs(addDto);
           ElMessage.success("新增成功");
           modalVisible.value = false;
