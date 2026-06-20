@@ -50,6 +50,7 @@ export interface AddPolyTemplateDto {
  * 编辑聚合模板Dto
  */
 export interface EditPolyTemplateDto {
+  id: string; // 主键ID
   name: string; // 模板名称
   code: string; // 模板代码
   seq: number; // 排序

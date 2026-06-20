@@ -227,6 +227,7 @@ export default {
 
         try {
           const editDto: EditPolyTemplateDto = {
+            id: modalForm.id,
             name: modalForm.name,
             code: modalForm.code,
             seq: modalForm.seq,
