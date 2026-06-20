@@ -1,6 +1,6 @@
 package com.ksptool.bio.biz.assembly.repository;
 
-import com.ksptool.bio.biz.assembly.model.OpRcdPo;
+import com.ksptool.bio.biz.assembly.model.oprcd.OpRcdPo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.domain.Page;

@@ -13,12 +13,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Page;
 import java.util.Optional;
 import com.ksptool.bio.biz.assembly.repository.OpRcdRepository;
-import com.ksptool.bio.biz.assembly.model.OpRcdPo;
-import com.ksptool.bio.biz.assembly.model.vo.GetOpRcdListVo;
-import com.ksptool.bio.biz.assembly.model.dto.GetOpRcdListDto;
-import com.ksptool.bio.biz.assembly.model.vo.GetOpRcdDetailsVo;
-import com.ksptool.bio.biz.assembly.model.dto.EditOpRcdDto;
-import com.ksptool.bio.biz.assembly.model.dto.AddOpRcdDto;
+import com.ksptool.bio.biz.assembly.model.oprcd.OpRcdPo;
+import com.ksptool.bio.biz.assembly.model.oprcd.vo.GetOpRcdListVo;
+import com.ksptool.bio.biz.assembly.model.oprcd.dto.GetOpRcdListDto;
+import com.ksptool.bio.biz.assembly.model.oprcd.vo.GetOpRcdDetailsVo;
+import com.ksptool.bio.biz.assembly.model.oprcd.dto.EditOpRcdDto;
+import com.ksptool.bio.biz.assembly.model.oprcd.dto.AddOpRcdDto;
 
 
 @Service

@@ -14,11 +14,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import com.ksptool.bio.commons.annotation.PrintLog;
 
 import com.ksptool.bio.biz.assembly.service.OpRcdService;
-import com.ksptool.bio.biz.assembly.model.dto.AddOpRcdDto;
-import com.ksptool.bio.biz.assembly.model.dto.EditOpRcdDto;
-import com.ksptool.bio.biz.assembly.model.dto.GetOpRcdListDto;
-import com.ksptool.bio.biz.assembly.model.vo.GetOpRcdListVo;
-import com.ksptool.bio.biz.assembly.model.vo.GetOpRcdDetailsVo;
+import com.ksptool.bio.biz.assembly.model.oprcd.dto.AddOpRcdDto;
+import com.ksptool.bio.biz.assembly.model.oprcd.dto.EditOpRcdDto;
+import com.ksptool.bio.biz.assembly.model.oprcd.dto.GetOpRcdListDto;
+import com.ksptool.bio.biz.assembly.model.oprcd.vo.GetOpRcdListVo;
+import com.ksptool.bio.biz.assembly.model.oprcd.vo.GetOpRcdDetailsVo;
 
 @PrintLog
 @RestController
