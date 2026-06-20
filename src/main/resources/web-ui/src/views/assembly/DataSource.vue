@@ -39,7 +39,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="url" label="连接字符串" min-width="200" show-overflow-tooltip />
-        <el-table-column prop="dbSchema" label="默认模式" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="dbSchema" label="默认数据库" min-width="120" show-overflow-tooltip />
         <el-table-column prop="createTime" label="创建时间" min-width="160" show-overflow-tooltip />
         <el-table-column label="操作" fixed="right" min-width="240">
           <template #default="scope">
@@ -50,7 +50,9 @@
               测试数据源连接
             </el-button>
             <el-button link type="danger" size="small" :icon="DeleteIcon" @click="removeList(scope.row)"> 删除 </el-button>
-            <el-button link type="primary" size="small" :icon="CopyIcon" @click="openModal('copy', scope.row)"> 复制 </el-button>
+            <el-button link type="primary" size="small" :icon="CopyIcon" @click="openModal('copy', scope.row)">
+              复制
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -140,8 +142,8 @@
             show-word-limit
           />
         </el-form-item>
-        <el-form-item label="默认模式" prop="dbSchema" v-if="modalMode !== 'copy'">
-          <el-input v-model="modalForm.dbSchema" placeholder="请输入默认模式" clearable maxlength="80" show-word-limit />
+        <el-form-item label="默认数据库" prop="dbSchema" v-if="modalMode !== 'copy'">
+          <el-input v-model="modalForm.dbSchema" placeholder="请输入默认数据库" clearable maxlength="80" show-word-limit />
         </el-form-item>
       </el-form>
       <template #footer>
