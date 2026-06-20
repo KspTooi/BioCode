@@ -24,6 +24,7 @@ export interface GetProviderListVo {
   apiHost: string; // 接口地址
   apiUrl: string; // 接口端点
   status: number; // 状态 0:禁用 1:启用
+  createTime: string; // 创建时间
 }
 
 /**

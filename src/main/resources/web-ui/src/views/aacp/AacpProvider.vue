@@ -49,6 +49,7 @@
             <el-tag v-if="scope.row.status === 0" type="danger" size="small">禁用</el-tag>
           </template>
         </el-table-column>
+        <el-table-column prop="createTime" label="创建时间" min-width="160" show-overflow-tooltip />
         <el-table-column label="操作" fixed="right" width="200">
           <template #default="scope">
             <el-button link type="primary" size="small" @click="openModal('edit', scope.row)" :icon="EditIcon">
