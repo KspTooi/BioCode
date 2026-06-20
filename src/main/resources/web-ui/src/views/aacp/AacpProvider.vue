@@ -35,10 +35,26 @@
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
         <el-table-column prop="name" label="供应商名称" min-width="120" show-overflow-tooltip />
         <el-table-column prop="code" label="供应商代码" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="apiKind" label="接口类型" min-width="120" show-overflow-tooltip />
+        <el-table-column label="接口类型" min-width="120">
+          <template #default="scope">
+            <span v-if="scope.row.apiKind === 0" class="text-blue-600">OpenAi</span>
+            <span v-if="scope.row.apiKind === 1" class="text-purple-600">Anthropic</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="apiHost" label="接口地址" min-width="120" show-overflow-tooltip />
         <el-table-column prop="apiUrl" label="接口端点" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="status" label="状态" min-width="80" show-overflow-tooltip />
+        <el-table-column label="状态" min-width="80" align="center">
+          <template #default="scope">
+            <span
+              v-if="scope.row.status === 1"
+              class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-green-50 text-green-700"
+            >启用</span>
+            <span
+              v-if="scope.row.status === 0"
+              class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-red-50 text-red-700"
+            >禁用</span>
+          </template>
+        </el-table-column>
         <el-table-column label="操作" fixed="right" width="200">
           <template #default="scope">
             <el-button link type="primary" size="small" @click="openModal('edit', scope.row)" :icon="EditIcon">
