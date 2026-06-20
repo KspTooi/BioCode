@@ -51,8 +51,24 @@
             <span v-if="scope.row.kind === 3" class="text-slate-400">多模态</span>
           </template>
         </el-table-column>
-        <el-table-column prop="maxContext" label="最大上下文" min-width="100" show-overflow-tooltip />
-        <el-table-column prop="maxOutputToken" label="最大输出词元" min-width="100" show-overflow-tooltip />
+        <el-table-column label="规格" min-width="130">
+          <template #default="scope">
+            <div class="flex items-center gap-3">
+              <el-tooltip content="最大上下文" placement="top">
+                <span class="flex items-center gap-1 text-slate-500">
+                  <el-icon :size="14"><FullScreenIcon /></el-icon>
+                  {{ formatNumber(scope.row.maxContext) }}
+                </span>
+              </el-tooltip>
+              <el-tooltip content="最大输出词元" placement="top">
+                <span class="flex items-center gap-1 text-slate-500">
+                  <el-icon :size="14"><PointerIcon /></el-icon>
+                  {{ formatNumber(scope.row.maxOutputToken) }}
+                </span>
+              </el-tooltip>
+            </div>
+          </template>
+        </el-table-column>
         <el-table-column label="推理情况" min-width="90" align="center">
           <template #default="scope">
             <span v-if="scope.row.apiReasoning === 0" class="text-slate-500">不支持</span>
@@ -63,22 +79,31 @@
             <span v-if="scope.row.apiReasoning === 1 && scope.row.apiReasoningEffort === 4" class="text-rose-600">极高</span>
           </template>
         </el-table-column>
-        <el-table-column label="输入单价" min-width="90">
+        <el-table-column label="单价" min-width="150">
           <template #default="scope">
-            <span v-if="scope.row.fincInput" class="text-slate-500">{{ scope.row.fincInput }}</span>
-            <span v-if="!scope.row.fincInput" class="text-slate-300">-</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="输入单价(缓存)" min-width="110">
-          <template #default="scope">
-            <span v-if="scope.row.fincInputCached" class="text-slate-500">{{ scope.row.fincInputCached }}</span>
-            <span v-if="!scope.row.fincInputCached" class="text-slate-300">-</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="输出单价" min-width="90">
-          <template #default="scope">
-            <span v-if="scope.row.fincOutput" class="text-slate-500">{{ scope.row.fincOutput }}</span>
-            <span v-if="!scope.row.fincOutput" class="text-slate-300">-</span>
+            <div class="flex items-center gap-3">
+              <el-tooltip content="输入单价" placement="top">
+                <span class="flex items-center gap-1 text-slate-500">
+                  <el-icon :size="14"><CoinIcon /></el-icon>
+                  <span v-if="scope.row.fincInput">{{ scope.row.fincInput }}</span>
+                  <span v-if="!scope.row.fincInput" class="text-slate-300">-</span>
+                </span>
+              </el-tooltip>
+              <el-tooltip content="输入单价(缓存)" placement="top">
+                <span class="flex items-center gap-1 text-slate-500">
+                  <el-icon :size="14"><TimerIcon /></el-icon>
+                  <span v-if="scope.row.fincInputCached">{{ scope.row.fincInputCached }}</span>
+                  <span v-if="!scope.row.fincInputCached" class="text-slate-300">-</span>
+                </span>
+              </el-tooltip>
+              <el-tooltip content="输出单价" placement="top">
+                <span class="flex items-center gap-1 text-slate-500">
+                  <el-icon :size="14"><SoldOutIcon /></el-icon>
+                  <span v-if="scope.row.fincOutput">{{ scope.row.fincOutput }}</span>
+                  <span v-if="!scope.row.fincOutput" class="text-slate-300">-</span>
+                </span>
+              </el-tooltip>
+            </div>
           </template>
         </el-table-column>
         <el-table-column label="测试情况" min-width="130" align="center">
@@ -216,7 +241,7 @@
 
 <script setup lang="ts">
 import { ref, markRaw } from "vue";
-import { Edit, Delete } from "@element-plus/icons-vue";
+import { Edit, Delete, Coin, SoldOut, Timer, FullScreen, Pointer } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
 import ModelService from "@/views/aacp/service/AacpModelService";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
@@ -227,6 +252,28 @@ import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
 // 使用markRaw包装图标组件，防止被Vue响应式系统处理
 const EditIcon = markRaw(Edit);
 const DeleteIcon = markRaw(Delete);
+const CoinIcon = markRaw(Coin);
+const SoldOutIcon = markRaw(SoldOut);
+const TimerIcon = markRaw(Timer);
+const FullScreenIcon = markRaw(FullScreen);
+const PointerIcon = markRaw(Pointer);
+
+/** 格式化数字为 千/百万/亿 */
+const formatNumber = (val: number | undefined | null): string => {
+  if (val === undefined || val === null) {
+    return "-";
+  }
+  if (val >= 100_000_000) {
+    return (val / 100_000_000).toFixed(2).replace(/\.?0+$/, "") + "亿";
+  }
+  if (val >= 1_000_000) {
+    return (val / 1_000_000).toFixed(1).replace(/\.?0+$/, "") + "百万";
+  }
+  if (val >= 1_000) {
+    return Math.round(val / 1_000) + "千";
+  }
+  return String(val);
+};
 
 // 列表管理打包
 const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } = ModelService.useModelList();
