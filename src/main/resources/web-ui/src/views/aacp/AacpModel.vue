@@ -55,7 +55,7 @@
         <el-table-column prop="maxOutputToken" label="最大输出词元" min-width="100" show-overflow-tooltip />
         <el-table-column label="推理情况" min-width="90" align="center">
           <template #default="scope">
-            <span v-if="scope.row.apiReasoning === 0" class="text-slate-400">不支持</span>
+            <span v-if="scope.row.apiReasoning === 0" class="text-slate-500">不支持</span>
             <span v-if="scope.row.apiReasoning === 1 && scope.row.apiReasoningEffort === 0">关</span>
             <span v-if="scope.row.apiReasoning === 1 && scope.row.apiReasoningEffort === 1" class="text-slate-500">低</span>
             <span v-if="scope.row.apiReasoning === 1 && scope.row.apiReasoningEffort === 2" class="text-indigo-600">中</span>
@@ -81,8 +81,14 @@
             <span v-if="!scope.row.fincOutput" class="text-slate-300">-</span>
           </template>
         </el-table-column>
-        <el-table-column prop="testTtfb" label="首字响应(MS)" min-width="100" show-overflow-tooltip />
-        <el-table-column prop="testRate" label="响应速率(T/S)" min-width="100" show-overflow-tooltip />
+        <el-table-column label="测试情况" min-width="130" align="center">
+          <template #default="scope">
+            <span v-if="!scope.row.testRate &amp;&amp; !scope.row.testTtfb" class="text-slate-400">未测试</span>
+            <span v-if="scope.row.testRate || scope.row.testTtfb" class="text-green-500">
+              {{ scope.row.testRate || 0 }}T/S+{{ scope.row.testTtfb || 0 }}MS
+            </span>
+          </template>
+        </el-table-column>
         <el-table-column prop="seq" label="排序" min-width="60" align="center" />
         <el-table-column label="状态" min-width="70" align="center">
           <template #default="scope">
