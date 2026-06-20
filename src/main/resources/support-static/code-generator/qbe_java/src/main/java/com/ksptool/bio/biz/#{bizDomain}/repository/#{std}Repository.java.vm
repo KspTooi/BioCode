@@ -30,9 +30,9 @@
 ## ${field.edit}       是否编辑字段      true/false
 ## ${field.details}    是否详情字段      true/false
 ## =========================================================
-package com.ksptool.bio.biz.${model.lowerCase}.repository;
+package com.ksptool.bio.biz.${model.bizDomain}.repository;
 
-import com.ksptool.bio.biz.${model.lowerCase}.model.${model.std}Po;
+import com.ksptool.bio.biz.${model.bizDomain}.model.${model.std}Po;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.domain.Page;
