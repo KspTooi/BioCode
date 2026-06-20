@@ -42,10 +42,16 @@ public class GetModelListVo {
     @Schema(description="输入单价(缓存)")
     private String fincInputCached;
 
-    @Schema(description="输出单价")
+    @Schema(description = "输出单价")
     private String fincOutput;
 
-    @Schema(description="排序")
+    @Schema(description = "测试首字响应时间 MS")
+    private Integer testTtfb;
+
+    @Schema(description = "测试响应速率 T/S")
+    private Integer testRate;
+
+    @Schema(description = "排序")
     private Integer seq;
 
     @Schema(description = "状态 0:禁用 1:启用")

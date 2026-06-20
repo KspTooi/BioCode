@@ -71,6 +71,8 @@
         <el-table-column prop="fincInput" label="输入单价" min-width="90" show-overflow-tooltip />
         <el-table-column prop="fincInputCached" label="输入单价(缓存)" min-width="110" show-overflow-tooltip />
         <el-table-column prop="fincOutput" label="输出单价" min-width="90" show-overflow-tooltip />
+        <el-table-column prop="testTtfb" label="首字响应(MS)" min-width="100" show-overflow-tooltip />
+        <el-table-column prop="testRate" label="响应速率(T/S)" min-width="100" show-overflow-tooltip />
         <el-table-column prop="seq" label="排序" min-width="60" align="center" />
         <el-table-column label="状态" min-width="70" align="center">
           <template #default="scope">
