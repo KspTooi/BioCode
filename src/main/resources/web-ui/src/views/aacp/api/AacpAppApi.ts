@@ -22,7 +22,6 @@ export interface GetAacpAppListVo {
   code: string; // 应用代码
   isPublic: number; // 是否公开 0:不公开 1:公开
   status: number; // 状态 0:禁用 1:启用
-  createTime: string; // 创建时间
 }
 
 /**
@@ -37,8 +36,6 @@ export interface GetAacpAppDetailsVo {
   ips: string; // IP白名单列表
   remark: string; // 备注
   status: number; // 状态 0:禁用 1:启用
-  createTime: string; // 创建时间
-  updateTime: string; // 更新时间
 }
 
 /**

@@ -24,7 +24,6 @@ export interface GetProviderListVo {
   apiHost: string; // 接口地址
   apiUrl: string; // 接口端点
   status: number; // 状态 0:禁用 1:启用
-  createTime: string; // 创建时间
 }
 
 /**
@@ -40,8 +39,6 @@ export interface GetProviderDetailsVo {
   proxyKind: number; // 代理类型 0:无 1:HTTP 2:SOCKS5
   proxyUrl: string; // 代理地址
   status: number; // 状态 0:禁用 1:启用
-  createTime: string; // 创建时间
-  updateTime: string; // 更新时间
 }
 
 /**
