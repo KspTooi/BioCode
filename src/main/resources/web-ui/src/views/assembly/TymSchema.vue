@@ -48,7 +48,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" min-width="120" show-overflow-tooltip />
-        <el-table-column label="操作" fixed="right" min-width="220">
+        <el-table-column label="操作" fixed="right" width="300">
           <template #default="scope">
             <!-- 方案字段管理：CDRC 跳转至 tym-schema-field-manager，不再使用子组件模态框 -->
             <el-button
@@ -63,8 +63,8 @@
             <el-button link type="primary" size="small" :icon="EditIcon" @click="openModal('edit', scope.row)">
               编辑
             </el-button>
-            <el-button link type="danger" size="small" :icon="DeleteIcon" @click="removeList(scope.row)"> 删除 </el-button>
             <el-button link type="primary" size="small" :icon="CopyIcon" @click="openModal('copy', scope.row)"> 复制 </el-button>
+            <el-button link type="danger" size="small" :icon="DeleteIcon" @click="removeList(scope.row)"> 删除 </el-button>
           </template>
         </el-table-column>
       </el-table>
