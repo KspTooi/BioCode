@@ -1,6 +1,6 @@
 package com.ksptool.bio.biz.aacp.model.applogs;
 
-import com.ksptool.assembly.entity.exception.AuthException;
+import com.ksptool.bio.biz.auth.common.aop.RowScopeRootOnlyPo;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -11,8 +11,6 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import com.ksptool.assembly.entity.exception.AuthException;
-import com.ksptool.bio.biz.auth.service.SessionService;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -23,7 +21,7 @@ import org.hibernate.annotations.SQLRestriction;
 @EntityListeners(AuditingEntityListener.class)
 @SQLDelete(sql = "UPDATE aacp_app_logs SET delete_time = NOW() WHERE id = ?")
 @SQLRestriction("delete_time IS NULL")
-public class AppLogsPo {
+public class AppLogsPo extends RowScopeRootOnlyPo {
 
     @Id
     @SnowflakeIdGenerated
@@ -88,17 +86,4 @@ public class AppLogsPo {
     @Column(name = "delete_time", comment = "删除时间")
     private LocalDateTime deleteTime;
 
-
-    @PrePersist
-    private void onCreate() throws AuthException {
-        var session = SessionService.session();
-        if (this.rootId == null) {
-            this.rootId = session.getRootId();
-        }
-    }
-
-    @PreUpdate
-    private void onUpdate() throws AuthException {
-
-    }
 }
