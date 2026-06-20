@@ -1,4 +1,4 @@
-package com.ksptool.bio.biz.aacp.model.aacpapp.dto;
+package com.ksptool.bio.biz.aacp.model.app.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;

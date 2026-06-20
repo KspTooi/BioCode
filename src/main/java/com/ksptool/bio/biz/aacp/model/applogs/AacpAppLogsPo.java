@@ -5,14 +5,15 @@ import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import java.time.LocalDateTime;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -21,7 +22,7 @@ import org.hibernate.annotations.SQLRestriction;
 @EntityListeners(AuditingEntityListener.class)
 @SQLDelete(sql = "UPDATE aacp_app_logs SET delete_time = NOW() WHERE id = ?")
 @SQLRestriction("delete_time IS NULL")
-public class AppLogsPo extends RowScopeRootOnlyPo {
+public class AacpAppLogsPo extends RowScopeRootOnlyPo {
 
     @Id
     @SnowflakeIdGenerated

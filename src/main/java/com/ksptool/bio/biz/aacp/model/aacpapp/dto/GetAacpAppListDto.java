@@ -1,9 +1,5 @@
-package com.ksptool.bio.biz.aacp.model.aacpapp.dto;
+package com.ksptool.bio.biz.aacp.model.app.dto;
 
-import java.time.LocalDateTime;
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
 import com.ksptool.assembly.entity.web.PageQuery;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
@@ -13,13 +9,13 @@ import lombok.Setter;
 @Setter
 public class GetAacpAppListDto extends PageQuery {
 
-    @Schema(description="应用名称")
+    @Schema(description = "应用名称")
     private String name;
 
-    @Schema(description="应用代码")
+    @Schema(description = "应用代码")
     private String code;
 
-    @Schema(description="状态 0:禁用 1:启用")
+    @Schema(description = "状态 0:禁用 1:启用")
     private Integer status;
 
 }
