@@ -1,6 +1,6 @@
 package com.ksptool.bio.biz.aacp.model.model;
 
-import com.ksptool.assembly.entity.exception.AuthException;
+import com.ksptool.bio.biz.auth.common.aop.RowScopeRootOnlyPo;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -11,8 +11,6 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import com.ksptool.assembly.entity.exception.AuthException;
-import com.ksptool.bio.biz.auth.service.SessionService;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -23,7 +21,7 @@ import org.hibernate.annotations.SQLRestriction;
 @EntityListeners(AuditingEntityListener.class)
 @SQLDelete(sql = "UPDATE aacp_model SET delete_time = NOW() WHERE id = ?")
 @SQLRestriction("delete_time IS NULL")
-public class ModelPo {
+public class ModelPo extends RowScopeRootOnlyPo {
 
     @Id
     @SnowflakeIdGenerated
@@ -39,7 +37,7 @@ public class ModelPo {
     @Column(name = "code", nullable = false, length = 64, comment = "模型标识")
     private String code;
 
-    @Column(name = "kind", nullable = false, comment = "类型 0:文本 1:图形 2:音频 3:多模态")
+    @Column(name = "kind", nullable = false, columnDefinition = "TINYINT", comment = "类型 0:文本 1:图形 2:音频 3:多模态")
     private Integer kind;
 
     @Column(name = "max_context", nullable = false, comment = "最大上下文长度")
@@ -48,16 +46,16 @@ public class ModelPo {
     @Column(name = "max_output_token", nullable = false, comment = "最大输出词元")
     private Integer maxOutputToken;
 
-    @Column(name = "api_reasoning", nullable = false, comment = "推理 0:不支持 1:支持")
+    @Column(name = "api_reasoning", nullable = false, columnDefinition = "TINYINT", comment = "推理 0:不支持 1:支持")
     private Integer apiReasoning;
 
-    @Column(name = "api_reasoning_effort", nullable = false, comment = "推理强度 0:关 1:低 2:中 3:高 4:极高")
+    @Column(name = "api_reasoning_effort", nullable = false, columnDefinition = "TINYINT", comment = "推理强度 0:关 1:低 2:中 3:高 4:极高")
     private Integer apiReasoningEffort;
 
-    @Column(name = "api_append_param", nullable = false, comment = "附加参数")
+    @Column(name = "api_append_param", nullable = false, columnDefinition = "JSON", comment = "附加参数")
     private String apiAppendParam;
 
-    @Column(name = "api_append_headers", nullable = false, comment = "附加请求头")
+    @Column(name = "api_append_headers", nullable = false, columnDefinition = "JSON", comment = "附加请求头")
     private String apiAppendHeaders;
 
     @Column(name = "finc_input", nullable = false, comment = "输入单价")
@@ -81,10 +79,10 @@ public class ModelPo {
     @Column(name = "remark", length = 200, comment = "备注")
     private String remark;
 
-    @Column(name = "seq", nullable = false, comment = "排序")
+    @Column(name = "seq", nullable = false, columnDefinition = "TINYINT", comment = "排序")
     private Integer seq;
 
-    @Column(name = "status", nullable = false, comment = "状态 0:禁用 1:启用")
+    @Column(name = "status", nullable = false, columnDefinition = "TINYINT", comment = "状态 0:禁用 1:启用")
     private Integer status;
 
     @CreatedDate
@@ -106,17 +104,4 @@ public class ModelPo {
     @Column(name = "delete_time", comment = "删除时间")
     private LocalDateTime deleteTime;
 
-
-    @PrePersist
-    private void onCreate() throws AuthException {
-        var session = SessionService.session();
-        if (this.rootId == null) {
-            this.rootId = session.getRootId();
-        }
-    }
-
-    @PreUpdate
-    private void onUpdate() throws AuthException {
-
-    }
 }
