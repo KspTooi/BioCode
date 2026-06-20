@@ -63,6 +63,14 @@ export interface EditPolyModelDto {
   seq: number; // 排序
 }
 
+/**
+ * 从原始模型导入 DTO
+ */
+export interface ImportPolyModelFromRawDto {
+  outputSchemaId: string; // 输出方案ID
+  polyTemplateId?: string; // 聚合模板ID(可选)
+}
+
 export default {
   /**
    * 获取输出方案聚合模型列表
@@ -105,9 +113,9 @@ export default {
   },
 
   /**
-   * 从原始模型导入聚合模型（输出方案ID）
+   * 从原始模型导入聚合模型（输出方案ID + 可选聚合模板ID）
    */
-  importFromRaw: async (dto: CommonIdDto): Promise<string> => {
+  importFromRaw: async (dto: ImportPolyModelFromRawDto): Promise<string> => {
     const result = await Http.postEntity<Result<string>>("/polyModel/importFromRaw", dto);
     if (result.code === 0) {
       return result.message;

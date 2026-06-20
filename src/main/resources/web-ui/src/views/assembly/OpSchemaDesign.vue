@@ -35,8 +35,25 @@
       </div>
       <div class="schema-info-divider" />
       <div v-show="listViewModel === 'poly'" class="schema-info-item">
-        <span class="schema-info-label">从原始模型导入</span>
-        <el-button type="primary" size="small" :icon="MagicStickIcon" @click="importFromRaw">导入</el-button>
+        <span class="schema-info-label">导入聚合模板</span>
+        <el-select
+          v-model="importTemplateId"
+          placeholder="选择模板（可选）"
+          clearable
+          filterable
+          size="small"
+          style="width: 180px"
+          :loading="importTemplateLoading"
+          @focus="loadImportTemplates"
+        >
+          <el-option
+            v-for="tpl in importTemplateOptions"
+            :key="tpl.id"
+            :label="`${tpl.name}(${tpl.code})`"
+            :value="tpl.id"
+          />
+        </el-select>
+        <el-button type="primary" size="small" :icon="MagicStickIcon" @click="importFromRaw(importTemplateId || undefined)">导入</el-button>
       </div>
       <div v-show="listViewModel === 'raw'" class="schema-info-item">
         <span class="schema-info-label">从数据源导入</span>
@@ -357,6 +374,8 @@ import ComDirectRouteContext from "@/soa/com-series/service/ComDirectRouteContex
 import OpSchemaDesignService from "@/views/assembly/service/OpSchemaDesignService";
 import type { GetPolyModelListVo } from "@/views/assembly/api/PolyModelApi";
 import type { GetOpSchemaListVo } from "@/views/assembly/api/OpSchemaApi";
+import type { GetPolyTemplateListVo } from "@/views/assembly/api/PolyTemplateApi";
+import PolyTemplateApi from "@/views/assembly/api/PolyTemplateApi";
 import ComIconService from "@/soa/com-series/service/ComIconService";
 
 const { resolveIcon } = ComIconService.useIconService();
@@ -413,6 +432,27 @@ const {
   removeList: removePolyList,
   importFromRaw,
 } = OpSchemaDesignService.usePolyModelList(outputSchemaId);
+
+//聚合模板下拉列表
+const importTemplateId = ref<string>("");
+const importTemplateOptions = ref<GetPolyTemplateListVo[]>([]);
+const importTemplateLoading = ref(false);
+
+const loadImportTemplates = async (): Promise<void> => {
+  if (importTemplateOptions.value.length > 0) {
+    return;
+  }
+  importTemplateLoading.value = true;
+  try {
+    const result = await PolyTemplateApi.getPolyTemplateList({ pageNum: 1, pageSize: 10000 });
+    if (result.code === 0) {
+      importTemplateOptions.value = result.data;
+    }
+  } catch {
+    // ignore
+  }
+  importTemplateLoading.value = false;
+};
 
 //原始模型列表打包
 const {
