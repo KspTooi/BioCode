@@ -1,6 +1,7 @@
 package com.ksptool.bio.biz.assembly.service;
 
 import com.google.gson.Gson;
+import com.ksptool.assembly.entity.exception.AuthException;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
@@ -17,6 +18,7 @@ import com.ksptool.bio.biz.assembly.model.opschema.dto.GetOpSchemaListDto;
 import com.ksptool.bio.biz.assembly.model.opschema.vo.GetOpBluePrintListVo;
 import com.ksptool.bio.biz.assembly.model.opschema.vo.GetOpSchemaDetailsVo;
 import com.ksptool.bio.biz.assembly.model.opschema.vo.GetOpSchemaListVo;
+import com.ksptool.bio.biz.assembly.model.oprcd.OpRcdPo;
 import com.ksptool.bio.biz.assembly.model.polymodel.PolyModelPo;
 import com.ksptool.bio.biz.assembly.model.rawmodel.RawModelPo;
 import com.ksptool.bio.biz.assembly.model.scm.ScmPo;
@@ -35,6 +37,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -77,6 +81,8 @@ public class OpSchemaService {
     private TymSchemaRepository tymSchemaRepository;
     @Autowired
     private TymSchemaFieldRepository tymSfRepository;
+    @Autowired
+    private OpRcdRepository opRcdRepository;
 
     /**
      * 查询输出方案列表
@@ -591,9 +597,12 @@ public class OpSchemaService {
      *
      * @param dto 执行参数
      * @throws BizException 业务异常
+     * @throws AuthException 
      */
     @Transactional(rollbackFor = Exception.class)
-    public void executeOpSchema(ExecuteOpSchemaDto dto) throws BizException {
+    public void executeOpSchema(ExecuteOpSchemaDto dto) throws BizException, AuthException {
+
+        var startTime = LocalDateTime.now();
 
         //查询输出方案
         OpSchemaPo opSchemaPo = repository.findById(dto.getOpSchemaId())
@@ -605,6 +614,10 @@ public class OpSchemaService {
 
         ScmPo outputScmPo = scmRepository.findById(opSchemaPo.getOutputScmId())
                 .orElseThrow(() -> new BizException("执行输出方案失败,输出SCM不存在或无权限访问."));
+
+        //查询数据源
+        var ds = datasourceRepository.findById(opSchemaPo.getDataSourceId())
+                .orElseThrow(() -> new BizException("执行输出方案失败,数据源不存在."));
 
         //准备工作空间
         var workSpaceName = "gen_workspace_" + inputScmPo.getId();
@@ -661,6 +674,27 @@ public class OpSchemaService {
 
         //将输出目录推送到输出SCM
         scmService.pushToScm(outputScmPo, workSpaceOutputPath.toString(), message);
+
+        //写入执行记录
+        var endTime = LocalDateTime.now();
+        var rcd = new OpRcdPo();
+        rcd.setOpName(opSchemaPo.getName());
+        rcd.setModelName(opSchemaPo.getModelName());
+        rcd.setModelRemark(opSchemaPo.getModelRemark());
+        rcd.setBizDomain(opSchemaPo.getBizDomain());
+        rcd.setDsTableName(opSchemaPo.getTableName());
+        rcd.setScmInputUrl(inputScmPo.getScmUrl());
+        rcd.setScmOutputUrl(outputScmPo.getScmUrl());
+        rcd.setStartTime(startTime);
+        rcd.setEndTime(endTime);
+        rcd.setDurationMs((int) Duration.between(startTime, endTime).toMillis());
+        rcd.setCreatorUsername(session().getUsername());
+        rcd.setDsName(ds.getName());
+        rcd.setDsUrl(ds.getUrl());
+
+        //QBE参数序列化
+        rcd.setQbeParams(gson.toJson(qbeModel));
+        opRcdRepository.save(rcd);
     }
 
 

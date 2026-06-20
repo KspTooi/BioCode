@@ -7,7 +7,7 @@ import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.bio.biz.auth.service.AuthService;
 import com.ksptool.bio.biz.auth.service.SessionService;
-import com.ksptool.bio.biz.rdbg.commons.GsonUtils;
+import com.ksptool.bio.biz.relay.commons.GsonUtils;
 import com.ksptool.bio.biz.relay.model.replayrequest.*;
 import com.ksptool.bio.biz.relay.model.request.RequestPo;
 import com.ksptool.bio.biz.relay.repository.ReplayRequestRepository;

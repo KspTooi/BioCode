@@ -75,6 +75,11 @@ export default defineConfig(({ command }) => ({
       },
     },
   },
+
+  optimizeDeps: {
+    exclude: ["vue-json-pretty", "vue-demi"],
+  },
+
   build: {
     outDir: "dist",
     assetsDir: "assets",

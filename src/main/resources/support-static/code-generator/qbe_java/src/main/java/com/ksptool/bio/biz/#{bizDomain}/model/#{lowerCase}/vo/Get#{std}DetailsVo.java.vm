@@ -1,0 +1,22 @@
+package com.ksptool.bio.biz.${model.bizDomain}.model.${model.lowerCase}.vo;
+
+import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+import lombok.Getter;
+import lombok.Setter;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Getter
+@Setter
+public class Get${model.std}DetailsVo {
+
+    #foreach ($field in $model.fields)
+    #if($field.details)
+    @Schema(description="${field.comment}")
+    private ${field.type} ${field.camelCase};
+
+    #end
+    #end
+}

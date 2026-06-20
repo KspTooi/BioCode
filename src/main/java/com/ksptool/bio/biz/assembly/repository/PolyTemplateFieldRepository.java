@@ -27,7 +27,7 @@ public interface PolyTemplateFieldRepository extends JpaRepository<PolyTemplateF
             AND (:#{#po.policyQuery} IS NULL OR u.policyQuery = :#{#po.policyQuery} )
             AND (:#{#po.policyView} IS NULL OR u.policyView = :#{#po.policyView} )
             AND (:#{#po.seq} IS NULL OR u.seq = :#{#po.seq} )
-            ORDER BY u.createTime DESC
+            ORDER BY u.seq ASC, u.createTime DESC 
             """)
     Page<PolyTemplateFieldPo> getPolyTemplateFieldList(@Param("po") PolyTemplateFieldPo po, Pageable pageable);
 

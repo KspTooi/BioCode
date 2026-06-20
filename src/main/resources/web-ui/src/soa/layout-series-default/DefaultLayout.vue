@@ -14,7 +14,7 @@
           <template #controls>
             <div class="flex h-full w-full items-center mr-[15px]">
               <!-- 用户通知下拉菜单 -->
-              <core-user-notice-drop-menu />
+              <notice-drop-menu />
               <!-- 用户信息和下拉菜单-->
               <com-user-profile />
             </div>
@@ -63,7 +63,7 @@ import ComMultiTab from "@/soa/com-series/components/ComMultiTab.vue";
 import DefaultMenu from "@/soa/layout-series-default/DefaultMenu.vue";
 import ComUserProfile from "@/soa/com-series/components/ComUserProfile.vue";
 import DefaultMenuShort from "@/soa/layout-series-default/DefaultMenuShort.vue";
-import CoreUserNoticeDropMenu from "@/views/core/components/public/CoreUserNoticeDropMenu.vue";
+import NoticeDropMenu from "@/views/core/public/NoticeDropMenu.vue";
 import UserAuthService from "@/views/auth/service/UserAuthService.ts";
 import ComBreadcrumb from "@/soa/com-series/ComBreadcrumb.vue";
 
