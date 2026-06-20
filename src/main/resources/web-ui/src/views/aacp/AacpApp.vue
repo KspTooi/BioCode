@@ -35,9 +35,9 @@
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
         <el-table-column prop="name" label="应用名称" min-width="120" show-overflow-tooltip />
         <el-table-column prop="code" label="应用代码" min-width="120" show-overflow-tooltip />
-        <el-table-column label="是否公开" min-width="90" align="center">
+        <el-table-column label="访问安全" min-width="90" align="center">
           <template #default="scope">
-            <span v-if="scope.row.isPublic === 0" class="text-slate-500">不公开</span>
+            <span v-if="scope.row.isPublic === 0" class="text-amber-600">私有</span>
             <span v-if="scope.row.isPublic === 1" class="text-indigo-600">公开</span>
           </template>
         </el-table-column>
@@ -87,13 +87,13 @@
         <el-form-item label="访问密钥" prop="appKey" v-if="modalMode === 'edit'">
           <el-input v-model="modalForm.appKey" placeholder="访问密钥" clearable disabled />
         </el-form-item>
-        <el-form-item label="是否公开" prop="isPublic">
+        <el-form-item label="访问安全" prop="isPublic">
           <el-radio-group v-model="modalForm.isPublic">
-            <el-radio :value="0">不公开</el-radio>
             <el-radio :value="1">公开</el-radio>
+            <el-radio :value="0">私有</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="IP白名单" prop="ips">
+        <el-form-item label="IP白名单" prop="ips" v-if="modalForm.isPublic === 0">
           <el-select v-model="modalForm.ips" multiple allow-create filterable clearable placeholder="输入IP后回车添加" style="width: 100%" />
         </el-form-item>
         <el-form-item label="备注" prop="remark">

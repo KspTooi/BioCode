@@ -114,7 +114,7 @@ export default {
       name: "",
       code: "",
       appKey: "",
-      isPublic: 0,
+      isPublic: 1,
       ips: [],
       remark: "",
       status: 1,
@@ -132,8 +132,19 @@ export default {
         { required: true, message: "请输入应用代码", trigger: "blur" },
         { max: 16, message: "应用代码长度不能超过16个字符", trigger: "blur" },
       ],
-      isPublic: [{ required: true, message: "请选择是否公开", trigger: "change" }],
-      ips: [{ required: true, message: "请添加IP白名单", trigger: "change" }],
+      isPublic: [{ required: true, message: "请选择访问安全", trigger: "change" }],
+      ips: [
+        {
+          validator: (_rule: any, value: string[], callback: any) => {
+            if (modalForm.isPublic === 0 && (!value || value.length === 0)) {
+              callback(new Error("私有应用必须添加IP白名单"));
+              return;
+            }
+            callback();
+          },
+          trigger: "change",
+        },
+      ],
       remark: [{ max: 200, message: "备注长度不能超过200个字符", trigger: "blur" }],
       status: [{ required: true, message: "请选择状态", trigger: "change" }],
     };
@@ -151,7 +162,7 @@ export default {
         modalForm.name = "";
         modalForm.code = "";
         modalForm.appKey = "";
-        modalForm.isPublic = 0;
+        modalForm.isPublic = 1;
         modalForm.ips = [];
         modalForm.remark = "";
         modalForm.status = 1;
