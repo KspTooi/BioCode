@@ -13,7 +13,7 @@ import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import com.ksptool.bio.commons.annotation.PrintLog;
 
-import com.ksptool.bio.biz.aacp.service.AppLogsService;
+import com.ksptool.bio.biz.aacp.service.AacpAppLogsService;
 import com.ksptool.bio.biz.aacp.model.applogs.dto.GetAppLogsListDto;
 import com.ksptool.bio.biz.aacp.model.applogs.vo.GetAppLogsListVo;
 import com.ksptool.bio.biz.aacp.model.applogs.vo.GetAppLogsDetailsVo;
@@ -23,23 +23,23 @@ import com.ksptool.bio.biz.aacp.model.applogs.vo.GetAppLogsDetailsVo;
 @RequestMapping("/appLogs")
 @Tag(name = "模型调用记录", description = "模型调用记录")
 @Slf4j
-public class AppLogsController {
+public class AacpAppLogsController {
 
     @Autowired
-    private AppLogsService appLogsService;
+    private AacpAppLogsService aacpAppLogsService;
 
     @PreAuthorize("@auth.hasCode('aacp:app:logs:view')")
     @PostMapping("/getAppLogsList")
     @Operation(summary ="查询模型调用记录列表")
     public PageResult<GetAppLogsListVo> getAppLogsList(@RequestBody @Valid GetAppLogsListDto dto) throws Exception{
-        return appLogsService.getAppLogsList(dto);
+        return aacpAppLogsService.getAppLogsList(dto);
     }
 
     @PreAuthorize("@auth.hasCode('aacp:app:logs:view')")
     @Operation(summary ="查询模型调用记录详情")
     @PostMapping("/getAppLogsDetails")
     public Result<GetAppLogsDetailsVo> getAppLogsDetails(@RequestBody @Valid CommonIdDto dto) throws Exception{
-        GetAppLogsDetailsVo details = appLogsService.getAppLogsDetails(dto);
+        GetAppLogsDetailsVo details = aacpAppLogsService.getAppLogsDetails(dto);
         if(details == null){
             return Result.error("无数据");
         }
@@ -50,7 +50,7 @@ public class AppLogsController {
     @Operation(summary ="删除模型调用记录")
     @PostMapping("/removeAppLogs")
     public Result<String> removeAppLogs(@RequestBody @Valid CommonIdDto dto) throws Exception{
-        appLogsService.removeAppLogs(dto);
+        aacpAppLogsService.removeAppLogs(dto);
         return Result.success("操作成功");
     }
 
