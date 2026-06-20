@@ -50,6 +50,7 @@
               测试数据源连接
             </el-button>
             <el-button link type="danger" size="small" :icon="DeleteIcon" @click="removeList(scope.row)"> 删除 </el-button>
+            <el-button link type="primary" size="small" :icon="CopyIcon" @click="openModal('copy', scope.row)"> 复制 </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -81,7 +82,7 @@
     <!-- 新增/编辑模态框 -->
     <el-dialog
       v-model="modalVisible"
-      :title="modalMode === 'edit' ? '编辑数据源表' : '新增数据源表'"
+      :title="modalMode === 'edit' ? '编辑数据源' : modalMode === 'copy' ? '复制数据源' : '新增数据源'"
       width="600px"
       :close-on-click-modal="false"
       @close="
@@ -110,18 +111,18 @@
             @blur="onCodeBlur"
           />
         </el-form-item>
-        <el-form-item label="数据源类型" prop="kind">
+        <el-form-item label="数据源类型" prop="kind" v-if="modalMode !== 'copy'">
           <el-select v-model="modalForm.kind" placeholder="请选择数据源类型" style="width: 100%">
             <el-option :value="0" label="MYSQL" />
           </el-select>
         </el-form-item>
-        <el-form-item label="JDBC驱动" prop="drive">
+        <el-form-item label="JDBC驱动" prop="drive" v-if="modalMode !== 'copy'">
           <el-input v-model="modalForm.drive" placeholder="请输入JDBC驱动" clearable maxlength="80" show-word-limit />
         </el-form-item>
-        <el-form-item label="连接字符串" prop="url">
+        <el-form-item label="连接字符串" prop="url" v-if="modalMode !== 'copy'">
           <el-input v-model="modalForm.url" placeholder="请输入连接字符串" clearable maxlength="1000" show-word-limit />
         </el-form-item>
-        <el-form-item label="连接用户名" prop="username">
+        <el-form-item label="连接用户名" prop="username" v-if="modalMode !== 'copy'">
           <el-input
             v-model="modalForm.username"
             :placeholder="modalMode === 'edit' ? '留空不修改' : '请输入连接用户名'"
@@ -130,7 +131,7 @@
             show-word-limit
           />
         </el-form-item>
-        <el-form-item label="连接密码" prop="password">
+        <el-form-item label="连接密码" prop="password" v-if="modalMode !== 'copy'">
           <el-input
             v-model="modalForm.password"
             :placeholder="modalMode === 'edit' ? '留空不修改' : '请输入连接密码'"
@@ -139,7 +140,7 @@
             show-word-limit
           />
         </el-form-item>
-        <el-form-item label="默认模式" prop="dbSchema">
+        <el-form-item label="默认模式" prop="dbSchema" v-if="modalMode !== 'copy'">
           <el-input v-model="modalForm.dbSchema" placeholder="请输入默认模式" clearable maxlength="80" show-word-limit />
         </el-form-item>
       </el-form>
@@ -147,7 +148,7 @@
         <div class="dialog-footer">
           <el-button @click="modalVisible = false">取消</el-button>
           <el-button type="primary" :loading="modalLoading" @click="submitModal">
-            {{ modalMode === "add" ? "创建" : "保存" }}
+            {{ modalMode === "add" || modalMode === "copy" ? "创建" : "保存" }}
           </el-button>
         </div>
       </template>
@@ -157,7 +158,7 @@
 
 <script setup lang="ts">
 import { ref, markRaw } from "vue";
-import { Edit, Delete, Connection } from "@element-plus/icons-vue";
+import { Edit, Delete, Connection, CopyDocument } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
 import DataSourceService from "@/views/assembly/service/DataSourceService.ts";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
@@ -169,6 +170,7 @@ import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
 const EditIcon = markRaw(Edit);
 const DeleteIcon = markRaw(Delete);
 const ConnectionIcon = markRaw(Connection);
+const CopyIcon = markRaw(CopyDocument);
 
 // 列表管理打包
 const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList, testConnection } =
