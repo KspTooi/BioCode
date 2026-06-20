@@ -118,7 +118,7 @@ export default {
       kind: 0,
       maxContext: 0,
       maxOutputToken: 0,
-      apiReasoning: 0,
+      apiReasoning: 1,
       apiReasoningEffort: 0,
       apiAppendParam: "",
       apiAppendHeaders: "",
@@ -172,7 +172,7 @@ export default {
         modalForm.kind = 0;
         modalForm.maxContext = 0;
         modalForm.maxOutputToken = 0;
-        modalForm.apiReasoning = 0;
+        modalForm.apiReasoning = 1;
         modalForm.apiReasoningEffort = 0;
         modalForm.apiAppendParam = "";
         modalForm.apiAppendHeaders = "";
@@ -231,7 +231,7 @@ export default {
       modalForm.kind = 0;
       modalForm.maxContext = 0;
       modalForm.maxOutputToken = 0;
-      modalForm.apiReasoning = 0;
+      modalForm.apiReasoning = 1;
       modalForm.apiReasoningEffort = 0;
       modalForm.apiAppendParam = "";
       modalForm.apiAppendHeaders = "";

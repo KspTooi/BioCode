@@ -132,12 +132,12 @@
           <el-input-number v-model="modalForm.maxOutputToken" :min="1" placeholder="请输入最大输出词元" style="width: 100%" />
         </el-form-item>
         <el-form-item label="推理" prop="apiReasoning">
-          <el-radio-group v-model="modalForm.apiReasoning">
-            <el-radio :value="0">不支持</el-radio>
+          <el-radio-group v-model="modalForm.apiReasoning" @change="onApiReasoningChange">
             <el-radio :value="1">支持</el-radio>
+            <el-radio :value="0">不支持</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="推理强度" prop="apiReasoningEffort">
+        <el-form-item label="推理强度" prop="apiReasoningEffort" v-if="modalForm.apiReasoning === 1">
           <el-radio-group v-model="modalForm.apiReasoningEffort">
             <el-radio :value="0">关</el-radio>
             <el-radio :value="1">低</el-radio>
@@ -216,6 +216,13 @@ const modalFormRef = ref<FormInstance>();
 // 模态框打包
 const { modalVisible, modalLoading, modalMode, modalForm, modalRules, openModal, resetModal, submitModal } =
   ModelService.useModelModal(modalFormRef, loadList);
+
+/** 切换推理开关时清空推理强度 */
+const onApiReasoningChange = (val: number): void => {
+  if (val === 0) {
+    modalForm.apiReasoningEffort = 0;
+  }
+};
 </script>
 
 <style scoped></style>
