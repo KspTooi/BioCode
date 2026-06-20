@@ -1,6 +1,7 @@
 package com.ksptool.bio.biz.assembly.model.polytemplate;
 
 import com.ksptool.assembly.entity.exception.AuthException;
+import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,6 +24,8 @@ import java.time.LocalDateTime;
 @SQLRestriction("delete_time IS NULL")
 public class PolyTemplatePo {
 
+    @Id
+    @SnowflakeIdGenerated
     @Column(name = "id", nullable = false, comment = "主键ID")
     private Long id;
 
