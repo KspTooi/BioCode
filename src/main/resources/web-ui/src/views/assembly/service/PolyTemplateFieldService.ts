@@ -11,25 +11,18 @@ import PolyTemplateFieldApi from "@/views/assembly/api/PolyTemplateFieldApi.ts";
 import { Result } from "@/commons/model/Result";
 import { ElMessage, ElMessageBox } from "element-plus";
 
-/**
- * 模态框模式类型
- */
 type ModalMode = "add" | "edit";
 
 export default {
   /**
-   * 聚合模板字段列表管理
+   * 聚合模板字段列表管理，polyTemplateId 由 CDRC 传入
    */
-  usePolyTemplateFieldList() {
+  usePolyTemplateFieldList(polyTemplateId: Ref<string>) {
     const listForm = ref<GetPolyTemplateFieldListDto>({
       pageNum: 1,
       pageSize: 20,
-      polyTemplateId: "",
+      polyTemplateId: polyTemplateId.value,
       name: "",
-      policyCrudJson: "",
-      policyQuery: null,
-      policyView: null,
-      seq: null,
     });
 
     const listData = ref<GetPolyTemplateFieldListVo[]>([]);
@@ -37,41 +30,34 @@ export default {
     const listLoading = ref(false);
 
     /**
-     * 加载列表
+     * 加载字段列表
      */
     const loadList = async (): Promise<void> => {
+      listForm.value.polyTemplateId = polyTemplateId.value;
       listLoading.value = true;
       const result = await PolyTemplateFieldApi.getPolyTemplateFieldList(listForm.value);
-
+      listLoading.value = false;
       if (Result.isSuccess(result)) {
         listData.value = result.data;
         listTotal.value = result.total;
+        return;
       }
-
-      if (Result.isError(result)) {
-        ElMessage.error(result.message);
-      }
-
-      listLoading.value = false;
+      ElMessage.error(result.message || "加载字段列表失败");
     };
 
     /**
-     * 重置查询
+     * 重置查询条件并刷新
      */
     const resetList = (): void => {
       listForm.value.pageNum = 1;
       listForm.value.pageSize = 20;
-      listForm.value.polyTemplateId = "";
+      listForm.value.polyTemplateId = polyTemplateId.value;
       listForm.value.name = "";
-      listForm.value.policyCrudJson = "";
-      listForm.value.policyQuery = null;
-      listForm.value.policyView = null;
-      listForm.value.seq = null;
       loadList();
     };
 
     /**
-     * 删除记录
+     * 删除单条字段记录（含二次确认）
      */
     const removeList = async (row: GetPolyTemplateFieldListVo): Promise<void> => {
       try {
@@ -85,7 +71,7 @@ export default {
       }
 
       try {
-        await PolyTemplateFieldApi.removePolyTemplateField({ id: row.id });
+        await PolyTemplateFieldApi.removePolyTemplateField({ id: String(row.id) });
         ElMessage.success("删除成功");
         await loadList();
       } catch (error: any) {
@@ -109,9 +95,9 @@ export default {
   },
 
   /**
-   * 模态框管理（统一处理新增和编辑）
+   * 字段模态框管理，polyTemplateId 由 CDRC 传入，新增时自动注入父模板ID
    */
-  usePolyTemplateFieldModal(modalFormRef: Ref<FormInstance | undefined>, reloadCallback: () => void) {
+  usePolyTemplateFieldModal(modalFormRef: Ref<FormInstance | undefined>, polyTemplateId: Ref<string>, reloadCallback: () => void) {
     const modalVisible = ref(false);
     const modalLoading = ref(false);
     const modalMode = ref<ModalMode>("add");
@@ -119,42 +105,33 @@ export default {
       id: "",
       polyTemplateId: "",
       name: "",
-      policyCrudJson: "",
+      policyCrudJson: [],
       policyQuery: 0,
       policyView: 0,
       seq: 0,
     });
 
-    /**
-     * 表单验证规则
-     */
     const modalRules: FormRules = {
-      polyTemplateId: [{ required: true, message: "请输入聚合模板ID", trigger: "blur" }],
       name: [
         { required: true, message: "请输入字段名", trigger: "blur" },
         { max: 255, message: "字段名长度不能超过255个字符", trigger: "blur" },
       ],
-      policyCrudJson: [{ required: true, message: "请输入可见性策略 ADD、EDIT、LIST_QUERY、LIST_VIEW", trigger: "blur" }],
-      policyQuery: [{ required: true, message: "请输入查询策略 0:等于", trigger: "blur" }],
-      policyView: [
-        { required: true, message: "请输入显示策略 0:文本框 1:文本域 2:下拉 3:单 4:多 5:LD 6:LDT", trigger: "blur" },
-      ],
+      policyQuery: [{ required: true, message: "请选择查询策略", trigger: "change" }],
+      policyView: [{ required: true, message: "请选择显示策略", trigger: "change" }],
       seq: [{ required: true, message: "请输入排序", trigger: "blur" }],
     };
 
     /**
-     * 打开模态框
-     * @param mode 模式: 'add' | 'edit'
-     * @param row 编辑时传入的行数据
+     * 打开字段模态框，add 模式自动注入 polyTemplateId
      */
     const openModal = async (mode: ModalMode, row: GetPolyTemplateFieldListVo | null): Promise<void> => {
       modalMode.value = mode;
 
       if (mode === "add") {
         modalForm.id = "";
-        modalForm.polyTemplateId = "";
+        modalForm.polyTemplateId = polyTemplateId.value;
         modalForm.name = "";
-        modalForm.policyCrudJson = "";
+        modalForm.policyCrudJson = [];
         modalForm.policyQuery = 0;
         modalForm.policyView = 0;
         modalForm.seq = 0;
@@ -169,7 +146,7 @@ export default {
         }
 
         try {
-          const details = await PolyTemplateFieldApi.getPolyTemplateFieldDetails({ id: row.id });
+          const details = await PolyTemplateFieldApi.getPolyTemplateFieldDetails({ id: String(row.id) });
           modalForm.id = details.id;
           modalForm.polyTemplateId = details.polyTemplateId;
           modalForm.name = details.name;
@@ -185,7 +162,7 @@ export default {
     };
 
     /**
-     * 重置模态框
+     * 重置模态框状态
      */
     const resetModal = (): void => {
       if (!modalFormRef.value) {
@@ -193,16 +170,16 @@ export default {
       }
       modalFormRef.value.resetFields();
       modalForm.id = "";
-      modalForm.polyTemplateId = "";
+      modalForm.polyTemplateId = polyTemplateId.value;
       modalForm.name = "";
-      modalForm.policyCrudJson = "";
+      modalForm.policyCrudJson = [];
       modalForm.policyQuery = 0;
       modalForm.policyView = 0;
       modalForm.seq = 0;
     };
 
     /**
-     * 提交模态框
+     * 提交字段表单（校验 → 构造 Dto → 调 Api → 提示 → 关闭 → 刷新）
      */
     const submitModal = async (): Promise<void> => {
       if (!modalFormRef.value) {
@@ -220,7 +197,7 @@ export default {
       if (modalMode.value === "add") {
         try {
           const addDto: AddPolyTemplateFieldDto = {
-            polyTemplateId: modalForm.polyTemplateId,
+            polyTemplateId: polyTemplateId.value,
             name: modalForm.name,
             policyCrudJson: modalForm.policyCrudJson,
             policyQuery: modalForm.policyQuery,
@@ -228,7 +205,7 @@ export default {
             seq: modalForm.seq,
           };
           await PolyTemplateFieldApi.addPolyTemplateField(addDto);
-          ElMessage.success("新增成功");
+          ElMessage.success("创建成功");
           modalVisible.value = false;
           resetModal();
           reloadCallback();
@@ -249,7 +226,7 @@ export default {
         try {
           const editDto: EditPolyTemplateFieldDto = {
             id: modalForm.id,
-            polyTemplateId: modalForm.polyTemplateId,
+            polyTemplateId: polyTemplateId.value,
             name: modalForm.name,
             policyCrudJson: modalForm.policyCrudJson,
             policyQuery: modalForm.policyQuery,

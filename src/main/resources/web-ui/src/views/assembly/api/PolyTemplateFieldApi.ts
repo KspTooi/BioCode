@@ -8,12 +8,8 @@ import type Result from "@/commons/model/Result.ts";
  * 查询聚合模板字段列表Dto
  */
 export interface GetPolyTemplateFieldListDto extends PageQuery {
-  polyTemplateId?: string; // 聚合模板ID
+  polyTemplateId: string; // 聚合模板ID
   name?: string; // 字段名
-  policyCrudJson?: string; // 可见性策略 ADD、EDIT、LIST_QUERY、LIST_VIEW
-  policyQuery?: number; // 查询策略 0:等于
-  policyView?: number; // 显示策略 0:文本框 1:文本域 2:下拉 3:单 4:多 5:LD 6:LDT
-  seq?: number; // 排序
 }
 
 /**
@@ -23,7 +19,7 @@ export interface GetPolyTemplateFieldListVo {
   id: string; // 主键ID
   polyTemplateId: string; // 聚合模板ID
   name: string; // 字段名
-  policyCrudJson: string; // 可见性策略 ADD、EDIT、LIST_QUERY、LIST_VIEW
+  policyCrudJson: string[]; // 可见性策略 ADD、EDIT、LIST_QUERY、LIST_VIEW
   policyQuery: number; // 查询策略 0:等于
   policyView: number; // 显示策略 0:文本框 1:文本域 2:下拉 3:单 4:多 5:LD 6:LDT
   seq: number; // 排序
@@ -36,7 +32,7 @@ export interface GetPolyTemplateFieldDetailsVo {
   id: string; // 主键ID
   polyTemplateId: string; // 聚合模板ID
   name: string; // 字段名
-  policyCrudJson: string; // 可见性策略 ADD、EDIT、LIST_QUERY、LIST_VIEW
+  policyCrudJson: string[]; // 可见性策略 ADD、EDIT、LIST_QUERY、LIST_VIEW
   policyQuery: number; // 查询策略 0:等于
   policyView: number; // 显示策略 0:文本框 1:文本域 2:下拉 3:单 4:多 5:LD 6:LDT
   seq: number; // 排序
@@ -48,7 +44,7 @@ export interface GetPolyTemplateFieldDetailsVo {
 export interface AddPolyTemplateFieldDto {
   polyTemplateId: string; // 聚合模板ID
   name: string; // 字段名
-  policyCrudJson: string; // 可见性策略 ADD、EDIT、LIST_QUERY、LIST_VIEW
+  policyCrudJson: string[]; // 可见性策略 ADD、EDIT、LIST_QUERY、LIST_VIEW
   policyQuery: number; // 查询策略 0:等于
   policyView: number; // 显示策略 0:文本框 1:文本域 2:下拉 3:单 4:多 5:LD 6:LDT
   seq: number; // 排序
@@ -61,7 +57,7 @@ export interface EditPolyTemplateFieldDto {
   id: string; // 主键ID
   polyTemplateId: string; // 聚合模板ID
   name: string; // 字段名
-  policyCrudJson: string; // 可见性策略 ADD、EDIT、LIST_QUERY、LIST_VIEW
+  policyCrudJson: string[]; // 可见性策略 ADD、EDIT、LIST_QUERY、LIST_VIEW
   policyQuery: number; // 查询策略 0:等于
   policyView: number; // 显示策略 0:文本框 1:文本域 2:下拉 3:单 4:多 5:LD 6:LDT
   seq: number; // 排序

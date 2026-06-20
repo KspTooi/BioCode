@@ -42,8 +42,11 @@
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" min-width="160" show-overflow-tooltip />
-        <el-table-column label="操作" fixed="right" min-width="180">
+        <el-table-column label="操作" fixed="right" min-width="280">
           <template #default="scope">
+            <el-button link type="primary" size="small" :icon="DesignIcon" @click="cdrcRedirect('polyTemplateField', scope.row)">
+              设计
+            </el-button>
             <el-button link type="primary" size="small" @click="openModal('edit', scope.row)" :icon="EditIcon">
               编辑
             </el-button>
@@ -100,17 +103,34 @@
 </template>
 
 <script setup lang="ts">
-import { ref, markRaw } from "vue";
-import { Edit, Delete } from "@element-plus/icons-vue";
+import { ref, markRaw, watch } from "vue";
+import { useRoute } from "vue-router";
+import { Edit, Delete, EditPen } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
 import PolyTemplateService from "@/views/assembly/service/PolyTemplateService.ts";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
 import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
 import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";
 import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
+import ComDirectRouteContext from "@/soa/com-series/service/ComDirectRouteContext.ts";
 
 const EditIcon = markRaw(Edit);
 const DeleteIcon = markRaw(Delete);
+const DesignIcon = markRaw(EditPen);
+
+const route = useRoute();
+const { cdrcRedirect } = ComDirectRouteContext.useDirectRouteContext();
+
+watch(
+  () => route.query["cdrc-return-id"],
+  (id) => {
+    if (!id) {
+      return;
+    }
+    loadList();
+  },
+  { immediate: true }
+);
 
 const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } =
   PolyTemplateService.usePolyTemplateList();
