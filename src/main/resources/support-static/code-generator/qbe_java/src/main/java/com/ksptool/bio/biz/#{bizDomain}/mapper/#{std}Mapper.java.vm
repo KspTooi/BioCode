@@ -1,4 +1,4 @@
-package com.ksptool.bio.biz.${model.lowerCase}.mapper;
+package com.ksptool.bio.biz.${model.bizDomain}.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;

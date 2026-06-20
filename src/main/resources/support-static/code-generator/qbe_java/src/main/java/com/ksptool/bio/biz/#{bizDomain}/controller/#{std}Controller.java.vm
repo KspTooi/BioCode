@@ -1,4 +1,4 @@
-package com.ksptool.bio.biz.${model.lowerCase}.controller;
+package com.ksptool.bio.biz.${model.bizDomain}.controller;
 
 ## 引入公用包
 import com.ksptool.assembly.entity.web.CommonIdDto;
@@ -15,12 +15,12 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import com.ksptool.bio.commons.annotation.PrintLog;
 
 ## 引入专用包
-import com.ksptool.bio.biz.${model.lowerCase}.service.${model.std}Service;
-import com.ksptool.bio.biz.${model.lowerCase}.model.dto.Add${model.std}Dto;
-import com.ksptool.bio.biz.${model.lowerCase}.model.dto.Edit${model.std}Dto;
-import com.ksptool.bio.biz.${model.lowerCase}.model.dto.Get${model.std}ListDto;
-import com.ksptool.bio.biz.${model.lowerCase}.model.vo.Get${model.std}ListVo;
-import com.ksptool.bio.biz.${model.lowerCase}.model.vo.Get${model.std}DetailsVo;
+import com.ksptool.bio.biz.${model.bizDomain}.service.${model.std}Service;
+import com.ksptool.bio.biz.${model.bizDomain}.model.dto.Add${model.std}Dto;
+import com.ksptool.bio.biz.${model.bizDomain}.model.dto.Edit${model.std}Dto;
+import com.ksptool.bio.biz.${model.bizDomain}.model.dto.Get${model.std}ListDto;
+import com.ksptool.bio.biz.${model.bizDomain}.model.vo.Get${model.std}ListVo;
+import com.ksptool.bio.biz.${model.bizDomain}.model.vo.Get${model.std}DetailsVo;
 ## std; //标准化名称 ex: LocalUserAccount
 ## camelCase; //小驼峰名称 ex: localUserAccount
 ## pascalCase; //大驼峰名称 ex: LocalUserAccount
