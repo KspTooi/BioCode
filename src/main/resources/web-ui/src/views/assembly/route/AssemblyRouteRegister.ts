@@ -68,6 +68,13 @@ export default class AssemblyRouteRegister extends GenricRouteRegister {
         component: () => import("@/views/assembly/polyTemplate/PolyTemplate.vue"),
         meta: { breadcrumb: "聚合模板" },
       }),
+      RouteEntryPo.build({
+        biz: "assembly",
+        path: "polyTemplateField",
+        name: "polyTemplateField",
+        component: () => import("@/views/assembly/polyTemplateField/PolyTemplateField.vue"),
+        meta: { breadcrumb: "聚合模板字段" },
+      }),
     ];
   }
 }
