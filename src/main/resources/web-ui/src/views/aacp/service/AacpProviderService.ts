@@ -143,9 +143,9 @@ export default {
         { required: true, message: "请输入接口端点", trigger: "blur" },
         { max: 512, message: "接口端点长度不能超过512个字符", trigger: "blur" },
       ],
-      proxyKind: [{ required: true, message: "请输入代理类型 0:无 1:HTTP 2:SOCKS5", trigger: "blur" }],
+      proxyKind: [{ required: true, message: "请选择代理类型", trigger: "change" }],
       proxyUrl: [{ max: 512, message: "代理地址长度不能超过512个字符", trigger: "blur" }],
-      status: [{ required: true, message: "请输入状态 0:禁用 1:启用", trigger: "blur" }],
+      status: [{ required: true, message: "请选择状态", trigger: "change" }],
     };
 
     /**

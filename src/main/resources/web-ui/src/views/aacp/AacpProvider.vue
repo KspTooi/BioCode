@@ -81,14 +81,21 @@
         <el-form-item label="接口端点" prop="apiUrl">
           <el-input v-model="modalForm.apiUrl" placeholder="请输入接口端点" clearable :maxlength="512" show-word-limit />
         </el-form-item>
-        <el-form-item label="代理类型 0:无 1:HTTP 2:SOCKS5" prop="proxyKind">
-          <el-input v-model.number="modalForm.proxyKind" placeholder="请输入代理类型 0:无 1:HTTP 2:SOCKS5" clearable />
+        <el-form-item label="代理类型" prop="proxyKind">
+          <el-radio-group v-model="modalForm.proxyKind">
+            <el-radio :value="0">无</el-radio>
+            <el-radio :value="1">HTTP</el-radio>
+            <el-radio :value="2">SOCKS5</el-radio>
+          </el-radio-group>
         </el-form-item>
         <el-form-item label="代理地址" prop="proxyUrl">
           <el-input v-model="modalForm.proxyUrl" placeholder="请输入代理地址" clearable :maxlength="512" show-word-limit />
         </el-form-item>
-        <el-form-item label="状态 0:禁用 1:启用" prop="status">
-          <el-input v-model.number="modalForm.status" placeholder="请输入状态 0:禁用 1:启用" clearable />
+        <el-form-item label="状态" prop="status">
+          <el-radio-group v-model="modalForm.status">
+            <el-radio :value="0">禁用</el-radio>
+            <el-radio :value="1">启用</el-radio>
+          </el-radio-group>
         </el-form-item>
       </el-form>
       <template #footer>
