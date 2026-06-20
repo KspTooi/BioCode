@@ -1,6 +1,9 @@
 package com.ksptool.bio.biz.assembly.repository;
 
 import com.ksptool.bio.biz.assembly.model.polytemplatefield.PolyTemplateFieldPo;
+
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -27,4 +30,17 @@ public interface PolyTemplateFieldRepository extends JpaRepository<PolyTemplateF
             ORDER BY u.createTime DESC
             """)
     Page<PolyTemplateFieldPo> getPolyTemplateFieldList(@Param("po") PolyTemplateFieldPo po, Pageable pageable);
+
+    /**
+     * 根据聚合模板ID查找APTF
+     *
+     * @param polyTemplateId 聚合模板ID
+     * @return APTF
+     */
+    @Query("""
+            SELECT u FROM PolyTemplateFieldPo u 
+            WHERE u.polyTemplateId = :polyTemplateId 
+            ORDER BY u.seq ASC
+            """)
+    List<PolyTemplateFieldPo> getAptfByAptId(@Param("polyTemplateId") Long polyTemplateId);
 }

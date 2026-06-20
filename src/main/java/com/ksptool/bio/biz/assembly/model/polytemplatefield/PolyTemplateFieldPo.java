@@ -69,13 +69,4 @@ public class PolyTemplateFieldPo {
     @Column(name = "delete_time", comment = "删除时间")
     private LocalDateTime deleteTime;
 
-
-    @PrePersist
-    private void onCreate() throws AuthException {
-    }
-
-    @PreUpdate
-    private void onUpdate() throws AuthException {
-
-    }
 }

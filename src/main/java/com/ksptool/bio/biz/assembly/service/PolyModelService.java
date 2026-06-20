@@ -49,7 +49,10 @@ public class PolyModelService {
     private OpSchemaRepository opSchemaRepository;
 
     @Autowired
-    private PolyTemplateRepository polyTemplateRepository;
+    private PolyTemplateRepository aptRepository;
+
+    @Autowired
+    private PolyTemplateFieldRepository aptfRepository;
 
 
     /**
@@ -211,8 +214,29 @@ public class PolyModelService {
 
         //后处理聚合模型(如果使用了聚合模板 则匹配聚合模板)
         if (dto.getPolyTemplateId() != null) {
+
             //查找聚合模板
-            PolyTemplatePo polyTemplatePo = polyTemplateRepository.findById(dto.getPolyTemplateId()).orElseThrow(() -> new BizException("聚合模板不存在"));
+            if(aptRepository.countById(dto.getPolyTemplateId()) < 1){
+                throw new BizException("聚合模板不存在");
+            }
+
+            //查找APTF
+            var aptfPos = aptfRepository.getAptfByAptId(dto.getPolyTemplateId());
+
+            for(var aptf : aptfPos){
+
+                var name = aptf.getName();
+
+                for(var apm : polyModelPos){
+                    if(apm.getName().equals(name)){
+                        apm.setPolicyCrudJson(aptf.getPolicyCrudJson());
+                        apm.setPolicyQuery(aptf.getPolicyQuery());
+                        apm.setPolicyView(aptf.getPolicyView());
+                    }
+                }
+
+            }
+
         }
 
 

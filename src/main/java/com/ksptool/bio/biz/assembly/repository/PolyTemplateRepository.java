@@ -24,4 +24,15 @@ public interface PolyTemplateRepository extends JpaRepository<PolyTemplatePo, Lo
             ORDER BY u.createTime DESC
             """)
     Page<PolyTemplatePo> getPolyTemplateList(@Param("po") PolyTemplatePo po, Pageable pageable);
+
+    /**
+     * 根据ID统计聚合模板数量
+     *
+     * @param id 聚合模板ID
+     * @return 聚合模板数量
+     */
+    @Query("""
+            SELECT COUNT(u) FROM PolyTemplatePo u WHERE u.id = :id
+            """)
+    int countById(@Param("id") Long id);
 }
