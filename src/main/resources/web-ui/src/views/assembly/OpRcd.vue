@@ -40,9 +40,11 @@
         <el-table-column prop="modelName" label="模型名称" min-width="120" show-overflow-tooltip />
         <el-table-column prop="bizDomain" label="业务域" min-width="120" show-overflow-tooltip />
         <el-table-column prop="startTime" label="开始时间" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="durationMs" label="耗时MS" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="durationMs" label="耗时MS" min-width="120" show-overflow-tooltip>
+          <template #default="scope"> {{ scope.row.durationMs }} ms</template>
+        </el-table-column>
         <el-table-column prop="creatorUsername" label="操作人账号" min-width="120" show-overflow-tooltip />
-        <el-table-column label="操作" fixed="right" width="200">
+        <el-table-column label="操作" fixed="right" width="160">
           <template #default="scope">
             <el-button link type="primary" size="small" @click="openViewModal(scope.row)" :icon="ViewIcon">查看</el-button>
             <el-button link type="danger" size="small" @click="removeList(scope.row)" :icon="DeleteIcon">删除</el-button>
@@ -127,11 +129,9 @@ const DeleteIcon = markRaw(Delete);
 
 const modalFormRef = ref<FormInstance>();
 
-const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } =
-  OpRcdService.useOpRcdList();
+const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } = OpRcdService.useOpRcdList();
 
-const { modalVisible, modalForm, openViewModal, resetModal } =
-  OpRcdService.useOpRcdViewModal(modalFormRef);
+const { modalVisible, modalForm, openViewModal, resetModal } = OpRcdService.useOpRcdViewModal(modalFormRef);
 </script>
 
 <style scoped></style>
