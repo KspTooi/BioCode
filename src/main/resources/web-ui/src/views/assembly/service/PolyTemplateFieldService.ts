@@ -256,4 +256,40 @@ export default {
       submitModal,
     };
   },
+
+  /**
+   * 行内编辑提交
+   */
+  usePolyTemplateFieldCellEdit() {
+    const submitRow = async (row: GetPolyTemplateFieldListVo): Promise<boolean> => {
+      try {
+        const details = await PolyTemplateFieldApi.getPolyTemplateFieldDetails({ id: String(row.id) });
+        const editDto: EditPolyTemplateFieldDto = { ...details, ...row };
+        await PolyTemplateFieldApi.editPolyTemplateField(editDto);
+        ElMessage.success("更新成功");
+        return true;
+      } catch (error: any) {
+        ElMessage.error(error.message);
+        return false;
+      }
+    };
+
+    const commitField = async (row: GetPolyTemplateFieldListVo, field: string, value: any): Promise<boolean> => {
+      try {
+        const details = await PolyTemplateFieldApi.getPolyTemplateFieldDetails({ id: String(row.id) });
+        const editDto: EditPolyTemplateFieldDto = { ...details, [field]: value };
+        await PolyTemplateFieldApi.editPolyTemplateField(editDto);
+        ElMessage.success("更新成功");
+        return true;
+      } catch (error: any) {
+        ElMessage.error(error.message);
+        return false;
+      }
+    };
+
+    return {
+      submitRow,
+      commitField,
+    };
+  },
 };

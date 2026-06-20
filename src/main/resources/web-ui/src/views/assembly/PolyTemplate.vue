@@ -53,9 +53,15 @@
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" min-width="160" show-overflow-tooltip />
-        <el-table-column label="操作" fixed="right" min-width="280">
+        <el-table-column label="操作" fixed="right" width="200">
           <template #default="scope">
-            <el-button link type="primary" size="small" :icon="DesignIcon" @click="cdrcRedirect('polyTemplateField', scope.row)">
+            <el-button
+              link
+              type="primary"
+              size="small"
+              :icon="DesignIcon"
+              @click="cdrcRedirect('polyTemplateField', scope.row)"
+            >
               设计
             </el-button>
             <el-button link type="primary" size="small" @click="openModal('edit', scope.row)" :icon="EditIcon">
