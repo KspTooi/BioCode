@@ -30,10 +30,15 @@
       </el-form>
     </StdListAreaQuery>
 
+    <!-- 操作按钮区域 -->
+    <StdListAreaAction>
+      <el-button type="danger" :disabled="listSelected.length === 0" :loading="listLoading" @click="removeBatchList">批量删除</el-button>
+    </StdListAreaAction>
+
     <!-- 列表表格区域 -->
     <StdListAreaTable v-model:list-form="listForm" :list-total="listTotal" :load-list="loadList">
-      <el-table :data="listData" stripe v-loading="listLoading" border height="100%">
-        <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
+      <el-table :data="listData" stripe v-loading="listLoading" border height="100%" @selection-change="(val: GetOpRcdListVo[]) => (listSelected = val)">
+        <el-table-column type="selection" width="45" align="center" />
         <el-table-column prop="opName" label="输出方案名称" min-width="120" show-overflow-tooltip />
         <el-table-column prop="dsName" label="数据源名称" min-width="120" show-overflow-tooltip />
         <el-table-column prop="dsTableName" label="数据源表名" min-width="120" show-overflow-tooltip />
@@ -120,8 +125,10 @@ import { ref, markRaw } from "vue";
 import { View, Delete } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
 import OpRcdService from "@/views/assembly/service/OpRcdService.ts";
+import type { GetOpRcdListVo } from "@/views/assembly/api/OpRcdApi.ts";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
 import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
+import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";
 import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
 
 const ViewIcon = markRaw(View);
@@ -129,7 +136,7 @@ const DeleteIcon = markRaw(Delete);
 
 const modalFormRef = ref<FormInstance>();
 
-const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } = OpRcdService.useOpRcdList();
+const { listForm, listData, listTotal, listLoading, listSelected, loadList, resetList, removeList, removeBatchList } = OpRcdService.useOpRcdList();
 
 const { modalVisible, modalForm, openViewModal, resetModal } = OpRcdService.useOpRcdViewModal(modalFormRef);
 </script>

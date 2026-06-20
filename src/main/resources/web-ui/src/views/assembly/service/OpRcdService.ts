@@ -28,6 +28,7 @@ export default {
     const listData = ref<GetOpRcdListVo[]>([]);
     const listTotal = ref(0);
     const listLoading = ref(false);
+    const listSelected = ref<GetOpRcdListVo[]>([]);
 
     /**
      * 加载列表
@@ -60,6 +61,7 @@ export default {
       listForm.value.modelName = "";
       listForm.value.bizDomain = "";
       listForm.value.creatorUsername = "";
+      listSelected.value = [];
       loadList();
     };
 
@@ -86,6 +88,36 @@ export default {
       }
     };
 
+    /**
+     * 批量删除记录
+     */
+    const removeBatchList = async (): Promise<void> => {
+      if (listSelected.value.length === 0) {
+        ElMessage.warning("请选择要删除的记录");
+        return;
+      }
+
+      try {
+        await ElMessageBox.confirm(`确定要删除选中的 ${listSelected.value.length} 条记录吗？`, "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        });
+      } catch {
+        return;
+      }
+
+      try {
+        const ids = listSelected.value.map((item) => item.id);
+        await OpRcdApi.removeOpRcd({ ids });
+        ElMessage.success("批量删除成功");
+        listSelected.value = [];
+        await loadList();
+      } catch (error: any) {
+        ElMessage.error(error.message);
+      }
+    };
+
     onMounted(async () => {
       await loadList();
     });
@@ -95,9 +127,11 @@ export default {
       listData,
       listTotal,
       listLoading,
+      listSelected,
       loadList,
       resetList,
       removeList,
+      removeBatchList,
     };
   },
 
