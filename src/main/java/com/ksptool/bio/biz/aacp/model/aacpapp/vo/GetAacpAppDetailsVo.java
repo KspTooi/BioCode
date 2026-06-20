@@ -1,8 +1,10 @@
-package com.ksptool.bio.biz.aacp.model.app.vo;
+package com.ksptool.bio.biz.aacp.model.aacpapp.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.Set;
 
 @Getter
 @Setter
@@ -24,7 +26,7 @@ public class GetAacpAppDetailsVo {
     private Integer isPublic;
 
     @Schema(description = "IP白名单列表")
-    private String ips;
+    private Set<String> ips;
 
     @Schema(description = "备注")
     private String remark;

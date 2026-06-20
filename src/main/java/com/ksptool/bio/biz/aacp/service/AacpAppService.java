@@ -3,12 +3,12 @@ package com.ksptool.bio.biz.aacp.service;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
-import com.ksptool.bio.biz.aacp.model.app.AacpAppPo;
-import com.ksptool.bio.biz.aacp.model.app.dto.AddAacpAppDto;
-import com.ksptool.bio.biz.aacp.model.app.dto.EditAacpAppDto;
-import com.ksptool.bio.biz.aacp.model.app.dto.GetAacpAppListDto;
-import com.ksptool.bio.biz.aacp.model.app.vo.GetAacpAppDetailsVo;
-import com.ksptool.bio.biz.aacp.model.app.vo.GetAacpAppListVo;
+import com.ksptool.bio.biz.aacp.model.aacpapp.AacpAppPo;
+import com.ksptool.bio.biz.aacp.model.aacpapp.dto.AddAacpAppDto;
+import com.ksptool.bio.biz.aacp.model.aacpapp.dto.EditAacpAppDto;
+import com.ksptool.bio.biz.aacp.model.aacpapp.dto.GetAacpAppListDto;
+import com.ksptool.bio.biz.aacp.model.aacpapp.vo.GetAacpAppDetailsVo;
+import com.ksptool.bio.biz.aacp.model.aacpapp.vo.GetAacpAppListVo;
 import com.ksptool.bio.biz.aacp.repository.AacpAppRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
@@ -54,6 +55,7 @@ public class AacpAppService {
     @Transactional(rollbackFor = Exception.class)
     public void addAacpApp(AddAacpAppDto dto) {
         AacpAppPo insertPo = as(dto, AacpAppPo.class);
+        insertPo.setAppKey(UUID.randomUUID().toString());
         repository.save(insertPo);
     }
 

@@ -1,8 +1,10 @@
-package com.ksptool.bio.biz.aacp.model.app.vo;
+package com.ksptool.bio.biz.aacp.model.aacpapp.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -22,4 +24,7 @@ public class GetAacpAppListVo {
 
     @Schema(description = "状态 0:禁用 1:启用")
     private Integer status;
+
+    @Schema(description = "创建时间")
+    private LocalDateTime createTime;
 }

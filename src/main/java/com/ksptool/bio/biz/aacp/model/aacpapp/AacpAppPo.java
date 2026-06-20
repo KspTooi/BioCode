@@ -1,8 +1,9 @@
-package com.ksptool.bio.biz.aacp.model.app;
+package com.ksptool.bio.biz.aacp.model.aacpapp;
 
 import com.ksptool.bio.biz.auth.common.aop.CreatedRootId;
 import com.ksptool.bio.biz.auth.common.aop.RowScopeRootOnlyPo;
 import com.ksptool.bio.biz.auth.common.aop.RsAuditingEntityListener;
+import com.ksptool.bio.biz.core.common.jpa.SetStringConv;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -14,8 +15,8 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -47,8 +48,9 @@ public class AacpAppPo extends RowScopeRootOnlyPo {
     @Column(name = "is_public", nullable = false, columnDefinition = "TINYINT", comment = "是否公开 0:不公开 1:公开")
     private Integer isPublic;
 
+    @Convert(converter = SetStringConv.class)
     @Column(name = "ips", nullable = false, columnDefinition = "JSON", comment = "IP白名单列表")
-    private String ips;
+    private Set<String> ips;
 
     @Column(name = "remark", length = 200, comment = "备注")
     private String remark;

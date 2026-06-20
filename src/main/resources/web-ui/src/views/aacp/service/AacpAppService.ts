@@ -117,7 +117,7 @@ export default {
       isPublic: 0,
       ips: "",
       remark: "",
-      status: 0,
+      status: 1,
     });
 
     /**
@@ -132,10 +132,9 @@ export default {
         { required: true, message: "请输入应用代码", trigger: "blur" },
         { max: 16, message: "应用代码长度不能超过16个字符", trigger: "blur" },
       ],
-      isPublic: [{ required: true, message: "请输入是否公开 0:不公开 1:公开", trigger: "blur" }],
-      ips: [{ required: true, message: "请输入IP白名单列表", trigger: "blur" }],
+      isPublic: [{ required: true, message: "请选择是否公开", trigger: "change" }],
       remark: [{ max: 200, message: "备注长度不能超过200个字符", trigger: "blur" }],
-      status: [{ required: true, message: "请输入状态 0:禁用 1:启用", trigger: "blur" }],
+      status: [{ required: true, message: "请选择状态", trigger: "change" }],
     };
 
     /**
@@ -147,13 +146,14 @@ export default {
       modalMode.value = mode;
 
       if (mode === "add") {
+        modalForm.id = "";
         modalForm.name = "";
         modalForm.code = "";
         modalForm.appKey = "";
         modalForm.isPublic = 0;
         modalForm.ips = "";
         modalForm.remark = "";
-        modalForm.status = 0;
+        modalForm.status = 1;
         modalVisible.value = true;
         return;
       }
@@ -195,7 +195,7 @@ export default {
       modalForm.isPublic = 0;
       modalForm.ips = "";
       modalForm.remark = "";
-      modalForm.status = 0;
+      modalForm.status = 1;
     };
 
     /**

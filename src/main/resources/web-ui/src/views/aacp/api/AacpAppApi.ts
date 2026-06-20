@@ -22,6 +22,7 @@ export interface GetAacpAppListVo {
   code: string; // 应用代码
   isPublic: number; // 是否公开 0:不公开 1:公开
   status: number; // 状态 0:禁用 1:启用
+  createTime: string; // 创建时间
 }
 
 /**

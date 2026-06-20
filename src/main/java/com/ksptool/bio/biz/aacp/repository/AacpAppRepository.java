@@ -1,7 +1,7 @@
 package com.ksptool.bio.biz.aacp.repository;
 
 
-import com.ksptool.bio.biz.aacp.model.app.AacpAppPo;
+import com.ksptool.bio.biz.aacp.model.aacpapp.AacpAppPo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,4 +1,4 @@
-package com.ksptool.bio.biz.aacp.model.app.dto;
+package com.ksptool.bio.biz.aacp.model.aacpapp.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -6,6 +6,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.Set;
+
 import org.hibernate.validator.constraints.Range;
 
 @Getter
@@ -27,8 +30,9 @@ public class AddAacpAppDto {
     @Schema(description = "是否公开 0:不公开 1:公开")
     private Integer isPublic;
 
+    @NotNull(message = "IP白名单列表不能为空")
     @Schema(description = "IP白名单列表")
-    private String ips;
+    private Set<String> ips;
 
     @Size(max = 200, message = "备注不能超过200个字符")
     @Schema(description = "备注")

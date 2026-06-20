@@ -1,4 +1,4 @@
-package com.ksptool.bio.biz.aacp.model.app.dto;
+package com.ksptool.bio.biz.aacp.model.aacpapp.dto;
 
 import com.ksptool.assembly.entity.web.PageQuery;
 import io.swagger.v3.oas.annotations.media.Schema;
