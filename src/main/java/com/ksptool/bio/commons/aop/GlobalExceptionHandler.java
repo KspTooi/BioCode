@@ -219,18 +219,20 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
     public Result<Object> handleDataIntegrityViolationException(org.springframework.dao.DataIntegrityViolationException ex, HttpServletRequest request) {
+        String errorMessage = "数据完整性约束违反，请联系管理员";
         if (recordErrorRcd) {
             // 审计模块记录系统错误记录
             var session = sessionWithNullable();
             var userId = 0L;
             var userName = "无法获取";
-            var errorCode = auditErrorRcdService.nextErrorCode("PARAM");
+            var errorCode = auditErrorRcdService.nextErrorCode("INTERNAL");
 
             if (session != null) {
                 userId = session.getUserId();
                 userName = session.getNickname();
             }
             auditErrorRcdService.addAuditErrorRcdAsync(errorCode, request.getRequestURI(), userId, userName, ex);
+            errorMessage = errorMessage+",错误代码:"+errorCode;
         }
         Throwable rootCause = ex.getRootCause();
         if (rootCause instanceof SQLIntegrityConstraintViolationException) {
@@ -242,7 +244,7 @@ public class GlobalExceptionHandler {
             }
         }
 
-        return Result.error("数据完整性约束违反，请联系管理员");
+        return Result.error(errorMessage);
     }
 
 }
