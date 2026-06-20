@@ -3,8 +3,6 @@ package com.ksptool.bio.biz.assembly.controller;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.assembly.entity.web.Result;
-import com.ksptool.bio.biz.assembly.model.oprcd.dto.AddOpRcdDto;
-import com.ksptool.bio.biz.assembly.model.oprcd.dto.EditOpRcdDto;
 import com.ksptool.bio.biz.assembly.model.oprcd.dto.GetOpRcdListDto;
 import com.ksptool.bio.biz.assembly.model.oprcd.vo.GetOpRcdDetailsVo;
 import com.ksptool.bio.biz.assembly.model.oprcd.vo.GetOpRcdListVo;
@@ -40,22 +38,6 @@ public class OpRcdController {
     @Operation(summary = "查询输出方案执行记录列表")
     public PageResult<GetOpRcdListVo> getOpRcdList(@RequestBody @Valid GetOpRcdListDto dto) throws Exception {
         return opRcdService.getOpRcdList(dto);
-    }
-
-    @PreAuthorize("@auth.hasCode('assembly:op:rcd:add')")
-    @Operation(summary = "新增输出方案执行记录")
-    @PostMapping("/addOpRcd")
-    public Result<String> addOpRcd(@RequestBody @Valid AddOpRcdDto dto) throws Exception {
-        opRcdService.addOpRcd(dto);
-        return Result.success("新增成功");
-    }
-
-    @PreAuthorize("@auth.hasCode('assembly:op:rcd:edit')")
-    @Operation(summary = "编辑输出方案执行记录")
-    @PostMapping("/editOpRcd")
-    public Result<String> editOpRcd(@RequestBody @Valid EditOpRcdDto dto) throws Exception {
-        opRcdService.editOpRcd(dto);
-        return Result.success("修改成功");
     }
 
     @PreAuthorize("@auth.hasCode('assembly:op:rcd:view')")

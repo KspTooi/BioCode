@@ -52,19 +52,6 @@ export interface GetOpRcdDetailsVo {
   creatorUsername: string; // 操作人账号
 }
 
-/**
- * 新增输出方案执行记录Dto
- */
-export interface AddOpRcdDto {
-}
-
-/**
- * 编辑输出方案执行记录Dto
- */
-export interface EditOpRcdDto {
-  id: string; // 主键ID
-}
-
 export default {
   /**
    * 获取输出方案执行记录列表
@@ -80,28 +67,6 @@ export default {
     const result = await Http.postEntity<Result<GetOpRcdDetailsVo>>("/opRcd/getOpRcdDetails", dto);
     if (result.code === 0) {
       return result.data;
-    }
-    throw new Error(result.message);
-  },
-
-  /**
-   * 新增输出方案执行记录
-   */
-  addOpRcd: async (dto: AddOpRcdDto): Promise<string> => {
-    const result = await Http.postEntity<Result<string>>("/opRcd/addOpRcd", dto);
-    if (result.code === 0) {
-      return result.message;
-    }
-    throw new Error(result.message);
-  },
-
-  /**
-   * 编辑输出方案执行记录
-   */
-  editOpRcd: async (dto: EditOpRcdDto): Promise<string> => {
-    const result = await Http.postEntity<Result<string>>("/opRcd/editOpRcd", dto);
-    if (result.code === 0) {
-      return result.message;
     }
     throw new Error(result.message);
   },

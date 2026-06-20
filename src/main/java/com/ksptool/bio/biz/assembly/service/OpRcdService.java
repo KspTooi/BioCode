@@ -4,8 +4,6 @@ import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.bio.biz.assembly.model.oprcd.OpRcdPo;
-import com.ksptool.bio.biz.assembly.model.oprcd.dto.AddOpRcdDto;
-import com.ksptool.bio.biz.assembly.model.oprcd.dto.EditOpRcdDto;
 import com.ksptool.bio.biz.assembly.model.oprcd.dto.GetOpRcdListDto;
 import com.ksptool.bio.biz.assembly.model.oprcd.vo.GetOpRcdDetailsVo;
 import com.ksptool.bio.biz.assembly.model.oprcd.vo.GetOpRcdListVo;
@@ -48,32 +46,6 @@ public class OpRcdService {
 
         List<GetOpRcdListVo> vos = as(page.getContent(), GetOpRcdListVo.class);
         return PageResult.success(vos, (int) page.getTotalElements());
-    }
-
-    /**
-     * 新增输出方案执行记录
-     *
-     * @param dto 新增条件
-     */
-    @Transactional(rollbackFor = Exception.class)
-    public void addOpRcd(AddOpRcdDto dto) {
-        OpRcdPo insertPo = as(dto, OpRcdPo.class);
-        repository.save(insertPo);
-    }
-
-    /**
-     * 编辑输出方案执行记录
-     *
-     * @param dto 编辑条件
-     * @throws BizException 业务异常
-     */
-    @Transactional(rollbackFor = Exception.class)
-    public void editOpRcd(EditOpRcdDto dto) throws BizException {
-        OpRcdPo updatePo = repository.findById(dto.getId())
-                .orElseThrow(() -> new BizException("更新失败,数据不存在或无权限访问."));
-
-        assign(dto, updatePo);
-        repository.save(updatePo);
     }
 
     /**
