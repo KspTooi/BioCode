@@ -33,7 +33,18 @@
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
         <el-table-column prop="name" label="模板名称" min-width="120" show-overflow-tooltip />
         <el-table-column prop="code" label="模板代码" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="seq" label="排序" min-width="65" show-overflow-tooltip />
+        <el-table-column prop="seq" label="排序" min-width="90" show-overflow-tooltip>
+          <template #default="scope">
+            <ComSeqFixer
+              :id="scope.row.id"
+              seq-field="seq"
+              :get-detail-api="(id) => PolyTemplateApi.getPolyTemplateDetails({ id })"
+              :edit-api="(id, dto) => PolyTemplateApi.editPolyTemplate(dto)"
+              :display-value="scope.row.seq"
+              @success="loadList"
+            />
+          </template>
+        </el-table-column>
         <el-table-column prop="status" label="状态" min-width="80" show-overflow-tooltip>
           <template #default="scope">
             <el-tag :type="scope.row.status === 1 ? 'success' : 'info'">
@@ -113,6 +124,8 @@ import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
 import StdListAreaAction from "@/soa/std-series/StdListAreaAction.vue";
 import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
 import ComDirectRouteContext from "@/soa/com-series/service/ComDirectRouteContext.ts";
+import ComSeqFixer from "@/soa/com-series/ComSeqFixer.vue";
+import PolyTemplateApi from "@/views/assembly/api/PolyTemplateApi.ts";
 
 const EditIcon = markRaw(Edit);
 const DeleteIcon = markRaw(Delete);
