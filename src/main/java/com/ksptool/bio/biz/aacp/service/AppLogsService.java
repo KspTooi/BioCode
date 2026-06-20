@@ -17,8 +17,7 @@ import com.ksptool.bio.biz.aacp.model.applogs.AppLogsPo;
 import com.ksptool.bio.biz.aacp.model.applogs.vo.GetAppLogsListVo;
 import com.ksptool.bio.biz.aacp.model.applogs.dto.GetAppLogsListDto;
 import com.ksptool.bio.biz.aacp.model.applogs.vo.GetAppLogsDetailsVo;
-import com.ksptool.bio.biz.aacp.model.applogs.dto.EditAppLogsDto;
-import com.ksptool.bio.biz.aacp.model.applogs.dto.AddAppLogsDto;
+
 
 
 @Service
@@ -43,30 +42,6 @@ public class AppLogsService {
 
         List<GetAppLogsListVo> vos = as(page.getContent(), GetAppLogsListVo.class);
         return PageResult.success(vos, (int) page.getTotalElements());
-    }
-
-    /**
-     * 新增模型调用记录
-     * @param dto 新增条件
-     */
-    @Transactional(rollbackFor = Exception.class)
-    public void addAppLogs(AddAppLogsDto dto){
-        AppLogsPo insertPo = as(dto,AppLogsPo.class);
-        repository.save(insertPo);
-    }
-
-    /**
-     * 编辑模型调用记录
-     * @param dto 编辑条件
-     * @throws BizException 业务异常
-     */
-    @Transactional(rollbackFor = Exception.class)
-    public void editAppLogs(EditAppLogsDto dto) throws BizException {
-        AppLogsPo updatePo = repository.findById(dto.getId())
-            .orElseThrow(()-> new BizException("更新失败,数据不存在或无权限访问."));
-
-        assign(dto,updatePo);
-        repository.save(updatePo);
     }
 
     /**

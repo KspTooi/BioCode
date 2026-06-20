@@ -14,8 +14,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import com.ksptool.bio.commons.annotation.PrintLog;
 
 import com.ksptool.bio.biz.aacp.service.AppLogsService;
-import com.ksptool.bio.biz.aacp.model.applogs.dto.AddAppLogsDto;
-import com.ksptool.bio.biz.aacp.model.applogs.dto.EditAppLogsDto;
 import com.ksptool.bio.biz.aacp.model.applogs.dto.GetAppLogsListDto;
 import com.ksptool.bio.biz.aacp.model.applogs.vo.GetAppLogsListVo;
 import com.ksptool.bio.biz.aacp.model.applogs.vo.GetAppLogsDetailsVo;
@@ -35,22 +33,6 @@ public class AppLogsController {
     @Operation(summary ="查询模型调用记录列表")
     public PageResult<GetAppLogsListVo> getAppLogsList(@RequestBody @Valid GetAppLogsListDto dto) throws Exception{
         return appLogsService.getAppLogsList(dto);
-    }
-
-    @PreAuthorize("@auth.hasCode('aacp:app:logs:add')")
-    @Operation(summary ="新增模型调用记录")
-    @PostMapping("/addAppLogs")
-    public Result<String> addAppLogs(@RequestBody @Valid AddAppLogsDto dto) throws Exception{
-		appLogsService.addAppLogs(dto);
-        return Result.success("新增成功");
-    }
-
-    @PreAuthorize("@auth.hasCode('aacp:app:logs:edit')")
-    @Operation(summary ="编辑模型调用记录")
-    @PostMapping("/editAppLogs")
-    public Result<String> editAppLogs(@RequestBody @Valid EditAppLogsDto dto) throws Exception{
-		appLogsService.editAppLogs(dto);
-        return Result.success("修改成功");
     }
 
     @PreAuthorize("@auth.hasCode('aacp:app:logs:view')")
