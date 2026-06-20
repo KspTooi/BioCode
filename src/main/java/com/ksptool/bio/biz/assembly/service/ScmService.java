@@ -12,6 +12,7 @@ import com.ksptool.bio.biz.assembly.common.quickbuildengine.QbeBlueprint;
 import com.ksptool.bio.biz.assembly.common.quickbuildengine.QbeBlueprintReader;
 import com.ksptool.bio.biz.assembly.model.scm.ScmPo;
 import com.ksptool.bio.biz.assembly.model.scm.dto.AddScmDto;
+import com.ksptool.bio.biz.assembly.model.scm.dto.CopyScmDto;
 import com.ksptool.bio.biz.assembly.model.scm.dto.EditScmDto;
 import com.ksptool.bio.biz.assembly.model.scm.dto.GetAnchorPointsDto;
 import com.ksptool.bio.biz.assembly.model.scm.dto.GetScmListDto;
@@ -105,6 +106,26 @@ public class ScmService {
 
         ScmPo insertPo = as(dto, ScmPo.class);
         repository.save(insertPo);
+    }
+
+    /**
+     * 复制SCM
+     *
+     * @param dto 复制参数（源ID + 新名称）
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void copyScm(CopyScmDto dto) throws BizException {
+        ScmPo sourcePo = repository.findById(dto.getId())
+                .orElseThrow(() -> new BizException("复制失败,源SCM不存在或无权限访问."));
+
+        if (repository.countByName(dto.getName()) > 0) {
+            throw new BizException("名称已存在:[" + dto.getName() + "]");
+        }
+
+        ScmPo newPo = as(sourcePo, ScmPo.class);
+        newPo.setId(null);
+        newPo.setName(dto.getName());
+        repository.save(newPo);
     }
 
     /**
