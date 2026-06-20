@@ -157,9 +157,11 @@ export default {
       modalMode.value = mode;
 
       if (mode === "add") {
+        modalForm.id = "";
         modalForm.name = "";
         modalForm.code = "";
-        modalForm.apiKind = "";
+        modalForm.apiKind = 0;
+        modalForm.apiKey = "";
         modalForm.apiHost = "";
         modalForm.apiUrl = "";
         modalForm.proxyKind = 0;
@@ -178,7 +180,6 @@ export default {
         try {
           const details = await ProviderApi.getProviderDetails({ id: row.id });
           modalForm.id = row.id;
-          modalForm.apiKind = details.apiKind;
           modalForm.name = details.name;
           modalForm.code = details.code;
           modalForm.apiKind = details.apiKind;
@@ -204,7 +205,7 @@ export default {
       modalFormRef.value.resetFields();
       modalForm.name = "";
       modalForm.code = "";
-      modalForm.apiKind = "";
+      modalForm.apiKind = 0;
       modalForm.apiHost = "";
       modalForm.apiUrl = "";
       modalForm.proxyKind = 0;
@@ -233,6 +234,7 @@ export default {
           const addDto: AddProviderDto = {
             name: modalForm.name,
             code: modalForm.code,
+            apiKind: modalForm.apiKind,
             apiKey: modalForm.apiKey,
             apiHost: modalForm.apiHost,
             apiUrl: modalForm.apiUrl,

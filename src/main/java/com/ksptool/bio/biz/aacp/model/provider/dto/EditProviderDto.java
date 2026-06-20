@@ -28,6 +28,8 @@ public class EditProviderDto implements DtoCustomValidator {
     @Schema(description = "供应商代码")
     private String code;
 
+    @NotNull(message = "接口类型不能为空")
+    @Range(min = 0, max = 1, message = "接口类型值无效，0:OpenAi 1:Anthropic")
     @Schema(description = "接口类型 0:OpenAi 1:Anthropic")
     private Integer apiKind;
 
