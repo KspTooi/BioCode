@@ -120,8 +120,8 @@ export default {
       maxOutputToken: 0,
       apiReasoning: 1,
       apiReasoningEffort: 0,
-      apiAppendParam: "",
-      apiAppendHeaders: "",
+      apiAppendParam: "{}",
+      apiAppendHeaders: "{}",
       fincInput: 0,
       fincInputCached: 0,
       fincOutput: 0,
@@ -174,8 +174,8 @@ export default {
         modalForm.maxOutputToken = 0;
         modalForm.apiReasoning = 1;
         modalForm.apiReasoningEffort = 0;
-        modalForm.apiAppendParam = "";
-        modalForm.apiAppendHeaders = "";
+        modalForm.apiAppendParam = "{}";
+        modalForm.apiAppendHeaders = "{}";
         modalForm.fincInput = 0;
         modalForm.fincInputCached = 0;
         modalForm.fincOutput = 0;
@@ -233,8 +233,8 @@ export default {
       modalForm.maxOutputToken = 0;
       modalForm.apiReasoning = 1;
       modalForm.apiReasoningEffort = 0;
-      modalForm.apiAppendParam = "";
-      modalForm.apiAppendHeaders = "";
+      modalForm.apiAppendParam = "{}";
+      modalForm.apiAppendHeaders = "{}";
       modalForm.fincInput = 0;
       modalForm.fincInputCached = 0;
       modalForm.fincOutput = 0;

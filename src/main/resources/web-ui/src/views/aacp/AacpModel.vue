@@ -43,34 +43,44 @@
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
         <el-table-column prop="name" label="模型变体名称" min-width="120" show-overflow-tooltip />
         <el-table-column prop="code" label="模型标识" min-width="120" show-overflow-tooltip />
-        <el-table-column label="类型" min-width="80">
+        <el-table-column label="类型" min-width="75" align="center">
           <template #default="scope">
-            <el-tag v-if="scope.row.kind === 0" size="small">文本</el-tag>
-            <el-tag v-if="scope.row.kind === 1" type="warning" size="small">图形</el-tag>
-            <el-tag v-if="scope.row.kind === 2" type="success" size="small">音频</el-tag>
-            <el-tag v-if="scope.row.kind === 3" type="primary" size="small">多模态</el-tag>
+            <span v-if="scope.row.kind === 0" class="text-indigo-600">文本</span>
+            <span v-if="scope.row.kind === 1" class="text-slate-400">图形</span>
+            <span v-if="scope.row.kind === 2" class="text-slate-400">音频</span>
+            <span v-if="scope.row.kind === 3" class="text-slate-400">多模态</span>
           </template>
         </el-table-column>
         <el-table-column prop="maxContext" label="最大上下文" min-width="100" show-overflow-tooltip />
         <el-table-column prop="maxOutputToken" label="最大输出词元" min-width="100" show-overflow-tooltip />
-        <el-table-column label="推理" min-width="70" align="center">
+        <el-table-column label="推理情况" min-width="90" align="center">
           <template #default="scope">
-            <el-tag v-if="scope.row.apiReasoning === 1" type="success" size="small">支持</el-tag>
-            <el-tag v-if="scope.row.apiReasoning === 0" type="info" size="small">不支持</el-tag>
+            <span v-if="scope.row.apiReasoning === 0" class="text-slate-400">不支持</span>
+            <span v-if="scope.row.apiReasoning === 1 && scope.row.apiReasoningEffort === 0">关</span>
+            <span v-if="scope.row.apiReasoning === 1 && scope.row.apiReasoningEffort === 1" class="text-slate-500">低</span>
+            <span v-if="scope.row.apiReasoning === 1 && scope.row.apiReasoningEffort === 2" class="text-indigo-600">中</span>
+            <span v-if="scope.row.apiReasoning === 1 && scope.row.apiReasoningEffort === 3" class="text-amber-600">高</span>
+            <span v-if="scope.row.apiReasoning === 1 && scope.row.apiReasoningEffort === 4" class="text-rose-600">极高</span>
           </template>
         </el-table-column>
-        <el-table-column label="推理强度" min-width="80" align="center">
+        <el-table-column label="输入单价" min-width="90">
           <template #default="scope">
-            <span v-if="scope.row.apiReasoningEffort === 0">关</span>
-            <span v-if="scope.row.apiReasoningEffort === 1" class="text-gray-600">低</span>
-            <span v-if="scope.row.apiReasoningEffort === 2" class="text-blue-600">中</span>
-            <span v-if="scope.row.apiReasoningEffort === 3" class="text-orange-600">高</span>
-            <span v-if="scope.row.apiReasoningEffort === 4" class="text-red-600">极高</span>
+            <span v-if="scope.row.fincInput" class="text-slate-500">{{ scope.row.fincInput }}</span>
+            <span v-if="!scope.row.fincInput" class="text-slate-300">-</span>
           </template>
         </el-table-column>
-        <el-table-column prop="fincInput" label="输入单价" min-width="90" show-overflow-tooltip />
-        <el-table-column prop="fincInputCached" label="输入单价(缓存)" min-width="110" show-overflow-tooltip />
-        <el-table-column prop="fincOutput" label="输出单价" min-width="90" show-overflow-tooltip />
+        <el-table-column label="输入单价(缓存)" min-width="110">
+          <template #default="scope">
+            <span v-if="scope.row.fincInputCached" class="text-slate-500">{{ scope.row.fincInputCached }}</span>
+            <span v-if="!scope.row.fincInputCached" class="text-slate-300">-</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="输出单价" min-width="90">
+          <template #default="scope">
+            <span v-if="scope.row.fincOutput" class="text-slate-500">{{ scope.row.fincOutput }}</span>
+            <span v-if="!scope.row.fincOutput" class="text-slate-300">-</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="testTtfb" label="首字响应(MS)" min-width="100" show-overflow-tooltip />
         <el-table-column prop="testRate" label="响应速率(T/S)" min-width="100" show-overflow-tooltip />
         <el-table-column prop="seq" label="排序" min-width="60" align="center" />
@@ -81,7 +91,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" min-width="155" show-overflow-tooltip />
-        <el-table-column label="操作" fixed="right" width="200">
+        <el-table-column label="操作" fixed="right" width="128">
           <template #default="scope">
             <el-button link type="primary" size="small" @click="openModal('edit', scope.row)" :icon="EditIcon">
               编辑
@@ -153,13 +163,18 @@
           <el-input v-model="modalForm.apiAppendHeaders" placeholder="请输入附加请求头(JSON)" type="textarea" :rows="2" />
         </el-form-item>
         <el-form-item label="输入单价" prop="fincInput">
-          <el-input-number v-model="modalForm.fincInput" :min="0" :precision="6" placeholder="请输入输入单价" style="width: 100%" />
+          <el-input-number v-model="modalForm.fincInput" :min="0" placeholder="请输入输入单价" style="width: 100%" />
         </el-form-item>
         <el-form-item label="输入单价(缓存)" prop="fincInputCached">
-          <el-input-number v-model="modalForm.fincInputCached" :min="0" :precision="6" placeholder="请输入输入单价(缓存)" style="width: 100%" />
+          <el-input-number
+            v-model="modalForm.fincInputCached"
+            :min="0"
+            placeholder="请输入输入单价(缓存)"
+            style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="输出单价" prop="fincOutput">
-          <el-input-number v-model="modalForm.fincOutput" :min="0" :precision="6" placeholder="请输入输出单价" style="width: 100%" />
+          <el-input-number v-model="modalForm.fincOutput" :min="0" placeholder="请输入输出单价" style="width: 100%" />
         </el-form-item>
         <el-form-item label="备注" prop="remark">
           <el-input
