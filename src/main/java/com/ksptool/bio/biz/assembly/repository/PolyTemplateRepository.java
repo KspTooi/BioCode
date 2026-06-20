@@ -1,23 +1,23 @@
-package com.ksptool.bio.biz.polytemplate.repository;
+package com.ksptool.bio.biz.assembly.repository;
 
-import com.ksptool.bio.biz.polytemplate.model.PolyTemplatePo;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import com.ksptool.bio.biz.assembly.model.polytemplate.PolyTemplatePo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 @Repository
-public interface PolyTemplateRepository extends JpaRepository<PolyTemplatePo, Long>{
+public interface PolyTemplateRepository extends JpaRepository<PolyTemplatePo, Long> {
 
     @Query("""
-    SELECT u FROM PolyTemplatePo u
-    WHERE
-    (:#{#po.name} IS NULL OR u.name LIKE CONCAT('%', :#{#po.name}, '%'))
-    AND (:#{#po.code} IS NULL OR u.code LIKE CONCAT('%', :#{#po.code}, '%'))
-    AND (:#{#po.status} IS NULL OR u.status = :#{#po.status} )
-    ORDER BY u.createTime DESC
-    """)
+            SELECT u FROM PolyTemplatePo u
+            WHERE
+            (:#{#po.name} IS NULL OR u.name LIKE CONCAT('%', :#{#po.name}, '%'))
+            AND (:#{#po.code} IS NULL OR u.code LIKE CONCAT('%', :#{#po.code}, '%'))
+            AND (:#{#po.status} IS NULL OR u.status = :#{#po.status} )
+            ORDER BY u.createTime DESC
+            """)
     Page<PolyTemplatePo> getPolyTemplateList(@Param("po") PolyTemplatePo po, Pageable pageable);
 }
