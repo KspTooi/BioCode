@@ -12,6 +12,10 @@ import org.hibernate.validator.constraints.Range;
 @Setter
 public class EditPolyTemplateDto {
 
+    @NotNull(message = "主键ID不能为空")
+    @Schema(description = "主键ID")
+    private Long id;
+
     @NotBlank(message = "模板名称不能为空")
     @Size(max = 40, min = 1, message = "模板名称长度必须在1-40个字符之间")
     @Schema(description = "模板名称")
