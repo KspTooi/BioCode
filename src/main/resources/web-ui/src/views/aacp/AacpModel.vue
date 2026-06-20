@@ -43,7 +43,7 @@
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
         <el-table-column prop="name" label="模型变体名称" min-width="120" show-overflow-tooltip />
         <el-table-column prop="code" label="模型标识" min-width="120" show-overflow-tooltip />
-        <el-table-column label="类型" min-width="75" align="center">
+        <el-table-column label="类型" min-width="50" align="center">
           <template #default="scope">
             <span v-if="scope.row.kind === 0" class="text-indigo-600">文本</span>
             <span v-if="scope.row.kind === 1" class="text-slate-400">图形</span>
@@ -79,7 +79,7 @@
             <span v-if="scope.row.apiReasoning === 1 && scope.row.apiReasoningEffort === 4" class="text-rose-600">极高</span>
           </template>
         </el-table-column>
-        <el-table-column label="单价" min-width="150">
+        <el-table-column label="单价" min-width="185">
           <template #default="scope">
             <div class="flex items-center gap-3">
               <el-tooltip :content="`输入单价: ${formatRaw(scope.row.fincInput)}`" placement="top">
@@ -125,7 +125,7 @@
             <el-tag v-if="scope.row.status === 0" type="danger" size="small">禁用</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="createTime" label="创建时间" min-width="155" show-overflow-tooltip />
+        <el-table-column prop="createTime" label="创建时间" width="165" show-overflow-tooltip />
         <el-table-column label="操作" fixed="right" width="128">
           <template #default="scope">
             <el-button link type="primary" size="small" @click="openModal('edit', scope.row)" :icon="EditIcon">
@@ -262,21 +262,33 @@ const TimerIcon = markRaw(Timer);
 const FullScreenIcon = markRaw(FullScreen);
 const PointerIcon = markRaw(Pointer);
 
-/** 格式化数字为 千/百万/亿 */
+/** 格式化数字为 千/百万/亿*/
 const formatNumber = (val: number | undefined | null): string => {
   if (val === undefined || val === null) {
     return "-";
   }
-  if (val >= 100_000_000) {
-    return (val / 100_000_000).toFixed(2).replace(/\.?0+$/, "") + "亿";
+
+  const absVal = Math.abs(val);
+  const sign = val < 0 ? "-" : "";
+
+  // 亿 (>= 10,000,000) -> 格式为 X.XX亿 或 0.XX亿 (例如 15,000,000 -> 0.15亿)
+  // 将阈值设为 10_000_000，确保一千万以上的数字统一使用“亿”作为单位
+  if (absVal >= 10_000_000) {
+    return `${sign}${(absVal / 100_000_000).toFixed(2)}亿`;
   }
-  if (val >= 1_000_000) {
-    return (val / 1_000_000).toFixed(1).replace(/\.?0+$/, "") + "百万";
+
+  // 百万 (>= 10,000) -> 格式为 X.XX百万 或 0.XX百万 (例如 150,000 -> 0.15百万)
+  if (absVal >= 10_000) {
+    return `${sign}${(absVal / 1_000_000).toFixed(2)}百万`;
   }
-  if (val >= 1_000) {
-    return Math.round(val / 1_000) + "千";
+
+  // 千 (>= 1,000) -> 格式为 X.X千 或 X千 (仅用于 1,000 ~ 9,999 的数字)
+  if (absVal >= 1_000) {
+    return `${sign}${(absVal / 1_000).toFixed(1).replace(/\.0$/, "")}千`;
   }
-  return String(val);
+
+  // 小于 1000 的数字直接原样显示
+  return `${sign}${absVal}`;
 };
 
 /** 格式化原始数值为带千分位的字符串 */
