@@ -63,6 +63,15 @@ export interface EditTymSchemaDto {
   remark: string; // 备注
 }
 
+/**
+ * 复制类型映射方案DTO
+ */
+export interface CopyTymSchemaDto {
+  id: string; // 源类型映射方案ID
+  name: string; // 方案名称 max:32
+  code: string; // 方案编码 max:32
+}
+
 export default {
   /**
    * 获取类型映射方案表列表
@@ -109,6 +118,16 @@ export default {
    */
   removeTymSchema: async (dto: CommonIdDto): Promise<string> => {
     const result = await Http.postEntity<Result<string>>("/tymSchema/removeTymSchema", dto);
+    if (result.code === 0) {
+      return result.message;
+    }
+    throw new Error(result.message);
+  },
+  /**
+   * 复制类型映射方案
+   */
+  copyTymSchema: async (dto: CopyTymSchemaDto): Promise<string> => {
+    const result = await Http.postEntity<Result<string>>("/tymSchema/copyTymSchema", dto);
     if (result.code === 0) {
       return result.message;
     }
