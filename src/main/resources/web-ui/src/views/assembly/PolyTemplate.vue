@@ -121,6 +121,9 @@ const DesignIcon = markRaw(EditPen);
 const route = useRoute();
 const { cdrcRedirect } = ComDirectRouteContext.useDirectRouteContext();
 
+const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } =
+  PolyTemplateService.usePolyTemplateList();
+
 watch(
   () => route.query["cdrc-return-id"],
   (id) => {
@@ -131,9 +134,6 @@ watch(
   },
   { immediate: true }
 );
-
-const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } =
-  PolyTemplateService.usePolyTemplateList();
 
 const modalFormRef = ref<FormInstance>();
 
