@@ -1,0 +1,39 @@
+package com.ksptool.bio.biz.aacp.model.provider.dto;
+
+import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+import lombok.Getter;
+import lombok.Setter;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Getter
+@Setter
+public class AddProviderDto {
+
+    @Schema(description="供应商名称")
+    private String name;
+
+    @Schema(description="供应商代码")
+    private String code;
+
+    @Schema(description="接口密钥")
+    private String apiKey;
+
+    @Schema(description="接口地址")
+    private String apiHost;
+
+    @Schema(description="接口端点")
+    private String apiUrl;
+
+    @Schema(description="代理类型 0:无 1:HTTP 2:SOCKS5")
+    private Integer proxyKind;
+
+    @Schema(description="代理地址")
+    private String proxyUrl;
+
+    @Schema(description="状态 0:禁用 1:启用")
+    private Integer status;
+
+}

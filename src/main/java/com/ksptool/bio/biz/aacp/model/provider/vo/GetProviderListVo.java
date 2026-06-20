@@ -1,0 +1,33 @@
+package com.ksptool.bio.biz.aacp.model.provider.vo;
+
+import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+import lombok.Getter;
+import lombok.Setter;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Getter
+@Setter
+public class GetProviderListVo {
+
+    @Schema(description="供应商名称")
+    private String name;
+
+    @Schema(description="供应商代码")
+    private String code;
+
+    @Schema(description="接口类型 0:OpenAi 1:Anthropic")
+    private String apiKind;
+
+    @Schema(description="接口地址")
+    private String apiHost;
+
+    @Schema(description="接口端点")
+    private String apiUrl;
+
+    @Schema(description="状态 0:禁用 1:启用")
+    private Integer status;
+
+}
