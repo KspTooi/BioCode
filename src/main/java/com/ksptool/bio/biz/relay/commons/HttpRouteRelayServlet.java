@@ -2,7 +2,6 @@ package com.ksptool.bio.biz.relay.commons;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import com.ksptool.bio.biz.rdbg.commons.GsonUtils;
 import com.ksptool.bio.biz.relay.model.relayserver.GetRelayServerDetailsVo;
 import com.ksptool.bio.biz.relay.model.relayserver.RelayServerPo;
 import com.ksptool.bio.biz.relay.model.request.RequestPo;

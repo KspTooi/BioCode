@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.ksptool.bio.biz.core.common.config.gson.LocalDateAdapter;
-import com.ksptool.bio.biz.rdbg.commons.GsonUtils;
+import com.ksptool.bio.biz.relay.commons.GsonUtils;
 import com.ksptool.bio.commons.annotation.PrintLog;
 import com.ksptool.bio.commons.config.LocalDateTimeAdapter;
 import jakarta.servlet.http.HttpServletRequest;
