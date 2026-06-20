@@ -45,14 +45,8 @@
         <el-table-column prop="apiUrl" label="接口端点" min-width="120" show-overflow-tooltip />
         <el-table-column label="状态" min-width="80" align="center">
           <template #default="scope">
-            <span
-              v-if="scope.row.status === 1"
-              class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-green-50 text-green-700"
-            >启用</span>
-            <span
-              v-if="scope.row.status === 0"
-              class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-red-50 text-red-700"
-            >禁用</span>
+            <el-tag v-if="scope.row.status === 1" type="success" size="small">启用</el-tag>
+            <el-tag v-if="scope.row.status === 0" type="danger" size="small">禁用</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作" fixed="right" width="200">
