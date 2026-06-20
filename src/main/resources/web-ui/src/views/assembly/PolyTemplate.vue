@@ -37,7 +37,7 @@
         <el-table-column prop="status" label="状态" min-width="80" show-overflow-tooltip>
           <template #default="scope">
             <el-tag :type="scope.row.status === 1 ? 'success' : 'info'">
-              {{ scope.row.status === 1 ? '启用' : '禁用' }}
+              {{ scope.row.status === 1 ? "启用" : "禁用" }}
             </el-tag>
           </template>
         </el-table-column>
