@@ -108,7 +108,7 @@
         ref="modalFormRef"
         :model="modalForm"
         :rules="modalRules"
-        label-width="100px"
+        label-width="120px"
         :validate-on-rule-change="false"
       >
         <el-form-item label="模型变体名称" prop="name">
@@ -126,10 +126,10 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="最大上下文" prop="maxContext">
-          <el-input-number v-model="modalForm.maxContext" :min="1" placeholder="请输入最大上下文长度" />
+          <el-input-number v-model="modalForm.maxContext" :min="1" placeholder="请输入最大上下文长度" style="width: 100%" />
         </el-form-item>
         <el-form-item label="最大输出词元" prop="maxOutputToken">
-          <el-input-number v-model="modalForm.maxOutputToken" :min="1" placeholder="请输入最大输出词元" />
+          <el-input-number v-model="modalForm.maxOutputToken" :min="1" placeholder="请输入最大输出词元" style="width: 100%" />
         </el-form-item>
         <el-form-item label="推理" prop="apiReasoning">
           <el-radio-group v-model="modalForm.apiReasoning">
@@ -162,10 +162,17 @@
           <el-input v-model="modalForm.fincOutput" placeholder="请输入输出单价" clearable />
         </el-form-item>
         <el-form-item label="备注" prop="remark">
-          <el-input v-model="modalForm.remark" placeholder="请输入备注" type="textarea" :rows="2" :maxlength="200" show-word-limit />
+          <el-input
+            v-model="modalForm.remark"
+            placeholder="请输入备注"
+            type="textarea"
+            :rows="2"
+            :maxlength="200"
+            show-word-limit
+          />
         </el-form-item>
         <el-form-item label="排序" prop="seq">
-          <el-input-number v-model="modalForm.seq" :min="0" :max="255" placeholder="排序" />
+          <el-input-number v-model="modalForm.seq" :min="0" :max="255" placeholder="排序" style="width: 100%" />
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="modalForm.status">
