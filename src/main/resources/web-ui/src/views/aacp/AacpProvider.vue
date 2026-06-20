@@ -115,7 +115,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="代理类型" prop="proxyKind">
-          <el-radio-group v-model="modalForm.proxyKind">
+          <el-radio-group v-model="modalForm.proxyKind" @change="onProxyKindChange">
             <el-radio :value="0">无</el-radio>
             <el-radio :value="1">HTTP</el-radio>
             <el-radio :value="2">SOCKS5</el-radio>
@@ -178,6 +178,22 @@ const apiUrlOptions = computed(() => {
 /** 切换接口类型时清空接口端点 */
 const onApiKindChange = (): void => {
   modalForm.apiUrl = "";
+};
+
+/** 切换代理类型时自动补充缺省前缀 */
+const onProxyKindChange = (val: number): void => {
+  if (val === 0) {
+    modalForm.proxyUrl = "";
+    return;
+  }
+  if (modalForm.proxyUrl) {
+    return;
+  }
+  if (val === 1) {
+    modalForm.proxyUrl = "http://";
+    return;
+  }
+  modalForm.proxyUrl = "socks5://";
 };
 </script>
 
