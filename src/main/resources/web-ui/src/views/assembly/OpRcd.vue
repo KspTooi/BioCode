@@ -23,7 +23,7 @@
             <el-input v-model="listForm.creatorUsername" placeholder="输入操作人账号" clearable />
           </el-form-item>
         </div>
-        <el-form-item>
+        <el-form-item class="flex-shrink-0">
           <el-button type="primary" @click="loadList" :disabled="listLoading">查询</el-button>
           <el-button @click="resetList" :disabled="listLoading">重置</el-button>
         </el-form-item>
