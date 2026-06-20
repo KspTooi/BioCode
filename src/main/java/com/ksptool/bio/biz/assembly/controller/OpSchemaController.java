@@ -136,7 +136,7 @@ public class OpSchemaController {
     @PreAuthorize("@auth.hasCode('assembly:opschema:copy')")
     @Operation(summary = "复制输出方案")
     @PostMapping("/copyOpSchema")
-    public Result<String> copyOpSchema(@RequestBody @Valid CommonIdDto dto) throws Exception {
+    public Result<String> copyOpSchema(@RequestBody @Valid CopyOpSchemaDto dto) throws Exception {
         opSchemaService.copyOpSchema(dto);
         return Result.success("复制成功");
     }

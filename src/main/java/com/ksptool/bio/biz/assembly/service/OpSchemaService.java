@@ -10,6 +10,7 @@ import com.ksptool.bio.biz.assembly.common.quickbuildengine.QbeModel;
 import com.ksptool.bio.biz.assembly.common.quickbuildengine.QbeVelocityEngine;
 import com.ksptool.bio.biz.assembly.model.opschema.OpSchemaPo;
 import com.ksptool.bio.biz.assembly.model.opschema.dto.AddOpSchemaDto;
+import com.ksptool.bio.biz.assembly.model.opschema.dto.CopyOpSchemaDto;
 import com.ksptool.bio.biz.assembly.model.opschema.dto.EditOpSchemaDto;
 import com.ksptool.bio.biz.assembly.model.opschema.dto.ExecuteOpSchemaDto;
 import com.ksptool.bio.biz.assembly.model.opschema.dto.GetOpSchemaListDto;
@@ -360,7 +361,7 @@ public class OpSchemaService {
      * @throws BizException 业务异常
      */
     @Transactional(rollbackFor = Exception.class)
-    public void copyOpSchema(CommonIdDto dto) throws Exception {
+    public void copyOpSchema(CopyOpSchemaDto dto) throws Exception {
         OpSchemaPo source = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("复制失败,数据不存在或无权限访问."));
 
@@ -389,7 +390,7 @@ public class OpSchemaService {
         copy.setTypeSchemaId(source.getTypeSchemaId());
         copy.setInputScmId(inputScmId);
         copy.setOutputScmId(outputScmId);
-        copy.setName(source.getName() + "-副本");
+        copy.setName(dto.getName());
         copy.setModelName(source.getModelName());
         copy.setModelRemark(source.getModelRemark());
         copy.setBizDomain(source.getBizDomain());
