@@ -1,4 +1,4 @@
-package com.ksptool.bio.biz.oprcd.service;
+package com.ksptool.bio.biz.assembly.service;
 
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.assembly.entity.web.CommonIdDto;
@@ -12,13 +12,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Page;
 import java.util.Optional;
-import com.ksptool.bio.biz.oprcd.repository.OpRcdRepository;
-import com.ksptool.bio.biz.oprcd.model.OpRcdPo;
-import com.ksptool.bio.biz.oprcd.model.vo.GetOpRcdListVo;
-import com.ksptool.bio.biz.oprcd.model.dto.GetOpRcdListDto;
-import com.ksptool.bio.biz.oprcd.model.vo.GetOpRcdDetailsVo;
-import com.ksptool.bio.biz.oprcd.model.dto.EditOpRcdDto;
-import com.ksptool.bio.biz.oprcd.model.dto.AddOpRcdDto;
+import com.ksptool.bio.biz.assembly.repository.OpRcdRepository;
+import com.ksptool.bio.biz.assembly.model.OpRcdPo;
+import com.ksptool.bio.biz.assembly.model.vo.GetOpRcdListVo;
+import com.ksptool.bio.biz.assembly.model.dto.GetOpRcdListDto;
+import com.ksptool.bio.biz.assembly.model.vo.GetOpRcdDetailsVo;
+import com.ksptool.bio.biz.assembly.model.dto.EditOpRcdDto;
+import com.ksptool.bio.biz.assembly.model.dto.AddOpRcdDto;
 
 
 @Service
