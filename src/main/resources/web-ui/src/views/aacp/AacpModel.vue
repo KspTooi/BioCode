@@ -10,11 +10,19 @@
           <el-form-item label="模型标识">
             <el-input v-model="listForm.code" placeholder="输入模型标识" clearable />
           </el-form-item>
-          <el-form-item label="类型 0:文本 1:图形 2:音频 3:多模态">
-            <el-input v-model.number="listForm.kind" placeholder="输入类型 0:文本 1:图形 2:音频 3:多模态" clearable />
+          <el-form-item label="类型">
+            <el-select v-model="listForm.kind" placeholder="请选择类型" clearable>
+              <el-option label="文本" :value="0" />
+              <el-option label="图形" :value="1" />
+              <el-option label="音频" :value="2" />
+              <el-option label="多模态" :value="3" />
+            </el-select>
           </el-form-item>
-          <el-form-item label="状态 0:禁用 1:启用">
-            <el-input v-model.number="listForm.status" placeholder="输入状态 0:禁用 1:启用" clearable />
+          <el-form-item label="状态">
+            <el-select v-model="listForm.status" placeholder="请选择状态" clearable>
+              <el-option label="禁用" :value="0" />
+              <el-option label="启用" :value="1" />
+            </el-select>
           </el-form-item>
         </div>
         <el-form-item>
@@ -35,23 +43,44 @@
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
         <el-table-column prop="name" label="模型变体名称" min-width="120" show-overflow-tooltip />
         <el-table-column prop="code" label="模型标识" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="kind" label="类型 0:文本 1:图形 2:音频 3:多模态" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="maxContext" label="最大上下文长度" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="maxOutputToken" label="最大输出词元" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="apiReasoning" label="推理 0:不支持 1:支持" min-width="120" show-overflow-tooltip />
-        <el-table-column
-          prop="apiReasoningEffort"
-          label="推理强度 0:关 1:低 2:中 3:高 4:极高"
-          min-width="120"
-          show-overflow-tooltip
-        />
-        <el-table-column prop="fincInput" label="输入单价" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="fincInputCached" label="输入单价(缓存)" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="fincOutput" label="输出单价" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="testTtfb" label="测试首字响应时间 MS" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="testRate" label="测试响应速率 T/S" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="seq" label="排序" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="status" label="状态 0:禁用 1:启用" min-width="120" show-overflow-tooltip />
+        <el-table-column label="类型" min-width="80">
+          <template #default="scope">
+            <el-tag v-if="scope.row.kind === 0" size="small">文本</el-tag>
+            <el-tag v-if="scope.row.kind === 1" type="warning" size="small">图形</el-tag>
+            <el-tag v-if="scope.row.kind === 2" type="success" size="small">音频</el-tag>
+            <el-tag v-if="scope.row.kind === 3" type="primary" size="small">多模态</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="maxContext" label="最大上下文" min-width="100" show-overflow-tooltip />
+        <el-table-column prop="maxOutputToken" label="最大输出词元" min-width="100" show-overflow-tooltip />
+        <el-table-column label="推理" min-width="70" align="center">
+          <template #default="scope">
+            <el-tag v-if="scope.row.apiReasoning === 1" type="success" size="small">支持</el-tag>
+            <el-tag v-if="scope.row.apiReasoning === 0" type="info" size="small">不支持</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="推理强度" min-width="80" align="center">
+          <template #default="scope">
+            <span v-if="scope.row.apiReasoningEffort === 0">关</span>
+            <span v-if="scope.row.apiReasoningEffort === 1" class="text-gray-600">低</span>
+            <span v-if="scope.row.apiReasoningEffort === 2" class="text-blue-600">中</span>
+            <span v-if="scope.row.apiReasoningEffort === 3" class="text-orange-600">高</span>
+            <span v-if="scope.row.apiReasoningEffort === 4" class="text-red-600">极高</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="fincInput" label="输入单价" min-width="90" show-overflow-tooltip />
+        <el-table-column prop="fincInputCached" label="输入单价(缓存)" min-width="110" show-overflow-tooltip />
+        <el-table-column prop="fincOutput" label="输出单价" min-width="90" show-overflow-tooltip />
+        <el-table-column prop="testTtfb" label="首字响应(MS)" min-width="100" show-overflow-tooltip />
+        <el-table-column prop="testRate" label="响应速率(T/S)" min-width="100" show-overflow-tooltip />
+        <el-table-column prop="seq" label="排序" min-width="60" align="center" />
+        <el-table-column label="状态" min-width="70" align="center">
+          <template #default="scope">
+            <el-tag v-if="scope.row.status === 1" type="success" size="small">启用</el-tag>
+            <el-tag v-if="scope.row.status === 0" type="danger" size="small">禁用</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="createTime" label="创建时间" min-width="155" show-overflow-tooltip />
         <el-table-column label="操作" fixed="right" width="200">
           <template #default="scope">
             <el-button link type="primary" size="small" @click="openModal('edit', scope.row)" :icon="EditIcon">

@@ -12,6 +12,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @Setter
 public class GetModelListVo {
 
+    @Schema(description="主键ID")
+    private Long id;
+
     @Schema(description="模型变体名称")
     private String name;
 
@@ -51,7 +54,9 @@ public class GetModelListVo {
     @Schema(description="排序")
     private Integer seq;
 
-    @Schema(description="状态 0:禁用 1:启用")
+    @Schema(description = "状态 0:禁用 1:启用")
     private Integer status;
 
+    @Schema(description = "创建时间")
+    private LocalDateTime createTime;
 }
