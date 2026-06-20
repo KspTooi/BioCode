@@ -1,4 +1,4 @@
-package com.ksptool.bio.biz.aacp.model.aacpapp;
+package com.ksptool.bio.biz.aacp.model.app;
 
 import com.ksptool.bio.biz.auth.common.aop.CreatedRootId;
 import com.ksptool.bio.biz.auth.common.aop.RowScopeRootOnlyPo;
