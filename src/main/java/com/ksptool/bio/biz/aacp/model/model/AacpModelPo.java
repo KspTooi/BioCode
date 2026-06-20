@@ -1,5 +1,7 @@
 package com.ksptool.bio.biz.aacp.model.model;
 
+import com.ksptool.bio.biz.auth.common.aop.CreatedRootId;
+import com.ksptool.bio.biz.auth.common.aop.RsAuditingEntityListener;
 import com.ksptool.bio.biz.auth.common.aop.RowScopeRootOnlyPo;
 import com.ksptool.bio.biz.core.common.jpa.SnowflakeIdGenerated;
 import jakarta.persistence.*;
@@ -19,7 +21,7 @@ import java.time.LocalDateTime;
 @Setter
 @Entity
 @Table(name = "aacp_model")
-@EntityListeners(AuditingEntityListener.class)
+@EntityListeners({AuditingEntityListener.class, RsAuditingEntityListener.class})
 @SQLDelete(sql = "UPDATE aacp_model SET delete_time = NOW() WHERE id = ?")
 @SQLRestriction("delete_time IS NULL")
 public class AacpModelPo extends RowScopeRootOnlyPo {
@@ -29,6 +31,7 @@ public class AacpModelPo extends RowScopeRootOnlyPo {
     @Column(name = "id", nullable = false, comment = "主键ID")
     private Long id;
 
+    @CreatedRootId
     @Column(name = "root_id", nullable = false, comment = "租户ID")
     private Long rootId;
 
