@@ -38,8 +38,8 @@ public class AacpProviderPo extends RowScopeRootOnlyPo {
     @Column(name = "code", nullable = false, length = 32, comment = "供应商代码")
     private String code;
 
-    @Column(name = "api_kind", nullable = false, length = 255, comment = "接口类型 0:OpenAi 1:Anthropic")
-    private String apiKind;
+    @Column(name = "api_kind", nullable = false, columnDefinition = "TINYINT", comment = "接口类型 0:OpenAi 1:Anthropic")
+    private Integer apiKind;
 
     @Column(name = "api_key", length = 2000, comment = "接口密钥")
     private String apiKey;

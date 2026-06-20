@@ -78,6 +78,12 @@
         <el-form-item label="接口密钥" prop="apiKey">
           <el-input v-model="modalForm.apiKey" placeholder="请输入接口密钥" clearable :maxlength="2000" show-word-limit />
         </el-form-item>
+        <el-form-item label="接口类型" prop="apiKind">
+          <el-radio-group v-model="modalForm.apiKind">
+            <el-radio :value="0">OpenAi</el-radio>
+            <el-radio :value="1">Anthropic</el-radio>
+          </el-radio-group>
+        </el-form-item>
         <el-form-item label="接口地址" prop="apiHost">
           <el-input v-model="modalForm.apiHost" placeholder="请输入接口地址" clearable :maxlength="512" show-word-limit />
         </el-form-item>

@@ -28,6 +28,11 @@ public class AddProviderDto implements DtoCustomValidator {
     @Schema(description = "接口密钥")
     private String apiKey;
 
+    @NotNull(message = "接口类型不能为空")
+    @Range(min = 0, max = 1, message = "接口类型值无效，0:OpenAi 1:Anthropic")
+    @Schema(description = "接口类型 0:OpenAi 1:Anthropic")
+    private Integer apiKind;
+
     @NotBlank(message = "接口地址不能为空")
     @Size(max = 512, message = "接口地址不能超过512个字符")
     @Schema(description = "接口地址")

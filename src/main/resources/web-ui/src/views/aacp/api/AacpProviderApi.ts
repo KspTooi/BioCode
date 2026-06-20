@@ -20,7 +20,7 @@ export interface GetProviderListVo {
   id: string; // 主键ID
   name: string; // 供应商名称
   code: string; // 供应商代码
-  apiKind: string; // 接口类型 0:OpenAi 1:Anthropic
+  apiKind: number; // 接口类型 0:OpenAi 1:Anthropic
   apiHost: string; // 接口地址
   apiUrl: string; // 接口端点
   status: number; // 状态 0:禁用 1:启用
@@ -33,7 +33,7 @@ export interface GetProviderDetailsVo {
   id: string; // 主键ID
   name: string; // 供应商名称
   code: string; // 供应商代码
-  apiKind: string; // 接口类型 0:OpenAi 1:Anthropic
+  apiKind: number; // 接口类型 0:OpenAi 1:Anthropic
   apiKey: string; // 接口密钥
   apiHost: string; // 接口地址
   apiUrl: string; // 接口端点
@@ -48,6 +48,7 @@ export interface GetProviderDetailsVo {
 export interface AddProviderDto {
   name: string; // 供应商名称
   code: string; // 供应商代码
+  apiKind: number; // 接口类型 0:OpenAi 1:Anthropic
   apiKey: string; // 接口密钥
   apiHost: string; // 接口地址
   apiUrl: string; // 接口端点
@@ -63,7 +64,7 @@ export interface EditProviderDto {
   id: string; // 主键ID
   name: string; // 供应商名称
   code: string; // 供应商代码
-  apiKind: string; // 接口类型 0:OpenAi 1:Anthropic
+  apiKind: number; // 接口类型 0:OpenAi 1:Anthropic
   apiKey: string; // 接口密钥
   apiHost: string; // 接口地址
   apiUrl: string; // 接口端点

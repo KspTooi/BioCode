@@ -18,7 +18,7 @@ public class GetProviderListVo {
     private String code;
 
     @Schema(description = "接口类型 0:OpenAi 1:Anthropic")
-    private String apiKind;
+    private Integer apiKind;
 
     @Schema(description = "接口地址")
     private String apiHost;

@@ -113,7 +113,7 @@ export default {
       id: "",
       name: "",
       code: "",
-      apiKind: "",
+      apiKind: 0,
       apiKey: "",
       apiHost: "",
       apiUrl: "",
@@ -178,6 +178,7 @@ export default {
         try {
           const details = await ProviderApi.getProviderDetails({ id: row.id });
           modalForm.id = row.id;
+          modalForm.apiKind = details.apiKind;
           modalForm.name = details.name;
           modalForm.code = details.code;
           modalForm.apiKind = details.apiKind;

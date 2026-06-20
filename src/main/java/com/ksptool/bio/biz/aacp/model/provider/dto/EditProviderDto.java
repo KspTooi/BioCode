@@ -29,7 +29,7 @@ public class EditProviderDto implements DtoCustomValidator {
     private String code;
 
     @Schema(description = "接口类型 0:OpenAi 1:Anthropic")
-    private String apiKind;
+    private Integer apiKind;
 
     @Size(max = 2000, message = "接口密钥不能超过2000个字符")
     @Schema(description = "接口密钥")
