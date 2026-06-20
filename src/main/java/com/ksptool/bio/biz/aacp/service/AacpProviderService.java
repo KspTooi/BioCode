@@ -52,7 +52,10 @@ public class AacpProviderService {
      * @param dto 新增条件
      */
     @Transactional(rollbackFor = Exception.class)
-    public void addProvider(AddProviderDto dto) {
+    public void addProvider(AddProviderDto dto) throws BizException {
+        if (repository.countByCodeExcludeId(dto.getCode(), null) > 0) {
+            throw new BizException("供应商代码已存在,请更换后重试.");
+        }
         AacpProviderPo insertPo = as(dto, AacpProviderPo.class);
         repository.save(insertPo);
     }
@@ -65,6 +68,9 @@ public class AacpProviderService {
      */
     @Transactional(rollbackFor = Exception.class)
     public void editProvider(EditProviderDto dto) throws BizException {
+        if (repository.countByCodeExcludeId(dto.getCode(), dto.getId()) > 0) {
+            throw new BizException("供应商代码已存在,请更换后重试.");
+        }
         AacpProviderPo updatePo = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("更新失败,数据不存在或无权限访问."));
 

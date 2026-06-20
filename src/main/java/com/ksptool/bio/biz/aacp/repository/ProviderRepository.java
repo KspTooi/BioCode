@@ -20,4 +20,7 @@ public interface ProviderRepository extends JpaRepository<AacpProviderPo, Long> 
             ORDER BY u.createTime DESC
             """)
     Page<AacpProviderPo> getProviderList(@Param("po") AacpProviderPo po, Pageable pageable);
+
+    @Query("SELECT COUNT(u) FROM AacpProviderPo u WHERE u.code = :code AND (:id IS NULL OR u.id <> :id)")
+    Long countByCodeExcludeId(@Param("code") String code, @Param("id") Long id);
 }
