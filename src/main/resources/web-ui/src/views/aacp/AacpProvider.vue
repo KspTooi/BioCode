@@ -12,8 +12,8 @@
           </el-form-item>
           <el-form-item label="状态">
             <el-select v-model="listForm.status" placeholder="请选择状态" clearable>
-              <el-option label="禁用" :value="0" />
               <el-option label="启用" :value="1" />
+              <el-option label="禁用" :value="0" />
             </el-select>
           </el-form-item>
         </div>
@@ -67,7 +67,7 @@
     <!-- 创建/编辑模态框 -->
     <el-dialog
       v-model="modalVisible"
-      :title="modalMode === 'view' ? '查看供应商' : (modalMode === 'edit' ? '编辑供应商' : '创建供应商')"
+      :title="modalMode === 'view' ? '查看供应商' : modalMode === 'edit' ? '编辑供应商' : '创建供应商'"
       width="600px"
       :close-on-click-modal="false"
       @close="
@@ -84,13 +84,34 @@
         :validate-on-rule-change="false"
       >
         <el-form-item label="供应商名称" prop="name">
-          <el-input v-model="modalForm.name" placeholder="请输入供应商名称" clearable :maxlength="80" show-word-limit :disabled="modalMode === 'view'" />
+          <el-input
+            v-model="modalForm.name"
+            placeholder="请输入供应商名称"
+            clearable
+            :maxlength="80"
+            show-word-limit
+            :disabled="modalMode === 'view'"
+          />
         </el-form-item>
         <el-form-item label="供应商代码" prop="code">
-          <el-input v-model="modalForm.code" placeholder="请输入供应商代码" clearable :maxlength="32" show-word-limit :disabled="modalMode === 'view'" />
+          <el-input
+            v-model="modalForm.code"
+            placeholder="请输入供应商代码"
+            clearable
+            :maxlength="32"
+            show-word-limit
+            :disabled="modalMode === 'view'"
+          />
         </el-form-item>
         <el-form-item label="接口密钥" prop="apiKey">
-          <el-input v-model="modalForm.apiKey" placeholder="请输入接口密钥" clearable :maxlength="2000" show-word-limit :disabled="modalMode === 'view'" />
+          <el-input
+            v-model="modalForm.apiKey"
+            placeholder="请输入接口密钥"
+            clearable
+            :maxlength="2000"
+            show-word-limit
+            :disabled="modalMode === 'view'"
+          />
         </el-form-item>
         <el-form-item label="接口类型" prop="apiKind">
           <el-radio-group v-model="modalForm.apiKind" @change="onApiKindChange" :disabled="modalMode === 'view'">
@@ -99,7 +120,14 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="接口地址" prop="apiHost">
-          <el-input v-model="modalForm.apiHost" placeholder="请输入接口地址" clearable :maxlength="512" show-word-limit :disabled="modalMode === 'view'" />
+          <el-input
+            v-model="modalForm.apiHost"
+            placeholder="请输入接口地址"
+            clearable
+            :maxlength="512"
+            show-word-limit
+            :disabled="modalMode === 'view'"
+          />
         </el-form-item>
         <el-form-item label="接口端点" prop="apiUrl">
           <el-select
@@ -122,7 +150,14 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="代理地址" prop="proxyUrl" v-if="modalForm.proxyKind !== 0">
-          <el-input v-model="modalForm.proxyUrl" placeholder="请输入代理地址" clearable :maxlength="512" show-word-limit :disabled="modalMode === 'view'" />
+          <el-input
+            v-model="modalForm.proxyUrl"
+            placeholder="请输入代理地址"
+            clearable
+            :maxlength="512"
+            show-word-limit
+            :disabled="modalMode === 'view'"
+          />
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="modalForm.status" :disabled="modalMode === 'view'">

@@ -12,8 +12,8 @@
           </el-form-item>
           <el-form-item label="状态">
             <el-select v-model="listForm.status" placeholder="请选择状态" clearable>
-              <el-option label="禁用" :value="0" />
               <el-option label="启用" :value="1" />
+              <el-option label="禁用" :value="0" />
             </el-select>
           </el-form-item>
         </div>
@@ -65,7 +65,7 @@
     <!-- 创建/编辑模态框 -->
     <el-dialog
       v-model="modalVisible"
-      :title="modalMode === 'view' ? '查看应用' : (modalMode === 'edit' ? '编辑应用' : '创建应用')"
+      :title="modalMode === 'view' ? '查看应用' : modalMode === 'edit' ? '编辑应用' : '创建应用'"
       width="600px"
       :close-on-click-modal="false"
       @close="
@@ -82,10 +82,24 @@
         :validate-on-rule-change="false"
       >
         <el-form-item label="应用名称" prop="name">
-          <el-input v-model="modalForm.name" placeholder="请输入应用名称" clearable :maxlength="40" show-word-limit :disabled="modalMode === 'view'" />
+          <el-input
+            v-model="modalForm.name"
+            placeholder="请输入应用名称"
+            clearable
+            :maxlength="40"
+            show-word-limit
+            :disabled="modalMode === 'view'"
+          />
         </el-form-item>
         <el-form-item label="应用代码" prop="code">
-          <el-input v-model="modalForm.code" placeholder="请输入应用代码" clearable :maxlength="16" show-word-limit :disabled="modalMode === 'view'" />
+          <el-input
+            v-model="modalForm.code"
+            placeholder="请输入应用代码"
+            clearable
+            :maxlength="16"
+            show-word-limit
+            :disabled="modalMode === 'view'"
+          />
         </el-form-item>
         <el-form-item label="访问密钥" prop="appKey" v-if="modalMode === 'edit'">
           <el-input v-model="modalForm.appKey" placeholder="访问密钥" clearable disabled />
@@ -97,13 +111,38 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="IP白名单" prop="ips" v-if="modalForm.isPublic === 0">
-          <el-select v-model="modalForm.ips" multiple allow-create filterable clearable placeholder="输入IP后回车添加" style="width: 100%" :disabled="modalMode === 'view'" />
+          <el-select
+            v-model="modalForm.ips"
+            multiple
+            allow-create
+            filterable
+            clearable
+            placeholder="输入IP后回车添加"
+            style="width: 100%"
+            :disabled="modalMode === 'view'"
+          />
         </el-form-item>
         <el-form-item label="备注" prop="remark">
-          <el-input v-model="modalForm.remark" placeholder="请输入备注" clearable type="textarea" :rows="3" :maxlength="200" show-word-limit :disabled="modalMode === 'view'" />
+          <el-input
+            v-model="modalForm.remark"
+            placeholder="请输入备注"
+            clearable
+            type="textarea"
+            :rows="3"
+            :maxlength="200"
+            show-word-limit
+            :disabled="modalMode === 'view'"
+          />
         </el-form-item>
         <el-form-item label="绑定模型" prop="modelIds">
-          <el-select v-model="modalForm.modelIds" multiple filterable :loading="modelLoading" placeholder="请选择模型变体" :disabled="modalMode === 'view'">
+          <el-select
+            v-model="modalForm.modelIds"
+            multiple
+            filterable
+            :loading="modelLoading"
+            placeholder="请选择模型变体"
+            :disabled="modalMode === 'view'"
+          >
             <el-option v-for="item in modelOptions" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
@@ -148,8 +187,18 @@ const { listForm, listData, listTotal, listLoading, loadList, resetList, removeL
 const modalFormRef = ref<FormInstance>();
 
 // 模态框打包
-const { modalVisible, modalLoading, modalMode, modalForm, modalRules, modelOptions, modelLoading, openModal, resetModal, submitModal } =
-  AacpAppService.useAacpAppModal(modalFormRef, loadList);
+const {
+  modalVisible,
+  modalLoading,
+  modalMode,
+  modalForm,
+  modalRules,
+  modelOptions,
+  modelLoading,
+  openModal,
+  resetModal,
+  submitModal,
+} = AacpAppService.useAacpAppModal(modalFormRef, loadList);
 </script>
 
 <style scoped></style>

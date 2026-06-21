@@ -20,8 +20,8 @@
           </el-form-item>
           <el-form-item label="状态">
             <el-select v-model="listForm.status" placeholder="请选择状态" clearable>
-              <el-option label="禁用" :value="0" />
               <el-option label="启用" :value="1" />
+              <el-option label="禁用" :value="0" />
             </el-select>
           </el-form-item>
         </div>
@@ -143,7 +143,7 @@
     <!-- 创建/编辑模态框 -->
     <el-dialog
       v-model="modalVisible"
-      :title="modalMode === 'view' ? '查看模型变体' : (modalMode === 'edit' ? '编辑模型变体' : '创建模型变体')"
+      :title="modalMode === 'view' ? '查看模型变体' : modalMode === 'edit' ? '编辑模型变体' : '创建模型变体'"
       width="600px"
       :close-on-click-modal="false"
       @close="
@@ -160,10 +160,24 @@
         :validate-on-rule-change="false"
       >
         <el-form-item label="模型变体名称" prop="name">
-          <el-input v-model="modalForm.name" placeholder="请输入模型变体名称" clearable :maxlength="80" show-word-limit :disabled="modalMode === 'view'" />
+          <el-input
+            v-model="modalForm.name"
+            placeholder="请输入模型变体名称"
+            clearable
+            :maxlength="80"
+            show-word-limit
+            :disabled="modalMode === 'view'"
+          />
         </el-form-item>
         <el-form-item label="模型标识" prop="code">
-          <el-input v-model="modalForm.code" placeholder="请输入模型标识" clearable :maxlength="64" show-word-limit :disabled="modalMode === 'view'" />
+          <el-input
+            v-model="modalForm.code"
+            placeholder="请输入模型标识"
+            clearable
+            :maxlength="64"
+            show-word-limit
+            :disabled="modalMode === 'view'"
+          />
         </el-form-item>
         <el-form-item label="类型" prop="kind">
           <el-radio-group v-model="modalForm.kind" :disabled="modalMode === 'view'">
@@ -174,10 +188,22 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="最大上下文" prop="maxContext">
-          <el-input-number v-model="modalForm.maxContext" :min="1" placeholder="请输入最大上下文长度" style="width: 100%" :disabled="modalMode === 'view'" />
+          <el-input-number
+            v-model="modalForm.maxContext"
+            :min="1"
+            placeholder="请输入最大上下文长度"
+            style="width: 100%"
+            :disabled="modalMode === 'view'"
+          />
         </el-form-item>
         <el-form-item label="最大输出词元" prop="maxOutputToken">
-          <el-input-number v-model="modalForm.maxOutputToken" :min="1" placeholder="请输入最大输出词元" style="width: 100%" :disabled="modalMode === 'view'" />
+          <el-input-number
+            v-model="modalForm.maxOutputToken"
+            :min="1"
+            placeholder="请输入最大输出词元"
+            style="width: 100%"
+            :disabled="modalMode === 'view'"
+          />
         </el-form-item>
         <el-form-item label="推理" prop="apiReasoning">
           <el-radio-group v-model="modalForm.apiReasoning" @change="onApiReasoningChange" :disabled="modalMode === 'view'">
@@ -195,13 +221,31 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="附加参数" prop="apiAppendParam">
-          <el-input v-model="modalForm.apiAppendParam" placeholder="请输入附加参数(JSON)" type="textarea" :rows="2" :disabled="modalMode === 'view'" />
+          <el-input
+            v-model="modalForm.apiAppendParam"
+            placeholder="请输入附加参数(JSON)"
+            type="textarea"
+            :rows="2"
+            :disabled="modalMode === 'view'"
+          />
         </el-form-item>
         <el-form-item label="附加请求头" prop="apiAppendHeaders">
-          <el-input v-model="modalForm.apiAppendHeaders" placeholder="请输入附加请求头(JSON)" type="textarea" :rows="2" :disabled="modalMode === 'view'" />
+          <el-input
+            v-model="modalForm.apiAppendHeaders"
+            placeholder="请输入附加请求头(JSON)"
+            type="textarea"
+            :rows="2"
+            :disabled="modalMode === 'view'"
+          />
         </el-form-item>
         <el-form-item label="输入单价" prop="fincInput">
-          <el-input-number v-model="modalForm.fincInput" :min="0" placeholder="请输入输入单价" style="width: 100%" :disabled="modalMode === 'view'" />
+          <el-input-number
+            v-model="modalForm.fincInput"
+            :min="0"
+            placeholder="请输入输入单价"
+            style="width: 100%"
+            :disabled="modalMode === 'view'"
+          />
         </el-form-item>
         <el-form-item label="输入单价(缓存)" prop="fincInputCached">
           <el-input-number
@@ -213,7 +257,13 @@
           />
         </el-form-item>
         <el-form-item label="输出单价" prop="fincOutput">
-          <el-input-number v-model="modalForm.fincOutput" :min="0" placeholder="请输入输出单价" style="width: 100%" :disabled="modalMode === 'view'" />
+          <el-input-number
+            v-model="modalForm.fincOutput"
+            :min="0"
+            placeholder="请输入输出单价"
+            style="width: 100%"
+            :disabled="modalMode === 'view'"
+          />
         </el-form-item>
         <el-form-item label="备注" prop="remark">
           <el-input
@@ -227,10 +277,24 @@
           />
         </el-form-item>
         <el-form-item label="排序" prop="seq">
-          <el-input-number v-model="modalForm.seq" :min="0" :max="255" placeholder="排序" style="width: 100%" :disabled="modalMode === 'view'" />
+          <el-input-number
+            v-model="modalForm.seq"
+            :min="0"
+            :max="255"
+            placeholder="排序"
+            style="width: 100%"
+            :disabled="modalMode === 'view'"
+          />
         </el-form-item>
         <el-form-item label="绑定供应商" prop="providerIds">
-          <el-select v-model="modalForm.providerIds" multiple filterable :loading="providerLoading" placeholder="请选择供应商" :disabled="modalMode === 'view'">
+          <el-select
+            v-model="modalForm.providerIds"
+            multiple
+            filterable
+            :loading="providerLoading"
+            placeholder="请选择供应商"
+            :disabled="modalMode === 'view'"
+          >
             <el-option v-for="item in providerOptions" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
@@ -317,8 +381,18 @@ const { listForm, listData, listTotal, listLoading, loadList, resetList, removeL
 const modalFormRef = ref<FormInstance>();
 
 // 模态框打包
-const { modalVisible, modalLoading, modalMode, modalForm, modalRules, providerOptions, providerLoading, openModal, resetModal, submitModal } =
-  ModelService.useModelModal(modalFormRef, loadList);
+const {
+  modalVisible,
+  modalLoading,
+  modalMode,
+  modalForm,
+  modalRules,
+  providerOptions,
+  providerLoading,
+  openModal,
+  resetModal,
+  submitModal,
+} = ModelService.useModelModal(modalFormRef, loadList);
 
 /** 切换推理开关时清空推理强度 */
 const onApiReasoningChange = (val: number): void => {
