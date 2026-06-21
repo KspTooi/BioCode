@@ -7,7 +7,9 @@ import type {
   AddAacpAppDto,
   EditAacpAppDto,
 } from "@/views/aacp/api/AacpAppApi.ts";
+import type { GetModelListVo } from "@/views/aacp/api/AacpModelApi.ts";
 import AacpAppApi from "@/views/aacp/api/AacpAppApi.ts";
+import AacpModelApi from "@/views/aacp/api/AacpModelApi.ts";
 import { Result } from "@/commons/model/Result";
 import { ElMessage, ElMessageBox } from "element-plus";
 
@@ -118,7 +120,34 @@ export default {
       ips: [],
       remark: "",
       status: 1,
+      modelIds: [],
     });
+
+    // 模型变体选择器
+    const modelOptions = ref<GetModelListVo[]>([]);
+    const modelLoading = ref(false);
+
+    /** 一次全量加载模型变体选项（pageSize 写死 10000） */
+    const loadModelOptions = async (): Promise<void> => {
+      if (modelOptions.value.length > 0) {
+        return;
+      }
+      modelLoading.value = true;
+      try {
+        const res = await AacpModelApi.getModelList({
+          name: null,
+          code: null,
+          kind: null,
+          status: null,
+          pageNum: 1,
+          pageSize: 10000,
+        });
+        modelOptions.value = res.data;
+      } catch (error: any) {
+        ElMessage.error(error.message);
+      }
+      modelLoading.value = false;
+    };
 
     /**
      * 表单验证规则
@@ -157,6 +186,8 @@ export default {
     const openModal = async (mode: ModalMode, row: GetAacpAppListVo | null): Promise<void> => {
       modalMode.value = mode;
 
+      await loadModelOptions();
+
       if (mode === "add") {
         modalForm.id = "";
         modalForm.name = "";
@@ -166,6 +197,7 @@ export default {
         modalForm.ips = [];
         modalForm.remark = "";
         modalForm.status = 1;
+        modalForm.modelIds = [];
         modalVisible.value = true;
         return;
       }
@@ -186,6 +218,7 @@ export default {
           modalForm.ips = details.ips;
           modalForm.remark = details.remark;
           modalForm.status = details.status;
+          modalForm.modelIds = details.modelIds;
           modalVisible.value = true;
         } catch (error: any) {
           ElMessage.error(error.message);
@@ -208,6 +241,7 @@ export default {
       modalForm.ips = [];
       modalForm.remark = "";
       modalForm.status = 1;
+      modalForm.modelIds = [];
     };
 
     /**
@@ -235,6 +269,7 @@ export default {
             ips: modalForm.ips,
             remark: modalForm.remark,
             status: modalForm.status,
+            modelIds: modalForm.modelIds,
           };
           await AacpAppApi.addAacpApp(addDto);
           ElMessage.success("新增成功");
@@ -264,6 +299,7 @@ export default {
             ips: modalForm.ips,
             remark: modalForm.remark,
             status: modalForm.status,
+            modelIds: modalForm.modelIds,
           };
           await AacpAppApi.editAacpApp(editDto);
           ElMessage.success("编辑成功");
@@ -283,6 +319,8 @@ export default {
       modalMode,
       modalForm,
       modalRules,
+      modelOptions,
+      modelLoading,
       openModal,
       resetModal,
       submitModal,

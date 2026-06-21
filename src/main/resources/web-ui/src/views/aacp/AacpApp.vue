@@ -102,6 +102,11 @@
         <el-form-item label="备注" prop="remark">
           <el-input v-model="modalForm.remark" placeholder="请输入备注" clearable type="textarea" :rows="3" :maxlength="200" show-word-limit :disabled="modalMode === 'view'" />
         </el-form-item>
+        <el-form-item label="绑定模型" prop="modelIds">
+          <el-select v-model="modalForm.modelIds" multiple filterable :loading="modelLoading" placeholder="请选择模型变体" :disabled="modalMode === 'view'">
+            <el-option v-for="item in modelOptions" :key="item.id" :label="item.name" :value="item.id" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="modalForm.status" :disabled="modalMode === 'view'">
             <el-radio :value="1">启用</el-radio>
@@ -143,7 +148,7 @@ const { listForm, listData, listTotal, listLoading, loadList, resetList, removeL
 const modalFormRef = ref<FormInstance>();
 
 // 模态框打包
-const { modalVisible, modalLoading, modalMode, modalForm, modalRules, openModal, resetModal, submitModal } =
+const { modalVisible, modalLoading, modalMode, modalForm, modalRules, modelOptions, modelLoading, openModal, resetModal, submitModal } =
   AacpAppService.useAacpAppModal(modalFormRef, loadList);
 </script>
 

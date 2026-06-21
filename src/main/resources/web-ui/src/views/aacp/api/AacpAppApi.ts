@@ -37,6 +37,7 @@ export interface GetAacpAppDetailsVo {
   ips: string[]; // IP白名单列表
   remark: string; // 备注
   status: number; // 状态 0:禁用 1:启用
+  modelIds: string[]; // 绑定的模型变体ID列表
 }
 
 /**
@@ -49,6 +50,7 @@ export interface AddAacpAppDto {
   ips: string[]; // IP白名单列表
   remark: string; // 备注
   status: number; // 状态 0:禁用 1:启用
+  modelIds: string[]; // 绑定的模型变体ID列表
 }
 
 /**
@@ -62,6 +64,7 @@ export interface EditAacpAppDto {
   ips: string[]; // IP白名单列表
   remark: string; // 备注
   status: number; // 状态 0:禁用 1:启用
+  modelIds: string[]; // 绑定的模型变体ID列表
 }
 
 export default {
