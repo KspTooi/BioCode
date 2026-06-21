@@ -229,6 +229,11 @@
         <el-form-item label="排序" prop="seq">
           <el-input-number v-model="modalForm.seq" :min="0" :max="255" placeholder="排序" style="width: 100%" :disabled="modalMode === 'view'" />
         </el-form-item>
+        <el-form-item label="绑定供应商" prop="providerIds">
+          <el-select v-model="modalForm.providerIds" multiple filterable :loading="providerLoading" placeholder="请选择供应商" :disabled="modalMode === 'view'">
+            <el-option v-for="item in providerOptions" :key="item.id" :label="item.name" :value="item.id" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="modalForm.status" :disabled="modalMode === 'view'">
             <el-radio :value="1">启用</el-radio>
@@ -312,7 +317,7 @@ const { listForm, listData, listTotal, listLoading, loadList, resetList, removeL
 const modalFormRef = ref<FormInstance>();
 
 // 模态框打包
-const { modalVisible, modalLoading, modalMode, modalForm, modalRules, openModal, resetModal, submitModal } =
+const { modalVisible, modalLoading, modalMode, modalForm, modalRules, providerOptions, providerLoading, openModal, resetModal, submitModal } =
   ModelService.useModelModal(modalFormRef, loadList);
 
 /** 切换推理开关时清空推理强度 */

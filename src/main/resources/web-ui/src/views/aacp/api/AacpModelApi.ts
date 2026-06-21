@@ -56,6 +56,7 @@ export interface GetModelDetailsVo {
   remark: string; // 备注
   seq: number; // 排序
   status: number; // 状态 0:禁用 1:启用
+  providerIds: string[]; // 绑定的供应商ID列表
 }
 
 /**
@@ -77,6 +78,7 @@ export interface AddModelDto {
   remark: string; // 备注
   seq: number; // 排序
   status: number; // 状态 0:禁用 1:启用
+  providerIds: string[]; // 绑定的供应商ID列表
 }
 
 /**
@@ -99,6 +101,7 @@ export interface EditModelDto {
   remark: string; // 备注
   seq: number; // 排序
   status: number; // 状态 0:禁用 1:启用
+  providerIds: string[]; // 绑定的供应商ID列表
 }
 
 export default {

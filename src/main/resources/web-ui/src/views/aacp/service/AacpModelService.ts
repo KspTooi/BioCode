@@ -7,7 +7,9 @@ import type {
   AddModelDto,
   EditModelDto,
 } from "@/views/aacp/api/AacpModelApi";
+import type { GetProviderListVo } from "@/views/aacp/api/AacpProviderApi";
 import ModelApi from "@/views/aacp/api/AacpModelApi";
+import ProviderApi from "@/views/aacp/api/AacpProviderApi";
 import { Result } from "@/commons/model/Result";
 import { ElMessage, ElMessageBox } from "element-plus";
 
@@ -128,7 +130,33 @@ export default {
       remark: "",
       seq: 0,
       status: 1,
+      providerIds: [],
     });
+
+    // 供应商选择器
+    const providerOptions = ref<GetProviderListVo[]>([]);
+    const providerLoading = ref(false);
+
+    /** 一次全量加载供应商选项（pageSize 写死 10000） */
+    const loadProviderOptions = async (): Promise<void> => {
+      if (providerOptions.value.length > 0) {
+        return;
+      }
+      providerLoading.value = true;
+      try {
+        const res = await ProviderApi.getProviderList({
+          name: null,
+          code: null,
+          status: null,
+          pageNum: 1,
+          pageSize: 10000,
+        });
+        providerOptions.value = res.data;
+      } catch (error: any) {
+        ElMessage.error(error.message);
+      }
+      providerLoading.value = false;
+    };
 
     /**
      * 表单验证规则
@@ -165,6 +193,8 @@ export default {
     const openModal = async (mode: ModalMode, row: GetModelListVo | null): Promise<void> => {
       modalMode.value = mode;
 
+      await loadProviderOptions();
+
       if (mode === "add") {
         modalForm.id = "";
         modalForm.name = "";
@@ -182,6 +212,7 @@ export default {
         modalForm.remark = "";
         modalForm.seq = 0;
         modalForm.status = 1;
+        modalForm.providerIds = [];
         modalVisible.value = true;
         return;
       }
@@ -210,6 +241,7 @@ export default {
           modalForm.remark = details.remark;
           modalForm.seq = details.seq;
           modalForm.status = details.status;
+          modalForm.providerIds = details.providerIds;
           modalVisible.value = true;
         } catch (error: any) {
           ElMessage.error(error.message);
@@ -241,6 +273,7 @@ export default {
       modalForm.remark = "";
       modalForm.seq = 0;
       modalForm.status = 1;
+      modalForm.providerIds = [];
     };
 
     /**
@@ -277,6 +310,7 @@ export default {
             remark: modalForm.remark,
             seq: modalForm.seq,
             status: modalForm.status,
+            providerIds: modalForm.providerIds,
           };
           await ModelApi.addModel(addDto);
           ElMessage.success("新增成功");
@@ -315,6 +349,7 @@ export default {
             remark: modalForm.remark,
             seq: modalForm.seq,
             status: modalForm.status,
+            providerIds: modalForm.providerIds,
           };
           await ModelApi.editModel(editDto);
           ElMessage.success("编辑成功");
@@ -334,6 +369,8 @@ export default {
       modalMode,
       modalForm,
       modalRules,
+      providerOptions,
+      providerLoading,
       openModal,
       resetModal,
       submitModal,
