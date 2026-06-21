@@ -21,4 +21,18 @@ public interface ModelRepository extends JpaRepository<AacpModelPo, Long> {
             ORDER BY u.createTime DESC
             """)
     Page<AacpModelPo> getModelList(@Param("po") AacpModelPo po, Pageable pageable);
+
+
+    @Query("""
+            SELECT u FROM AacpModelPo u
+            WHERE
+            u.name = :name
+            AND u.id IN (
+              SELECT DISTINCT aam.modelId FROM AacpAppModelPo aam
+              INNER JOIN AacpAppPo aa ON aa.id = aam.appId
+              WHERE aa.appKey = :appkey
+            )
+            """)
+    AacpModelPo getModelByNameAndAppkey(@Param("name") String name, @Param("appkey") String appkey);
+
 }

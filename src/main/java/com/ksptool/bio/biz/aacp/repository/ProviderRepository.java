@@ -23,4 +23,19 @@ public interface ProviderRepository extends JpaRepository<AacpProviderPo, Long> 
 
     @Query("SELECT COUNT(u) FROM AacpProviderPo u WHERE u.code = :code AND (:id IS NULL OR u.id <> :id)")
     Long countByCodeExcludeId(@Param("code") String code, @Param("id") Long id);
+
+    /**
+     * 根据模型ID获取该模型的第一个可用供应商
+     *
+     * @param modelId 模型ID
+     * @return 供应商
+     */
+    @Query("""
+            SELECT u FROM AacpProviderPo u
+            INNER JOIN AacpProviderModelPo apm ON apm.providerId = u.id
+            WHERE apm.modelId = :modelId
+            ORDER BY u.createTime DESC
+            LIMIT 1
+            """)
+    AacpProviderPo getFirstProviderByModelId(@Param("modelId") Long modelId);
 }
