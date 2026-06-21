@@ -4,8 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 @Getter
 @Setter
 public class GetAacpDatasourceDetailsVo {
@@ -42,7 +40,4 @@ public class GetAacpDatasourceDetailsVo {
 
     @Schema(description = "是否支持批处理 0:不支持 1:支持")
     private Integer executeBatch;
-
-    @Schema(description = "创建时间")
-    private LocalDateTime createTime;
 }

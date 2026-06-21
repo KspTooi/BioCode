@@ -39,6 +39,34 @@ export default class AacpRouteRegister extends GenricRouteRegister {
         component: () => import("@/views/aacp/AacpDatasource.vue"),
         meta: { breadcrumb: "数据源" },
       }),
+      RouteEntryPo.build({
+        biz: "aacp",
+        path: "provider",
+        name: "provider",
+        component: () => import("@/views/aacp/AacpProvider.vue"),
+        meta: { breadcrumb: "模型供应商" },
+      }),
+      RouteEntryPo.build({
+        biz: "aacp",
+        path: "appLogs",
+        name: "appLogs",
+        component: () => import("@/views/aacp/AacpAppLogs.vue"),
+        meta: { breadcrumb: "模型调用记录" },
+      }),
+      RouteEntryPo.build({
+        biz: "aacp",
+        path: "app",
+        name: "app",
+        component: () => import("@/views/aacp/AacpApp.vue"),
+        meta: { breadcrumb: "AACP应用" },
+      }),
+      RouteEntryPo.build({
+        biz: "aacp",
+        path: "model",
+        name: "model",
+        component: () => import("@/views/aacp/AacpModel.vue"),
+        meta: { breadcrumb: "模型变体" },
+      }),
     ];
   }
 }
