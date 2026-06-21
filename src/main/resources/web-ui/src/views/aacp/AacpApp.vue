@@ -48,8 +48,11 @@
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" min-width="160" show-overflow-tooltip />
-        <el-table-column label="操作" fixed="right" width="200">
+        <el-table-column label="操作" fixed="right" width="280">
           <template #default="scope">
+            <el-button link type="primary" size="small" @click="openModal('view', scope.row)" :icon="ViewIcon">
+              查看
+            </el-button>
             <el-button link type="primary" size="small" @click="openModal('edit', scope.row)" :icon="EditIcon">
               编辑
             </el-button>
@@ -62,7 +65,7 @@
     <!-- 创建/编辑模态框 -->
     <el-dialog
       v-model="modalVisible"
-      :title="modalMode === 'edit' ? '编辑应用' : '创建应用'"
+      :title="modalMode === 'view' ? '查看应用' : (modalMode === 'edit' ? '编辑应用' : '创建应用')"
       width="600px"
       :close-on-click-modal="false"
       @close="
@@ -79,28 +82,28 @@
         :validate-on-rule-change="false"
       >
         <el-form-item label="应用名称" prop="name">
-          <el-input v-model="modalForm.name" placeholder="请输入应用名称" clearable :maxlength="40" show-word-limit />
+          <el-input v-model="modalForm.name" placeholder="请输入应用名称" clearable :maxlength="40" show-word-limit :disabled="modalMode === 'view'" />
         </el-form-item>
         <el-form-item label="应用代码" prop="code">
-          <el-input v-model="modalForm.code" placeholder="请输入应用代码" clearable :maxlength="16" show-word-limit />
+          <el-input v-model="modalForm.code" placeholder="请输入应用代码" clearable :maxlength="16" show-word-limit :disabled="modalMode === 'view'" />
         </el-form-item>
         <el-form-item label="访问密钥" prop="appKey" v-if="modalMode === 'edit'">
           <el-input v-model="modalForm.appKey" placeholder="访问密钥" clearable disabled />
         </el-form-item>
         <el-form-item label="访问安全" prop="isPublic">
-          <el-radio-group v-model="modalForm.isPublic">
+          <el-radio-group v-model="modalForm.isPublic" :disabled="modalMode === 'view'">
             <el-radio :value="1">公开</el-radio>
             <el-radio :value="0">私有</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="IP白名单" prop="ips" v-if="modalForm.isPublic === 0">
-          <el-select v-model="modalForm.ips" multiple allow-create filterable clearable placeholder="输入IP后回车添加" style="width: 100%" />
+          <el-select v-model="modalForm.ips" multiple allow-create filterable clearable placeholder="输入IP后回车添加" style="width: 100%" :disabled="modalMode === 'view'" />
         </el-form-item>
         <el-form-item label="备注" prop="remark">
-          <el-input v-model="modalForm.remark" placeholder="请输入备注" clearable type="textarea" :rows="3" :maxlength="200" show-word-limit />
+          <el-input v-model="modalForm.remark" placeholder="请输入备注" clearable type="textarea" :rows="3" :maxlength="200" show-word-limit :disabled="modalMode === 'view'" />
         </el-form-item>
         <el-form-item label="状态" prop="status">
-          <el-radio-group v-model="modalForm.status">
+          <el-radio-group v-model="modalForm.status" :disabled="modalMode === 'view'">
             <el-radio :value="1">启用</el-radio>
             <el-radio :value="0">禁用</el-radio>
           </el-radio-group>
@@ -109,7 +112,7 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="modalVisible = false">关闭</el-button>
-          <el-button type="primary" @click="submitModal" :loading="modalLoading">
+          <el-button v-if="modalMode !== 'view'" type="primary" @click="submitModal" :loading="modalLoading">
             {{ modalMode === "add" ? "创建" : "保存" }}
           </el-button>
         </div>
@@ -120,7 +123,7 @@
 
 <script setup lang="ts">
 import { ref, markRaw } from "vue";
-import { Edit, Delete } from "@element-plus/icons-vue";
+import { Edit, Delete, View } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
 import AacpAppService from "@/views/aacp/service/AacpAppService.ts";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
@@ -131,6 +134,7 @@ import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
 // 使用markRaw包装图标组件，防止被Vue响应式系统处理
 const EditIcon = markRaw(Edit);
 const DeleteIcon = markRaw(Delete);
+const ViewIcon = markRaw(View);
 
 // 列表管理打包
 const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } = AacpAppService.useAacpAppList();

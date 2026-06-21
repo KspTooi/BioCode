@@ -14,7 +14,7 @@ import { ElMessage, ElMessageBox } from "element-plus";
 /**
  * 模态框模式类型
  */
-type ModalMode = "add" | "edit";
+type ModalMode = "add" | "edit" | "view";
 
 export default {
   /**
@@ -151,7 +151,7 @@ export default {
 
     /**
      * 打开模态框
-     * @param mode 模式: 'add' | 'edit'
+     * @param mode 模式: 'add' | 'edit' | 'view'
      * @param row 编辑时传入的行数据
      */
     const openModal = async (mode: ModalMode, row: GetAacpAppListVo | null): Promise<void> => {
@@ -170,7 +170,7 @@ export default {
         return;
       }
 
-      if (mode === "edit") {
+      if (mode === "edit" || mode === "view") {
         if (!row) {
           ElMessage.error("未选择要编辑的数据");
           return;
