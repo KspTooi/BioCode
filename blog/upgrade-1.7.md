@@ -289,7 +289,7 @@ Version 1.7J CheckPoint 39
 增量业务功能  
 1.全新的输出方案执行记录功能，可以观测 QBE 代码生成引擎的执行情况
 
-## 1.7H85-模型网关
+## 1.7H85-大模型基础设施
 
 Version 1.7H CheckPoint 85
 
