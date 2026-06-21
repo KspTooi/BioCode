@@ -18,7 +18,7 @@ public interface ProviderModelRepository extends JpaRepository<AacpProviderModel
     @Query("""
             SELECT u.providerId FROM AacpProviderModelPo u WHERE u.modelId = :modelId
             """)
-    List<Long> getProviderIdsByModelId(@Param("modelId") Long modelId);
+    List<Long> getPIdsByMId(@Param("modelId") Long modelId);
 
     /**
      * 根据模型变体ID和供应商ID列表删除关联
@@ -27,7 +27,7 @@ public interface ProviderModelRepository extends JpaRepository<AacpProviderModel
     @Query("""
             DELETE FROM AacpProviderModelPo u WHERE u.modelId = :modelId AND u.providerId IN :providerIds
             """)
-    void removeByModelIdAndProviderIds(@Param("modelId") Long modelId, @Param("providerIds") List<Long> providerIds);
+    void removeByMIdAndPIds(@Param("modelId") Long modelId, @Param("providerIds") List<Long> providerIds);
 
     /**
      * 根据模型变体ID删除所有关联
@@ -36,5 +36,5 @@ public interface ProviderModelRepository extends JpaRepository<AacpProviderModel
     @Query("""
             DELETE FROM AacpProviderModelPo u WHERE u.modelId = :modelId
             """)
-    void removeByModelId(@Param("modelId") Long modelId);
+    void removeByMId(@Param("modelId") Long modelId);
 }

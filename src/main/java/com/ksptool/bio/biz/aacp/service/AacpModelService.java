@@ -84,7 +84,7 @@ public class AacpModelService {
         assign(dto, updatePo);
         repository.save(updatePo);
 
-        List<Long> existIds = apmRepository.getProviderIdsByModelId(dto.getId());
+        List<Long> existIds = apmRepository.getPIdsByMId(dto.getId());
         var idsDiff = new IdsDiff(existIds, dto.getProviderIds());
 
         if (idsDiff.hasAdd()) {
@@ -94,7 +94,7 @@ public class AacpModelService {
         }
 
         if (idsDiff.hasRemove()) {
-            apmRepository.removeByModelIdAndProviderIds(dto.getId(), idsDiff.getRemoveIds());
+            apmRepository.removeByMIdAndPIds(dto.getId(), idsDiff.getRemoveIds());
         }
     }
 
@@ -109,7 +109,7 @@ public class AacpModelService {
         AacpModelPo po = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("查询详情失败,数据不存在或无权限访问."));
         GetModelDetailsVo vo = as(po, GetModelDetailsVo.class);
-        vo.setProviderIds(apmRepository.getProviderIdsByModelId(dto.getId()));
+        vo.setProviderIds(apmRepository.getPIdsByMId(dto.getId()));
         return vo;
     }
 
@@ -125,7 +125,7 @@ public class AacpModelService {
             repository.deleteAllById(dto.getIds());
             return;
         }
-        apmRepository.removeByModelId(dto.getId());
+        apmRepository.removeByMId(dto.getId());
         repository.deleteById(dto.getId());
     }
 
