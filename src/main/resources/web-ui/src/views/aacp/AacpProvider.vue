@@ -50,8 +50,11 @@
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" min-width="160" show-overflow-tooltip />
-        <el-table-column label="操作" fixed="right" width="200">
+        <el-table-column label="操作" fixed="right" width="280">
           <template #default="scope">
+            <el-button link type="primary" size="small" @click="openModal('view', scope.row)" :icon="ViewIcon">
+              查看
+            </el-button>
             <el-button link type="primary" size="small" @click="openModal('edit', scope.row)" :icon="EditIcon">
               编辑
             </el-button>
@@ -64,7 +67,7 @@
     <!-- 创建/编辑模态框 -->
     <el-dialog
       v-model="modalVisible"
-      :title="modalMode === 'edit' ? '编辑供应商' : '创建供应商'"
+      :title="modalMode === 'view' ? '查看供应商' : (modalMode === 'edit' ? '编辑供应商' : '创建供应商')"
       width="600px"
       :close-on-click-modal="false"
       @close="
@@ -81,22 +84,22 @@
         :validate-on-rule-change="false"
       >
         <el-form-item label="供应商名称" prop="name">
-          <el-input v-model="modalForm.name" placeholder="请输入供应商名称" clearable :maxlength="80" show-word-limit />
+          <el-input v-model="modalForm.name" placeholder="请输入供应商名称" clearable :maxlength="80" show-word-limit :disabled="modalMode === 'view'" />
         </el-form-item>
         <el-form-item label="供应商代码" prop="code">
-          <el-input v-model="modalForm.code" placeholder="请输入供应商代码" clearable :maxlength="32" show-word-limit />
+          <el-input v-model="modalForm.code" placeholder="请输入供应商代码" clearable :maxlength="32" show-word-limit :disabled="modalMode === 'view'" />
         </el-form-item>
         <el-form-item label="接口密钥" prop="apiKey">
-          <el-input v-model="modalForm.apiKey" placeholder="请输入接口密钥" clearable :maxlength="2000" show-word-limit />
+          <el-input v-model="modalForm.apiKey" placeholder="请输入接口密钥" clearable :maxlength="2000" show-word-limit :disabled="modalMode === 'view'" />
         </el-form-item>
         <el-form-item label="接口类型" prop="apiKind">
-          <el-radio-group v-model="modalForm.apiKind" @change="onApiKindChange">
+          <el-radio-group v-model="modalForm.apiKind" @change="onApiKindChange" :disabled="modalMode === 'view'">
             <el-radio :value="0">OpenAi</el-radio>
             <el-radio :value="1">Anthropic</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="接口地址" prop="apiHost">
-          <el-input v-model="modalForm.apiHost" placeholder="请输入接口地址" clearable :maxlength="512" show-word-limit />
+          <el-input v-model="modalForm.apiHost" placeholder="请输入接口地址" clearable :maxlength="512" show-word-limit :disabled="modalMode === 'view'" />
         </el-form-item>
         <el-form-item label="接口端点" prop="apiUrl">
           <el-select
@@ -106,22 +109,23 @@
             filterable
             clearable
             :maxlength="512"
+            :disabled="modalMode === 'view'"
           >
             <el-option v-for="item in apiUrlOptions" :key="item" :label="item" :value="item" />
           </el-select>
         </el-form-item>
         <el-form-item label="代理类型" prop="proxyKind">
-          <el-radio-group v-model="modalForm.proxyKind" @change="onProxyKindChange">
+          <el-radio-group v-model="modalForm.proxyKind" @change="onProxyKindChange" :disabled="modalMode === 'view'">
             <el-radio :value="0">无</el-radio>
             <el-radio :value="1">HTTP</el-radio>
             <el-radio :value="2">SOCKS5</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="代理地址" prop="proxyUrl" v-if="modalForm.proxyKind !== 0">
-          <el-input v-model="modalForm.proxyUrl" placeholder="请输入代理地址" clearable :maxlength="512" show-word-limit />
+          <el-input v-model="modalForm.proxyUrl" placeholder="请输入代理地址" clearable :maxlength="512" show-word-limit :disabled="modalMode === 'view'" />
         </el-form-item>
         <el-form-item label="状态" prop="status">
-          <el-radio-group v-model="modalForm.status">
+          <el-radio-group v-model="modalForm.status" :disabled="modalMode === 'view'">
             <el-radio :value="1">启用</el-radio>
             <el-radio :value="0">禁用</el-radio>
           </el-radio-group>
@@ -130,7 +134,7 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="modalVisible = false">关闭</el-button>
-          <el-button type="primary" @click="submitModal" :loading="modalLoading">
+          <el-button v-if="modalMode !== 'view'" type="primary" @click="submitModal" :loading="modalLoading">
             {{ modalMode === "add" ? "创建" : "保存" }}
           </el-button>
         </div>
@@ -141,7 +145,7 @@
 
 <script setup lang="ts">
 import { ref, markRaw, computed } from "vue";
-import { Edit, Delete } from "@element-plus/icons-vue";
+import { Edit, Delete, View } from "@element-plus/icons-vue";
 import type { FormInstance } from "element-plus";
 import ProviderService from "@/views/aacp/service/AacpProviderService";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
@@ -152,6 +156,7 @@ import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
 // 使用markRaw包装图标组件，防止被Vue响应式系统处理
 const EditIcon = markRaw(Edit);
 const DeleteIcon = markRaw(Delete);
+const ViewIcon = markRaw(View);
 
 // 列表管理打包
 const { listForm, listData, listTotal, listLoading, loadList, resetList, removeList } = ProviderService.useProviderList();
