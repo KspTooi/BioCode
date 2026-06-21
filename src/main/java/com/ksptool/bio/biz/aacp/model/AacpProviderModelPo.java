@@ -10,6 +10,8 @@ import java.io.Serializable;
 @IdClass(AacpProviderModelPo.Pk.class)
 @Entity
 @Table(name = "aacp_provider_model", comment = "APM表")
+@AllArgsConstructor
+@NoArgsConstructor
 public class AacpProviderModelPo {
 
     @Id

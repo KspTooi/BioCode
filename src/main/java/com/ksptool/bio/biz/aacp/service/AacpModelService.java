@@ -3,6 +3,7 @@ package com.ksptool.bio.biz.aacp.service;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
+import com.ksptool.bio.biz.aacp.model.AacpProviderModelPo;
 import com.ksptool.bio.biz.aacp.model.model.AacpModelPo;
 import com.ksptool.bio.biz.aacp.model.model.dto.AddModelDto;
 import com.ksptool.bio.biz.aacp.model.model.dto.EditModelDto;
@@ -10,6 +11,8 @@ import com.ksptool.bio.biz.aacp.model.model.dto.GetModelListDto;
 import com.ksptool.bio.biz.aacp.model.model.vo.GetModelDetailsVo;
 import com.ksptool.bio.biz.aacp.model.model.vo.GetModelListVo;
 import com.ksptool.bio.biz.aacp.repository.ModelRepository;
+import com.ksptool.bio.biz.aacp.repository.ProviderModelRepository;
+import com.ksptool.bio.biz.core.common.IdsDiff;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -26,6 +29,9 @@ public class AacpModelService {
 
     @Autowired
     private ModelRepository repository;
+
+    @Autowired
+    private ProviderModelRepository apmRepository;
 
     /**
      * 查询模型变体列表
@@ -55,6 +61,13 @@ public class AacpModelService {
     public void addModel(AddModelDto dto) {
         AacpModelPo insertPo = as(dto, AacpModelPo.class);
         repository.save(insertPo);
+
+        var pids = dto.getProviderIds();
+        if (pids != null && !pids.isEmpty()) {
+            var pos = pids.stream()
+                    .map(pid -> new AacpProviderModelPo(pid, insertPo.getId())).toList();
+            apmRepository.saveAll(pos);
+        }
     }
 
     /**
@@ -70,6 +83,19 @@ public class AacpModelService {
 
         assign(dto, updatePo);
         repository.save(updatePo);
+
+        List<Long> existIds = apmRepository.getProviderIdsByModelId(dto.getId());
+        var idsDiff = new IdsDiff(existIds, dto.getProviderIds());
+
+        if (idsDiff.hasAdd()) {
+            var toAdd = idsDiff.getAddIds().stream()
+                    .map(pid -> new AacpProviderModelPo(pid, dto.getId())).toList();
+            apmRepository.saveAll(toAdd);
+        }
+
+        if (idsDiff.hasRemove()) {
+            apmRepository.removeByModelIdAndProviderIds(dto.getId(), idsDiff.getRemoveIds());
+        }
     }
 
     /**
@@ -82,7 +108,9 @@ public class AacpModelService {
     public GetModelDetailsVo getModelDetails(CommonIdDto dto) throws BizException {
         AacpModelPo po = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("查询详情失败,数据不存在或无权限访问."));
-        return as(po, GetModelDetailsVo.class);
+        GetModelDetailsVo vo = as(po, GetModelDetailsVo.class);
+        vo.setProviderIds(apmRepository.getProviderIdsByModelId(dto.getId()));
+        return vo;
     }
 
     /**
@@ -97,6 +125,7 @@ public class AacpModelService {
             repository.deleteAllById(dto.getIds());
             return;
         }
+        apmRepository.removeByModelId(dto.getId());
         repository.deleteById(dto.getId());
     }
 

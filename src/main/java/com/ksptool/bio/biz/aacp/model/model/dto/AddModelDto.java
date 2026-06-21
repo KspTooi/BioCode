@@ -12,6 +12,7 @@ import org.hibernate.validator.constraints.Range;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -85,6 +86,9 @@ public class AddModelDto implements DtoCustomValidator {
     @Range(min = 0, max = 1, message = "状态值无效，0:禁用 1:启用")
     @Schema(description = "状态 0:禁用 1:启用")
     private Integer status;
+
+    @Schema(description = "绑定的供应商ID列表")
+    private List<Long> providerIds;
 
     @Override
     public String validate() {

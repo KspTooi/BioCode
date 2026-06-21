@@ -57,4 +57,7 @@ public class GetModelDetailsVo {
     @Schema(description="状态 0:禁用 1:启用")
     private Integer status;
 
+    @Schema(description = "绑定的供应商ID列表")
+    private List<Long> providerIds;
+
 }
