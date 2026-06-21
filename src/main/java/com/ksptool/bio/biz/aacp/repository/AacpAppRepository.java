@@ -21,4 +21,17 @@ public interface AacpAppRepository extends JpaRepository<AacpAppPo, Long> {
             ORDER BY u.createTime DESC
             """)
     Page<AacpAppPo> getAacpAppList(@Param("po") AacpAppPo po, Pageable pageable);
+
+    /**
+     * 查询应用代码总数(排除指定ID)
+     *
+     * @param code 应用代码
+     * @param id 需排除的ID 为空时不排除
+     * @return 总数
+     */
+    @Query("""
+            SELECT COUNT(u) FROM AacpAppPo u
+            WHERE u.code = :code AND (:id IS NULL OR u.id != :id)
+            """)
+    int countAppByCodeExcludeId(@Param("code") String code, @Param("id") Long id);
 }

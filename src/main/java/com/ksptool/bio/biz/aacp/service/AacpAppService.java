@@ -53,7 +53,12 @@ public class AacpAppService {
      * @param dto 新增条件
      */
     @Transactional(rollbackFor = Exception.class)
-    public void addAacpApp(AddAacpAppDto dto) {
+    public void addAacpApp(AddAacpAppDto dto) throws BizException {
+
+        if(repository.countAppByCodeExcludeId(dto.getCode(), null) > 0){
+            throw new BizException("应用代码已被占用,请重新输入");
+        }
+
         AacpAppPo insertPo = as(dto, AacpAppPo.class);
         insertPo.setAppKey(UUID.randomUUID().toString());
         repository.save(insertPo);
@@ -69,6 +74,10 @@ public class AacpAppService {
     public void editAacpApp(EditAacpAppDto dto) throws BizException {
         AacpAppPo updatePo = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("更新失败,数据不存在或无权限访问."));
+
+        if(repository.countAppByCodeExcludeId(dto.getCode(), dto.getId()) > 0){
+            throw new BizException("应用代码已被占用,请重新输入");
+        }
 
         assign(dto, updatePo);
         repository.save(updatePo);
