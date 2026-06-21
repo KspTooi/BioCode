@@ -12,6 +12,11 @@ import java.io.Serializable;
 @Table(name = "aacp_app_model", comment = "AAM表")
 public class AacpAppModelPo {
 
+    public AacpAppModelPo(Long aid, Long mid) {
+        this.appId = aid;
+        this.modelId = mid;
+    }
+
     @Id
     @Column(name = "app_id", nullable = false, comment = "AID")
     private Long appId;

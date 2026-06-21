@@ -3,6 +3,7 @@ package com.ksptool.bio.biz.aacp.service;
 import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.CommonIdDto;
 import com.ksptool.assembly.entity.web.PageResult;
+import com.ksptool.bio.biz.aacp.model.AacpAppModelPo;
 import com.ksptool.bio.biz.aacp.model.aacpapp.AacpAppPo;
 import com.ksptool.bio.biz.aacp.model.aacpapp.dto.AddAacpAppDto;
 import com.ksptool.bio.biz.aacp.model.aacpapp.dto.EditAacpAppDto;
@@ -10,6 +11,8 @@ import com.ksptool.bio.biz.aacp.model.aacpapp.dto.GetAacpAppListDto;
 import com.ksptool.bio.biz.aacp.model.aacpapp.vo.GetAacpAppDetailsVo;
 import com.ksptool.bio.biz.aacp.model.aacpapp.vo.GetAacpAppListVo;
 import com.ksptool.bio.biz.aacp.repository.AacpAppRepository;
+import com.ksptool.bio.biz.aacp.repository.AppModelRepository;
+import com.ksptool.bio.biz.core.common.IdsDiff;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -27,6 +30,9 @@ public class AacpAppService {
 
     @Autowired
     private AacpAppRepository repository;
+
+    @Autowired
+    private AppModelRepository aamRepository;
 
     /**
      * 查询AACP应用列表
@@ -62,6 +68,13 @@ public class AacpAppService {
         AacpAppPo insertPo = as(dto, AacpAppPo.class);
         insertPo.setAppKey(UUID.randomUUID().toString());
         repository.save(insertPo);
+
+        var mids = dto.getModelIds();
+        if (mids != null && !mids.isEmpty()) {
+            var pos = mids.stream()
+                    .map(mid -> new AacpAppModelPo(insertPo.getId(), mid)).toList();
+            aamRepository.saveAll(pos);
+        }
     }
 
     /**
@@ -81,6 +94,19 @@ public class AacpAppService {
 
         assign(dto, updatePo);
         repository.save(updatePo);
+
+        List<Long> existIds = aamRepository.getModelIdsByAppId(dto.getId());
+        var idsDiff = new IdsDiff(existIds, dto.getModelIds());
+
+        if (idsDiff.hasAdd()) {
+            var toAdd = idsDiff.getAddIds().stream()
+                    .map(mid -> new AacpAppModelPo(dto.getId(), mid)).toList();
+            aamRepository.saveAll(toAdd);
+        }
+
+        if (idsDiff.hasRemove()) {
+            aamRepository.removeByAppIdAndModelIds(dto.getId(), idsDiff.getRemoveIds());
+        }
     }
 
     /**
@@ -93,7 +119,9 @@ public class AacpAppService {
     public GetAacpAppDetailsVo getAacpAppDetails(CommonIdDto dto) throws BizException {
         AacpAppPo po = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("查询详情失败,数据不存在或无权限访问."));
-        return as(po, GetAacpAppDetailsVo.class);
+        GetAacpAppDetailsVo vo = as(po, GetAacpAppDetailsVo.class);
+        vo.setModelIds(aamRepository.getModelIdsByAppId(dto.getId()));
+        return vo;
     }
 
     /**
@@ -108,6 +136,7 @@ public class AacpAppService {
             repository.deleteAllById(dto.getIds());
             return;
         }
+        aamRepository.removeByAppId(dto.getId());
         repository.deleteById(dto.getId());
     }
 

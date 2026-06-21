@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -33,4 +34,7 @@ public class GetAacpAppDetailsVo {
 
     @Schema(description = "状态 0:禁用 1:启用")
     private Integer status;
+
+    @Schema(description = "绑定的模型变体ID列表")
+    private List<Long> modelIds;
 }
