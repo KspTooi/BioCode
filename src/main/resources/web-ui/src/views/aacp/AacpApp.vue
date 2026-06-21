@@ -111,16 +111,7 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="IP白名单" prop="ips" v-if="modalForm.isPublic === 0">
-          <el-select
-            v-model="modalForm.ips"
-            multiple
-            allow-create
-            filterable
-            clearable
-            placeholder="输入IP后回车添加"
-            style="width: 100%"
-            :disabled="modalMode === 'view'"
-          />
+          <el-input-tag v-model="modalForm.ips" placeholder="输入IP后回车添加" :disabled="modalMode === 'view'" style="width: 100%" />
         </el-form-item>
         <el-form-item label="备注" prop="remark">
           <el-input
