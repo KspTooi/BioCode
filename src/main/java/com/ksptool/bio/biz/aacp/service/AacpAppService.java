@@ -61,7 +61,7 @@ public class AacpAppService {
     @Transactional(rollbackFor = Exception.class)
     public void addAacpApp(AddAacpAppDto dto) throws BizException {
 
-        if(repository.countAppByCodeExcludeId(dto.getCode(), null) > 0){
+        if (repository.countAppByCodeExcludeId(dto.getCode(), null) > 0) {
             throw new BizException("应用代码已被占用,请重新输入");
         }
 
@@ -88,14 +88,14 @@ public class AacpAppService {
         AacpAppPo updatePo = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("更新失败,数据不存在或无权限访问."));
 
-        if(repository.countAppByCodeExcludeId(dto.getCode(), dto.getId()) > 0){
+        if (repository.countAppByCodeExcludeId(dto.getCode(), dto.getId()) > 0) {
             throw new BizException("应用代码已被占用,请重新输入");
         }
 
         assign(dto, updatePo);
         repository.save(updatePo);
 
-        List<Long> existIds = aamRepository.getModelIdsByAppId(dto.getId());
+        List<Long> existIds = aamRepository.getMIdsByAId(dto.getId());
         var idsDiff = new IdsDiff(existIds, dto.getModelIds());
 
         if (idsDiff.hasAdd()) {
@@ -105,7 +105,7 @@ public class AacpAppService {
         }
 
         if (idsDiff.hasRemove()) {
-            aamRepository.removeByAppIdAndModelIds(dto.getId(), idsDiff.getRemoveIds());
+            aamRepository.removeByAIdAndMIds(dto.getId(), idsDiff.getRemoveIds());
         }
     }
 
@@ -120,7 +120,7 @@ public class AacpAppService {
         AacpAppPo po = repository.findById(dto.getId())
                 .orElseThrow(() -> new BizException("查询详情失败,数据不存在或无权限访问."));
         GetAacpAppDetailsVo vo = as(po, GetAacpAppDetailsVo.class);
-        vo.setModelIds(aamRepository.getModelIdsByAppId(dto.getId()));
+        vo.setModelIds(aamRepository.getMIdsByAId(dto.getId()));
         return vo;
     }
 
@@ -136,7 +136,7 @@ public class AacpAppService {
             repository.deleteAllById(dto.getIds());
             return;
         }
-        aamRepository.removeByAppId(dto.getId());
+        aamRepository.removeByAId(dto.getId());
         repository.deleteById(dto.getId());
     }
 

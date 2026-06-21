@@ -18,7 +18,7 @@ public interface AppModelRepository extends JpaRepository<AacpAppModelPo, AacpAp
     @Query("""
             SELECT u.modelId FROM AacpAppModelPo u WHERE u.appId = :appId
             """)
-    List<Long> getModelIdsByAppId(@Param("appId") Long appId);
+    List<Long> getMIdsByAId(@Param("appId") Long appId);
 
     /**
      * 根据应用ID和模型变体ID列表删除关联
@@ -27,7 +27,7 @@ public interface AppModelRepository extends JpaRepository<AacpAppModelPo, AacpAp
     @Query("""
             DELETE FROM AacpAppModelPo u WHERE u.appId = :appId AND u.modelId IN :modelIds
             """)
-    void removeByAppIdAndModelIds(@Param("appId") Long appId, @Param("modelIds") List<Long> modelIds);
+    void removeByAIdAndMIds(@Param("appId") Long appId, @Param("modelIds") List<Long> modelIds);
 
     /**
      * 根据应用ID删除所有关联
@@ -36,5 +36,5 @@ public interface AppModelRepository extends JpaRepository<AacpAppModelPo, AacpAp
     @Query("""
             DELETE FROM AacpAppModelPo u WHERE u.appId = :appId
             """)
-    void removeByAppId(@Param("appId") Long appId);
+    void removeByAId(@Param("appId") Long appId);
 }
