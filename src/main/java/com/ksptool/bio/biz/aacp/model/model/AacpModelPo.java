@@ -18,6 +18,11 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 import java.math.BigDecimal;
 
+/**
+ * AACP模型变体实体类
+ * @author KspTooi
+ * @since 1.7.8(H).2
+ */
 @Getter
 @Setter
 @Entity

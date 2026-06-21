@@ -24,6 +24,11 @@ import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
 
 
+/**
+ * AACP模型变体服务类
+ * @author KspTooi
+ * @since 1.7.8(H).2
+ */
 @Service
 public class AacpModelService {
 

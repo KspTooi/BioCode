@@ -5,6 +5,11 @@ import lombok.*;
 
 import java.io.Serializable;
 
+/**
+ * APM关联类
+ * @author KspTooi
+ * @since 1.7.8(H).2
+ */
 @Getter
 @Setter
 @IdClass(AacpProviderModelPo.Pk.class)

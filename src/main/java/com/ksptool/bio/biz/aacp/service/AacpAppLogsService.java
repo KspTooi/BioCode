@@ -18,7 +18,11 @@ import java.util.List;
 import static com.ksptool.entities.Entities.as;
 import static com.ksptool.entities.Entities.assign;
 
-
+/**
+ * AACP模型调用记录服务类
+ * @author KspTooi
+ * @since 1.7.8(H).2
+ */
 @Service
 public class AacpAppLogsService {
 

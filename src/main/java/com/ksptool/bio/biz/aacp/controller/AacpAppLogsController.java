@@ -19,6 +19,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * AACP模型调用记录控制器
+ * @author KspTooi
+ * @since 1.7.8(H).2
+ */
 @PrintLog
 @RestController
 @RequestMapping("/appLogs")
