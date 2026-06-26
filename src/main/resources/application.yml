@@ -22,15 +22,15 @@ spring:
     #username: root
     #password: root
 
-    #driver-class-name: com.mysql.cj.jdbc.Driver
-    #url: jdbc:mysql://192.168.10.202:3306/biocode_standard?serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&allowMultiQueries=true&useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&
-    #username: root
-    #password: root
-
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/bio_code?serverTimezone=Asia/Shanghai&allowMultiQueries=true&useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://192.168.10.202:3306/biocode_standard?serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true&allowMultiQueries=true&useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&
     username: root
     password: root
+
+    #driver-class-name: com.mysql.cj.jdbc.Driver
+    #url: jdbc:mysql://127.0.0.1:3306/bio_code?serverTimezone=Asia/Shanghai&allowMultiQueries=true&useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    #username: root
+    #password: root
 
     #driver-class-name: org.h2.Driver
     #url: jdbc:h2:tcp://127.0.0.1:59000/./EndpointAnalysisService
@@ -56,7 +56,7 @@ spring:
         format_sql: false
         use_jdbc_metadata_defaults: false
     database-platform: org.hibernate.dialect.MySQLDialect
-    open-in-view: true
+    open-in-view: false
 
   main:
     lazy-initialization: true
