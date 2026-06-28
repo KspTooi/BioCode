@@ -89,6 +89,7 @@ public class AttachPoolService {
             AttachPoolPo insertPo = new AttachPoolPo();
             insertPo.setPoolPath(poolRoot.toString());
             insertPo.setPoolCapacityBytes(0L);
+            insertPo.setPoolUsageBytes(0L);
             insertPo.setPoolAttachesBytes(0L);
             insertPo.setIndexedCount(0);
             insertPo.setDriftCount(0);
@@ -128,10 +129,16 @@ public class AttachPoolService {
             }
 
             long poolCapacityBytes = poolRoot.toFile().getTotalSpace();
+            long poolAvailableBytes = poolRoot.toFile().getUsableSpace();
+            long poolUsageBytes = poolCapacityBytes - poolAvailableBytes;
+            if (poolUsageBytes < 0) {
+                poolUsageBytes = 0;
+            }
 
             AttachPoolPo updatePo = attachPoolRepository.findById(recordId)
                     .orElseThrow(() -> new BizException("扫描记录不存在"));
             updatePo.setPoolCapacityBytes(poolCapacityBytes);
+            updatePo.setPoolUsageBytes(poolUsageBytes);
             updatePo.setPoolAttachesBytes(totalBytes.get());
             updatePo.setIndexedCount((int) indexedCount);
             updatePo.setDriftCount((int) driftCount);
@@ -139,8 +146,8 @@ public class AttachPoolService {
             updatePo.setScanStatus(1);
             attachPoolRepository.save(updatePo);
 
-            log.info("附件池扫描完成。文件总数:{} 已索引:{} 游离:{} 总字节:{} 磁盘容量:{}",
-                    fileCount.get(), indexedCount, driftCount, totalBytes.get(), poolCapacityBytes);
+            log.info("附件池扫描完成。文件总数:{} 已索引:{} 游离:{} 附件字节:{} 磁盘已用:{} 磁盘容量:{}",
+                    fileCount.get(), indexedCount, driftCount, totalBytes.get(), poolUsageBytes, poolCapacityBytes);
 
         } catch (IOException e) {
             log.error("附件池扫描异常", e);

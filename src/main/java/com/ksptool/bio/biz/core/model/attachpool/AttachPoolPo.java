@@ -39,6 +39,9 @@ public class AttachPoolPo extends RowScopeRootOnlyPo {
     @Column(name = "pool_capacity_bytes", nullable = false, comment = "总可用字节")
     private Long poolCapacityBytes;
 
+    @Column(name = "pool_usage_bytes", nullable = false, comment = "总已用字节")
+    private Long poolUsageBytes;
+
     @Column(name = "pool_attaches_bytes", comment = "附件占用字节")
     private Long poolAttachesBytes;
 

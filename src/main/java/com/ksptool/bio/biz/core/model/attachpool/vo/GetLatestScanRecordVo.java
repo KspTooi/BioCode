@@ -16,6 +16,9 @@ public class GetLatestScanRecordVo {
     @Schema(description = "总可用字节")
     private Long poolCapacityBytes;
 
+    @Schema(description = "总已用字节")
+    private Long poolUsageBytes;
+
     @Schema(description = "附件占用字节")
     private Long poolAttachesBytes;
 
