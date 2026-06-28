@@ -4,7 +4,7 @@ import type { GetLatestScanRecordVo, GetRebuildIndexStatusVo } from "@/views/cor
 import AttachPoolApi from "@/views/core/api/AttachPoolApi";
 import QueryPersistService from "@/commons/service/QueryPersistService.ts";
 
-type StatExplainKind = "indexed" | "drift";
+type StatExplainKind = "indexed" | "indexedLost" | "drift";
 
 export default {
   /**
@@ -16,7 +16,8 @@ export default {
     const scanning = ref(false);
     const statExplainVisible = ref(false);
     const statExplainTitle = ref("");
-    const statExplainText = ref("");
+    const statExplainIntro = ref("");
+    const statExplainTip = ref("");
     const tabState = ref({ activeTab: "overview" });
     const rebuildStatus = ref<GetRebuildIndexStatusVo | null>(null);
     const rebuildStarting = ref(false);
@@ -35,14 +36,20 @@ export default {
      * 打开指标说明模态框
      */
     const openStatExplain = (kind: StatExplainKind): void => {
+      statExplainTip.value = "";
       if (kind === "indexed") {
         statExplainTitle.value = "已索引附件";
-        statExplainText.value =
+        statExplainIntro.value =
           "已在系统中登记且状态有效的附件。这类附件拥有完整的索引记录，可被业务正常引用、检索和访问。";
+      }
+      if (kind === "indexedLost") {
+        statExplainTitle.value = "失效索引";
+        statExplainIntro.value = "数据库中有索引记录，但附件池目录中已找不到对应的物理文件。";
+        statExplainTip.value = "可将内容完全一致（SHA256 相同）的文件复制进附件池，再通过「重建索引」修复。";
       }
       if (kind === "drift") {
         statExplainTitle.value = "游离附件";
-        statExplainText.value =
+        statExplainIntro.value =
           "存在于附件池目录中、但系统中没有对应有效索引记录的文件。这类文件无法被业务正常引用，通常由上传中断、索引丢失或历史残留产生，建议定期扫描并人工排查清理。";
       }
       statExplainVisible.value = true;
@@ -394,7 +401,8 @@ export default {
       rebuildProgressPercent,
       statExplainVisible,
       statExplainTitle,
-      statExplainText,
+      statExplainIntro,
+      statExplainTip,
       loadRecord,
       onQuickScan,
       onDeepScan,

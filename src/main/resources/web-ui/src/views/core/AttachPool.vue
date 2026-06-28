@@ -27,6 +27,15 @@
                   </div>
                   <div class="stat-value">{{ record.indexedCount ?? 0 }}</div>
                 </div>
+                <div class="stat-item stat-item-clickable" @click="openStatExplain('indexedLost')">
+                  <div class="title-with-icon stat-label">
+                    <el-icon><CircleClose /></el-icon>
+                    失效索引
+                  </div>
+                  <div class="stat-value" :class="{ 'stat-warn': (record.indexedLostCount ?? 0) > 0 }">
+                    {{ record.indexedLostCount ?? 0 }}
+                  </div>
+                </div>
                 <div class="stat-item stat-item-clickable" @click="openStatExplain('drift')">
                   <div class="title-with-icon stat-label">
                     <el-icon><Warning /></el-icon>
@@ -151,7 +160,13 @@
     </el-tabs>
 
     <el-dialog v-model="statExplainVisible" :title="statExplainTitle" width="520px" @close="closeStatExplain">
-      <p class="stat-explain-text">{{ statExplainText }}</p>
+      <div class="stat-explain-body">
+        <p class="stat-explain-text">{{ statExplainIntro }}</p>
+        <div v-if="statExplainTip" class="stat-explain-tip">
+          <span class="stat-explain-tip-label">修复方式</span>
+          <p class="stat-explain-tip-text">{{ statExplainTip }}</p>
+        </div>
+      </div>
       <template #footer>
         <el-button type="primary" @click="closeStatExplain">知道了</el-button>
       </template>
@@ -166,7 +181,7 @@ import { CanvasRenderer } from "echarts/renderers";
 import { BarChart } from "echarts/charts";
 import { GridComponent, TooltipComponent, LegendComponent } from "echarts/components";
 import VChart, { THEME_KEY } from "vue-echarts";
-import { CircleCheck, Coin, DataLine, Delete, FolderOpened, PieChart, RefreshRight, Warning } from "@element-plus/icons-vue";
+import { CircleCheck, CircleClose, Coin, DataLine, Delete, FolderOpened, PieChart, RefreshRight, Warning } from "@element-plus/icons-vue";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
 import AttachPoolDetails from "@/views/core/components/AttachPoolDetails.vue";
 import AttachPoolService from "@/views/core/service/AttachPoolService.ts";
@@ -182,7 +197,8 @@ const {
   scanning,
   statExplainVisible,
   statExplainTitle,
-  statExplainText,
+  statExplainIntro,
+  statExplainTip,
   loadRecord,
   onQuickScan,
   onDeepScan,
@@ -272,7 +288,7 @@ const {
 
 .stat-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 16px;
 }
 
@@ -350,9 +366,36 @@ const {
   border-radius: 0 !important;
 }
 
+.stat-explain-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .stat-explain-text {
   margin: 0;
   font-size: 14px;
+  line-height: 1.7;
+  color: var(--el-text-color-regular);
+}
+
+.stat-explain-tip {
+  padding: 10px 12px;
+  background-color: #f0f7ff;
+  border: 1px solid var(--el-color-primary-light-7);
+}
+
+.stat-explain-tip-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--el-color-primary);
+}
+
+.stat-explain-tip-text {
+  margin: 0;
+  font-size: 13px;
   line-height: 1.7;
   color: var(--el-text-color-regular);
 }

@@ -12,6 +12,7 @@ export interface GetLatestScanRecordVo {
   poolUsageBytes: string; // 总已用字节
   poolAttachesBytes: string; // 附件占用字节
   indexedCount: number; // 已索引附件数
+  indexedLostCount: number; // 失效索引数
   driftCount: number; // 游离附件数
   scanStartTime: string; // 扫描开始时间
   scanEndTime: string; // 扫描结束时间
