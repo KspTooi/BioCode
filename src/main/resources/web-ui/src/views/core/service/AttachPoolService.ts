@@ -72,7 +72,7 @@ export default {
     };
 
     /**
-     * 快速扫描附件池
+     * 更新统计数据
      */
     const onQuickScan = async (): Promise<void> => {
       if (scanning.value) {
@@ -80,8 +80,8 @@ export default {
       }
       try {
         await ElMessageBox.confirm(
-          "快速扫描将统计附件池目录文件数量与磁盘占用，不校验已索引附件是否仍存在于磁盘，是否继续？",
-          "快速扫描",
+          "将统计附件池目录文件数量与磁盘占用，不校验已索引附件是否仍存在于磁盘，是否继续？",
+          "更新统计数据",
           {
             confirmButtonText: "确定",
             cancelButtonText: "取消",
@@ -94,7 +94,7 @@ export default {
       scanning.value = true;
       try {
         await AttachPoolApi.scanAttachPool({ scanMode: 0 });
-        ElMessage.success("扫描完成");
+        ElMessage.success("统计数据已更新");
         await loadRecord();
       } catch (error: any) {
         ElMessage.error(error.message);
@@ -104,7 +104,7 @@ export default {
     };
 
     /**
-     * 深度扫描附件池
+     * 检查索引完整性
      */
     const onDeepScan = async (): Promise<void> => {
       if (scanning.value) {
@@ -112,8 +112,8 @@ export default {
       }
       try {
         await ElMessageBox.confirm(
-          "深度扫描将遍历附件池并校验已索引附件是否仍存在于磁盘，耗时较长，是否继续？",
-          "深度扫描",
+          "将遍历附件池并校验已索引附件是否仍存在于磁盘，耗时较长，是否继续？",
+          "检查索引完整性",
           {
             confirmButtonText: "确定",
             cancelButtonText: "取消",
@@ -126,7 +126,7 @@ export default {
       scanning.value = true;
       try {
         await AttachPoolApi.scanAttachPool({ scanMode: 1 });
-        ElMessage.success("扫描完成");
+        ElMessage.success("索引完整性检查完成");
         await loadRecord();
       } catch (error: any) {
         ElMessage.error(error.message);
