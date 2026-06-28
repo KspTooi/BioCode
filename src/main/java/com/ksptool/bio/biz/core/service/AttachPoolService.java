@@ -13,13 +13,13 @@ import com.ksptool.bio.biz.core.repository.AttachRepository;
 import com.ksptool.bio.commons.config.AttachConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -83,7 +83,8 @@ public class AttachPoolService {
     private AttachService attachService;
 
     @Autowired
-    private TransactionTemplate transactionTemplate;
+    @Lazy
+    private AttachPoolService self;
 
     /**
      * 查询最新的附件池扫描记录
@@ -203,7 +204,9 @@ public class AttachPoolService {
             log.error("附件池快速扫描异常", e);
             throw new BizException("附件池扫描失败: " + e.getMessage());
         } finally {
-            scanLock.unlock();
+            if (scanLock.isHeldByCurrentThread()) {
+                scanLock.unlock();
+            }
         }
     }
 
@@ -242,82 +245,12 @@ public class AttachPoolService {
 
             log.info("附件池索引完整性校验完成。校验总数:{} 仍存磁盘:{} 已丢失:{}", checkedCount, existingCount, missingCount);
 
-            AttachPoolPo latest = attachPoolRepository.getLatestScanRecord();
+            quickScanAttachPool();
 
-            if (latest != null && latest.getScanStatus() == 0) {
-                log.warn("检测到前次扫描未完成(scanStatus=0, id={})，锁已释放，判断为前次扫描异常中止，将创建新的扫描记录", latest.getId());
-            }
-
-            Path poolRoot = resolvePoolRoot();
-
-            AttachPoolPo insertPo = new AttachPoolPo();
-            insertPo.setPoolPath(poolRoot.toString());
-            insertPo.setPoolCapacityBytes(0L);
-            insertPo.setPoolUsageBytes(0L);
-            insertPo.setPoolAttachesBytes(0L);
-            insertPo.setIndexedCount(0);
-            insertPo.setDriftCount(0);
-            insertPo.setScanStartTime(LocalDateTime.now());
-            insertPo.setScanStatus(0);
-            attachPoolRepository.save(insertPo);
-            long recordId = insertPo.getId();
-
-            if (!Files.exists(poolRoot)) {
-                log.warn("附件池目录不存在，将创建空目录: {}", poolRoot);
-                Files.createDirectories(poolRoot);
-            }
-
-            AtomicLong fileCount = new AtomicLong(0);
-            AtomicLong totalBytes = new AtomicLong(0);
-            Files.walkFileTree(poolRoot, new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                    if (attrs.isRegularFile()) {
-                        fileCount.incrementAndGet();
-                        totalBytes.addAndGet(attrs.size());
-                    }
-                    return FileVisitResult.CONTINUE;
-                }
-
-                @Override
-                public FileVisitResult visitFileFailed(Path file, IOException exc) {
-                    log.warn("无法访问文件: {} - {}", file, exc.getMessage());
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-
-            long indexedCount = attachRepository.countValidAttaches();
-            long driftCount = fileCount.get() - indexedCount;
-            if (driftCount < 0) {
-                driftCount = 0;
-            }
-
-            long poolCapacityBytes = poolRoot.toFile().getTotalSpace();
-            long poolAvailableBytes = poolRoot.toFile().getUsableSpace();
-            long poolUsageBytes = poolCapacityBytes - poolAvailableBytes;
-            if (poolUsageBytes < 0) {
-                poolUsageBytes = 0;
-            }
-
-            AttachPoolPo updatePo = attachPoolRepository.findById(recordId)
-                    .orElseThrow(() -> new BizException("扫描记录不存在"));
-            updatePo.setPoolCapacityBytes(poolCapacityBytes);
-            updatePo.setPoolUsageBytes(poolUsageBytes);
-            updatePo.setPoolAttachesBytes(totalBytes.get());
-            updatePo.setIndexedCount((int) indexedCount);
-            updatePo.setDriftCount((int) driftCount);
-            updatePo.setScanEndTime(LocalDateTime.now());
-            updatePo.setScanStatus(1);
-            attachPoolRepository.save(updatePo);
-
-            log.info("附件池快速扫描完成。文件总数:{} 已索引:{} 游离:{} 附件字节:{} 附件池已用:{} 附件池容量:{}",
-                    fileCount.get(), indexedCount, driftCount, totalBytes.get(), poolUsageBytes, poolCapacityBytes);
-
-        } catch (IOException e) {
-            log.error("附件池深度扫描异常", e);
-            throw new BizException("附件池扫描失败: " + e.getMessage());
         } finally {
-            scanLock.unlock();
+            if (scanLock.isHeldByCurrentThread()) {
+                scanLock.unlock();
+            }
         }
     }
 
@@ -439,84 +372,11 @@ public class AttachPoolService {
                     }
                 }
 
-                if (!Files.exists(poolRoot)) {
-                    log.warn("附件池目录不存在，将创建空目录: {}", poolRoot);
-                    Files.createDirectories(poolRoot);
-                }
-
-                AtomicLong fileCount = new AtomicLong(0);
-                AtomicLong totalBytes = new AtomicLong(0);
-                Files.walkFileTree(poolRoot, new SimpleFileVisitor<Path>() {
-                    @Override
-                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                        if (attrs.isRegularFile()) {
-                            fileCount.incrementAndGet();
-                            totalBytes.addAndGet(attrs.size());
-                        }
-                        return FileVisitResult.CONTINUE;
-                    }
-
-                    @Override
-                    public FileVisitResult visitFileFailed(Path file, IOException exc) {
-                        log.warn("无法访问文件: {} - {}", file, exc.getMessage());
-                        return FileVisitResult.CONTINUE;
-                    }
-                });
-
-                long indexedCount = attachRepository.countValidAttaches();
-                long driftCount = fileCount.get() - indexedCount;
-                if (driftCount < 0) {
-                    driftCount = 0;
-                }
-
-                long poolCapacityBytes = poolRoot.toFile().getTotalSpace();
-                long poolAvailableBytes = poolRoot.toFile().getUsableSpace();
-                long poolUsageBytes = poolCapacityBytes - poolAvailableBytes;
-                if (poolUsageBytes < 0) {
-                    poolUsageBytes = 0;
-                }
-
-                long finalDriftCount = driftCount;
-                long finalPoolUsageBytes = poolUsageBytes;
-                transactionTemplate.executeWithoutResult(status -> {
-                    AttachPoolPo latest = attachPoolRepository.getLatestScanRecord();
-                    if (latest != null && latest.getScanStatus() == 0) {
-                        log.warn("检测到前次扫描未完成(scanStatus=0, id={})，锁已释放，判断为前次扫描异常中止，将创建新的扫描记录", latest.getId());
-                    }
-
-                    AttachPoolPo insertPo = new AttachPoolPo();
-                    insertPo.setPoolPath(poolRoot.toString());
-                    insertPo.setPoolCapacityBytes(0L);
-                    insertPo.setPoolUsageBytes(0L);
-                    insertPo.setPoolAttachesBytes(0L);
-                    insertPo.setIndexedCount(0);
-                    insertPo.setDriftCount(0);
-                    insertPo.setScanStartTime(LocalDateTime.now());
-                    insertPo.setScanStatus(0);
-                    attachPoolRepository.save(insertPo);
-                    long recordId = insertPo.getId();
-
-                    AttachPoolPo updatePo = attachPoolRepository.findById(recordId)
-                            .orElseThrow(() -> new IllegalStateException("扫描记录不存在"));
-                    updatePo.setPoolCapacityBytes(poolCapacityBytes);
-                    updatePo.setPoolUsageBytes(finalPoolUsageBytes);
-                    updatePo.setPoolAttachesBytes(totalBytes.get());
-                    updatePo.setIndexedCount((int) indexedCount);
-                    updatePo.setDriftCount((int) finalDriftCount);
-                    updatePo.setScanEndTime(LocalDateTime.now());
-                    updatePo.setScanStatus(1);
-                    attachPoolRepository.save(updatePo);
-                });
-
-                log.info("附件池快速扫描完成。文件总数:{} 已索引:{} 游离:{} 附件字节:{} 附件池已用:{} 附件池容量:{}",
-                        fileCount.get(), indexedCount, driftCount, totalBytes.get(), poolUsageBytes, poolCapacityBytes);
+                self.quickScanAttachPool();
 
                 rebuildMessage = String.format("重建索引完成。新建:%d 修复:%d 删除:%d 失败:%d",
                         rebuildImported.get(), rebuildRepaired.get(), rebuildDeleted.get(), rebuildFailed.get());
 
-            } catch (IOException e) {
-                log.error("重建索引异常", e);
-                rebuildMessage = "重建索引失败: " + e.getMessage();
             } catch (BizException e) {
                 log.error("重建索引异常", e);
                 rebuildMessage = "重建索引失败: " + e.getMessage();
@@ -579,84 +439,14 @@ public class AttachPoolService {
 
             log.info("清除无效索引完成，删除 {} 条", deletedCount);
 
-            AttachPoolPo latest = attachPoolRepository.getLatestScanRecord();
-
-            if (latest != null && latest.getScanStatus() == 0) {
-                log.warn("检测到前次扫描未完成(scanStatus=0, id={})，锁已释放，判断为前次扫描异常中止，将创建新的扫描记录", latest.getId());
-            }
-
-            Path poolRoot = resolvePoolRoot();
-
-            AttachPoolPo insertPo = new AttachPoolPo();
-            insertPo.setPoolPath(poolRoot.toString());
-            insertPo.setPoolCapacityBytes(0L);
-            insertPo.setPoolUsageBytes(0L);
-            insertPo.setPoolAttachesBytes(0L);
-            insertPo.setIndexedCount(0);
-            insertPo.setDriftCount(0);
-            insertPo.setScanStartTime(LocalDateTime.now());
-            insertPo.setScanStatus(0);
-            attachPoolRepository.save(insertPo);
-            long recordId = insertPo.getId();
-
-            if (!Files.exists(poolRoot)) {
-                log.warn("附件池目录不存在，将创建空目录: {}", poolRoot);
-                Files.createDirectories(poolRoot);
-            }
-
-            AtomicLong fileCount = new AtomicLong(0);
-            AtomicLong totalBytes = new AtomicLong(0);
-            Files.walkFileTree(poolRoot, new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                    if (attrs.isRegularFile()) {
-                        fileCount.incrementAndGet();
-                        totalBytes.addAndGet(attrs.size());
-                    }
-                    return FileVisitResult.CONTINUE;
-                }
-
-                @Override
-                public FileVisitResult visitFileFailed(Path file, IOException exc) {
-                    log.warn("无法访问文件: {} - {}", file, exc.getMessage());
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-
-            long indexedCount = attachRepository.countValidAttaches();
-            long driftCount = fileCount.get() - indexedCount;
-            if (driftCount < 0) {
-                driftCount = 0;
-            }
-
-            long poolCapacityBytes = poolRoot.toFile().getTotalSpace();
-            long poolAvailableBytes = poolRoot.toFile().getUsableSpace();
-            long poolUsageBytes = poolCapacityBytes - poolAvailableBytes;
-            if (poolUsageBytes < 0) {
-                poolUsageBytes = 0;
-            }
-
-            AttachPoolPo updatePo = attachPoolRepository.findById(recordId)
-                    .orElseThrow(() -> new BizException("扫描记录不存在"));
-            updatePo.setPoolCapacityBytes(poolCapacityBytes);
-            updatePo.setPoolUsageBytes(poolUsageBytes);
-            updatePo.setPoolAttachesBytes(totalBytes.get());
-            updatePo.setIndexedCount((int) indexedCount);
-            updatePo.setDriftCount((int) driftCount);
-            updatePo.setScanEndTime(LocalDateTime.now());
-            updatePo.setScanStatus(1);
-            attachPoolRepository.save(updatePo);
-
-            log.info("附件池快速扫描完成。文件总数:{} 已索引:{} 游离:{} 附件字节:{} 附件池已用:{} 附件池容量:{}",
-                    fileCount.get(), indexedCount, driftCount, totalBytes.get(), poolUsageBytes, poolCapacityBytes);
+            quickScanAttachPool();
 
             return String.format("已清除 %d 条无效索引", deletedCount);
 
-        } catch (IOException e) {
-            log.error("清除无效索引异常", e);
-            throw new BizException("清除无效索引失败: " + e.getMessage());
         } finally {
-            scanLock.unlock();
+            if (scanLock.isHeldByCurrentThread()) {
+                scanLock.unlock();
+            }
         }
     }
 
