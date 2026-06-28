@@ -4,7 +4,7 @@
   "avatar": "",
   "version": "4.9.4",
   "createdTime": "2025-5-31 18:54:43",
-  "updatedTime": "2026-6-29 02:12:14",
+  "updatedTime": "2026-6-29 03:57:42",
   "dbConns": [],
   "profile": {
     "default": {
@@ -39824,6 +39824,24 @@
           "extProps": {},
           "domain": "D209B1E4-22F0-448B-B944-33EC0844DDFC",
           "id": "F2B25E8C-880F-4E0C-836B-0A4FB91A68E7"
+        },
+        {
+          "defKey": "indexed_lost_count",
+          "defName": "失效索引数",
+          "comment": "",
+          "type": "",
+          "len": "",
+          "scale": "",
+          "primaryKey": false,
+          "notNull": true,
+          "autoIncrement": false,
+          "defaultValue": "",
+          "hideInGraph": false,
+          "refDict": "",
+          "baseType": "D6F266BC-0AF9-4E75-BD79-56B34FA0191F",
+          "extProps": {},
+          "domain": "D209B1E4-22F0-448B-B944-33EC0844DDFC",
+          "id": "F9B1D9F5-D78C-4AB8-81C9-F5DBB5AB9ED0"
         },
         {
           "defKey": "drift_count",
