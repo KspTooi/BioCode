@@ -15,6 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -336,7 +338,11 @@ public class AttachPoolService {
         rebuildRepaired.set(0);
         rebuildDeleted.set(0);
         rebuildFailed.set(0);
+        SecurityContext asyncSecurityContext = SecurityContextHolder.createEmptyContext();
+        asyncSecurityContext.setAuthentication(SecurityContextHolder.getContext().getAuthentication());
         CompletableFuture.runAsync(() -> {
+            SecurityContextHolder.setContext(asyncSecurityContext);
+            try {
             if (!scanLock.tryLock()) {
                 rebuildMessage = "附件池正在扫描中";
                 rebuildRunning = false;
@@ -523,6 +529,9 @@ public class AttachPoolService {
                 scanLock.unlock();
                 rebuildRunning = false;
                 rebuildEndTime = LocalDateTime.now();
+            }
+            } finally {
+                SecurityContextHolder.clearContext();
             }
         });
     }
