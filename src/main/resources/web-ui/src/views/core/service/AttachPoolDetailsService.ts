@@ -1,4 +1,4 @@
-import { onMounted, ref } from "vue";
+import { inject, onMounted, ref, watch, type Ref } from "vue";
 import { ElMessage } from "element-plus";
 import type { GetAttachListDto, GetAttachListVo } from "@/views/core/api/AttachPoolApi";
 import AttachPoolApi from "@/views/core/api/AttachPoolApi";
@@ -78,6 +78,20 @@ export default {
       QueryPersistService.loadQuery("attach-pool-details", listForm.value);
       await loadList();
     });
+
+    const activeTab = inject<Ref<string>>("attachPoolActiveTab");
+    watch(
+      () => activeTab?.value,
+      (tab, prev) => {
+        if (tab !== "details") {
+          return;
+        }
+        if (prev === undefined || prev === tab) {
+          return;
+        }
+        loadList();
+      },
+    );
 
     return {
       listForm,

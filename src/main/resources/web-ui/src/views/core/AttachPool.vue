@@ -215,6 +215,8 @@ const {
   formatBytes,
   diskUsageOption,
 } = AttachPoolService.useAttachPoolStatus();
+
+provide("attachPoolActiveTab", activeTab);
 </script>
 
 <style scoped>
