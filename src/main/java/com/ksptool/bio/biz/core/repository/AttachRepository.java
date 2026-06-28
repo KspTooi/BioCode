@@ -75,4 +75,17 @@ public interface AttachRepository extends JpaRepository<AttachPo, Long> {
             """)
     Page<AttachPo> getAttachList(@Param("po") AttachPo po, @Param("indexFilter") Integer indexFilter, Pageable pageable);
 
+    /**
+     * 分页查询有效附件列表
+     *
+     * @param pageable 分页条件
+     * @return 有效附件列表
+     */
+    @Query("""
+            SELECT t FROM AttachPo t
+            WHERE t.status = 3
+            ORDER BY t.id ASC
+            """)
+    Page<AttachPo> getValidAttachList(Pageable pageable);
+
 }

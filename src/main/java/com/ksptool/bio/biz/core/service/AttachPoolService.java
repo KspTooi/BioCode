@@ -13,6 +13,7 @@ import com.ksptool.bio.commons.config.AttachConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +36,8 @@ import static com.ksptool.entities.Entities.assign;
 @Service
 public class AttachPoolService {
 
+    private static final int DEEP_SCAN_PAGE_SIZE = 500;
+
     //扫描锁
     private final ReentrantLock scanLock = new ReentrantLock();
 
@@ -46,6 +49,9 @@ public class AttachPoolService {
 
     @Autowired
     private AttachRepository attachRepository;
+
+    @Autowired
+    private AttachService attachService;
 
     /**
      * 查询最新的附件池扫描记录
@@ -86,11 +92,9 @@ public class AttachPoolService {
      */
     @Transactional(rollbackFor = Exception.class)
     public void quickScanAttachPool() throws BizException {
-
         if (!scanLock.tryLock()) {
             throw new BizException("附件池正在扫描中，请稍后再试");
         }
-
         try {
             AttachPoolPo latest = attachPoolRepository.getLatestScanRecord();
 
@@ -98,17 +102,7 @@ public class AttachPoolService {
                 log.warn("检测到前次扫描未完成(scanStatus=0, id={})，锁已释放，判断为前次扫描异常中止，将创建新的扫描记录", latest.getId());
             }
 
-            String osName = System.getProperty("os.name").toLowerCase();
-            Path poolRoot = null;
-            if (osName.contains("win")) {
-                poolRoot = Paths.get(attachConfig.getLocalWindowsPath());
-            }
-            if (poolRoot == null && osName.contains("linux")) {
-                poolRoot = Paths.get(attachConfig.getLocalLinuxPath());
-            }
-            if (poolRoot == null) {
-                throw new BizException("不支持的操作系统: " + osName);
-            }
+            Path poolRoot = resolvePoolRoot();
 
             AttachPoolPo insertPo = new AttachPoolPo();
             insertPo.setPoolPath(poolRoot.toString());
@@ -182,10 +176,130 @@ public class AttachPoolService {
     }
 
     /**
-     * 深度扫描附件池。校验已索引附件是否仍存在于磁盘。
+     * 深度扫描附件池。校验已索引附件是否仍存在于磁盘，完成后更新统计数据。
      */
     @Transactional(rollbackFor = Exception.class)
     public void deepScanAttachPool() throws BizException {
-        throw new BizException("深度扫描尚未开放");
+        if (!scanLock.tryLock()) {
+            throw new BizException("附件池正在扫描中，请稍后再试");
+        }
+        try {
+            long checkedCount = 0;
+            long existingCount = 0;
+            long missingCount = 0;
+
+            while (true) {
+                Page<AttachPo> page = attachRepository.getValidAttachList(PageRequest.of(0, DEEP_SCAN_PAGE_SIZE));
+                if (page.isEmpty()) {
+                    break;
+                }
+
+                for (AttachPo attach : page.getContent()) {
+                    checkedCount++;
+                    Path absolutePath = attachService.getAttachLocalPath(Paths.get(attach.getPath()));
+                    if (!Files.exists(absolutePath)) {
+                        log.warn("索引完整性校验：物理文件不存在 ID:{} 路径:{}", attach.getId(), absolutePath);
+                        attach.setStatus(0);
+                        attachRepository.save(attach);
+                        missingCount++;
+                        continue;
+                    }
+                    existingCount++;
+                }
+            }
+
+            log.info("附件池索引完整性校验完成。校验总数:{} 仍存磁盘:{} 已丢失:{}", checkedCount, existingCount, missingCount);
+
+            AttachPoolPo latest = attachPoolRepository.getLatestScanRecord();
+
+            if (latest != null && latest.getScanStatus() == 0) {
+                log.warn("检测到前次扫描未完成(scanStatus=0, id={})，锁已释放，判断为前次扫描异常中止，将创建新的扫描记录", latest.getId());
+            }
+
+            Path poolRoot = resolvePoolRoot();
+
+            AttachPoolPo insertPo = new AttachPoolPo();
+            insertPo.setPoolPath(poolRoot.toString());
+            insertPo.setPoolCapacityBytes(0L);
+            insertPo.setPoolUsageBytes(0L);
+            insertPo.setPoolAttachesBytes(0L);
+            insertPo.setIndexedCount(0);
+            insertPo.setDriftCount(0);
+            insertPo.setScanStartTime(LocalDateTime.now());
+            insertPo.setScanStatus(0);
+            attachPoolRepository.save(insertPo);
+            long recordId = insertPo.getId();
+
+            if (!Files.exists(poolRoot)) {
+                log.warn("附件池目录不存在，将创建空目录: {}", poolRoot);
+                Files.createDirectories(poolRoot);
+            }
+
+            AtomicLong fileCount = new AtomicLong(0);
+            AtomicLong totalBytes = new AtomicLong(0);
+            Files.walkFileTree(poolRoot, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                    if (attrs.isRegularFile()) {
+                        fileCount.incrementAndGet();
+                        totalBytes.addAndGet(attrs.size());
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult visitFileFailed(Path file, IOException exc) {
+                    log.warn("无法访问文件: {} - {}", file, exc.getMessage());
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+
+            long indexedCount = attachRepository.countValidAttaches();
+            long driftCount = fileCount.get() - indexedCount;
+            if (driftCount < 0) {
+                driftCount = 0;
+            }
+
+            long poolCapacityBytes = poolRoot.toFile().getTotalSpace();
+            long poolAvailableBytes = poolRoot.toFile().getUsableSpace();
+            long poolUsageBytes = poolCapacityBytes - poolAvailableBytes;
+            if (poolUsageBytes < 0) {
+                poolUsageBytes = 0;
+            }
+
+            AttachPoolPo updatePo = attachPoolRepository.findById(recordId)
+                    .orElseThrow(() -> new BizException("扫描记录不存在"));
+            updatePo.setPoolCapacityBytes(poolCapacityBytes);
+            updatePo.setPoolUsageBytes(poolUsageBytes);
+            updatePo.setPoolAttachesBytes(totalBytes.get());
+            updatePo.setIndexedCount((int) indexedCount);
+            updatePo.setDriftCount((int) driftCount);
+            updatePo.setScanEndTime(LocalDateTime.now());
+            updatePo.setScanStatus(1);
+            attachPoolRepository.save(updatePo);
+
+            log.info("附件池快速扫描完成。文件总数:{} 已索引:{} 游离:{} 附件字节:{} 附件池已用:{} 附件池容量:{}",
+                    fileCount.get(), indexedCount, driftCount, totalBytes.get(), poolUsageBytes, poolCapacityBytes);
+
+        } catch (IOException e) {
+            log.error("附件池深度扫描异常", e);
+            throw new BizException("附件池扫描失败: " + e.getMessage());
+        } finally {
+            scanLock.unlock();
+        }
+    }
+
+    /**
+     * 解析当前操作系统的附件池根目录
+     */
+    private Path resolvePoolRoot() throws BizException {
+        String osName = System.getProperty("os.name").toLowerCase();
+        if (osName.contains("win")) {
+            return Paths.get(attachConfig.getLocalWindowsPath());
+        }
+        if (osName.contains("linux")) {
+            return Paths.get(attachConfig.getLocalLinuxPath());
+        }
+        throw new BizException("不支持的操作系统: " + osName);
     }
 }
