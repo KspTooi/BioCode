@@ -1,5 +1,5 @@
 <template>
-  <StdListContainer>
+  <div class="pool-details">
     <StdListAreaQuery>
       <el-form :model="listForm" inline class="flex justify-between">
         <div>
@@ -61,11 +61,10 @@
         <el-table-column prop="createTime" label="创建时间" min-width="160" show-overflow-tooltip />
       </el-table>
     </StdListAreaTable>
-  </StdListContainer>
+  </div>
 </template>
 
 <script setup lang="ts">
-import StdListContainer from "@/soa/std-series/StdListContainer.vue";
 import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
 import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
 import { AttachIndexFilterOptions } from "@/views/core/api/AttachPoolApi";
@@ -74,3 +73,14 @@ import AttachPoolDetailsService from "@/views/core/service/AttachPoolDetailsServ
 const { listForm, listData, listTotal, listLoading, loadList, resetList, formatBytes } =
   AttachPoolDetailsService.useAttachPoolDetailsList();
 </script>
+
+<style scoped>
+.pool-details {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+</style>
