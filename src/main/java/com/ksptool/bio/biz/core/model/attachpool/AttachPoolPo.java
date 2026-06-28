@@ -48,6 +48,9 @@ public class AttachPoolPo extends RowScopeRootOnlyPo {
     @Column(name = "indexed_count", nullable = false, comment = "已索引附件数")
     private Integer indexedCount;
 
+    @Column(name = "indexed_lost_count", nullable = false, comment = "失效索引数")
+    private Integer indexedLostCount;
+
     @Column(name = "drift_count", nullable = false, comment = "游离附件数")
     private Integer driftCount;
 

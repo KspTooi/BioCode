@@ -143,6 +143,7 @@ public class AttachPoolService {
             insertPo.setPoolUsageBytes(0L);
             insertPo.setPoolAttachesBytes(0L);
             insertPo.setIndexedCount(0);
+            insertPo.setIndexedLostCount(0);
             insertPo.setDriftCount(0);
             insertPo.setScanStartTime(LocalDateTime.now());
             insertPo.setScanStatus(0);
@@ -174,6 +175,7 @@ public class AttachPoolService {
             });
 
             long indexedCount = attachRepository.countValidAttaches();
+            long indexedLostCount = attachRepository.countIndexedLost();
             long driftCount = fileCount.get() - indexedCount;
             if (driftCount < 0) {
                 driftCount = 0;
@@ -192,13 +194,14 @@ public class AttachPoolService {
             updatePo.setPoolUsageBytes(poolUsageBytes);
             updatePo.setPoolAttachesBytes(totalBytes.get());
             updatePo.setIndexedCount((int) indexedCount);
+            updatePo.setIndexedLostCount((int) indexedLostCount);
             updatePo.setDriftCount((int) driftCount);
             updatePo.setScanEndTime(LocalDateTime.now());
             updatePo.setScanStatus(1);
             attachPoolRepository.save(updatePo);
 
-            log.info("附件池快速扫描完成。文件总数:{} 已索引:{} 游离:{} 附件字节:{} 附件池已用:{} 附件池容量:{}",
-                    fileCount.get(), indexedCount, driftCount, totalBytes.get(), poolUsageBytes, poolCapacityBytes);
+            log.info("附件池快速扫描完成。文件总数:{} 已索引:{} 失效索引:{} 游离:{} 附件字节:{} 附件池已用:{} 附件池容量:{}",
+                    fileCount.get(), indexedCount, indexedLostCount, driftCount, totalBytes.get(), poolUsageBytes, poolCapacityBytes);
 
         } catch (IOException e) {
             log.error("附件池快速扫描异常", e);

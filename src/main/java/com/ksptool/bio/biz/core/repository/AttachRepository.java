@@ -57,6 +57,17 @@ public interface AttachRepository extends JpaRepository<AttachPo, Long> {
     long countValidAttaches();
 
     /**
+     * 统计失效索引数量
+     *
+     * @return 失效索引总数
+     */
+    @Query("""
+            SELECT COUNT(t) FROM AttachPo t
+            WHERE t.status <> 3
+            """)
+    long countIndexedLost();
+
+    /**
      * 分页查询附件列表
      *
      * @param po       查询条件

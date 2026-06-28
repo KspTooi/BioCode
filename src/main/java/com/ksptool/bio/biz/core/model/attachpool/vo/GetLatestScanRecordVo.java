@@ -25,6 +25,9 @@ public class GetLatestScanRecordVo {
     @Schema(description = "已索引附件数")
     private Integer indexedCount;
 
+    @Schema(description = "失效索引数")
+    private Integer indexedLostCount;
+
     @Schema(description = "游离附件数")
     private Integer driftCount;
 
