@@ -93,7 +93,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, provide } from "vue";
+import { provide } from "vue";
 import { use } from "echarts/core";
 import { CanvasRenderer } from "echarts/renderers";
 import { BarChart } from "echarts/charts";
@@ -108,9 +108,8 @@ use([CanvasRenderer, BarChart, GridComponent, TooltipComponent, LegendComponent]
 
 provide(THEME_KEY, "light");
 
-const activeTab = ref("overview");
-
 const {
+  activeTab,
   record,
   loading,
   scanning,

@@ -2,6 +2,7 @@ import { ref, computed, onMounted } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import type { GetLatestScanRecordVo } from "@/views/core/api/AttachPoolApi";
 import AttachPoolApi from "@/views/core/api/AttachPoolApi";
+import QueryPersistService from "@/commons/service/QueryPersistService.ts";
 
 type StatExplainKind = "indexed" | "drift";
 
@@ -16,6 +17,15 @@ export default {
     const statExplainVisible = ref(false);
     const statExplainTitle = ref("");
     const statExplainText = ref("");
+    const tabState = ref({ activeTab: "overview" });
+
+    const activeTab = computed({
+      get: (): string => tabState.value.activeTab,
+      set: (val: string): void => {
+        tabState.value.activeTab = val;
+        QueryPersistService.persistQuery("attach-pool-tab", tabState.value);
+      },
+    });
 
     /**
      * 打开指标说明模态框
@@ -196,10 +206,15 @@ export default {
     });
 
     onMounted(() => {
+      QueryPersistService.loadQuery("attach-pool-tab", tabState.value);
+      if (tabState.value.activeTab !== "overview" && tabState.value.activeTab !== "details") {
+        tabState.value.activeTab = "overview";
+      }
       loadRecord();
     });
 
     return {
+      activeTab,
       record,
       loading,
       scanning,

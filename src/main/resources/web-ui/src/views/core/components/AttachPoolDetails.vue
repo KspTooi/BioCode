@@ -1,6 +1,6 @@
 <template>
   <div class="pool-details">
-    <StdListAreaQuery>
+    <StdListAreaQuery show-persist-tip>
       <el-form :model="listForm" inline class="flex justify-between">
         <div>
           <el-form-item label="索引状态">

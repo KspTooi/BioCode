@@ -3,6 +3,7 @@ import { ElMessage } from "element-plus";
 import type { GetAttachListDto, GetAttachListVo } from "@/views/core/api/AttachPoolApi";
 import AttachPoolApi from "@/views/core/api/AttachPoolApi";
 import { Result } from "@/commons/model/Result.ts";
+import QueryPersistService from "@/commons/service/QueryPersistService.ts";
 
 export default {
   /**
@@ -29,6 +30,7 @@ export default {
       if (Result.isSuccess(result)) {
         listData.value = result.data;
         listTotal.value = result.total;
+        QueryPersistService.persistQuery("attach-pool-details", listForm.value);
       }
 
       if (Result.isError(result)) {
@@ -45,6 +47,7 @@ export default {
       listForm.value.pageNum = 1;
       listForm.value.pageSize = 20;
       listForm.value.indexFilter = 1;
+      QueryPersistService.clearQuery("attach-pool-details");
       loadList();
     };
 
@@ -71,8 +74,9 @@ export default {
       return `${(val / 1024 / 1024 / 1024 / 1024).toFixed(2)} TB`;
     };
 
-    onMounted(() => {
-      loadList();
+    onMounted(async () => {
+      QueryPersistService.loadQuery("attach-pool-details", listForm.value);
+      await loadList();
     });
 
     return {
