@@ -19,6 +19,7 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static com.ksptool.entities.Entities.as;
@@ -59,16 +60,20 @@ public class AttachPoolService {
      */
     @Transactional(rollbackFor = Exception.class)
     public void scanAttachPool() throws BizException {
+
         if (!scanLock.tryLock()) {
             throw new BizException("附件池正在扫描中，请稍后再试");
         }
 
         try {
+            //获取最新扫描记录
             AttachPoolPo latest = attachPoolRepository.getLatestScanRecord();
+
             if (latest != null && latest.getScanStatus() == 0) {
                 log.warn("检测到前次扫描未完成(scanStatus=0, id={})，锁已释放，判断为前次扫描异常中止，将创建新的扫描记录", latest.getId());
             }
 
+            //获取操作系统名称
             String osName = System.getProperty("os.name").toLowerCase();
             Path poolRoot = null;
             if (osName.contains("win")) {
@@ -97,14 +102,14 @@ public class AttachPoolService {
                 Files.createDirectories(poolRoot);
             }
 
-            long[] fileCount = {0};
-            long[] totalBytes = {0};
+            AtomicLong fileCount = new AtomicLong(0);
+            AtomicLong totalBytes = new AtomicLong(0);
             Files.walkFileTree(poolRoot, new SimpleFileVisitor<Path>() {
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
                     if (attrs.isRegularFile()) {
-                        fileCount[0]++;
-                        totalBytes[0] += attrs.size();
+                        fileCount.incrementAndGet();
+                        totalBytes.addAndGet(attrs.size());
                     }
                     return FileVisitResult.CONTINUE;
                 }
@@ -117,7 +122,7 @@ public class AttachPoolService {
             });
 
             long indexedCount = attachRepository.countValidAttaches();
-            long driftCount = fileCount[0] - indexedCount;
+            long driftCount = fileCount.get() - indexedCount;
             if (driftCount < 0) {
                 driftCount = 0;
             }
@@ -127,7 +132,7 @@ public class AttachPoolService {
             AttachPoolPo updatePo = attachPoolRepository.findById(recordId)
                     .orElseThrow(() -> new BizException("扫描记录不存在"));
             updatePo.setPoolCapacityBytes(poolCapacityBytes);
-            updatePo.setPoolAttachesBytes(totalBytes[0]);
+            updatePo.setPoolAttachesBytes(totalBytes.get());
             updatePo.setIndexedCount((int) indexedCount);
             updatePo.setDriftCount((int) driftCount);
             updatePo.setScanEndTime(LocalDateTime.now());
@@ -135,7 +140,7 @@ public class AttachPoolService {
             attachPoolRepository.save(updatePo);
 
             log.info("附件池扫描完成。文件总数:{} 已索引:{} 游离:{} 总字节:{} 磁盘容量:{}",
-                    fileCount[0], indexedCount, driftCount, totalBytes[0], poolCapacityBytes);
+                    fileCount.get(), indexedCount, driftCount, totalBytes.get(), poolCapacityBytes);
 
         } catch (IOException e) {
             log.error("附件池扫描异常", e);
