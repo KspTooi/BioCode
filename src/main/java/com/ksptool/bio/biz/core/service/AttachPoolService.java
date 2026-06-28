@@ -5,7 +5,6 @@ import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.bio.biz.core.model.attach.AttachPo;
 import com.ksptool.bio.biz.core.model.attachpool.AttachPoolPo;
 import com.ksptool.bio.biz.core.model.attachpool.dto.GetAttachListDto;
-import com.ksptool.bio.biz.core.model.attachpool.dto.ScanAttachPoolDto;
 import com.ksptool.bio.biz.core.model.attachpool.vo.GetAttachListVo;
 import com.ksptool.bio.biz.core.model.attachpool.vo.GetLatestScanRecordVo;
 import com.ksptool.bio.biz.core.repository.AttachPoolRepository;
@@ -83,32 +82,22 @@ public class AttachPoolService {
     }
 
     /**
-     * 扫描附件池。获取锁后插入扫描记录，遍历池目录统计文件数/总字节，查询有效附件数，计算游离数，更新记录。
-     * 若锁与数据库状态不同步（锁未锁定但最新记录未完成），说明前次扫描失败，记录告警后创建新扫描。
+     * 快速扫描附件池。统计目录文件数/总字节与磁盘占用，不校验已索引附件是否仍存在于磁盘。
      */
     @Transactional(rollbackFor = Exception.class)
-    public void scanAttachPool(ScanAttachPoolDto dto) throws BizException {
-
-        if (dto.getScanMode() == null) {
-            throw new BizException("扫描模式不能为空");
-        }
-        if (dto.getScanMode() != 0 && dto.getScanMode() != 1) {
-            throw new BizException("不支持的扫描模式: " + dto.getScanMode());
-        }
+    public void quickScanAttachPool() throws BizException {
 
         if (!scanLock.tryLock()) {
             throw new BizException("附件池正在扫描中，请稍后再试");
         }
 
         try {
-            //获取最新扫描记录
             AttachPoolPo latest = attachPoolRepository.getLatestScanRecord();
 
             if (latest != null && latest.getScanStatus() == 0) {
                 log.warn("检测到前次扫描未完成(scanStatus=0, id={})，锁已释放，判断为前次扫描异常中止，将创建新的扫描记录", latest.getId());
             }
 
-            //获取操作系统名称
             String osName = System.getProperty("os.name").toLowerCase();
             Path poolRoot = null;
             if (osName.contains("win")) {
@@ -181,14 +170,22 @@ public class AttachPoolService {
             updatePo.setScanStatus(1);
             attachPoolRepository.save(updatePo);
 
-            log.info("附件池扫描完成。模式:{} 文件总数:{} 已索引:{} 游离:{} 附件字节:{} 附件池已用:{} 附件池容量:{}",
-                    dto.getScanMode(), fileCount.get(), indexedCount, driftCount, totalBytes.get(), poolUsageBytes, poolCapacityBytes);
+            log.info("附件池快速扫描完成。文件总数:{} 已索引:{} 游离:{} 附件字节:{} 附件池已用:{} 附件池容量:{}",
+                    fileCount.get(), indexedCount, driftCount, totalBytes.get(), poolUsageBytes, poolCapacityBytes);
 
         } catch (IOException e) {
-            log.error("附件池扫描异常", e);
+            log.error("附件池快速扫描异常", e);
             throw new BizException("附件池扫描失败: " + e.getMessage());
         } finally {
             scanLock.unlock();
         }
+    }
+
+    /**
+     * 深度扫描附件池。校验已索引附件是否仍存在于磁盘。
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void deepScanAttachPool() throws BizException {
+        throw new BizException("深度扫描尚未开放");
     }
 }

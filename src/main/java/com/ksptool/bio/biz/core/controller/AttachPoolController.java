@@ -54,11 +54,21 @@ public class AttachPoolController {
     }
 
     @PreAuthorize("@auth.hasCode('core:attach:pool:scan')")
-    @Operation(summary = "快速扫描附件池")
+    @Operation(summary = "扫描附件池")
     @PostMapping("/scanAttachPool")
     public Result<String> scanAttachPool(@RequestBody @Valid ScanAttachPoolDto dto) throws BizException {
-        attachPoolService.scanAttachPool(dto);
-        return Result.success("扫描完成");
+        if (dto.getScanMode() == null) {
+            throw new BizException("扫描模式不能为空");
+        }
+        if (dto.getScanMode() == 0) {
+            attachPoolService.quickScanAttachPool();
+            return Result.success("扫描完成");
+        }
+        if (dto.getScanMode() == 1) {
+            attachPoolService.deepScanAttachPool();
+            return Result.success("扫描完成");
+        }
+        throw new BizException("不支持的扫描模式: " + dto.getScanMode());
     }
 
 }
