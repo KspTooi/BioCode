@@ -87,6 +87,13 @@ export default class CoreRouteRegister extends GenricRouteRegister {
       }),
       RouteEntryPo.build({
         biz: "core",
+        path: "attach-pool",
+        name: "attach-pool",
+        component: () => import("@/views/core/AttachPool.vue"),
+        meta: { breadcrumb: "附件存储池" },
+      }),
+      RouteEntryPo.build({
+        biz: "core",
         path: "core-root",
         name: "core-root",
         component: () => import("@/views/core/CoreRoot.vue"),
