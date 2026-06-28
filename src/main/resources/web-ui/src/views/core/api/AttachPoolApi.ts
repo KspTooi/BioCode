@@ -53,6 +53,22 @@ export interface ScanAttachPoolDto {
   scanMode: number; // 0:快速扫描 1:深度扫描
 }
 
+/**
+ * 重建索引进度 VO
+ */
+export interface GetRebuildIndexStatusVo {
+  running: boolean; // 是否执行中
+  total: number; // 游离文件总数
+  processed: number; // 已处理数
+  imported: number; // 新建数
+  repaired: number; // 修复数
+  deleted: number; // 删除重复游离数
+  failed: number; // 失败数
+  message: string; // 任务摘要
+  startTime: string; // 开始时间
+  endTime: string; // 结束时间
+}
+
 export default {
   /**
    * 查询最新的附件池扫描记录
@@ -81,5 +97,27 @@ export default {
    */
   getAttachList: async (dto: GetAttachListDto): Promise<PageResult<GetAttachListVo>> => {
     return await Http.postEntity<PageResult<GetAttachListVo>>("/attachPool/getAttachList", dto);
+  },
+
+  /**
+   * 启动重建索引
+   */
+  startRebuildIndex: async (): Promise<void> => {
+    const result = await Http.postEntity<Result<string>>("/attachPool/startRebuildIndex", {});
+    if (result.code === 0) {
+      return;
+    }
+    throw new Error(result.message);
+  },
+
+  /**
+   * 查询重建索引进度
+   */
+  getRebuildIndexStatus: async (): Promise<GetRebuildIndexStatusVo> => {
+    const result = await Http.postEntity<Result<GetRebuildIndexStatusVo>>("/attachPool/getRebuildIndexStatus", {});
+    if (result.code === 0) {
+      return result.data;
+    }
+    throw new Error(result.message);
   },
 };

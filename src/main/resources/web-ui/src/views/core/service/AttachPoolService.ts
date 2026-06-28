@@ -1,6 +1,6 @@
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import type { GetLatestScanRecordVo } from "@/views/core/api/AttachPoolApi";
+import type { GetLatestScanRecordVo, GetRebuildIndexStatusVo } from "@/views/core/api/AttachPoolApi";
 import AttachPoolApi from "@/views/core/api/AttachPoolApi";
 import QueryPersistService from "@/commons/service/QueryPersistService.ts";
 
@@ -18,6 +18,9 @@ export default {
     const statExplainTitle = ref("");
     const statExplainText = ref("");
     const tabState = ref({ activeTab: "overview" });
+    const rebuildStatus = ref<GetRebuildIndexStatusVo | null>(null);
+    const rebuildStarting = ref(false);
+    let rebuildPollTimer: ReturnType<typeof setInterval> | null = null;
 
     const activeTab = computed({
       get: (): string => tabState.value.activeTab,
@@ -136,6 +139,91 @@ export default {
     };
 
     /**
+     * 停止重建索引轮询
+     */
+    const stopRebuildPoll = (): void => {
+      if (rebuildPollTimer !== null) {
+        clearInterval(rebuildPollTimer);
+        rebuildPollTimer = null;
+      }
+    };
+
+    /**
+     * 加载重建索引进度
+     */
+    const loadRebuildStatus = async (): Promise<boolean> => {
+      try {
+        rebuildStatus.value = await AttachPoolApi.getRebuildIndexStatus();
+        return rebuildStatus.value.running === true;
+      } catch (error: any) {
+        ElMessage.error(error.message);
+        return false;
+      }
+    };
+
+    /**
+     * 启动重建索引轮询
+     */
+    const startRebuildPoll = (): void => {
+      stopRebuildPoll();
+      rebuildPollTimer = setInterval(async () => {
+        const running = await loadRebuildStatus();
+        if (running) {
+          return;
+        }
+        stopRebuildPoll();
+        await loadRecord();
+        const msg = rebuildStatus.value?.message;
+        if (msg && msg !== "空闲" && msg !== "任务启动中" && msg !== "重建索引进行中") {
+          ElMessage.success(msg);
+        }
+      }, 2000);
+    };
+
+    /**
+     * 启动重建索引
+     */
+    const onStartRebuild = async (): Promise<void> => {
+      if (rebuildStarting.value || rebuildStatus.value?.running || scanning.value) {
+        return;
+      }
+      try {
+        await ElMessageBox.confirm(
+          "将遍历游离文件并尝试新建或修复索引，任务在后台运行且与扫描互斥，是否继续？",
+          "重建索引",
+          {
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+            type: "warning",
+          },
+        );
+      } catch {
+        return;
+      }
+      rebuildStarting.value = true;
+      try {
+        await AttachPoolApi.startRebuildIndex();
+        ElMessage.success("重建索引任务已启动");
+        await loadRebuildStatus();
+        startRebuildPoll();
+      } catch (error: any) {
+        ElMessage.error(error.message);
+      } finally {
+        rebuildStarting.value = false;
+      }
+    };
+
+    const rebuildRunning = computed(() => rebuildStatus.value?.running === true);
+
+    const rebuildProgressPercent = computed(() => {
+      const s = rebuildStatus.value;
+      if (!s || !s.total || s.total <= 0) {
+        return 0;
+      }
+      return Math.min(100, Math.round(((s.processed ?? 0) / s.total) * 100));
+    });
+
+    /**
      * 格式化字节数为可读字符串
      */
     const formatBytes = (bytes: string | undefined | null): string => {
@@ -241,12 +329,20 @@ export default {
       };
     });
 
-    onMounted(() => {
+    onMounted(async () => {
       QueryPersistService.loadQuery("attach-pool-tab", tabState.value);
       if (tabState.value.activeTab !== "overview" && tabState.value.activeTab !== "details") {
         tabState.value.activeTab = "overview";
       }
-      loadRecord();
+      await loadRecord();
+      const running = await loadRebuildStatus();
+      if (running) {
+        startRebuildPoll();
+      }
+    });
+
+    onUnmounted(() => {
+      stopRebuildPoll();
     });
 
     return {
@@ -254,12 +350,17 @@ export default {
       record,
       loading,
       scanning,
+      rebuildStatus,
+      rebuildStarting,
+      rebuildRunning,
+      rebuildProgressPercent,
       statExplainVisible,
       statExplainTitle,
       statExplainText,
       loadRecord,
       onQuickScan,
       onDeepScan,
+      onStartRebuild,
       openStatExplain,
       closeStatExplain,
       formatBytes,

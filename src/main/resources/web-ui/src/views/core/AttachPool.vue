@@ -11,8 +11,8 @@
               </span>
               <div class="toolbar-actions">
                 <el-button size="small" :loading="loading" @click="loadRecord">刷新</el-button>
-                <el-button size="small" type="primary" :loading="scanning" @click="onQuickScan">更新统计数据</el-button>
-                <el-button size="small" type="danger" plain :loading="scanning" @click="onDeepScan">检查索引完整性</el-button>
+                <el-button size="small" type="primary" :loading="scanning" :disabled="rebuildRunning" @click="onQuickScan">更新统计数据</el-button>
+                <el-button size="small" type="danger" plain :loading="scanning" :disabled="rebuildRunning" @click="onDeepScan">检查索引完整性</el-button>
               </div>
             </div>
 
@@ -75,6 +75,44 @@
                 <el-descriptions-item label="扫描结束时间">{{ record.scanEndTime ?? "-" }}</el-descriptions-item>
               </el-descriptions>
             </template>
+
+            <div class="rebuild-block">
+              <div class="rebuild-header">
+                <span class="title-with-icon rebuild-title">
+                  <el-icon><RefreshRight /></el-icon>
+                  重建索引
+                </span>
+                <el-button
+                  size="small"
+                  type="warning"
+                  :loading="rebuildStarting || rebuildRunning"
+                  :disabled="scanning || rebuildRunning"
+                  @click="onStartRebuild"
+                >
+                  开始重建索引
+                </el-button>
+              </div>
+              <p class="rebuild-desc">
+                自动处理附件池中的游离文件：无索引则新建，有损坏索引则修复，与已有有效索引重复则清理副本。任务在后台运行，完成后自动刷新统计数据。
+              </p>
+              <template v-if="rebuildStatus && (rebuildRunning || rebuildStatus.endTime)">
+                <el-progress
+                  :percentage="rebuildProgressPercent"
+                  :status="rebuildRunning ? undefined : rebuildStatus.failed > 0 ? 'warning' : 'success'"
+                  :striped="rebuildRunning"
+                  :striped-flow="rebuildRunning"
+                />
+                <div class="rebuild-stats">
+                  <span>总数 {{ rebuildStatus.total ?? 0 }}</span>
+                  <span>已处理 {{ rebuildStatus.processed ?? 0 }}</span>
+                  <span>新建 {{ rebuildStatus.imported ?? 0 }}</span>
+                  <span>修复 {{ rebuildStatus.repaired ?? 0 }}</span>
+                  <span>删除 {{ rebuildStatus.deleted ?? 0 }}</span>
+                  <span :class="{ 'rebuild-failed': (rebuildStatus.failed ?? 0) > 0 }">失败 {{ rebuildStatus.failed ?? 0 }}</span>
+                </div>
+                <div class="rebuild-message">{{ rebuildStatus.message }}</div>
+              </template>
+            </div>
           </div>
         </el-scrollbar>
       </el-tab-pane>
@@ -100,7 +138,7 @@ import { CanvasRenderer } from "echarts/renderers";
 import { BarChart } from "echarts/charts";
 import { GridComponent, TooltipComponent, LegendComponent } from "echarts/components";
 import VChart, { THEME_KEY } from "vue-echarts";
-import { CircleCheck, Coin, DataLine, FolderOpened, PieChart, Warning } from "@element-plus/icons-vue";
+import { CircleCheck, Coin, DataLine, FolderOpened, PieChart, RefreshRight, Warning } from "@element-plus/icons-vue";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
 import AttachPoolDetails from "@/views/core/components/AttachPoolDetails.vue";
 import AttachPoolService from "@/views/core/service/AttachPoolService.ts";
@@ -120,6 +158,11 @@ const {
   loadRecord,
   onQuickScan,
   onDeepScan,
+  onStartRebuild,
+  rebuildStatus,
+  rebuildStarting,
+  rebuildRunning,
+  rebuildProgressPercent,
   openStatExplain,
   closeStatExplain,
   formatBytes,
@@ -282,6 +325,50 @@ const {
   font-size: 14px;
   line-height: 1.7;
   color: var(--el-text-color-regular);
+}
+
+.rebuild-block {
+  padding: 12px 16px;
+  background-color: #fffbf0;
+  border: 1px solid var(--el-color-warning-light-7);
+}
+
+.rebuild-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.rebuild-title .el-icon {
+  color: var(--el-color-warning);
+}
+
+.rebuild-desc {
+  margin: 0 0 12px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--el-text-color-secondary);
+}
+
+.rebuild-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--el-text-color-regular);
+}
+
+.rebuild-failed {
+  color: var(--el-color-danger);
+  font-weight: 600;
+}
+
+.rebuild-message {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--el-text-color-secondary);
 }
 
 :deep(.el-tabs--top .el-tabs__item.is-top:nth-child(2)) {
