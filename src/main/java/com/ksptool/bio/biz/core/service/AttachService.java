@@ -52,12 +52,16 @@ public class AttachService {
 
     private final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy_MM_dd");
     private final Tika tika = new Tika();
+
     @Autowired
     private AttachRepository repository;
+
     @Autowired
     private AttachChunkRepository chunkRepository;
+
     @Autowired
     private AttachConfig attachConfig;
+
     @Autowired
     @Lazy
     private AttachService self;

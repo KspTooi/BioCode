@@ -43,4 +43,15 @@ public interface AttachRepository extends JpaRepository<AttachPo, Long> {
             """)
     List<AttachPo> getNeedVerifyAttachList(@Param("limit") int limit);
 
+    /**
+     * 统计有效附件数量
+     *
+     * @return 有效附件总数
+     */
+    @Query("""
+            SELECT COUNT(t) FROM AttachPo t
+            WHERE t.status = 3
+            """)
+    long countValidAttaches();
+
 }
