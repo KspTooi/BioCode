@@ -4,7 +4,7 @@
   "avatar": "",
   "version": "4.9.4",
   "createdTime": "2025-5-31 18:54:43",
-  "updatedTime": "2026-6-29 01:16:52",
+  "updatedTime": "2026-6-29 02:12:14",
   "dbConns": [],
   "profile": {
     "default": {
@@ -39770,6 +39770,24 @@
           "extProps": {},
           "domain": "6AF16962-271B-4EAD-A807-705E81F24B8C",
           "id": "5E60140D-CF50-409E-8A91-135FAD43600B"
+        },
+        {
+          "defKey": "pool_usage_bytes",
+          "defName": "总已用字节",
+          "comment": "",
+          "type": "",
+          "len": "",
+          "scale": "",
+          "primaryKey": false,
+          "notNull": true,
+          "autoIncrement": false,
+          "defaultValue": "",
+          "hideInGraph": false,
+          "refDict": "",
+          "baseType": "D4F3414B-7780-49DE-979F-E697B65AE78D",
+          "extProps": {},
+          "domain": "6AF16962-271B-4EAD-A807-705E81F24B8C",
+          "id": "8AEB0725-FB64-46AC-8FA3-1009DF7D8856"
         },
         {
           "defKey": "pool_attaches_bytes",
