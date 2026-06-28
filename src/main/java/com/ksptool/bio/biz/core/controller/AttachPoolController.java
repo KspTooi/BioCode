@@ -7,6 +7,7 @@ import com.ksptool.bio.biz.core.model.attachpool.dto.GetAttachListDto;
 import com.ksptool.bio.biz.core.model.attachpool.dto.ScanAttachPoolDto;
 import com.ksptool.bio.biz.core.model.attachpool.vo.GetAttachListVo;
 import com.ksptool.bio.biz.core.model.attachpool.vo.GetLatestScanRecordVo;
+import com.ksptool.bio.biz.core.model.attachpool.vo.GetRebuildIndexStatusVo;
 import com.ksptool.bio.biz.core.service.AttachPoolService;
 import com.ksptool.bio.commons.annotation.PrintLog;
 import io.swagger.v3.oas.annotations.Operation;
@@ -63,6 +64,21 @@ public class AttachPoolController {
         }
         attachPoolService.deepScanAttachPool();
         return Result.success("扫描完成");
+    }
+
+    @PreAuthorize("@auth.hasCode('core:attach:pool:scan')")
+    @Operation(summary = "启动重建索引")
+    @PostMapping("/startRebuildIndex")
+    public Result<String> startRebuildIndex() throws BizException {
+        attachPoolService.startRebuildIndex();
+        return Result.success("任务已启动");
+    }
+
+    @PreAuthorize("@auth.hasCode('core:attach:pool:view')")
+    @Operation(summary = "查询重建索引进度")
+    @PostMapping("/getRebuildIndexStatus")
+    public Result<GetRebuildIndexStatusVo> getRebuildIndexStatus() {
+        return Result.success(attachPoolService.getRebuildIndexStatus());
     }
 
 }

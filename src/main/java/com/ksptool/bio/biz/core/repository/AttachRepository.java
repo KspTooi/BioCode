@@ -88,4 +88,26 @@ public interface AttachRepository extends JpaRepository<AttachPo, Long> {
             """)
     Page<AttachPo> getValidAttachList(Pageable pageable);
 
+    /**
+     * 按摘要查询附件列表
+     *
+     * @param sha256 文件摘要
+     * @return 附件列表
+     */
+    @Query("""
+            SELECT t FROM AttachPo t
+            WHERE t.sha256 = :sha256
+            """)
+    List<AttachPo> findBySha256(@Param("sha256") String sha256);
+
+    /**
+     * 查询全部索引路径
+     *
+     * @return 路径列表
+     */
+    @Query("""
+            SELECT t.path FROM AttachPo t
+            """)
+    List<String> listAllPaths();
+
 }

@@ -7,6 +7,7 @@ import com.ksptool.bio.biz.core.model.attachpool.AttachPoolPo;
 import com.ksptool.bio.biz.core.model.attachpool.dto.GetAttachListDto;
 import com.ksptool.bio.biz.core.model.attachpool.vo.GetAttachListVo;
 import com.ksptool.bio.biz.core.model.attachpool.vo.GetLatestScanRecordVo;
+import com.ksptool.bio.biz.core.model.attachpool.vo.GetRebuildIndexStatusVo;
 import com.ksptool.bio.biz.core.repository.AttachPoolRepository;
 import com.ksptool.bio.biz.core.repository.AttachRepository;
 import com.ksptool.bio.commons.config.AttachConfig;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -25,7 +27,12 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -41,6 +48,26 @@ public class AttachPoolService {
     //扫描锁
     private final ReentrantLock scanLock = new ReentrantLock();
 
+    private volatile boolean rebuildRunning = false;
+
+    private volatile String rebuildMessage = "空闲";
+
+    private volatile LocalDateTime rebuildStartTime;
+
+    private volatile LocalDateTime rebuildEndTime;
+
+    private final AtomicInteger rebuildTotal = new AtomicInteger(0);
+
+    private final AtomicInteger rebuildProcessed = new AtomicInteger(0);
+
+    private final AtomicInteger rebuildImported = new AtomicInteger(0);
+
+    private final AtomicInteger rebuildRepaired = new AtomicInteger(0);
+
+    private final AtomicInteger rebuildDeleted = new AtomicInteger(0);
+
+    private final AtomicInteger rebuildFailed = new AtomicInteger(0);
+
     @Autowired
     private AttachPoolRepository attachPoolRepository;
 
@@ -52,6 +79,9 @@ public class AttachPoolService {
 
     @Autowired
     private AttachService attachService;
+
+    @Autowired
+    private TransactionTemplate transactionTemplate;
 
     /**
      * 查询最新的附件池扫描记录
@@ -287,6 +317,234 @@ public class AttachPoolService {
         } finally {
             scanLock.unlock();
         }
+    }
+
+    /**
+     * 启动重建索引异步任务
+     */
+    public void startRebuildIndex() throws BizException {
+        if (rebuildRunning) {
+            throw new BizException("重建索引任务进行中");
+        }
+        rebuildRunning = true;
+        rebuildMessage = "任务启动中";
+        rebuildStartTime = LocalDateTime.now();
+        rebuildEndTime = null;
+        rebuildTotal.set(0);
+        rebuildProcessed.set(0);
+        rebuildImported.set(0);
+        rebuildRepaired.set(0);
+        rebuildDeleted.set(0);
+        rebuildFailed.set(0);
+        CompletableFuture.runAsync(() -> {
+            if (!scanLock.tryLock()) {
+                rebuildMessage = "附件池正在扫描中";
+                rebuildRunning = false;
+                rebuildEndTime = LocalDateTime.now();
+                return;
+            }
+            try {
+                Path poolRoot = resolvePoolRoot();
+
+                Set<String> indexedPaths = new HashSet<>();
+                for (String path : attachRepository.listAllPaths()) {
+                    if (path == null) {
+                        continue;
+                    }
+                    indexedPaths.add(path.replace('\\', '/'));
+                }
+
+                List<Path> driftFiles = new ArrayList<>();
+                if (Files.exists(poolRoot)) {
+                    Files.walkFileTree(poolRoot, new SimpleFileVisitor<Path>() {
+                        @Override
+                        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                            if (!attrs.isRegularFile()) {
+                                return FileVisitResult.CONTINUE;
+                            }
+                            String relative = poolRoot.relativize(file).toString().replace('\\', '/');
+                            if (!indexedPaths.contains(relative)) {
+                                driftFiles.add(file);
+                            }
+                            return FileVisitResult.CONTINUE;
+                        }
+
+                        @Override
+                        public FileVisitResult visitFileFailed(Path file, IOException exc) {
+                            log.warn("无法访问文件: {} - {}", file, exc.getMessage());
+                            return FileVisitResult.CONTINUE;
+                        }
+                    });
+                }
+
+                rebuildTotal.set(driftFiles.size());
+                rebuildMessage = "重建索引进行中";
+
+                for (Path drift : driftFiles) {
+                    try {
+                        String sha256 = attachService.computeSha256(drift);
+                        List<AttachPo> matches = attachRepository.findBySha256(sha256);
+                        String displayName = drift.getFileName().toString();
+
+                        if (matches.isEmpty()) {
+                            attachService.ingestLocalFile(drift, displayName);
+                            rebuildImported.incrementAndGet();
+                            rebuildProcessed.incrementAndGet();
+                            continue;
+                        }
+
+                        List<AttachPo> brokenList = new ArrayList<>();
+                        for (AttachPo match : matches) {
+                            if (match.getStatus() != null && match.getStatus() == 3) {
+                                Path absolutePath = attachService.getAttachLocalPath(Paths.get(match.getPath()));
+                                if (Files.exists(absolutePath)) {
+                                    continue;
+                                }
+                            }
+                            brokenList.add(match);
+                        }
+
+                        if (brokenList.isEmpty()) {
+                            Files.deleteIfExists(drift);
+                            rebuildDeleted.incrementAndGet();
+                            rebuildProcessed.incrementAndGet();
+                            continue;
+                        }
+
+                        boolean useCopy = brokenList.size() > 1;
+                        int repairSuccess = 0;
+                        for (AttachPo broken : brokenList) {
+                            if (attachService.repairAttachFromDrift(drift, broken, useCopy)) {
+                                repairSuccess++;
+                            }
+                        }
+                        if (repairSuccess == 0) {
+                            rebuildFailed.incrementAndGet();
+                            rebuildProcessed.incrementAndGet();
+                            continue;
+                        }
+                        rebuildRepaired.addAndGet(repairSuccess);
+                        if (useCopy) {
+                            Files.deleteIfExists(drift);
+                        }
+                        if (repairSuccess < brokenList.size()) {
+                            rebuildFailed.addAndGet(brokenList.size() - repairSuccess);
+                        }
+                        rebuildProcessed.incrementAndGet();
+                    } catch (Exception e) {
+                        log.warn("重建索引处理游离文件失败: {} - {}", drift, e.getMessage());
+                        rebuildFailed.incrementAndGet();
+                        rebuildProcessed.incrementAndGet();
+                    }
+                }
+
+                if (!Files.exists(poolRoot)) {
+                    log.warn("附件池目录不存在，将创建空目录: {}", poolRoot);
+                    Files.createDirectories(poolRoot);
+                }
+
+                AtomicLong fileCount = new AtomicLong(0);
+                AtomicLong totalBytes = new AtomicLong(0);
+                Files.walkFileTree(poolRoot, new SimpleFileVisitor<Path>() {
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                        if (attrs.isRegularFile()) {
+                            fileCount.incrementAndGet();
+                            totalBytes.addAndGet(attrs.size());
+                        }
+                        return FileVisitResult.CONTINUE;
+                    }
+
+                    @Override
+                    public FileVisitResult visitFileFailed(Path file, IOException exc) {
+                        log.warn("无法访问文件: {} - {}", file, exc.getMessage());
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
+
+                long indexedCount = attachRepository.countValidAttaches();
+                long driftCount = fileCount.get() - indexedCount;
+                if (driftCount < 0) {
+                    driftCount = 0;
+                }
+
+                long poolCapacityBytes = poolRoot.toFile().getTotalSpace();
+                long poolAvailableBytes = poolRoot.toFile().getUsableSpace();
+                long poolUsageBytes = poolCapacityBytes - poolAvailableBytes;
+                if (poolUsageBytes < 0) {
+                    poolUsageBytes = 0;
+                }
+
+                long finalDriftCount = driftCount;
+                long finalPoolUsageBytes = poolUsageBytes;
+                transactionTemplate.executeWithoutResult(status -> {
+                    AttachPoolPo latest = attachPoolRepository.getLatestScanRecord();
+                    if (latest != null && latest.getScanStatus() == 0) {
+                        log.warn("检测到前次扫描未完成(scanStatus=0, id={})，锁已释放，判断为前次扫描异常中止，将创建新的扫描记录", latest.getId());
+                    }
+
+                    AttachPoolPo insertPo = new AttachPoolPo();
+                    insertPo.setPoolPath(poolRoot.toString());
+                    insertPo.setPoolCapacityBytes(0L);
+                    insertPo.setPoolUsageBytes(0L);
+                    insertPo.setPoolAttachesBytes(0L);
+                    insertPo.setIndexedCount(0);
+                    insertPo.setDriftCount(0);
+                    insertPo.setScanStartTime(LocalDateTime.now());
+                    insertPo.setScanStatus(0);
+                    attachPoolRepository.save(insertPo);
+                    long recordId = insertPo.getId();
+
+                    AttachPoolPo updatePo = attachPoolRepository.findById(recordId)
+                            .orElseThrow(() -> new IllegalStateException("扫描记录不存在"));
+                    updatePo.setPoolCapacityBytes(poolCapacityBytes);
+                    updatePo.setPoolUsageBytes(finalPoolUsageBytes);
+                    updatePo.setPoolAttachesBytes(totalBytes.get());
+                    updatePo.setIndexedCount((int) indexedCount);
+                    updatePo.setDriftCount((int) finalDriftCount);
+                    updatePo.setScanEndTime(LocalDateTime.now());
+                    updatePo.setScanStatus(1);
+                    attachPoolRepository.save(updatePo);
+                });
+
+                log.info("附件池快速扫描完成。文件总数:{} 已索引:{} 游离:{} 附件字节:{} 附件池已用:{} 附件池容量:{}",
+                        fileCount.get(), indexedCount, driftCount, totalBytes.get(), poolUsageBytes, poolCapacityBytes);
+
+                rebuildMessage = String.format("重建索引完成。新建:%d 修复:%d 删除:%d 失败:%d",
+                        rebuildImported.get(), rebuildRepaired.get(), rebuildDeleted.get(), rebuildFailed.get());
+
+            } catch (IOException e) {
+                log.error("重建索引异常", e);
+                rebuildMessage = "重建索引失败: " + e.getMessage();
+            } catch (BizException e) {
+                log.error("重建索引异常", e);
+                rebuildMessage = "重建索引失败: " + e.getMessage();
+            } finally {
+                scanLock.unlock();
+                rebuildRunning = false;
+                rebuildEndTime = LocalDateTime.now();
+            }
+        });
+    }
+
+    /**
+     * 查询重建索引任务进度
+     *
+     * @return 任务进度
+     */
+    public GetRebuildIndexStatusVo getRebuildIndexStatus() {
+        var vo = new GetRebuildIndexStatusVo();
+        vo.setRunning(rebuildRunning);
+        vo.setTotal(rebuildTotal.get());
+        vo.setProcessed(rebuildProcessed.get());
+        vo.setImported(rebuildImported.get());
+        vo.setRepaired(rebuildRepaired.get());
+        vo.setDeleted(rebuildDeleted.get());
+        vo.setFailed(rebuildFailed.get());
+        vo.setMessage(rebuildMessage);
+        vo.setStartTime(rebuildStartTime);
+        vo.setEndTime(rebuildEndTime);
+        return vo;
     }
 
     /**

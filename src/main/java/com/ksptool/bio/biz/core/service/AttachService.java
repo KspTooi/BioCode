@@ -35,6 +35,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -49,6 +50,8 @@ import java.util.*;
 @Service
 @Slf4j
 public class AttachService {
+
+    public static final String REBUILD_INDEX_KIND = "rebuild_index";
 
     private final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy_MM_dd");
     private final Tika tika = new Tika();
@@ -701,6 +704,170 @@ public class AttachService {
         } finally {
             repository.save(attach);
         }
+    }
+
+    /**
+     * 流式计算文件SHA256摘要
+     *
+     * @param file 文件路径
+     * @return 摘要十六进制字符串
+     */
+    public String computeSha256(Path file) throws BizException {
+        try (InputStream is = Files.newInputStream(file)) {
+            var digest = MessageDigest.getInstance("SHA-256");
+            byte[] buffer = new byte[8192];
+            int read;
+            while ((read = is.read(buffer)) != -1) {
+                digest.update(buffer, 0, read);
+            }
+            return bytesToHex(digest.digest());
+        } catch (Exception e) {
+            throw new BizException("计算文件摘要失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 从本地游离文件导入索引，kind固定为rebuild_index
+     *
+     * @param source      游离文件绝对路径
+     * @param displayName 展示文件名
+     * @return 是否成功
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
+    public boolean ingestLocalFile(Path source, String displayName) throws BizException {
+        if (source == null || !Files.isRegularFile(source)) {
+            throw new BizException("游离文件不存在");
+        }
+
+        var filename = displayName;
+        if (StringUtils.isBlank(filename)) {
+            filename = source.getFileName().toString();
+        }
+        if (StringUtils.isBlank(filename)) {
+            throw new BizException("文件名不能为空");
+        }
+
+        var suffix = getSuffix(filename);
+        long totalSize;
+        try {
+            totalSize = Files.size(source);
+        } catch (IOException e) {
+            throw new BizException("读取文件大小失败: " + e.getMessage());
+        }
+        if (totalSize <= 0) {
+            throw new BizException("文件大小无效");
+        }
+
+        var sha256 = computeSha256(source);
+
+        var exist = repository.getBySha256AndKind(sha256, REBUILD_INDEX_KIND);
+        if (exist != null && exist.getStatus() != null && exist.getStatus() == 3) {
+            try {
+                Files.deleteIfExists(source);
+            } catch (IOException e) {
+                throw new BizException("删除重复游离文件失败: " + e.getMessage());
+            }
+            return true;
+        }
+
+        var relativePath = getAttachRelativePath(sha256, suffix);
+        if (relativePath == null) {
+            throw new BizException("获取附件本地路径失败");
+        }
+
+        var absolutePath = getAttachLocalPath(relativePath);
+        var parentDir = absolutePath.getParent();
+        if (parentDir != null && !Files.exists(parentDir)) {
+            try {
+                Files.createDirectories(parentDir);
+            } catch (IOException e) {
+                throw new BizException("创建附件目录失败: " + e.getMessage());
+            }
+        }
+
+        try {
+            if (Files.exists(absolutePath)) {
+                Files.deleteIfExists(source);
+                return true;
+            }
+            Files.move(source, absolutePath);
+        } catch (IOException e) {
+            throw new BizException("移动游离文件失败: " + e.getMessage());
+        }
+
+        var po = new AttachPo();
+        po.setName(filename);
+        po.setKind(REBUILD_INDEX_KIND);
+        po.setSuffix(suffix);
+        po.setPath(relativePath.toString());
+        po.setSha256(sha256);
+        po.setTotalSize(totalSize);
+        po.setReceiveSize(totalSize);
+        po.setStatus(3);
+        po.setVerifyTime(LocalDateTime.now());
+        po.setChunks(new ArrayList<>());
+        repository.save(po);
+        return true;
+    }
+
+    /**
+     * 用游离文件修复索引记录
+     *
+     * @param drift  游离文件绝对路径
+     * @param target 目标索引记录
+     * @param copy   是否复制，false则移动
+     * @return 是否修复成功
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
+    public boolean repairAttachFromDrift(Path drift, AttachPo target, boolean copy) throws BizException {
+        if (drift == null || !Files.isRegularFile(drift)) {
+            throw new BizException("游离文件不存在");
+        }
+        if (target == null || target.getId() == null) {
+            throw new BizException("索引记录无效");
+        }
+
+        var attach = repository.findById(target.getId()).orElseThrow(() -> new BizException("索引记录不存在"));
+        var targetAbs = getAttachLocalPath(Paths.get(attach.getPath()));
+        var parentDir = targetAbs.getParent();
+        if (parentDir != null && !Files.exists(parentDir)) {
+            try {
+                Files.createDirectories(parentDir);
+            } catch (IOException e) {
+                throw new BizException("创建附件目录失败: " + e.getMessage());
+            }
+        }
+
+        try {
+            if (copy) {
+                Files.copy(drift, targetAbs, StandardCopyOption.REPLACE_EXISTING);
+            }
+            if (!copy) {
+                Files.move(drift, targetAbs, StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (IOException e) {
+            throw new BizException("写入索引文件失败: " + e.getMessage());
+        }
+
+        var actualSha256 = computeSha256(targetAbs);
+        if (!actualSha256.equals(attach.getSha256())) {
+            log.warn("重建索引校验失败 ID:{} 预期:{} 实际:{}", attach.getId(), attach.getSha256(), actualSha256);
+            return false;
+        }
+
+        long fileSize;
+        try {
+            fileSize = Files.size(targetAbs);
+        } catch (IOException e) {
+            throw new BizException("读取文件大小失败: " + e.getMessage());
+        }
+
+        attach.setTotalSize(fileSize);
+        attach.setReceiveSize(fileSize);
+        attach.setStatus(3);
+        attach.setVerifyTime(LocalDateTime.now());
+        repository.save(attach);
+        return true;
     }
 
 
