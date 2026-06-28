@@ -61,10 +61,10 @@ export default {
   /**
    * 扫描附件池
    */
-  scanAttachPool: async (): Promise<string> => {
+  scanAttachPool: async (): Promise<void> => {
     const result = await Http.postEntity<Result<string>>("/attachPool/scanAttachPool", {});
     if (result.code === 0) {
-      return result.message;
+      return;
     }
     throw new Error(result.message);
   },

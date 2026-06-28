@@ -79,8 +79,8 @@ export default {
       }
       scanning.value = true;
       try {
-        const msg = await AttachPoolApi.scanAttachPool();
-        ElMessage.success(msg);
+        await AttachPoolApi.scanAttachPool();
+        ElMessage.success("扫描完成");
         await loadRecord();
       } catch (error: any) {
         ElMessage.error(error.message);
