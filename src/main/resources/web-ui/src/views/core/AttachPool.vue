@@ -111,7 +111,7 @@
               <template v-if="rebuildStatus && (rebuildRunning || rebuildStatus.endTime)">
                 <el-progress
                   :percentage="rebuildProgressPercent"
-                  :status="rebuildRunning ? undefined : rebuildStatus.failed > 0 ? 'warning' : 'success'"
+                  :status="rebuildProgressStatus"
                   :striped="rebuildRunning"
                   :striped-flow="rebuildRunning"
                 />
@@ -208,6 +208,7 @@ const {
   rebuildStarting,
   rebuildRunning,
   rebuildProgressPercent,
+  rebuildProgressStatus,
   clearingInvalid,
   openStatExplain,
   closeStatExplain,

@@ -185,7 +185,7 @@ export default {
         if (!msg || msg === "空闲" || msg === "任务启动中" || msg === "重建索引进行中") {
           return;
         }
-        if (msg.includes("失败") || msg.includes("正在扫描中")) {
+        if (msg.startsWith("重建索引失败") || msg.includes("正在扫描中")) {
           ElMessage.error(msg);
           return;
         }
@@ -262,10 +262,29 @@ export default {
 
     const rebuildProgressPercent = computed(() => {
       const s = rebuildStatus.value;
-      if (!s || !s.total || s.total <= 0) {
+      if (!s) {
+        return 0;
+      }
+      if (!s.running && s.endTime) {
+        return 100;
+      }
+      if (!s.total || s.total <= 0) {
         return 0;
       }
       return Math.min(100, Math.round(((s.processed ?? 0) / s.total) * 100));
+    });
+
+    const rebuildProgressStatus = computed((): "success" | "warning" | undefined => {
+      if (rebuildRunning.value) {
+        return undefined;
+      }
+      if (!rebuildStatus.value?.endTime) {
+        return undefined;
+      }
+      if ((rebuildStatus.value.failed ?? 0) > 0) {
+        return "warning";
+      }
+      return "success";
     });
 
     /**
@@ -399,6 +418,7 @@ export default {
       rebuildStarting,
       rebuildRunning,
       rebuildProgressPercent,
+      rebuildProgressStatus,
       statExplainVisible,
       statExplainTitle,
       statExplainIntro,
