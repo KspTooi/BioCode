@@ -52,7 +52,7 @@
                     ? "校验中"
                     : scope.row.status === 1
                       ? "区块不完整"
-                      : "预检文件"
+                      : "未索引"
               }}
             </el-tag>
           </template>

@@ -33,7 +33,7 @@ export interface GetAttachListVo {
   sha256: string; // 文件摘要
   totalSize: number; // 文件总大小
   receiveSize: number; // 已接收大小
-  status: number; // 状态 0:预检文件 1:区块不完整 2:校验中 3:有效
+  status: number; // 状态 0:未索引 1:区块不完整 2:校验中 3:有效
   verifyTime: string; // 校验时间
   createTime: string; // 创建时间
 }
