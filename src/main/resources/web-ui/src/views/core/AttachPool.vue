@@ -17,14 +17,14 @@
 
         <template v-if="record">
           <div class="stat-grid">
-            <div class="stat-item">
+            <div class="stat-item stat-item-clickable" @click="openStatExplain('indexed')">
               <div class="title-with-icon stat-label">
                 <el-icon><CircleCheck /></el-icon>
                 已索引附件
               </div>
               <div class="stat-value">{{ record.indexedCount ?? 0 }}</div>
             </div>
-            <div class="stat-item">
+            <div class="stat-item stat-item-clickable" @click="openStatExplain('drift')">
               <div class="title-with-icon stat-label">
                 <el-icon><Warning /></el-icon>
                 游离附件
@@ -65,11 +65,7 @@
             </el-descriptions-item>
             <el-descriptions-item label="附件占用">{{ formatBytes(record.poolAttachesBytes) }}</el-descriptions-item>
             <el-descriptions-item label="其他占用">
-              {{
-                formatBytes(
-                  String(Math.max(0, Number(record.poolUsageBytes) - Number(record.poolAttachesBytes)))
-                )
-              }}
+              {{ formatBytes(String(Math.max(0, Number(record.poolUsageBytes) - Number(record.poolAttachesBytes)))) }}
             </el-descriptions-item>
             <el-descriptions-item label="存储池路径" :span="2">{{ record.poolPath }}</el-descriptions-item>
             <el-descriptions-item label="扫描开始时间">{{ record.scanStartTime ?? "-" }}</el-descriptions-item>
@@ -78,6 +74,13 @@
         </template>
       </div>
     </el-scrollbar>
+
+    <el-dialog v-model="statExplainVisible" :title="statExplainTitle" width="520px" @close="closeStatExplain">
+      <p class="stat-explain-text">{{ statExplainText }}</p>
+      <template #footer>
+        <el-button type="primary" @click="closeStatExplain">知道了</el-button>
+      </template>
+    </el-dialog>
   </StdListContainer>
 </template>
 
@@ -96,8 +99,20 @@ use([CanvasRenderer, BarChart, GridComponent, TooltipComponent, LegendComponent]
 
 provide(THEME_KEY, "light");
 
-const { record, loading, scanning, loadRecord, onScan, formatBytes, diskUsageOption } =
-  AttachPoolService.useAttachPoolStatus();
+const {
+  record,
+  loading,
+  scanning,
+  statExplainVisible,
+  statExplainTitle,
+  statExplainText,
+  loadRecord,
+  onScan,
+  openStatExplain,
+  closeStatExplain,
+  formatBytes,
+  diskUsageOption,
+} = AttachPoolService.useAttachPoolStatus();
 </script>
 
 <style scoped>
@@ -156,6 +171,16 @@ const { record, loading, scanning, loadRecord, onScan, formatBytes, diskUsageOpt
   border: 1px solid var(--el-border-color-lighter);
 }
 
+.stat-item-clickable {
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.stat-item-clickable:hover {
+  border-color: var(--el-color-primary-light-5);
+  background-color: #f0f5ff;
+}
+
 .stat-label {
   font-size: 12px;
   font-weight: normal;
@@ -210,5 +235,12 @@ const { record, loading, scanning, loadRecord, onScan, formatBytes, diskUsageOpt
     color: var(--el-text-color-primary);
   }
   border-radius: 0 !important;
+}
+
+.stat-explain-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--el-text-color-regular);
 }
 </style>

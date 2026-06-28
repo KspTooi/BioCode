@@ -3,6 +3,8 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import type { GetLatestScanRecordVo } from "@/views/core/api/AttachPoolApi";
 import AttachPoolApi from "@/views/core/api/AttachPoolApi";
 
+type StatExplainKind = "indexed" | "drift";
+
 export default {
   /**
    * 附件池扫描状态打包：加载最新扫描记录、触发扫描、附件池堆叠图配置
@@ -11,6 +13,33 @@ export default {
     const record = ref<GetLatestScanRecordVo | null>(null);
     const loading = ref(false);
     const scanning = ref(false);
+    const statExplainVisible = ref(false);
+    const statExplainTitle = ref("");
+    const statExplainText = ref("");
+
+    /**
+     * 打开指标说明模态框
+     */
+    const openStatExplain = (kind: StatExplainKind): void => {
+      if (kind === "indexed") {
+        statExplainTitle.value = "已索引附件";
+        statExplainText.value =
+          "已在系统中登记且状态有效的附件。这类附件拥有完整的索引记录，可被业务正常引用、检索和访问。";
+      }
+      if (kind === "drift") {
+        statExplainTitle.value = "游离附件";
+        statExplainText.value =
+          "存在于附件池目录中、但系统中没有对应有效索引记录的文件。这类文件无法被业务正常引用，通常由上传中断、索引丢失或历史残留产生，建议定期扫描并人工排查清理。";
+      }
+      statExplainVisible.value = true;
+    };
+
+    /**
+     * 关闭指标说明模态框
+     */
+    const closeStatExplain = (): void => {
+      statExplainVisible.value = false;
+    };
 
     /**
      * 加载最新扫描记录
@@ -174,8 +203,13 @@ export default {
       record,
       loading,
       scanning,
+      statExplainVisible,
+      statExplainTitle,
+      statExplainText,
       loadRecord,
       onScan,
+      openStatExplain,
+      closeStatExplain,
       formatBytes,
       diskUsageOption,
     };
