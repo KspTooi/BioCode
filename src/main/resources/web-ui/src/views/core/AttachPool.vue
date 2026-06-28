@@ -89,11 +89,11 @@
                   :disabled="scanning || rebuildRunning || clearingInvalid"
                   @click="onStartRebuild"
                 >
-                  开始重建索引
+                  开始重建
                 </el-button>
               </div>
               <p class="rebuild-desc">
-                自动处理附件池中的游离文件：无索引则新建，有损坏索引则修复，与已有有效索引重复则清理副本。任务在后台运行，完成后自动刷新统计数据。
+                扫描附件池中的游离文件，按文件内容补建缺失索引、修复损坏记录，并清理与有效索引重复的多余副本。任务在后台执行，完成后自动更新统计数据。
               </p>
               <template v-if="rebuildStatus && (rebuildRunning || rebuildStatus.endTime)">
                 <el-progress
@@ -127,14 +127,14 @@
                   :disabled="scanning || rebuildRunning || clearingInvalid"
                   @click="onClearInvalidIndexes"
                 >
-                  清除无效索引
+                  确认清除
                 </el-button>
               </div>
               <p class="clear-desc">
-                删除数据库中所有无效索引记录（未索引、区块不完整、校验中等），磁盘上的文件不会被删除。
+                从数据库移除全部无效索引（未索引、区块不完整、校验中等），磁盘上的附件文件不会被删除。
               </p>
               <p class="clear-warn">
-                若无效索引仍被业务引用，删除后引用关系将永久丢失；即使附件文件仍在池中，也无法通过复制文件或「重建索引」恢复。请确认无业务依赖后再操作。
+                若业务数据仍引用这些索引，删除后关联将永久断开；即便文件还在附件池中，复制回来或重建索引也无法恢复原有引用。操作前请确认无业务依赖。
               </p>
             </div>
           </div>

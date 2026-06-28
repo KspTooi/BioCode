@@ -195,10 +195,10 @@ export default {
       }
       try {
         await ElMessageBox.confirm(
-          "将遍历游离文件并尝试新建或修复索引，任务在后台运行且与扫描互斥，是否继续？",
+          "将扫描游离文件并补建或修复索引，执行期间不可进行其他扫描操作，是否开始？",
           "重建索引",
           {
-            confirmButtonText: "确定",
+            confirmButtonText: "开始",
             cancelButtonText: "取消",
             type: "warning",
           },
@@ -209,7 +209,7 @@ export default {
       rebuildStarting.value = true;
       try {
         await AttachPoolApi.startRebuildIndex();
-        ElMessage.success("重建索引任务已启动");
+        ElMessage.success("重建索引已开始，可在下方查看进度");
         await loadRebuildStatus();
         startRebuildPoll();
       } catch (error: any) {
@@ -228,10 +228,10 @@ export default {
       }
       try {
         await ElMessageBox.confirm(
-          "此操作仅删除数据库中的无效索引记录，磁盘文件保留。若无效索引仍被业务引用，删除后引用关系永久丢失，无法通过复制文件或重建索引恢复。是否确认继续？",
+          "将永久删除全部无效索引记录，磁盘文件不受影响。若索引仍被业务引用，删除后关联无法恢复，确定要继续吗？",
           "清除无效索引",
           {
-            confirmButtonText: "确认删除",
+            confirmButtonText: "确认清除",
             cancelButtonText: "取消",
             type: "warning",
           },
