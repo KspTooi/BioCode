@@ -785,21 +785,50 @@ public class AttachService {
             }
         }
 
-        try {
-            if (Files.exists(absolutePath)) {
-                Files.deleteIfExists(source);
-                return true;
+        var sourceAbs = source.toAbsolutePath().normalize();
+        var targetAbs = absolutePath.toAbsolutePath().normalize();
+        var alreadyAtTarget = sourceAbs.equals(targetAbs);
+        if (!alreadyAtTarget) {
+            try {
+                alreadyAtTarget = Files.isSameFile(source, absolutePath);
+            } catch (IOException ignore) {
             }
-            Files.move(source, absolutePath);
+        }
+
+        try {
+            if (alreadyAtTarget) {
+                //文件已在标准路径，仅补建索引
+            }
+            if (!alreadyAtTarget && Files.exists(absolutePath)) {
+                Files.deleteIfExists(source);
+            }
+            if (!alreadyAtTarget && !Files.exists(absolutePath)) {
+                Files.move(source, absolutePath, StandardCopyOption.REPLACE_EXISTING);
+            }
         } catch (IOException e) {
             throw new BizException("移动游离文件失败: " + e.getMessage());
+        }
+
+        var indexPath = relativePath.toString().replace('\\', '/');
+        if (alreadyAtTarget) {
+            String osName = System.getProperty("os.name").toLowerCase();
+            Path poolRoot = null;
+            if (osName.contains("win")) {
+                poolRoot = Paths.get(attachConfig.getLocalWindowsPath()).toAbsolutePath().normalize();
+            }
+            if (osName.contains("linux")) {
+                poolRoot = Paths.get(attachConfig.getLocalLinuxPath()).toAbsolutePath().normalize();
+            }
+            if (poolRoot != null && sourceAbs.startsWith(poolRoot)) {
+                indexPath = poolRoot.relativize(sourceAbs).normalize().toString().replace('\\', '/');
+            }
         }
 
         var po = new AttachPo();
         po.setName(filename);
         po.setKind(REBUILD_INDEX_KIND);
         po.setSuffix(suffix);
-        po.setPath(relativePath.toString());
+        po.setPath(indexPath);
         po.setSha256(sha256);
         po.setTotalSize(totalSize);
         po.setReceiveSize(totalSize);
