@@ -24,14 +24,9 @@
         <el-table-column type="index" label="序号" width="60" show-overflow-tooltip align="center" />
         <el-table-column prop="path" label="文件路径" min-width="220" show-overflow-tooltip />
         <el-table-column prop="sha256" label="文件摘要" min-width="200" show-overflow-tooltip />
-        <el-table-column prop="totalSize" label="总大小" min-width="100" show-overflow-tooltip align="right">
+        <el-table-column prop="totalSize" label="大小" min-width="140" show-overflow-tooltip align="right">
           <template #default="scope">
-            {{ formatBytes(scope.row.totalSize) }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="receiveSize" label="已接收" min-width="100" show-overflow-tooltip align="right">
-          <template #default="scope">
-            {{ formatBytes(scope.row.receiveSize) }}
+            {{ formatBytes(scope.row.receiveSize) }} of {{ formatBytes(scope.row.totalSize) }}
           </template>
         </el-table-column>
         <el-table-column prop="status" label="状态" width="110" align="center">
