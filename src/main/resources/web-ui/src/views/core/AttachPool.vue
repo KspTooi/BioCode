@@ -12,7 +12,7 @@
               <div class="toolbar-actions">
                 <el-button size="small" :loading="loading" @click="loadRecord">刷新</el-button>
                 <el-button size="small" type="primary" :loading="scanning" @click="onQuickScan">快速扫描</el-button>
-                <el-button size="small" type="warning" :loading="scanning" @click="onDeepScan">深度扫描</el-button>
+                <el-button size="small" type="danger" plain :loading="scanning" @click="onDeepScan">深度扫描</el-button>
               </div>
             </div>
 
