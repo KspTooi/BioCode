@@ -225,15 +225,17 @@ public class AttachPoolService {
             long checkedCount = 0;
             long existingCount = 0;
             long missingCount = 0;
+            long lastId = 0;
 
             while (true) {
-                Page<AttachPo> page = attachRepository.getValidAttachList(PageRequest.of(0, DEEP_SCAN_PAGE_SIZE));
+                Page<AttachPo> page = attachRepository.getValidAttachList(lastId, PageRequest.of(0, DEEP_SCAN_PAGE_SIZE));
                 if (page.isEmpty()) {
                     break;
                 }
 
                 for (AttachPo attach : page.getContent()) {
                     checkedCount++;
+                    lastId = attach.getId();
                     Path absolutePath = attachService.getAttachLocalPath(Paths.get(attach.getPath()));
                     if (!Files.exists(absolutePath)) {
                         log.warn("索引完整性校验：物理文件不存在 ID:{} 路径:{}", attach.getId(), absolutePath);

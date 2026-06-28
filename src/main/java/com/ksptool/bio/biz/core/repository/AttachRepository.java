@@ -89,15 +89,16 @@ public interface AttachRepository extends JpaRepository<AttachPo, Long> {
     /**
      * 分页查询有效附件列表
      *
+     * @param lastId   上一批最后一条记录ID，首批传 0
      * @param pageable 分页条件
      * @return 有效附件列表
      */
     @Query("""
             SELECT t FROM AttachPo t
-            WHERE t.status = 3
+            WHERE t.status = 3 AND t.id > :lastId
             ORDER BY t.id ASC
             """)
-    Page<AttachPo> getValidAttachList(Pageable pageable);
+    Page<AttachPo> getValidAttachList(@Param("lastId") long lastId, Pageable pageable);
 
     /**
      * 分页查询无效附件列表
