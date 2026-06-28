@@ -228,10 +228,10 @@ export default {
       }
       try {
         await ElMessageBox.confirm(
-          "将删除所有 status 非有效的索引记录，不删除磁盘文件，是否继续？",
+          "此操作仅删除数据库中的无效索引记录，磁盘文件保留。若无效索引仍被业务引用，删除后引用关系永久丢失，无法通过复制文件或重建索引恢复。是否确认继续？",
           "清除无效索引",
           {
-            confirmButtonText: "确定",
+            confirmButtonText: "确认删除",
             cancelButtonText: "取消",
             type: "warning",
           },

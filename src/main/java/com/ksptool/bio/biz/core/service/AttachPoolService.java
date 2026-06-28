@@ -291,25 +291,29 @@ public class AttachPoolService {
 
                 List<Path> driftFiles = new ArrayList<>();
                 if (Files.exists(poolRoot)) {
-                    Files.walkFileTree(poolRoot, new SimpleFileVisitor<Path>() {
-                        @Override
-                        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                            if (!attrs.isRegularFile()) {
+                    try {
+                        Files.walkFileTree(poolRoot, new SimpleFileVisitor<Path>() {
+                            @Override
+                            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                                if (!attrs.isRegularFile()) {
+                                    return FileVisitResult.CONTINUE;
+                                }
+                                String relative = poolRoot.relativize(file).toString().replace('\\', '/');
+                                if (!indexedPaths.contains(relative)) {
+                                    driftFiles.add(file);
+                                }
                                 return FileVisitResult.CONTINUE;
                             }
-                            String relative = poolRoot.relativize(file).toString().replace('\\', '/');
-                            if (!indexedPaths.contains(relative)) {
-                                driftFiles.add(file);
-                            }
-                            return FileVisitResult.CONTINUE;
-                        }
 
-                        @Override
-                        public FileVisitResult visitFileFailed(Path file, IOException exc) {
-                            log.warn("无法访问文件: {} - {}", file, exc.getMessage());
-                            return FileVisitResult.CONTINUE;
-                        }
-                    });
+                            @Override
+                            public FileVisitResult visitFileFailed(Path file, IOException exc) {
+                                log.warn("无法访问文件: {} - {}", file, exc.getMessage());
+                                return FileVisitResult.CONTINUE;
+                            }
+                        });
+                    } catch (IOException e) {
+                        throw new BizException("枚举游离文件失败: " + e.getMessage());
+                    }
                 }
 
                 rebuildTotal.set(driftFiles.size());

@@ -13,7 +13,6 @@
                 <el-button size="small" :loading="loading" @click="loadRecord">刷新</el-button>
                 <el-button size="small" type="primary" :loading="scanning" :disabled="rebuildRunning || clearingInvalid" @click="onQuickScan">更新统计数据</el-button>
                 <el-button size="small" type="danger" plain :loading="scanning" :disabled="rebuildRunning || clearingInvalid" @click="onDeepScan">检查索引完整性</el-button>
-                <el-button size="small" type="danger" :loading="clearingInvalid" :disabled="scanning || rebuildRunning" @click="onClearInvalidIndexes">清除无效索引</el-button>
               </div>
             </div>
 
@@ -114,6 +113,30 @@
                 <div class="rebuild-message">{{ rebuildStatus.message }}</div>
               </template>
             </div>
+
+            <div class="clear-block">
+              <div class="clear-header">
+                <span class="title-with-icon clear-title">
+                  <el-icon><Delete /></el-icon>
+                  清除无效索引
+                </span>
+                <el-button
+                  size="small"
+                  type="danger"
+                  :loading="clearingInvalid"
+                  :disabled="scanning || rebuildRunning || clearingInvalid"
+                  @click="onClearInvalidIndexes"
+                >
+                  清除无效索引
+                </el-button>
+              </div>
+              <p class="clear-desc">
+                删除数据库中所有无效索引记录（未索引、区块不完整、校验中等），磁盘上的文件不会被删除。
+              </p>
+              <p class="clear-warn">
+                若无效索引仍被业务引用，删除后引用关系将永久丢失；即使附件文件仍在池中，也无法通过复制文件或「重建索引」恢复。请确认无业务依赖后再操作。
+              </p>
+            </div>
           </div>
         </el-scrollbar>
       </el-tab-pane>
@@ -139,7 +162,7 @@ import { CanvasRenderer } from "echarts/renderers";
 import { BarChart } from "echarts/charts";
 import { GridComponent, TooltipComponent, LegendComponent } from "echarts/components";
 import VChart, { THEME_KEY } from "vue-echarts";
-import { CircleCheck, Coin, DataLine, FolderOpened, PieChart, RefreshRight, Warning } from "@element-plus/icons-vue";
+import { CircleCheck, Coin, DataLine, Delete, FolderOpened, PieChart, RefreshRight, Warning } from "@element-plus/icons-vue";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
 import AttachPoolDetails from "@/views/core/components/AttachPoolDetails.vue";
 import AttachPoolService from "@/views/core/service/AttachPoolService.ts";
@@ -372,6 +395,38 @@ const {
   margin-top: 8px;
   font-size: 13px;
   color: var(--el-text-color-secondary);
+}
+
+.clear-block {
+  padding: 12px 16px;
+  background-color: #fff5f5;
+  border: 1px solid var(--el-color-danger-light-7);
+}
+
+.clear-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.clear-title .el-icon {
+  color: var(--el-color-danger);
+}
+
+.clear-desc {
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--el-text-color-secondary);
+}
+
+.clear-warn {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--el-color-danger);
+  font-weight: 500;
 }
 
 :deep(.el-tabs--top .el-tabs__item.is-top:nth-child(2)) {
