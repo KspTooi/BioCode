@@ -146,7 +146,7 @@ public class AttachPoolService {
             updatePo.setScanStatus(1);
             attachPoolRepository.save(updatePo);
 
-            log.info("附件池扫描完成。文件总数:{} 已索引:{} 游离:{} 附件字节:{} 磁盘已用:{} 磁盘容量:{}",
+            log.info("附件池扫描完成。文件总数:{} 已索引:{} 游离:{} 附件字节:{} 附件池已用:{} 附件池容量:{}",
                     fileCount.get(), indexedCount, driftCount, totalBytes.get(), poolUsageBytes, poolCapacityBytes);
 
         } catch (IOException e) {

@@ -5,7 +5,7 @@ import AttachPoolApi from "@/views/core/api/AttachPoolApi";
 
 export default {
   /**
-   * 附件池扫描状态打包：加载最新扫描记录、触发扫描、磁盘堆叠图配置
+   * 附件池扫描状态打包：加载最新扫描记录、触发扫描、附件池堆叠图配置
    */
   useAttachPoolStatus() {
     const record = ref<GetLatestScanRecordVo | null>(null);
@@ -112,6 +112,10 @@ export default {
         legend: {
           bottom: 0,
           data: ["附件占用", "其他占用", "可用空间"],
+          textStyle: {
+            color: "#909399",
+            fontSize: 12,
+          },
         },
         grid: {
           left: 0,
@@ -127,12 +131,12 @@ export default {
         },
         yAxis: {
           type: "category",
-          data: [`磁盘使用率 ${usagePercent}%`],
+          data: [`附件池使用率 ${usagePercent}%`],
           axisLine: { show: false },
           axisTick: { show: false },
           axisLabel: {
-            fontSize: 13,
-            color: "#606266",
+            fontSize: 12,
+            color: "#909399",
           },
         },
         series: [
@@ -148,14 +152,14 @@ export default {
             name: "其他占用",
             type: "bar",
             stack: "disk",
-            itemStyle: { color: "#e6a23c" },
+            itemStyle: { color: "#909399" },
             data: [other],
           },
           {
             name: "可用空间",
             type: "bar",
             stack: "disk",
-            itemStyle: { color: "#ebeef5" },
+            itemStyle: { color: "#dcdfe6" },
             data: [free],
           },
         ],

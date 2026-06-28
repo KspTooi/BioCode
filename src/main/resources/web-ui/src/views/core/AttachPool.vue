@@ -3,7 +3,7 @@
     <el-scrollbar v-loading="loading" class="pool-scroll">
       <div class="pool-content">
         <div class="page-toolbar">
-          <span class="page-title">
+          <span class="title-with-icon page-title">
             <el-icon><FolderOpened /></el-icon>
             QSP 文件池
           </span>
@@ -18,27 +18,42 @@
         <template v-if="record">
           <div class="stat-grid">
             <div class="stat-item">
-              <div class="stat-label">已索引附件</div>
+              <div class="title-with-icon stat-label">
+                <el-icon><CircleCheck /></el-icon>
+                已索引附件
+              </div>
               <div class="stat-value">{{ record.indexedCount ?? 0 }}</div>
             </div>
             <div class="stat-item">
-              <div class="stat-label">游离附件</div>
+              <div class="title-with-icon stat-label">
+                <el-icon><Warning /></el-icon>
+                游离附件
+              </div>
               <div class="stat-value" :class="{ 'stat-warn': (record.driftCount ?? 0) > 0 }">
                 {{ record.driftCount ?? 0 }}
               </div>
             </div>
             <div class="stat-item">
-              <div class="stat-label">磁盘已用</div>
+              <div class="title-with-icon stat-label">
+                <el-icon><PieChart /></el-icon>
+                附件池已用
+              </div>
               <div class="stat-value stat-sm">{{ formatBytes(record.poolUsageBytes) }}</div>
             </div>
             <div class="stat-item">
-              <div class="stat-label">磁盘总容量</div>
+              <div class="title-with-icon stat-label">
+                <el-icon><Coin /></el-icon>
+                附件池总容量
+              </div>
               <div class="stat-value stat-sm">{{ formatBytes(record.poolCapacityBytes) }}</div>
             </div>
           </div>
 
           <div v-if="diskUsageOption" class="usage-block">
-            <div class="usage-title">磁盘使用率</div>
+            <div class="title-with-icon usage-title">
+              <el-icon><DataLine /></el-icon>
+              附件池使用率
+            </div>
             <v-chart class="usage-chart" :option="diskUsageOption" autoresize />
           </div>
 
@@ -73,7 +88,7 @@ import { CanvasRenderer } from "echarts/renderers";
 import { BarChart } from "echarts/charts";
 import { GridComponent, TooltipComponent, LegendComponent } from "echarts/components";
 import VChart, { THEME_KEY } from "vue-echarts";
-import { FolderOpened } from "@element-plus/icons-vue";
+import { CircleCheck, Coin, DataLine, FolderOpened, PieChart, Warning } from "@element-plus/icons-vue";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
 import AttachPoolService from "@/views/core/service/AttachPoolService.ts";
 
@@ -103,21 +118,25 @@ const { record, loading, scanning, loadRecord, onScan, formatBytes, diskUsageOpt
   justify-content: space-between;
   align-items: center;
   padding-bottom: 12px;
-  border-bottom: 1px solid var(--el-border-color-lighter);
+  border-bottom: 1px solid var(--el-border-color-light);
 }
 
-.page-title {
+.title-with-icon {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--el-text-color-primary);
 }
 
-.page-title .el-icon {
-  font-size: 18px;
+.title-with-icon .el-icon {
+  font-size: 16px;
   color: var(--el-color-primary);
+}
+
+.page-title {
+  height: 24px;
 }
 
 .toolbar-actions {
@@ -128,7 +147,7 @@ const { record, loading, scanning, loadRecord, onScan, formatBytes, diskUsageOpt
 .stat-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  gap: 16px;
 }
 
 .stat-item {
@@ -138,9 +157,14 @@ const { record, loading, scanning, loadRecord, onScan, formatBytes, diskUsageOpt
 }
 
 .stat-label {
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: normal;
   color: var(--el-text-color-secondary);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+}
+
+.stat-label .el-icon {
+  font-size: 14px;
 }
 
 .stat-value {
@@ -152,10 +176,12 @@ const { record, loading, scanning, loadRecord, onScan, formatBytes, diskUsageOpt
 
 .stat-value.stat-sm {
   font-size: 18px;
+  font-weight: 600;
+  color: var(--el-text-color-regular);
 }
 
 .stat-warn {
-  color: var(--el-color-warning);
+  color: var(--el-color-danger);
 }
 
 .usage-block {
@@ -165,9 +191,6 @@ const { record, loading, scanning, loadRecord, onScan, formatBytes, diskUsageOpt
 }
 
 .usage-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--el-text-color-primary);
   margin-bottom: 8px;
 }
 
@@ -180,6 +203,7 @@ const { record, loading, scanning, loadRecord, onScan, formatBytes, diskUsageOpt
   .el-descriptions__label {
     background-color: #f8f9fb !important;
     font-weight: 500;
+    color: var(--el-text-color-regular);
     width: 120px;
   }
   .el-descriptions__content {
