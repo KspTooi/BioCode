@@ -84,7 +84,8 @@
                 </span>
                 <el-button
                   size="small"
-                  type="warning"
+                  type="primary"
+                  plain
                   :loading="rebuildStarting || rebuildRunning"
                   :disabled="scanning || rebuildRunning || clearingInvalid"
                   @click="onStartRebuild"
@@ -92,8 +93,11 @@
                   开始重建
                 </el-button>
               </div>
+              <p class="rebuild-purpose">
+                适用于磁盘上已有附件但缺少有效索引、或索引与物理文件不一致的情况，用于恢复文件与索引的对应关系，使业务能重新检索和引用这些附件。
+              </p>
               <p class="rebuild-desc">
-                扫描附件池中的游离文件，按文件内容补建缺失索引、修复损坏记录，并清理与有效索引重复的多余副本。任务在后台执行，完成后自动更新统计数据。
+                执行时将扫描游离文件，按内容补建缺失索引、修复损坏记录，并清理与有效索引重复的多余副本。任务在后台运行，完成后自动更新统计数据。
               </p>
               <template v-if="rebuildStatus && (rebuildRunning || rebuildStatus.endTime)">
                 <el-progress
@@ -355,8 +359,8 @@ const {
 
 .rebuild-block {
   padding: 12px 16px;
-  background-color: #fffbf0;
-  border: 1px solid var(--el-color-warning-light-7);
+  background-color: #f0f7ff;
+  border: 1px solid var(--el-color-primary-light-7);
 }
 
 .rebuild-header {
@@ -367,7 +371,14 @@ const {
 }
 
 .rebuild-title .el-icon {
-  color: var(--el-color-warning);
+  color: var(--el-color-primary);
+}
+
+.rebuild-purpose {
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--el-text-color-primary);
 }
 
 .rebuild-desc {
