@@ -8,7 +8,7 @@ type StatExplainKind = "indexed" | "indexedLost" | "drift";
 
 export default {
   /**
-   * 附件池扫描状态打包：加载最新扫描记录、触发扫描、附件池堆叠图配置
+   * 附件存储池扫描状态打包：加载最新扫描记录、触发扫描、附件存储池堆叠图配置
    */
   useAttachPoolStatus() {
     const record = ref<GetLatestScanRecordVo | null>(null);
@@ -44,13 +44,13 @@ export default {
       }
       if (kind === "indexedLost") {
         statExplainTitle.value = "失效索引";
-        statExplainIntro.value = "数据库中有索引记录，但附件池目录中已找不到对应的物理文件。";
-        statExplainTip.value = "可将内容完全一致（SHA256 相同）的文件复制进附件池，再通过「重建索引」修复。";
+        statExplainIntro.value = "数据库中有索引记录，但附件存储池目录中已找不到对应的物理文件。";
+        statExplainTip.value = "可将内容完全一致（SHA256 相同）的文件复制进附件存储池，再通过「重建索引」修复。";
       }
       if (kind === "drift") {
         statExplainTitle.value = "游离附件";
         statExplainIntro.value =
-          "存在于附件池目录中、但系统中没有对应有效索引记录的文件。这类文件无法被业务正常引用，通常由上传中断、索引丢失或历史残留产生，建议定期扫描并人工排查清理。";
+          "存在于附件存储池目录中、但系统中没有对应有效索引记录的文件。这类文件无法被业务正常引用，通常由上传中断、索引丢失或历史残留产生，建议定期扫描并人工排查清理。";
       }
       statExplainVisible.value = true;
     };
@@ -91,7 +91,7 @@ export default {
       }
       try {
         await ElMessageBox.confirm(
-          "将统计附件池目录文件数量与磁盘占用，不校验已索引附件是否仍存在于磁盘，是否继续？",
+          "将统计附件存储池目录文件数量与磁盘占用，不校验已索引附件是否仍存在于磁盘，是否继续？",
           "更新统计数据",
           {
             confirmButtonText: "确定",
@@ -123,7 +123,7 @@ export default {
       }
       try {
         await ElMessageBox.confirm(
-          "将遍历附件池并校验已索引附件是否仍存在于磁盘，耗时较长，是否继续？",
+          "将遍历附件存储池并校验已索引附件是否仍存在于磁盘，耗时较长，是否继续？",
           "检查索引完整性",
           {
             confirmButtonText: "确定",
@@ -339,7 +339,7 @@ export default {
         },
         yAxis: {
           type: "category",
-          data: [`附件池使用率 ${usagePercent}%`],
+          data: [`附件存储池使用率 ${usagePercent}%`],
           axisLine: { show: false },
           axisTick: { show: false },
           axisLabel: {

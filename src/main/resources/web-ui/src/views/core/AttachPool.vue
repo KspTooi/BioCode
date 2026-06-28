@@ -7,7 +7,7 @@
             <div class="page-toolbar">
               <span class="title-with-icon page-title">
                 <el-icon><FolderOpened /></el-icon>
-                QSP 文件池
+                附件存储池
               </span>
               <div class="toolbar-actions">
                 <el-button size="small" :loading="loading" @click="loadRecord">刷新</el-button>
@@ -48,14 +48,14 @@
                 <div class="stat-item">
                   <div class="title-with-icon stat-label">
                     <el-icon><Coin /></el-icon>
-                    附件池总容量
+                    附件存储池总容量
                   </div>
                   <div class="stat-value stat-sm">{{ formatBytes(record.poolCapacityBytes) }}</div>
                 </div>
                 <div class="stat-item">
                   <div class="title-with-icon stat-label">
                     <el-icon><PieChart /></el-icon>
-                    附件池已用
+                    附件存储池已用
                   </div>
                   <div class="stat-value stat-sm">{{ formatBytes(record.poolUsageBytes) }}</div>
                 </div>
@@ -64,7 +64,7 @@
               <div v-if="diskUsageOption" class="usage-block">
                 <div class="title-with-icon usage-title">
                   <el-icon><DataLine /></el-icon>
-                  附件池使用率
+                  附件存储池使用率
                 </div>
                 <v-chart class="usage-chart" :option="diskUsageOption" autoresize />
               </div>
@@ -79,7 +79,7 @@
                 <el-descriptions-item label="其他占用">
                   {{ formatBytes(String(Math.max(0, Number(record.poolUsageBytes) - Number(record.poolAttachesBytes)))) }}
                 </el-descriptions-item>
-                <el-descriptions-item label="存储池路径" :span="2">{{ record.poolPath }}</el-descriptions-item>
+                <el-descriptions-item label="附件存储池路径" :span="2">{{ record.poolPath }}</el-descriptions-item>
                 <el-descriptions-item label="扫描开始时间">{{ record.scanStartTime ?? "-" }}</el-descriptions-item>
                 <el-descriptions-item label="扫描结束时间">{{ record.scanEndTime ?? "-" }}</el-descriptions-item>
               </el-descriptions>
@@ -147,14 +147,14 @@
                 从数据库移除全部无效索引（未索引、区块不完整、校验中等），磁盘上的附件文件不会被删除。
               </p>
               <p class="clear-warn">
-                若业务数据仍引用这些索引，删除后关联将永久断开；即便文件还在附件池中，复制回来或重建索引也无法恢复原有引用。操作前请确认无业务依赖。
+                若业务数据仍引用这些索引，删除后关联将永久断开；即便文件还在附件存储池中，复制回来或重建索引也无法恢复原有引用。操作前请确认无业务依赖。
               </p>
             </div>
           </div>
         </el-scrollbar>
       </el-tab-pane>
 
-      <el-tab-pane label="附件池诊断" name="details" lazy>
+      <el-tab-pane label="附件存储池诊断" name="details" lazy>
         <AttachPoolDetails />
       </el-tab-pane>
     </el-tabs>

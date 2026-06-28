@@ -90,7 +90,7 @@ export default class CoreRouteRegister extends GenricRouteRegister {
         path: "attach-pool",
         name: "attach-pool",
         component: () => import("@/views/core/AttachPool.vue"),
-        meta: { breadcrumb: "QSP文件池" },
+        meta: { breadcrumb: "附件存储池" },
       }),
       RouteEntryPo.build({
         biz: "core",

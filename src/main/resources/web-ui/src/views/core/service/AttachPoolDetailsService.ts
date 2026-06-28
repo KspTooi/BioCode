@@ -7,7 +7,7 @@ import QueryPersistService from "@/commons/service/QueryPersistService.ts";
 
 export default {
   /**
-   * 附件池诊断列表
+   * 附件存储池诊断列表
    */
   useAttachPoolDetailsList() {
     const listForm = ref<GetAttachListDto>({

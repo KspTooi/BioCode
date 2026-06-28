@@ -4,10 +4,10 @@ import type PageResult from "@/commons/model/PageResult.ts";
 import type Result from "@/commons/model/Result.ts";
 
 /**
- * 最新附件池扫描记录 VO
+ * 最新附件存储池扫描记录 VO
  */
 export interface GetLatestScanRecordVo {
-  poolPath: string; // 存储池地址
+  poolPath: string; // 附件存储池地址
   poolCapacityBytes: string; // 总可用字节
   poolUsageBytes: string; // 总已用字节
   poolAttachesBytes: string; // 附件占用字节
@@ -48,7 +48,7 @@ export const AttachIndexFilterOptions = [
 ];
 
 /**
- * 扫描附件池 DTO
+ * 扫描附件存储池 DTO
  */
 export interface ScanAttachPoolDto {
   scanMode: number; // 0:快速扫描 1:深度扫描
@@ -72,7 +72,7 @@ export interface GetRebuildIndexStatusVo {
 
 export default {
   /**
-   * 查询最新的附件池扫描记录
+   * 查询最新的附件存储池扫描记录
    */
   getLatestScanRecord: async (): Promise<GetLatestScanRecordVo> => {
     const result = await Http.postEntity<Result<GetLatestScanRecordVo>>("/attachPool/getLatestScanRecord", {});
@@ -83,7 +83,7 @@ export default {
   },
 
   /**
-   * 扫描附件池
+   * 扫描附件存储池
    */
   scanAttachPool: async (dto: ScanAttachPoolDto): Promise<void> => {
     const result = await Http.postEntity<Result<string>>("/attachPool/scanAttachPool", dto);
