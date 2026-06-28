@@ -98,7 +98,7 @@ public interface AttachRepository extends JpaRepository<AttachPo, Long> {
             SELECT t FROM AttachPo t
             WHERE t.sha256 = :sha256
             """)
-    List<AttachPo> findBySha256(@Param("sha256") String sha256);
+    List<AttachPo> getBySha256(@Param("sha256") String sha256);
 
     /**
      * 查询全部索引路径
@@ -108,6 +108,6 @@ public interface AttachRepository extends JpaRepository<AttachPo, Long> {
     @Query("""
             SELECT t.path FROM AttachPo t
             """)
-    List<String> listAllPaths();
+    List<String> getAllPaths();
 
 }

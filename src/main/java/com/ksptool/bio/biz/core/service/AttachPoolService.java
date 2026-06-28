@@ -347,7 +347,7 @@ public class AttachPoolService {
                 Path poolRoot = resolvePoolRoot();
 
                 Set<String> indexedPaths = new HashSet<>();
-                for (String path : attachRepository.listAllPaths()) {
+                for (String path : attachRepository.getAllPaths()) {
                     if (path == null) {
                         continue;
                     }
@@ -383,7 +383,7 @@ public class AttachPoolService {
                 for (Path drift : driftFiles) {
                     try {
                         String sha256 = attachService.computeSha256(drift);
-                        List<AttachPo> matches = attachRepository.findBySha256(sha256);
+                        List<AttachPo> matches = attachRepository.getBySha256(sha256);
                         String displayName = drift.getFileName().toString();
 
                         if (matches.isEmpty()) {
