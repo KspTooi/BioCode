@@ -72,7 +72,7 @@ public class AttachPoolService {
         AttachPo query = new AttachPo();
         assign(dto, query);
 
-        Page<AttachPo> page = attachRepository.getAttachList(query, dto.pageRequest());
+        Page<AttachPo> page = attachRepository.getAttachList(query, dto.getIndexFilter(), dto.pageRequest());
         if (page.isEmpty()) {
             return PageResult.successWithEmpty();
         }

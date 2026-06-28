@@ -66,9 +66,13 @@ public interface AttachRepository extends JpaRepository<AttachPo, Long> {
     @Query("""
             SELECT t FROM AttachPo t
             WHERE (:#{#po.kind} IS NULL OR t.kind = :#{#po.kind})
-            AND (:#{#po.status} IS NULL OR t.status = :#{#po.status})
+            AND (
+                :indexFilter IS NULL
+                OR (:indexFilter = 1 AND t.status = 3)
+                OR (:indexFilter = 0 AND t.status <> 3)
+            )
             ORDER BY t.createTime DESC
             """)
-    Page<AttachPo> getAttachList(@Param("po") AttachPo po, Pageable pageable);
+    Page<AttachPo> getAttachList(@Param("po") AttachPo po, @Param("indexFilter") Integer indexFilter, Pageable pageable);
 
 }

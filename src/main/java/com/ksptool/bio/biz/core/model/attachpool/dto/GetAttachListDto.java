@@ -12,7 +12,7 @@ public class GetAttachListDto extends PageQuery {
     @Schema(description = "文件业务类型")
     private String kind;
 
-    @Schema(description = "状态 0:预检文件 1:区块不完整 2:校验中 3:有效")
-    private Integer status;
+    @Schema(description = "索引筛选 1:已索引 0:无效")
+    private Integer indexFilter;
 
 }

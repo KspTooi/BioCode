@@ -3,12 +3,14 @@
     <StdListAreaQuery>
       <el-form :model="listForm" inline class="flex justify-between">
         <div>
-          <el-form-item label="业务类型">
-            <el-input v-model="listForm.kind" placeholder="输入文件业务类型" clearable />
-          </el-form-item>
-          <el-form-item label="状态">
-            <el-select v-model="listForm.status" placeholder="全部" clearable style="width: 160px">
-              <el-option v-for="item in AttachStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
+          <el-form-item label="索引状态">
+            <el-select v-model="listForm.indexFilter" style="width: 160px">
+              <el-option
+                v-for="item in AttachIndexFilterOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
             </el-select>
           </el-form-item>
         </div>
@@ -45,7 +47,7 @@
             >
               {{
                 scope.row.status === 3
-                  ? "有效"
+                  ? "已索引"
                   : scope.row.status === 2
                     ? "校验中"
                     : scope.row.status === 1
@@ -66,7 +68,7 @@
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
 import StdListAreaQuery from "@/soa/std-series/StdListAreaQuery.vue";
 import StdListAreaTable from "@/soa/std-series/StdListAreaTable.vue";
-import { AttachStatusOptions } from "@/views/core/api/AttachPoolApi";
+import { AttachIndexFilterOptions } from "@/views/core/api/AttachPoolApi";
 import AttachPoolDetailsService from "@/views/core/service/AttachPoolDetailsService.ts";
 
 const { listForm, listData, listTotal, listLoading, loadList, resetList, formatBytes } =

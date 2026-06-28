@@ -12,8 +12,7 @@ export default {
     const listForm = ref<GetAttachListDto>({
       pageNum: 1,
       pageSize: 20,
-      kind: "",
-      status: null,
+      indexFilter: 1,
     });
 
     const listData = ref<GetAttachListVo[]>([]);
@@ -45,8 +44,7 @@ export default {
     const resetList = (): void => {
       listForm.value.pageNum = 1;
       listForm.value.pageSize = 20;
-      listForm.value.kind = "";
-      listForm.value.status = null;
+      listForm.value.indexFilter = 1;
       loadList();
     };
 

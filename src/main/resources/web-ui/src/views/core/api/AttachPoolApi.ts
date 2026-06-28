@@ -22,8 +22,7 @@ export interface GetLatestScanRecordVo {
  * 附件列表查询 DTO
  */
 export interface GetAttachListDto extends PageQuery {
-  kind?: string; // 文件业务类型
-  status?: number | null; // 状态 0:预检文件 1:区块不完整 2:校验中 3:有效
+  indexFilter?: number | null; // 1:已索引 0:无效
 }
 
 /**
@@ -40,13 +39,11 @@ export interface GetAttachListVo {
 }
 
 /**
- * 附件状态筛选项
+ * 附件索引筛选项
  */
-export const AttachStatusOptions = [
-  { label: "预检文件", value: 0 },
-  { label: "区块不完整", value: 1 },
-  { label: "校验中", value: 2 },
-  { label: "有效", value: 3 },
+export const AttachIndexFilterOptions = [
+  { label: "已索引", value: 1 },
+  { label: "无效", value: 0 },
 ];
 
 export default {
