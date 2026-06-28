@@ -120,4 +120,15 @@ export default {
     }
     throw new Error(result.message);
   },
+
+  /**
+   * 清除无效索引
+   */
+  clearInvalidIndexes: async (): Promise<string> => {
+    const result = await Http.postEntity<Result<string>>("/attachPool/clearInvalidIndexes", {});
+    if (result.code === 0) {
+      return result.data;
+    }
+    throw new Error(result.message);
+  },
 };

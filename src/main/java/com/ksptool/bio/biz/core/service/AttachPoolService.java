@@ -554,6 +554,113 @@ public class AttachPoolService {
     }
 
     /**
+     * 清除无效索引，仅删除 status 非 3 的数据库记录，不删除磁盘文件
+     *
+     * @return 操作摘要
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public String clearInvalidIndexes() throws BizException {
+        if (rebuildRunning) {
+            throw new BizException("重建索引任务进行中");
+        }
+        if (!scanLock.tryLock()) {
+            throw new BizException("附件池正在扫描中，请稍后再试");
+        }
+        try {
+            long deletedCount = 0;
+            while (true) {
+                Page<AttachPo> page = attachRepository.getInvalidAttachList(PageRequest.of(0, DEEP_SCAN_PAGE_SIZE));
+                if (page.isEmpty()) {
+                    break;
+                }
+                attachRepository.deleteAll(page.getContent());
+                deletedCount += page.getNumberOfElements();
+            }
+
+            log.info("清除无效索引完成，删除 {} 条", deletedCount);
+
+            AttachPoolPo latest = attachPoolRepository.getLatestScanRecord();
+
+            if (latest != null && latest.getScanStatus() == 0) {
+                log.warn("检测到前次扫描未完成(scanStatus=0, id={})，锁已释放，判断为前次扫描异常中止，将创建新的扫描记录", latest.getId());
+            }
+
+            Path poolRoot = resolvePoolRoot();
+
+            AttachPoolPo insertPo = new AttachPoolPo();
+            insertPo.setPoolPath(poolRoot.toString());
+            insertPo.setPoolCapacityBytes(0L);
+            insertPo.setPoolUsageBytes(0L);
+            insertPo.setPoolAttachesBytes(0L);
+            insertPo.setIndexedCount(0);
+            insertPo.setDriftCount(0);
+            insertPo.setScanStartTime(LocalDateTime.now());
+            insertPo.setScanStatus(0);
+            attachPoolRepository.save(insertPo);
+            long recordId = insertPo.getId();
+
+            if (!Files.exists(poolRoot)) {
+                log.warn("附件池目录不存在，将创建空目录: {}", poolRoot);
+                Files.createDirectories(poolRoot);
+            }
+
+            AtomicLong fileCount = new AtomicLong(0);
+            AtomicLong totalBytes = new AtomicLong(0);
+            Files.walkFileTree(poolRoot, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                    if (attrs.isRegularFile()) {
+                        fileCount.incrementAndGet();
+                        totalBytes.addAndGet(attrs.size());
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult visitFileFailed(Path file, IOException exc) {
+                    log.warn("无法访问文件: {} - {}", file, exc.getMessage());
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+
+            long indexedCount = attachRepository.countValidAttaches();
+            long driftCount = fileCount.get() - indexedCount;
+            if (driftCount < 0) {
+                driftCount = 0;
+            }
+
+            long poolCapacityBytes = poolRoot.toFile().getTotalSpace();
+            long poolAvailableBytes = poolRoot.toFile().getUsableSpace();
+            long poolUsageBytes = poolCapacityBytes - poolAvailableBytes;
+            if (poolUsageBytes < 0) {
+                poolUsageBytes = 0;
+            }
+
+            AttachPoolPo updatePo = attachPoolRepository.findById(recordId)
+                    .orElseThrow(() -> new BizException("扫描记录不存在"));
+            updatePo.setPoolCapacityBytes(poolCapacityBytes);
+            updatePo.setPoolUsageBytes(poolUsageBytes);
+            updatePo.setPoolAttachesBytes(totalBytes.get());
+            updatePo.setIndexedCount((int) indexedCount);
+            updatePo.setDriftCount((int) driftCount);
+            updatePo.setScanEndTime(LocalDateTime.now());
+            updatePo.setScanStatus(1);
+            attachPoolRepository.save(updatePo);
+
+            log.info("附件池快速扫描完成。文件总数:{} 已索引:{} 游离:{} 附件字节:{} 附件池已用:{} 附件池容量:{}",
+                    fileCount.get(), indexedCount, driftCount, totalBytes.get(), poolUsageBytes, poolCapacityBytes);
+
+            return String.format("已清除 %d 条无效索引", deletedCount);
+
+        } catch (IOException e) {
+            log.error("清除无效索引异常", e);
+            throw new BizException("清除无效索引失败: " + e.getMessage());
+        } finally {
+            scanLock.unlock();
+        }
+    }
+
+    /**
      * 解析当前操作系统的附件池根目录
      */
     private Path resolvePoolRoot() throws BizException {

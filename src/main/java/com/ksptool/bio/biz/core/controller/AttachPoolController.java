@@ -81,4 +81,11 @@ public class AttachPoolController {
         return Result.success(attachPoolService.getRebuildIndexStatus());
     }
 
+    @PreAuthorize("@auth.hasCode('core:attach:pool:scan')")
+    @Operation(summary = "清除无效索引")
+    @PostMapping("/clearInvalidIndexes")
+    public Result<String> clearInvalidIndexes() throws BizException {
+        return Result.success(attachPoolService.clearInvalidIndexes());
+    }
+
 }

@@ -11,8 +11,9 @@
               </span>
               <div class="toolbar-actions">
                 <el-button size="small" :loading="loading" @click="loadRecord">刷新</el-button>
-                <el-button size="small" type="primary" :loading="scanning" :disabled="rebuildRunning" @click="onQuickScan">更新统计数据</el-button>
-                <el-button size="small" type="danger" plain :loading="scanning" :disabled="rebuildRunning" @click="onDeepScan">检查索引完整性</el-button>
+                <el-button size="small" type="primary" :loading="scanning" :disabled="rebuildRunning || clearingInvalid" @click="onQuickScan">更新统计数据</el-button>
+                <el-button size="small" type="danger" plain :loading="scanning" :disabled="rebuildRunning || clearingInvalid" @click="onDeepScan">检查索引完整性</el-button>
+                <el-button size="small" type="danger" :loading="clearingInvalid" :disabled="scanning || rebuildRunning" @click="onClearInvalidIndexes">清除无效索引</el-button>
               </div>
             </div>
 
@@ -86,7 +87,7 @@
                   size="small"
                   type="warning"
                   :loading="rebuildStarting || rebuildRunning"
-                  :disabled="scanning || rebuildRunning"
+                  :disabled="scanning || rebuildRunning || clearingInvalid"
                   @click="onStartRebuild"
                 >
                   开始重建索引
@@ -159,10 +160,12 @@ const {
   onQuickScan,
   onDeepScan,
   onStartRebuild,
+  onClearInvalidIndexes,
   rebuildStatus,
   rebuildStarting,
   rebuildRunning,
   rebuildProgressPercent,
+  clearingInvalid,
   openStatExplain,
   closeStatExplain,
   formatBytes,

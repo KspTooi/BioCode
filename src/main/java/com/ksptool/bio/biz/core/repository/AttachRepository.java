@@ -89,6 +89,19 @@ public interface AttachRepository extends JpaRepository<AttachPo, Long> {
     Page<AttachPo> getValidAttachList(Pageable pageable);
 
     /**
+     * 分页查询无效附件列表
+     *
+     * @param pageable 分页条件
+     * @return 无效附件列表
+     */
+    @Query("""
+            SELECT t FROM AttachPo t
+            WHERE t.status <> 3
+            ORDER BY t.id ASC
+            """)
+    Page<AttachPo> getInvalidAttachList(Pageable pageable);
+
+    /**
      * 按摘要查询附件列表
      *
      * @param sha256 文件摘要

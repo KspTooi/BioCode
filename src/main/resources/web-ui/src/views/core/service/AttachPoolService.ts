@@ -20,6 +20,7 @@ export default {
     const tabState = ref({ activeTab: "overview" });
     const rebuildStatus = ref<GetRebuildIndexStatusVo | null>(null);
     const rebuildStarting = ref(false);
+    const clearingInvalid = ref(false);
     let rebuildPollTimer: ReturnType<typeof setInterval> | null = null;
 
     const activeTab = computed({
@@ -218,6 +219,38 @@ export default {
       }
     };
 
+    /**
+     * 清除无效索引
+     */
+    const onClearInvalidIndexes = async (): Promise<void> => {
+      if (clearingInvalid.value || scanning.value || rebuildStatus.value?.running) {
+        return;
+      }
+      try {
+        await ElMessageBox.confirm(
+          "将删除所有 status 非有效的索引记录，不删除磁盘文件，是否继续？",
+          "清除无效索引",
+          {
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+            type: "warning",
+          },
+        );
+      } catch {
+        return;
+      }
+      clearingInvalid.value = true;
+      try {
+        const msg = await AttachPoolApi.clearInvalidIndexes();
+        ElMessage.success(msg);
+        await loadRecord();
+      } catch (error: any) {
+        ElMessage.error(error.message);
+      } finally {
+        clearingInvalid.value = false;
+      }
+    };
+
     const rebuildRunning = computed(() => rebuildStatus.value?.running === true);
 
     const rebuildProgressPercent = computed(() => {
@@ -366,6 +399,8 @@ export default {
       onQuickScan,
       onDeepScan,
       onStartRebuild,
+      onClearInvalidIndexes,
+      clearingInvalid,
       openStatExplain,
       closeStatExplain,
       formatBytes,
