@@ -174,9 +174,14 @@ export default {
         stopRebuildPoll();
         await loadRecord();
         const msg = rebuildStatus.value?.message;
-        if (msg && msg !== "空闲" && msg !== "任务启动中" && msg !== "重建索引进行中") {
-          ElMessage.success(msg);
+        if (!msg || msg === "空闲" || msg === "任务启动中" || msg === "重建索引进行中") {
+          return;
         }
+        if (msg.includes("失败") || msg.includes("正在扫描中")) {
+          ElMessage.error(msg);
+          return;
+        }
+        ElMessage.success(msg);
       }, 2000);
     };
 

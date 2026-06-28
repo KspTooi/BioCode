@@ -324,7 +324,7 @@ public class AttachPoolService {
     /**
      * 启动重建索引异步任务
      */
-    public void startRebuildIndex() throws BizException {
+    public synchronized void startRebuildIndex() throws BizException {
         if (rebuildRunning) {
             throw new BizException("重建索引任务进行中");
         }
@@ -343,13 +343,9 @@ public class AttachPoolService {
         CompletableFuture.runAsync(() -> {
             SecurityContextHolder.setContext(asyncSecurityContext);
             try {
-            if (!scanLock.tryLock()) {
-                rebuildMessage = "附件池正在扫描中";
-                rebuildRunning = false;
-                rebuildEndTime = LocalDateTime.now();
-                return;
-            }
-            try {
+                scanLock.lock();
+                try {
+                rebuildMessage = "重建索引进行中";
                 Path poolRoot = resolvePoolRoot();
 
                 Set<String> indexedPaths = new HashSet<>();
@@ -384,7 +380,6 @@ public class AttachPoolService {
                 }
 
                 rebuildTotal.set(driftFiles.size());
-                rebuildMessage = "重建索引进行中";
 
                 for (Path drift : driftFiles) {
                     try {
@@ -526,7 +521,9 @@ public class AttachPoolService {
                 log.error("重建索引异常", e);
                 rebuildMessage = "重建索引失败: " + e.getMessage();
             } finally {
-                scanLock.unlock();
+                if (scanLock.isHeldByCurrentThread()) {
+                    scanLock.unlock();
+                }
                 rebuildRunning = false;
                 rebuildEndTime = LocalDateTime.now();
             }
