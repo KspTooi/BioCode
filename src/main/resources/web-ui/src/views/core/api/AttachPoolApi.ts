@@ -1,4 +1,6 @@
 import Http from "@/commons/Http.ts";
+import type PageQuery from "@/commons/model/PageQuery.ts";
+import type PageResult from "@/commons/model/PageResult.ts";
 import type Result from "@/commons/model/Result.ts";
 
 /**
@@ -15,6 +17,37 @@ export interface GetLatestScanRecordVo {
   scanEndTime: string; // 扫描结束时间
   scanStatus: number; // 扫描状态 0:正在扫描 1:成功
 }
+
+/**
+ * 附件列表查询 DTO
+ */
+export interface GetAttachListDto extends PageQuery {
+  kind?: string; // 文件业务类型
+  status?: number | null; // 状态 0:预检文件 1:区块不完整 2:校验中 3:有效
+}
+
+/**
+ * 附件列表 VO
+ */
+export interface GetAttachListVo {
+  path: string; // 文件路径
+  sha256: string; // 文件摘要
+  totalSize: number; // 文件总大小
+  receiveSize: number; // 已接收大小
+  status: number; // 状态 0:预检文件 1:区块不完整 2:校验中 3:有效
+  verifyTime: string; // 校验时间
+  createTime: string; // 创建时间
+}
+
+/**
+ * 附件状态筛选项
+ */
+export const AttachStatusOptions = [
+  { label: "预检文件", value: 0 },
+  { label: "区块不完整", value: 1 },
+  { label: "校验中", value: 2 },
+  { label: "有效", value: 3 },
+];
 
 export default {
   /**
@@ -37,5 +70,12 @@ export default {
       return result.message;
     }
     throw new Error(result.message);
+  },
+
+  /**
+   * 查询附件列表
+   */
+  getAttachList: async (dto: GetAttachListDto): Promise<PageResult<GetAttachListVo>> => {
+    return await Http.postEntity<PageResult<GetAttachListVo>>("/attachPool/getAttachList", dto);
   },
 };
