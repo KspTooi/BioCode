@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @PrintLog
 @RestController
 @RequestMapping("/attachPool")
-@Tag(name = "CORE-QSP管理", description = "QSP文件池管理")
+@Tag(name = "CORE-附件池管理", description = "附件池管理")
 @Slf4j
 public class AttachPoolController {
 

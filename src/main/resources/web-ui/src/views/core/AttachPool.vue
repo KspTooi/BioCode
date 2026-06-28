@@ -35,17 +35,17 @@
             </div>
             <div class="stat-item">
               <div class="title-with-icon stat-label">
-                <el-icon><PieChart /></el-icon>
-                附件池已用
-              </div>
-              <div class="stat-value stat-sm">{{ formatBytes(record.poolUsageBytes) }}</div>
-            </div>
-            <div class="stat-item">
-              <div class="title-with-icon stat-label">
                 <el-icon><Coin /></el-icon>
                 附件池总容量
               </div>
               <div class="stat-value stat-sm">{{ formatBytes(record.poolCapacityBytes) }}</div>
+            </div>
+            <div class="stat-item">
+              <div class="title-with-icon stat-label">
+                <el-icon><PieChart /></el-icon>
+                附件池已用
+              </div>
+              <div class="stat-value stat-sm">{{ formatBytes(record.poolUsageBytes) }}</div>
             </div>
           </div>
 
@@ -173,7 +173,9 @@ const {
 
 .stat-item-clickable {
   cursor: pointer;
-  transition: border-color 0.2s, background-color 0.2s;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
 }
 
 .stat-item-clickable:hover {
