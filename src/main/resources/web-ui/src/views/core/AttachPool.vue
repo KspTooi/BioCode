@@ -11,11 +11,12 @@
               </span>
               <div class="toolbar-actions">
                 <el-button size="small" :loading="loading" @click="loadRecord">刷新</el-button>
-                <el-button size="small" type="primary" :loading="scanning" @click="onScan">扫描附件池</el-button>
+                <el-button size="small" type="primary" :loading="scanning" @click="onQuickScan">快速扫描</el-button>
+                <el-button size="small" type="warning" :loading="scanning" @click="onDeepScan">深度扫描</el-button>
               </div>
             </div>
 
-            <el-empty v-if="!record && !loading" description="暂无扫描记录，请点击「扫描附件池」开始首次扫描" />
+            <el-empty v-if="!record && !loading" description="暂无扫描记录，请点击「快速扫描」开始首次扫描" />
 
             <template v-if="record">
               <div class="stat-grid">
@@ -117,7 +118,8 @@ const {
   statExplainTitle,
   statExplainText,
   loadRecord,
-  onScan,
+  onQuickScan,
+  onDeepScan,
   openStatExplain,
   closeStatExplain,
   formatBytes,

@@ -4,6 +4,7 @@ import com.ksptool.assembly.entity.exception.BizException;
 import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.assembly.entity.web.Result;
 import com.ksptool.bio.biz.core.model.attachpool.dto.GetAttachListDto;
+import com.ksptool.bio.biz.core.model.attachpool.dto.ScanAttachPoolDto;
 import com.ksptool.bio.biz.core.model.attachpool.vo.GetAttachListVo;
 import com.ksptool.bio.biz.core.model.attachpool.vo.GetLatestScanRecordVo;
 import com.ksptool.bio.biz.core.service.AttachPoolService;
@@ -53,10 +54,10 @@ public class AttachPoolController {
     }
 
     @PreAuthorize("@auth.hasCode('core:attach:pool:scan')")
-    @Operation(summary = "扫描附件池")
+    @Operation(summary = "快速扫描附件池")
     @PostMapping("/scanAttachPool")
-    public Result<String> scanAttachPool() throws BizException {
-        attachPoolService.scanAttachPool();
+    public Result<String> scanAttachPool(@RequestBody @Valid ScanAttachPoolDto dto) throws BizException {
+        attachPoolService.scanAttachPool(dto);
         return Result.success("扫描完成");
     }
 

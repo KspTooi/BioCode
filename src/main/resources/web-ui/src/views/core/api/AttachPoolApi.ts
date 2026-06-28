@@ -46,6 +46,13 @@ export const AttachIndexFilterOptions = [
   { label: "无效", value: 0 },
 ];
 
+/**
+ * 扫描附件池 DTO
+ */
+export interface ScanAttachPoolDto {
+  scanMode: number; // 0:快速扫描 1:深度扫描
+}
+
 export default {
   /**
    * 查询最新的附件池扫描记录
@@ -61,8 +68,8 @@ export default {
   /**
    * 扫描附件池
    */
-  scanAttachPool: async (): Promise<void> => {
-    const result = await Http.postEntity<Result<string>>("/attachPool/scanAttachPool", {});
+  scanAttachPool: async (dto: ScanAttachPoolDto): Promise<void> => {
+    const result = await Http.postEntity<Result<string>>("/attachPool/scanAttachPool", dto);
     if (result.code === 0) {
       return;
     }

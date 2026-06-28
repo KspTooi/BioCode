@@ -72,24 +72,60 @@ export default {
     };
 
     /**
-     * 触发附件池扫描
+     * 快速扫描附件池
      */
-    const onScan = async (): Promise<void> => {
+    const onQuickScan = async (): Promise<void> => {
       if (scanning.value) {
         return;
       }
       try {
-        await ElMessageBox.confirm("扫描将遍历附件池目录并统计文件，可能需要较长时间，是否继续？", "提示", {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning",
-        });
+        await ElMessageBox.confirm(
+          "快速扫描将统计附件池目录文件数量与磁盘占用，不校验已索引附件是否仍存在于磁盘，是否继续？",
+          "快速扫描",
+          {
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+            type: "warning",
+          },
+        );
       } catch {
         return;
       }
       scanning.value = true;
       try {
-        await AttachPoolApi.scanAttachPool();
+        await AttachPoolApi.scanAttachPool({ scanMode: 0 });
+        ElMessage.success("扫描完成");
+        await loadRecord();
+      } catch (error: any) {
+        ElMessage.error(error.message);
+      } finally {
+        scanning.value = false;
+      }
+    };
+
+    /**
+     * 深度扫描附件池
+     */
+    const onDeepScan = async (): Promise<void> => {
+      if (scanning.value) {
+        return;
+      }
+      try {
+        await ElMessageBox.confirm(
+          "深度扫描将遍历附件池并校验已索引附件是否仍存在于磁盘，耗时较长，是否继续？",
+          "深度扫描",
+          {
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+            type: "warning",
+          },
+        );
+      } catch {
+        return;
+      }
+      scanning.value = true;
+      try {
+        await AttachPoolApi.scanAttachPool({ scanMode: 1 });
         ElMessage.success("扫描完成");
         await loadRecord();
       } catch (error: any) {
@@ -222,7 +258,8 @@ export default {
       statExplainTitle,
       statExplainText,
       loadRecord,
-      onScan,
+      onQuickScan,
+      onDeepScan,
       openStatExplain,
       closeStatExplain,
       formatBytes,

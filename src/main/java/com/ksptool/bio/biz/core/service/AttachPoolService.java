@@ -5,6 +5,7 @@ import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.bio.biz.core.model.attach.AttachPo;
 import com.ksptool.bio.biz.core.model.attachpool.AttachPoolPo;
 import com.ksptool.bio.biz.core.model.attachpool.dto.GetAttachListDto;
+import com.ksptool.bio.biz.core.model.attachpool.dto.ScanAttachPoolDto;
 import com.ksptool.bio.biz.core.model.attachpool.vo.GetAttachListVo;
 import com.ksptool.bio.biz.core.model.attachpool.vo.GetLatestScanRecordVo;
 import com.ksptool.bio.biz.core.repository.AttachPoolRepository;
@@ -86,7 +87,14 @@ public class AttachPoolService {
      * 若锁与数据库状态不同步（锁未锁定但最新记录未完成），说明前次扫描失败，记录告警后创建新扫描。
      */
     @Transactional(rollbackFor = Exception.class)
-    public void scanAttachPool() throws BizException {
+    public void scanAttachPool(ScanAttachPoolDto dto) throws BizException {
+
+        if (dto.getScanMode() == null) {
+            throw new BizException("扫描模式不能为空");
+        }
+        if (dto.getScanMode() != 0 && dto.getScanMode() != 1) {
+            throw new BizException("不支持的扫描模式: " + dto.getScanMode());
+        }
 
         if (!scanLock.tryLock()) {
             throw new BizException("附件池正在扫描中，请稍后再试");
@@ -173,8 +181,8 @@ public class AttachPoolService {
             updatePo.setScanStatus(1);
             attachPoolRepository.save(updatePo);
 
-            log.info("附件池扫描完成。文件总数:{} 已索引:{} 游离:{} 附件字节:{} 附件池已用:{} 附件池容量:{}",
-                    fileCount.get(), indexedCount, driftCount, totalBytes.get(), poolUsageBytes, poolCapacityBytes);
+            log.info("附件池扫描完成。模式:{} 文件总数:{} 已索引:{} 游离:{} 附件字节:{} 附件池已用:{} 附件池容量:{}",
+                    dto.getScanMode(), fileCount.get(), indexedCount, driftCount, totalBytes.get(), poolUsageBytes, poolCapacityBytes);
 
         } catch (IOException e) {
             log.error("附件池扫描异常", e);
