@@ -28,8 +28,8 @@
               </div>
             </div>
             <div class="stat-item">
-              <div class="stat-label">附件占用</div>
-              <div class="stat-value stat-sm">{{ formatBytes(record.poolAttachesBytes) }}</div>
+              <div class="stat-label">磁盘已用</div>
+              <div class="stat-value stat-sm">{{ formatBytes(record.poolUsageBytes) }}</div>
             </div>
             <div class="stat-item">
               <div class="stat-label">磁盘总容量</div>
@@ -37,34 +37,9 @@
             </div>
           </div>
 
-          <div v-if="Number(record.poolCapacityBytes) > 0" class="usage-block">
-            <div class="usage-label">
-              <span>磁盘使用率</span>
-              <span>
-                {{
-                  Math.min(
-                    100,
-                    Math.round((Number(record.poolAttachesBytes) / Number(record.poolCapacityBytes)) * 100)
-                  )
-                }}%
-              </span>
-            </div>
-            <el-progress
-              :percentage="
-                Math.min(
-                  100,
-                  Math.round((Number(record.poolAttachesBytes) / Number(record.poolCapacityBytes)) * 100)
-                )
-              "
-              :stroke-width="14"
-              :status="
-                Number(record.poolAttachesBytes) / Number(record.poolCapacityBytes) > 0.9
-                  ? 'exception'
-                  : Number(record.poolAttachesBytes) / Number(record.poolCapacityBytes) > 0.7
-                    ? 'warning'
-                    : 'success'
-              "
-            />
+          <div v-if="diskUsageOption" class="usage-block">
+            <div class="usage-title">磁盘使用率</div>
+            <v-chart class="usage-chart" :option="diskUsageOption" autoresize />
           </div>
 
           <el-descriptions :column="2" border size="small" class="custom-descriptions">
@@ -72,6 +47,14 @@
               <el-tag size="small" :type="record.scanStatus === 1 ? 'success' : 'warning'" effect="plain">
                 {{ record.scanStatus === 1 ? "扫描成功" : "正在扫描" }}
               </el-tag>
+            </el-descriptions-item>
+            <el-descriptions-item label="附件占用">{{ formatBytes(record.poolAttachesBytes) }}</el-descriptions-item>
+            <el-descriptions-item label="其他占用">
+              {{
+                formatBytes(
+                  String(Math.max(0, Number(record.poolUsageBytes) - Number(record.poolAttachesBytes)))
+                )
+              }}
             </el-descriptions-item>
             <el-descriptions-item label="存储池路径" :span="2">{{ record.poolPath }}</el-descriptions-item>
             <el-descriptions-item label="扫描开始时间">{{ record.scanStartTime ?? "-" }}</el-descriptions-item>
@@ -84,11 +67,22 @@
 </template>
 
 <script setup lang="ts">
+import { provide } from "vue";
+import { use } from "echarts/core";
+import { CanvasRenderer } from "echarts/renderers";
+import { BarChart } from "echarts/charts";
+import { GridComponent, TooltipComponent, LegendComponent } from "echarts/components";
+import VChart, { THEME_KEY } from "vue-echarts";
 import { FolderOpened } from "@element-plus/icons-vue";
 import StdListContainer from "@/soa/std-series/StdListContainer.vue";
 import AttachPoolService from "@/views/core/service/AttachPoolService.ts";
 
-const { record, loading, scanning, loadRecord, onScan, formatBytes } = AttachPoolService.useAttachPoolStatus();
+use([CanvasRenderer, BarChart, GridComponent, TooltipComponent, LegendComponent]);
+
+provide(THEME_KEY, "light");
+
+const { record, loading, scanning, loadRecord, onScan, formatBytes, diskUsageOption } =
+  AttachPoolService.useAttachPoolStatus();
 </script>
 
 <style scoped>
@@ -165,15 +159,21 @@ const { record, loading, scanning, loadRecord, onScan, formatBytes } = AttachPoo
 }
 
 .usage-block {
-  padding: 0 2px;
+  padding: 12px 16px;
+  background-color: #f8f9fb;
+  border: 1px solid var(--el-border-color-lighter);
 }
 
-.usage-label {
-  display: flex;
-  justify-content: space-between;
+.usage-title {
   font-size: 13px;
-  color: var(--el-text-color-secondary);
+  font-weight: 600;
+  color: var(--el-text-color-primary);
   margin-bottom: 8px;
+}
+
+.usage-chart {
+  height: 72px;
+  width: 100%;
 }
 
 :deep(.custom-descriptions) {
@@ -185,14 +185,6 @@ const { record, loading, scanning, loadRecord, onScan, formatBytes } = AttachPoo
   .el-descriptions__content {
     color: var(--el-text-color-primary);
   }
-  border-radius: 0 !important;
-}
-
-:deep(.el-progress-bar__outer) {
-  border-radius: 0 !important;
-}
-
-:deep(.el-progress-bar__inner) {
   border-radius: 0 !important;
 }
 </style>

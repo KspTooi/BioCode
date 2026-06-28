@@ -1,11 +1,11 @@
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import type { GetLatestScanRecordVo } from "@/views/core/api/AttachPoolApi";
 import AttachPoolApi from "@/views/core/api/AttachPoolApi";
 
 export default {
   /**
-   * 附件池扫描状态打包：加载最新扫描记录、触发扫描
+   * 附件池扫描状态打包：加载最新扫描记录、触发扫描、磁盘堆叠图配置
    */
   useAttachPoolStatus() {
     const record = ref<GetLatestScanRecordVo | null>(null);
@@ -83,6 +83,85 @@ export default {
       return `${(val / 1024 / 1024 / 1024 / 1024).toFixed(2)} TB`;
     };
 
+    const diskUsageOption = computed(() => {
+      const r = record.value;
+      if (!r) {
+        return null;
+      }
+      const capacity = Number(r.poolCapacityBytes);
+      if (Number.isNaN(capacity) || capacity <= 0) {
+        return null;
+      }
+      const usage = Number(r.poolUsageBytes);
+      const attach = Number(r.poolAttachesBytes);
+      let other = usage - attach;
+      if (Number.isNaN(other) || other < 0) {
+        other = 0;
+      }
+      let free = capacity - usage;
+      if (Number.isNaN(free) || free < 0) {
+        free = 0;
+      }
+      const usagePercent = Math.min(100, Math.round((usage / capacity) * 100));
+      return {
+        tooltip: {
+          trigger: "item",
+          formatter: (params: { seriesName: string; value: number }) =>
+            `${params.seriesName}: ${formatBytes(String(params.value))}`,
+        },
+        legend: {
+          bottom: 0,
+          data: ["附件占用", "其他占用", "可用空间"],
+        },
+        grid: {
+          left: 0,
+          right: 0,
+          top: 8,
+          bottom: 36,
+          containLabel: false,
+        },
+        xAxis: {
+          type: "value",
+          max: capacity,
+          show: false,
+        },
+        yAxis: {
+          type: "category",
+          data: [`磁盘使用率 ${usagePercent}%`],
+          axisLine: { show: false },
+          axisTick: { show: false },
+          axisLabel: {
+            fontSize: 13,
+            color: "#606266",
+          },
+        },
+        series: [
+          {
+            name: "附件占用",
+            type: "bar",
+            stack: "disk",
+            barWidth: 22,
+            itemStyle: { color: "#409eff" },
+            data: [Number.isNaN(attach) || attach < 0 ? 0 : attach],
+          },
+          {
+            name: "其他占用",
+            type: "bar",
+            stack: "disk",
+            itemStyle: { color: "#e6a23c" },
+            data: [other],
+          },
+          {
+            name: "可用空间",
+            type: "bar",
+            stack: "disk",
+            itemStyle: { color: "#ebeef5" },
+            data: [free],
+          },
+        ],
+      };
+    });
+
     onMounted(() => {
       loadRecord();
     });
@@ -94,6 +173,7 @@ export default {
       loadRecord,
       onScan,
       formatBytes,
+      diskUsageOption,
     };
   },
 };
