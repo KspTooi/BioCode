@@ -1,16 +1,21 @@
 package com.ksptool.bio.biz.core.controller;
 
 import com.ksptool.assembly.entity.exception.BizException;
+import com.ksptool.assembly.entity.web.PageResult;
 import com.ksptool.assembly.entity.web.Result;
+import com.ksptool.bio.biz.core.model.attachpool.dto.GetAttachListDto;
+import com.ksptool.bio.biz.core.model.attachpool.vo.GetAttachListVo;
 import com.ksptool.bio.biz.core.model.attachpool.vo.GetLatestScanRecordVo;
 import com.ksptool.bio.biz.core.service.AttachPoolService;
 import com.ksptool.bio.commons.annotation.PrintLog;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -38,6 +43,13 @@ public class AttachPoolController {
         }
 
         return Result.success(record);
+    }
+
+    @PreAuthorize("@auth.hasCode('core:attach:pool:view')")
+    @Operation(summary = "查询附件列表")
+    @PostMapping("/getAttachList")
+    public PageResult<GetAttachListVo> getAttachList(@RequestBody @Valid GetAttachListDto dto) {
+        return attachPoolService.getAttachList(dto);
     }
 
     @PreAuthorize("@auth.hasCode('core:attach:pool:scan')")

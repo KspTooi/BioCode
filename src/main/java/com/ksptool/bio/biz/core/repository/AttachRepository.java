@@ -2,6 +2,8 @@ package com.ksptool.bio.biz.core.repository;
 
 
 import com.ksptool.bio.biz.core.model.attach.AttachPo;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -53,5 +55,20 @@ public interface AttachRepository extends JpaRepository<AttachPo, Long> {
             WHERE t.status = 3
             """)
     long countValidAttaches();
+
+    /**
+     * 分页查询附件列表
+     *
+     * @param po       查询条件
+     * @param pageable 分页条件
+     * @return 附件列表
+     */
+    @Query("""
+            SELECT t FROM AttachPo t
+            WHERE (:#{#po.kind} IS NULL OR t.kind = :#{#po.kind})
+            AND (:#{#po.status} IS NULL OR t.status = :#{#po.status})
+            ORDER BY t.createTime DESC
+            """)
+    Page<AttachPo> getAttachList(@Param("po") AttachPo po, Pageable pageable);
 
 }

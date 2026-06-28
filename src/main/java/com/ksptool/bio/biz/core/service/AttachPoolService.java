@@ -1,13 +1,18 @@
 package com.ksptool.bio.biz.core.service;
 
 import com.ksptool.assembly.entity.exception.BizException;
+import com.ksptool.assembly.entity.web.PageResult;
+import com.ksptool.bio.biz.core.model.attach.AttachPo;
 import com.ksptool.bio.biz.core.model.attachpool.AttachPoolPo;
+import com.ksptool.bio.biz.core.model.attachpool.dto.GetAttachListDto;
+import com.ksptool.bio.biz.core.model.attachpool.vo.GetAttachListVo;
 import com.ksptool.bio.biz.core.model.attachpool.vo.GetLatestScanRecordVo;
 import com.ksptool.bio.biz.core.repository.AttachPoolRepository;
 import com.ksptool.bio.biz.core.repository.AttachRepository;
 import com.ksptool.bio.commons.config.AttachConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,10 +24,12 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static com.ksptool.entities.Entities.as;
+import static com.ksptool.entities.Entities.assign;
 
 @Slf4j
 @Service
@@ -52,6 +59,26 @@ public class AttachPoolService {
             return null;
         }
         return as(attachPool, GetLatestScanRecordVo.class);
+    }
+
+    /**
+     * 分页查询附件列表
+     *
+     * @param dto 查询条件
+     * @return 附件列表
+     */
+    @Transactional(rollbackFor = Exception.class, readOnly = true)
+    public PageResult<GetAttachListVo> getAttachList(GetAttachListDto dto) {
+        AttachPo query = new AttachPo();
+        assign(dto, query);
+
+        Page<AttachPo> page = attachRepository.getAttachList(query, dto.pageRequest());
+        if (page.isEmpty()) {
+            return PageResult.successWithEmpty();
+        }
+
+        List<GetAttachListVo> vos = as(page.getContent(), GetAttachListVo.class);
+        return PageResult.success(vos, (int) page.getTotalElements());
     }
 
     /**
