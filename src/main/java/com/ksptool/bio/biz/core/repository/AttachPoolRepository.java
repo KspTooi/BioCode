@@ -15,8 +15,9 @@ public interface AttachPoolRepository extends JpaRepository<AttachPoolPo, Long> 
      */
     @Query("""
             SELECT t FROM AttachPoolPo t
-            ORDER BY t.createTime DESC
-            """) 
+            ORDER BY t.createTime DESC, t.id DESC
+            LIMIT 1
+            """)
     AttachPoolPo getLatestScanRecord();
 
 }
